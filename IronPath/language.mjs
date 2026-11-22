@@ -1,28 +1,28 @@
-import {germanWorkshop} from './localization-workshop-de.mjs?v=20261108-balance2';
+import {germanWorkshop} from './i18n/localization-workshop-de.mjs?v=20261108-balance2';
 // The Settings dialog is where a player switches the language in the first place, so
 // its copy cannot fall back to English. Own file, asked first, for the same reason as
 // the first-run dictionary below.
-import {germanSettings} from './localization-settings-de.mjs?v=20261121-order1';
+import {germanSettings} from './i18n/localization-settings-de.mjs?v=20261121-order1';
 // The first run was the last translated part of the game and the first one a new
 // soldier sees: seven coach cards on the field, four cards after the match, four class
 // explanations. Kept in its own file so the next new card cannot ship untranslated
 // without tests/first-run-german.test.mjs noticing.
-import {germanFirstRun} from './localization-firstrun-de.mjs?v=20261121-order1';
-import {germanFinal} from './localization-final-de.mjs?v=20261128-randomends1';
-import {germanMoreStatic} from './localization-more-static-de.mjs?v=20261121-order1';
-import {germanGameErrors} from './localization-game-errors-de.mjs?v=20261121-order1';
-import {germanAccount} from './localization-account-de.mjs?v=20261121-order1';
-import {germanTowers} from './localization-towers-de.mjs?v=20261121-order1';
-import {germanStatic} from './localization-static-de.mjs?v=20261121-order1';
-import {germanBattle} from './localization-battle-de.mjs?v=20261121-order1';
-import {germanResults} from './localization-results-de.mjs?v=20261121-order1';
-import {germanAdvancedSkills} from './localization-advanced-skills-de.mjs?v=20261121-order1';
-import {germanCampaign} from './localization-campaign-de.mjs?v=20261121-order1';
-import {germanCinematics} from './localization-cinematics-de.mjs?v=20261112-pressure1';
-import {germanEvents} from './localization-events-de.mjs?v=20261206-acttwo1';
-import {germanSkills} from './localization-skills-de.mjs?v=20261121-order1';
-import {germanArmory} from './localization-armory-de.mjs?v=20261107-balance1';
-import {germanText} from './localization-de.mjs?v=20261121-order1';
+import {germanFirstRun} from './i18n/localization-firstrun-de.mjs?v=20261121-order1';
+import {germanFinal} from './i18n/localization-final-de.mjs?v=20261128-randomends1';
+import {germanMoreStatic} from './i18n/localization-more-static-de.mjs?v=20261121-order1';
+import {germanGameErrors} from './i18n/localization-game-errors-de.mjs?v=20261121-order1';
+import {germanAccount} from './i18n/localization-account-de.mjs?v=20261121-order1';
+import {germanTowers} from './i18n/localization-towers-de.mjs?v=20261121-order1';
+import {germanStatic} from './i18n/localization-static-de.mjs?v=20261121-order1';
+import {germanBattle} from './i18n/localization-battle-de.mjs?v=20261121-order1';
+import {germanResults} from './i18n/localization-results-de.mjs?v=20261121-order1';
+import {germanAdvancedSkills} from './i18n/localization-advanced-skills-de.mjs?v=20261121-order1';
+import {germanCampaign} from './i18n/localization-campaign-de.mjs?v=20261121-order1';
+import {germanCinematics} from './i18n/localization-cinematics-de.mjs?v=20261112-pressure1';
+import {germanEvents} from './i18n/localization-events-de.mjs?v=20261206-acttwo1';
+import {germanSkills} from './i18n/localization-skills-de.mjs?v=20261121-order1';
+import {germanArmory} from './i18n/localization-armory-de.mjs?v=20261107-balance1';
+import {germanText} from './i18n/localization-de.mjs?v=20261121-order1';
 // Localization is presentation only. Player names, IDs, party codes and game
 // state are never translated or written to the account. This is a preview: the
 // complete story, gameplay and account flows still need translated strings.

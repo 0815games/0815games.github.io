@@ -1,6 +1,6 @@
 # Iron Path – Patch-Log: Archiv
 
-Ältere Einträge IPL-0001 bis IPL-0074. Die neuesten 20 stehen in
+Ältere Einträge IPL-0001 bis IPL-0075. Die neuesten 20 stehen in
 [PATCH-LOG.md](PATCH-LOG.md); die Regeln für beide Dateien dort und in
 [`../../AGENTS.md`](../../AGENTS.md). Beim Verschieben wandert ein Eintrag immer
 vollständig einschließlich seiner Ereignis-Nachträge.
@@ -3479,4 +3479,19 @@ Grenzen / Offen:
 - **Änderungen / Dateien:**
   - `IronPath/PATCH-BLOECKE.md`, `IronPath/PATCH-LOG.md` (`IPL-0073` Merge/Deploy nachgetragen + `IPL-0074` protokolliert), `IronPath/patch-notes.mjs` (`block9d`-Eintrag aktualisiert: `BLOCK9D-RULES-TO-PUBLISH.json` als vom Betreiber veröffentlicht dokumentiert, verbleibender offener Punkt auf echte Desktop-/Handy-Sichtung vor Block 6 bereinigt).
 - **Offen:** Echte Desktop- und Handy-Sichtung auf `20261119-block9d` (inkl. Einzelsitzungs-Schutz über mehrere Fenster/Geräte) vor Beginn von Block 6.
+
+
+## IPL-0075 – Block 9e (`20261119-block9e`, PR #324): Mehrfenster-Sitzungsschutz, rotierende Login-Banner, HQ-Zurück-Navigation & Endlos-Karussell
+- **Zeit / Quelle:** 2026-10-31 UTC (Sitzungsvorgabe); Branch `arena/f7cdd26a-0815games-github-io` ab `6e634551830de16ab6fcd690144b4c0a929e5f08` (`main`), PR #324 offen.
+- **Block / Ziel:** Vier Nachbesserungen aus der ersten Block-9d-Sichtung umsetzen: (1) parallele Anmeldung im selben Browser/Gerät zuverlässig über zwei Tabs sperren, ohne beim Blockieren oder Übernehmen das geteilte Auth-IndexedDB des anderen Tabs zu invalidieren, (2) Login-Dossier mit vier rotierenden Szenenbildern & identischem EN/DE-Flaggen-Schalter wie in den Einstellungen aufwerten, (3) alle neun Command-HQ-Dialoge mit einheitlichen `← COMMAND CENTER` / `← KOMMANDOZENTRALE`-Buttons (kontextuelles `✕` im laufenden Gefecht) und dedizierten `1376×768`-Moduskarten (`mode-campaign.jpg`, `mode-endless.jpg`, `mode-multiplayer.jpg`) versehen, (4) Endlos-Auswahl (`#endlessLaunch`) auf ein einzelnes Karussell (Standard `Random`, `DEPLOY` oben, `CANCEL` unten) mit neuem `endless-random.jpg` verschlanken.
+- **Änderungen / Dateien:**
+  - **Paket 1 (Mehrfenster-Sitzungssperre):** `IronPath/active-session.mjs`, `IronPath/account.js`, `IronPath/firebase/rules-test/active-session-browser.cjs` (Schritte `1b`–`1c`), `IronPath/tests/active-session.test.mjs`: ephemerer Pro-Tab-`createWindowSessionId()` + `createSameBrowserSessionMonitor()` (Web Locks + `BroadcastChannel`), Verzicht auf `accountServices.logout()` bei blockiertem/übernommenem Tab im selben Browser, `occupiedHolder`-Erfassung im RTDB-`runTransaction`, saubere Re-Aktivierung bei identischer UID, `pagehide`-Freigabe & 10-s-Heartbeat.
+  - **Paket 2–4 (Login-Szene, Sprache, HQ-Navigation & Endlos-Karussell):** `IronPath/login-scene.mjs`, `IronPath/language.mjs` (`#languageToggle` & `#authLanguageToggle` plus `#languageSelect`-Fallback für Mock-Tests), `IronPath/auth-form.mjs`, `IronPath/command-center.mjs` (`onViewChange`), `IronPath/settings.mjs`, `IronPath/endless-launcher.mjs`, `IronPath/account.js` (`syncContextBackButtons`, Sprachwechsel-Refresh für Auth-Form & Endlos-Karussell), `IronPath/localization-{settings,more-static}-de.mjs`.
+  - **Artworks (`IronPath/assets/`, alle `1376×768` text-/randfreie JPEGs):** `login-bunker-watch.jpg`, `login-radio-rain.jpg`, `login-convoy-prep.jpg`, `login-tactical-map.jpg`, `mode-campaign.jpg`, `mode-endless.jpg`, `mode-multiplayer.jpg`, `endless-random.jpg`.
+  - **Markup, Styling & Tests:** `IronPath/index.html`, `IronPath/style.css`, `IronPath/menu-redesign.css` (inkl. `flex-wrap: nowrap` auf Freunde-/Bestenlisten-Header für 320px-EN/DE-Breite), `IronPath/tests/{login-scene,first-run-layout,settings,endless-launcher,menu-redesign,multiplayer-build-stamp,skill-draft-ui}.test.mjs`, `IronPath/browser-tests/{interface-smoke,command-center,multiplayer-prompt-layout,wave-consensus}.cjs`, `IronPath/release-version.json`, `IronPath/patch-notes.mjs` (`block9e`, `pr: 324`) & vollständige `?v=20261119-block9e`-Cache-Welle.
+- **Prüfungen:**
+  - `node --test IronPath/tests/*.test.mjs` (**1.163 bestanden, 0 fehlgeschlagen, 1 erwarteter Ancestor-Skip** in `release-pages-site.test.mjs`), `node IronPath/stress-tests/run.mjs` und Syntaxprüfung (`node --check`) vor Commit ausgeführt.
+  - GitHub CI Run `44533883836` auf `4f7d7cd` (PR #324): **13/13 Checks bestanden** (`database-rules` inkl. `test:block9d`, `game-regressions`, `interface-browser-smoke` inkl. Chromium `active-session-browser.cjs` Schritte `1b`–`1c`, `interface-smoke.cjs` EN/DE auf `320/390/1440px`, `command-center.cjs`, `wave-consensus.cjs`, `multiplayer-prompt-layout.cjs`, alle 8 `party-finalization-browser`-Jobs sowie Vercel-Preview).
+- **Git / PR / Release:** Commit `689f1a6` + `4f7d7cd` + `c73c107` auf `arena/f7cdd26a-0815games-github-io` gepusht; **PR #324 gemergt** (`57ebfaf4e79ff67db09c06ec780344158a7e133f`, CI `44535397077` 13/13 grün; Deploy `pages-build-deployment` `44544569708` & main CI `44544571418` 11/11 grün). `20261119-block9e` auf GitHub Pages live.
+- **Offen:** Geräteabnahme führte direkt zur UI-Korrekturwelle **Block 9f (`IPL-0076`)**.
 

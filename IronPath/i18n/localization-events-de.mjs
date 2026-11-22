@@ -1,4 +1,4 @@
-import {MISSION_DECISIONS,MISSION_EVENTS,STAGE_CAPTIONS,EVENT_TEMPLATES} from './story-events.mjs?v=20261206-acttwo1';
+import {MISSION_DECISIONS,MISSION_EVENTS,STAGE_CAPTIONS,EVENT_TEMPLATES} from '../story-events.mjs?v=20261206-acttwo1';
 // German for the mission accompaniment (radio decisions, field events, stage
 // captions). Matched to authored strings only - never stored in profiles or
 // fed back into mission rules. The import itself validates coverage, so a new

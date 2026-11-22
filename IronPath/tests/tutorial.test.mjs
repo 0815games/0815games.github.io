@@ -1,7 +1,10 @@
 import {test} from 'node:test';
 import { strict as assert } from 'node:assert';
 import {createTutorial,TUTORIAL_STEPS} from '../tutorial.mjs';
-import {readFileSync,readdirSync} from 'node:fs';
+import {readFileSync,readdirSync,existsSync} from 'node:fs';
+import {join,normalize} from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {GAME_MODULE_FOLDERS} from '../release-tools/stage-version.mjs';
 import {productionModuleUrl} from './production-module.mjs';
 const nodes=new Map();
 const document={getElementById(id){if(!nodes.has(id))nodes.set(id,{open:false,dataset:{},attrs:{},setAttribute(key,value){this.attrs[key]=value;},addEventListener(type,fn){this['on'+type]=fn;},getBoundingClientRect(){return {left:0,right:100,top:0,bottom:100}},showModal(){this.open=true;},close(){this.open=false;}});return nodes.get(id);}};
@@ -150,11 +153,29 @@ test('every import of a module agrees on that module cache token',()=>{
  // A stale `?v=` means browsers keep running the old copy of one module. That is how
  // the briefing fix nearly shipped while game.js still asked for the old tour: the
  // token had been bumped everywhere but in the one import that loads the tour.
- const files=readdirSync(new URL('..',import.meta.url)).filter(f=>/\.(mjs|js|html)$/.test(f));
+ // Scan every shipped file, wherever the structure puts it (root plus the
+ // approved module folders), and resolve each specifier against its importer:
+ // after the i18n move, ./i18n/localization-skills-de.mjs from the root and
+ // ./localization-skills-de.mjs from inside i18n/ are the same module and must
+ // agree on its token. A root-only ./ scan would silently stop checking the
+ // moved importers.
+ const rootDir=fileURLToPath(new URL('..',import.meta.url));
+ const files=[];
+ const walk=(dir,prefix)=>{
+  for(const entry of readdirSync(dir,{withFileTypes:true})){
+   const rel=prefix?`${prefix}/${entry.name}`:entry.name;
+   if(entry.isDirectory())walk(join(dir,entry.name),rel);
+   else if(entry.isFile()&&/\.(mjs|js|html)$/.test(entry.name))files.push(rel);
+  }
+ };
+ for(const name of readdirSync(rootDir))if(/\.(mjs|js|html)$/.test(name))files.push(name);
+ for(const folder of GAME_MODULE_FOLDERS)if(existsSync(join(rootDir,folder)))walk(join(rootDir,folder),folder);
  const tokens=new Map();
  for(const file of files){
-  const source=readFileSync(new URL('../'+file,import.meta.url),'utf8');
-  for(const [,target,token] of source.matchAll(/['"`]\.\/([\w./-]+\.mjs)\?v=([a-z0-9-]+)/g)){
+  const source=readFileSync(join(rootDir,file),'utf8');
+  const dir=file.includes('/')?file.slice(0,file.lastIndexOf('/')):'.';
+  for(const [,spec,token] of source.matchAll(/['"`]([\w./-]+\.mjs)\?v=([a-z0-9-]+)/g)){
+   const target=normalize(join(dir,spec)).split('\\').join('/');
    if(!tokens.has(target))tokens.set(target,new Map());
    const seen=tokens.get(target);
    if(!seen.has(token))seen.set(token,[]);

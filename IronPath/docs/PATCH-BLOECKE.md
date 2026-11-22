@@ -698,8 +698,8 @@ Hauptmenü und den einheitlichen Dialogen aufbauen.
   [`first-run-guide.mjs`](../first-run-guide.mjs),
   [`solo-deployment.mjs`](../solo-deployment.mjs) und
   [`menu-tour.mjs`](../menu-tour.mjs) (ergänzt durch
-  [`localization-firstrun-de.mjs`](../localization-firstrun-de.mjs) &
-  [`localization-de.mjs`](../localization-de.mjs) sowie die Artworks
+  [`localization-firstrun-de.mjs`](../i18n/localization-firstrun-de.mjs) &
+  [`localization-de.mjs`](../i18n/localization-de.mjs) sowie die Artworks
   `general-vance-portrait.jpg`, `tutorial-dossier-map.jpg`,
   `tutorial-hq-briefing.jpg`, `tutorial-airstrike.jpg`) erweitern den
   Einsatz auf 7 Wellen inkl. Spezialisierungs-/Luftabwehr-Schritt (`450` EP /

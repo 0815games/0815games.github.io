@@ -6,7 +6,7 @@ aber ersetzt weder Git noch die GitHub-PR-Historie. Die dazugehörige
 [Arbeitsanweisung](../../AGENTS.md) verlangt, dieses Log vor der Arbeit zu lesen
 und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
 
-Die Einträge IPL-0001 bis IPL-0074 stehen im
+Die Einträge IPL-0001 bis IPL-0075 stehen im
 [Archiv](PATCH-LOG-ARCHIV.md); hier stehen die neuesten 20. Beide Dateien
 zusammen sind lückenlos und doppelfrei - `../scripts/patch-check.mjs` und
 `../tests/patch-log-archive.test.mjs` prüfen das.
@@ -42,20 +42,6 @@ zusammen sind lückenlos und doppelfrei - `../scripts/patch-check.mjs` und
 Die Vorlage steht als einzige Quelle in
 [patch-log-vorlage.md](patch-log-vorlage.md), zusammen mit der Erklärung, was in
 jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderlaufen.
-
-## IPL-0075 – Block 9e (`20261119-block9e`, PR #324): Mehrfenster-Sitzungsschutz, rotierende Login-Banner, HQ-Zurück-Navigation & Endlos-Karussell
-- **Zeit / Quelle:** 2026-10-31 UTC (Sitzungsvorgabe); Branch `arena/f7cdd26a-0815games-github-io` ab `6e634551830de16ab6fcd690144b4c0a929e5f08` (`main`), PR #324 offen.
-- **Block / Ziel:** Vier Nachbesserungen aus der ersten Block-9d-Sichtung umsetzen: (1) parallele Anmeldung im selben Browser/Gerät zuverlässig über zwei Tabs sperren, ohne beim Blockieren oder Übernehmen das geteilte Auth-IndexedDB des anderen Tabs zu invalidieren, (2) Login-Dossier mit vier rotierenden Szenenbildern & identischem EN/DE-Flaggen-Schalter wie in den Einstellungen aufwerten, (3) alle neun Command-HQ-Dialoge mit einheitlichen `← COMMAND CENTER` / `← KOMMANDOZENTRALE`-Buttons (kontextuelles `✕` im laufenden Gefecht) und dedizierten `1376×768`-Moduskarten (`mode-campaign.jpg`, `mode-endless.jpg`, `mode-multiplayer.jpg`) versehen, (4) Endlos-Auswahl (`#endlessLaunch`) auf ein einzelnes Karussell (Standard `Random`, `DEPLOY` oben, `CANCEL` unten) mit neuem `endless-random.jpg` verschlanken.
-- **Änderungen / Dateien:**
-  - **Paket 1 (Mehrfenster-Sitzungssperre):** `IronPath/active-session.mjs`, `IronPath/account.js`, `IronPath/firebase/rules-test/active-session-browser.cjs` (Schritte `1b`–`1c`), `IronPath/tests/active-session.test.mjs`: ephemerer Pro-Tab-`createWindowSessionId()` + `createSameBrowserSessionMonitor()` (Web Locks + `BroadcastChannel`), Verzicht auf `accountServices.logout()` bei blockiertem/übernommenem Tab im selben Browser, `occupiedHolder`-Erfassung im RTDB-`runTransaction`, saubere Re-Aktivierung bei identischer UID, `pagehide`-Freigabe & 10-s-Heartbeat.
-  - **Paket 2–4 (Login-Szene, Sprache, HQ-Navigation & Endlos-Karussell):** `IronPath/login-scene.mjs`, `IronPath/language.mjs` (`#languageToggle` & `#authLanguageToggle` plus `#languageSelect`-Fallback für Mock-Tests), `IronPath/auth-form.mjs`, `IronPath/command-center.mjs` (`onViewChange`), `IronPath/settings.mjs`, `IronPath/endless-launcher.mjs`, `IronPath/account.js` (`syncContextBackButtons`, Sprachwechsel-Refresh für Auth-Form & Endlos-Karussell), `IronPath/localization-{settings,more-static}-de.mjs`.
-  - **Artworks (`IronPath/assets/`, alle `1376×768` text-/randfreie JPEGs):** `login-bunker-watch.jpg`, `login-radio-rain.jpg`, `login-convoy-prep.jpg`, `login-tactical-map.jpg`, `mode-campaign.jpg`, `mode-endless.jpg`, `mode-multiplayer.jpg`, `endless-random.jpg`.
-  - **Markup, Styling & Tests:** `IronPath/index.html`, `IronPath/style.css`, `IronPath/menu-redesign.css` (inkl. `flex-wrap: nowrap` auf Freunde-/Bestenlisten-Header für 320px-EN/DE-Breite), `IronPath/tests/{login-scene,first-run-layout,settings,endless-launcher,menu-redesign,multiplayer-build-stamp,skill-draft-ui}.test.mjs`, `IronPath/browser-tests/{interface-smoke,command-center,multiplayer-prompt-layout,wave-consensus}.cjs`, `IronPath/release-version.json`, `IronPath/patch-notes.mjs` (`block9e`, `pr: 324`) & vollständige `?v=20261119-block9e`-Cache-Welle.
-- **Prüfungen:**
-  - `node --test IronPath/tests/*.test.mjs` (**1.163 bestanden, 0 fehlgeschlagen, 1 erwarteter Ancestor-Skip** in `release-pages-site.test.mjs`), `node IronPath/stress-tests/run.mjs` und Syntaxprüfung (`node --check`) vor Commit ausgeführt.
-  - GitHub CI Run `44533883836` auf `4f7d7cd` (PR #324): **13/13 Checks bestanden** (`database-rules` inkl. `test:block9d`, `game-regressions`, `interface-browser-smoke` inkl. Chromium `active-session-browser.cjs` Schritte `1b`–`1c`, `interface-smoke.cjs` EN/DE auf `320/390/1440px`, `command-center.cjs`, `wave-consensus.cjs`, `multiplayer-prompt-layout.cjs`, alle 8 `party-finalization-browser`-Jobs sowie Vercel-Preview).
-- **Git / PR / Release:** Commit `689f1a6` + `4f7d7cd` + `c73c107` auf `arena/f7cdd26a-0815games-github-io` gepusht; **PR #324 gemergt** (`57ebfaf4e79ff67db09c06ec780344158a7e133f`, CI `44535397077` 13/13 grün; Deploy `pages-build-deployment` `44544569708` & main CI `44544571418` 11/11 grün). `20261119-block9e` auf GitHub Pages live.
-- **Offen:** Geräteabnahme führte direkt zur UI-Korrekturwelle **Block 9f (`IPL-0076`)**.
 
 ## IPL-0076 – Block 9f (`20261119-block9f`, PR #325): iPad-/Desktop-Login, Command-HQ-Ausrichtung, Endlos-Karussell & einheitliche Operationsbreiten
 - **Zeit / Quelle:** 2026-10-31 UTC (Sitzungsvorgabe nach iPad-/Desktop-Gerätesichtung von `20261119-block9e`); Branch `arena/21544492-0815games-github-io` ab `57ebfaf4e79ff67db09c06ec780344158a7e133f` (`main`).
@@ -765,3 +751,23 @@ sie geprüft wurde.
 - **Ehrliche Grenzen:** Die Live-URL wurde nicht abgerufen; belegt sind Inhalt auf `main` und der fertige Pages-Build. Keine Geräteabnahme, weil keine browsergeladene Datei geändert wurde und sich keine Modul-Adresse geändert hat.
 - **Herkunft dieses Nachtrags:** Er steht als eigener Commit auf demselben Arbeitszweig nach dem Merge von `#346`; seine eigene Commit- und PR-Kennung steht deshalb nicht hier, sondern in Git und im PR-Text.
 
+
+## IPL-0095 – Phase 2, Scheibe 1: Die 18 deutschen Wörterbücher ziehen nach `i18n/` (eigene Cache-Welle folgt im selben PR)
+
+- **Zeit / Quelle:** Betreiberauftrag in dieser Sitzung, wörtlich: „Phase 2, Go“. Grundlage sind die vier Entscheidungen aus `IPL-0094`: Gruppen in Unterordner, nach Fachgebiet, scheibenweise mit einem PR pro Gruppe, Eintrittspunkte/HTML/CSS bleiben in der Wurzel.
+- **Block / Ziel:** Kein Spiel-Block. Erster echter Umzug der neuen Struktur: alle 18 `localization-*-de.mjs` liegen künftig in `IronPath/i18n/`. Am Spielverhalten ändert sich nichts — dieselben Wörterbücher, dieselben Texte; nur ihre Adressen ändern sich, deshalb trägt derselbe PR eine eigene Cache-Welle (Feldnotizen-Eintrag und Stempel-Anhebung folgen als zweiter Commit, sobald die PR-Nummer existiert).
+- **Branch / Basis:** `arena/a72010f0-0815games-github-io` ab `40323f869f2789391450bc5b432fe36408ae47b0` (`main`, Merge von PR `#347`).
+- **Änderungen / Dateien:**
+  - 18 Dateien per `git mv` nach `IronPath/i18n/` verschoben. 14 davon sind inhaltlich bytegleich; in 4 Dateien (`localization-advanced-skills-de.mjs`, `localization-campaign-de.mjs`, `localization-cinematics-de.mjs`, `localization-events-de.mjs`) zeigen die Importe auf Wurzel-Module jetzt eine Ebene hoch (`../skills.mjs` usw.); Geschwister-Importe innerhalb von `i18n/` bleiben `./`.
+  - `IronPath/language.mjs`: alle 18 Wörterbuch-Importe zeigen auf `./i18n/localization-*-de.mjs`. `language.mjs` selbst bleibt als Eintrittspunkt der Sprachlogik in der Wurzel.
+  - Tests nachgezogen: `../localization-…` → `../i18n/localization-…` in 11 Testdateien; die zwei Regex-Behauptungen über `language.mjs` (`first-run-german`, `story-events-german`) auf den neuen Pfad; die `read()`-Pfade in `character-name` und `patch-notes`. Die historischen Wellen-Listen in `browser-tests/cache-wave.cjs` bleiben unverändert — sie beschreiben alte Stempel, keine heutigen Pfade.
+  - Zwei Wurzel-Scans, die erst diese Scheibe als Schrumpf-Gefahr entlarvt hat, ordnerfest gemacht: `tests/recruit-screen.test.mjs` las die Wörterbücher per `readdirSync(root)` und fand nach dem Umzug keine mehr (die volle Suite meldete das als fehlende deutsche Labels); `tests/tutorial.test.mjs` prüfte Token-Einigkeit nur an `./`-Importen der Wurzel und löst Spezifizierer jetzt gegen das Verzeichnis des Importeurs auf. Beide lesen jetzt Wurzel plus `GAME_MODULE_FOLDERS`.
+  - `IronPath/docs/PATCH-BLOECKE.md`: Die zwei Markdown-Links auf `../localization-…` zeigen auf `../i18n/…` (der Link-Wächter in `repo-structure` meldete sie sonst als tot).
+  - `IronPath/docs/PATCH-LOG.md` und `IronPath/docs/PATCH-LOG-ARCHIV.md`: `IPL-0075` vollständig ins Archiv verschoben, Grenzen auf `IPL-0001` bis `IPL-0075` nachgezogen; das Log führt die neuesten 20 (`IPL-0076` bis `IPL-0095`).
+- **Prüfungen:**
+  - Betroffene Tests gezielt: 17 Dateien (u. a. `language`, `translation-coverage`, `repo-structure`, `multiplayer-build-stamp`, `release-stage-version`, `first-run-german`, `story-events-german`, `character-name`, `patch-notes`) = **123 Tests, 123 bestanden** — nach zwei Korrekturen am eigenen Codemod (die zwei Regex-Behauptungen und die `PATCH-BLOECKE`-Links waren im ersten Lauf rot und sind oben als Korrekturen benannt).
+  - Staging-Vergleich gegen den `main`-Stand (Baseline per `git worktree` auf `40323f86` neu erzeugt, weil `/tmp` der Vorsitzung nicht überlebt): **711 gestagte Dateien vorher und nachher**; 18 neue `i18n/`-Adressen, 18 alte Wurzel-Adressen weg, 14 Wörterbücher mit identischem SHA-256, dazu `language.mjs` als einzige Datei mit gleicher Adresse und neuem Inhalt.
+  - Gesamtsuite im vollständigen Klon: erster Lauf **1.259/1.260** (der oben genannte `recruit-screen`-Scan), nach dem Fix `node --test IronPath/tests/*.test.mjs` = **1.260 Tests, 1.260 bestanden, 0 fehlgeschlagen, 0 übersprungen, Exit 0**. `patch-check` vor dem Log-Eintrag: **0 Fehler**, Verträge 30/30.
+  - Noch offen zum Zeitpunkt dieses Eintrags: Cache-Welle `20261122-i18n1` mit Feldnotizen-Eintrag DE+EN (zweiter Commit in diesem PR, braucht die PR-Nummer), danach erneut Verträge und volle Suite auf der neuen Welle. Keine Geräteabnahme bisher; die Sichtprüfung lautet nach der Veröffentlichung auf `BUILD 20261122-i18n1`.
+- **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet` auf `arena/a72010f0-0815games-github-io`. Commit, Push, PR, CI, Merge und Pages-Auslieferung sind noch nicht erfolgt und werden erst nach dem tatsächlichen Ereignis mit Kennung nachgetragen.
+- **Offen / nächster Schritt:** PR öffnen, Wellen-Commit mit der PR-Nummer nachschieben, CI abwarten, erst nach belegtem Merge/Pages-Stand als ausgeliefert bezeichnen. Danach die nächsten Scheiben je eigenem PR: `workshop/`, `net/`, `battle/`, `ui/`, `core/`. Der Bauplatz-Auswahlring aus PR `#336` (ohne Hover-Vorschau) bleibt geparkt, bis die Struktur steht.

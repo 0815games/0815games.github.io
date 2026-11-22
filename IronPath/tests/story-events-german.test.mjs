@@ -54,7 +54,7 @@ const accompanimentStrings = events => [
 
 test('every accompaniment string is German on a German screen, with no dead keys', async () => {
   const events = await import('../story-events.mjs');
-  const { germanEvents } = await import('../localization-events-de.mjs');
+  const { germanEvents } = await import('../i18n/localization-events-de.mjs');
   const strings = accompanimentStrings(events);
   assert.ok(strings.length >= 50, 'the accompaniment still has its strings');
   await withGerman(language => {
@@ -67,7 +67,7 @@ test('every accompaniment string is German on a German screen, with no dead keys
 });
 
 test('the accompaniment keeps the house style: Du-form and intact placeholders', async () => {
-  const { germanEvents } = await import('../localization-events-de.mjs');
+  const { germanEvents } = await import('../i18n/localization-events-de.mjs');
   for (const [key, value] of Object.entries(germanEvents)) {
     assert.doesNotMatch(value, /\bSie\b|\bIhnen\b|\bIhr\b/, `formal address in the German accompaniment: ${value}`);
     for (const match of key.matchAll(/\{(\w+)\}/g))
@@ -77,7 +77,7 @@ test('the accompaniment keeps the house style: Du-form and intact placeholders',
 
 test('the events dictionary is imported and asked before the generic fallback', () => {
   const language = readFileSync(resolve(root, 'language.mjs'), 'utf8');
-  assert.match(language, /import \{germanEvents\} from '\.\/localization-events-de\.mjs\?v=/, 'the events dictionary is imported');
+  assert.match(language, /import \{germanEvents\} from '\.\/i18n\/localization-events-de\.mjs\?v=/, 'the events dictionary is imported');
   const chain = language.slice(language.indexOf("active==='de'?"), language.indexOf("active==='de'?") + 700);
   assert.match(chain, /germanCinematics\[text\]\?\?germanEvents\[text\]\?\?text/, 'and asked before falling back to English');
 });

@@ -33,13 +33,13 @@ test('German core skill names, effects and specialist effects are translated wit
 });
 
 test('campaign and cinematics have complete authored German text without altering mission data',async()=>{
- const {CAMPAIGN}=await import('../campaign.mjs'),{cinematicFrames,cinematicScene}=await import('../story-cinematics.mjs'),{germanCampaign}=await import('../localization-campaign-de.mjs'),{germanCinematics}=await import('../localization-cinematics-de.mjs');const before=structuredClone(CAMPAIGN),f=fixture('de');
+ const {CAMPAIGN}=await import('../campaign.mjs'),{cinematicFrames,cinematicScene}=await import('../story-cinematics.mjs'),{germanCampaign}=await import('../i18n/localization-campaign-de.mjs'),{germanCinematics}=await import('../i18n/localization-cinematics-de.mjs');const before=structuredClone(CAMPAIGN),f=fixture('de');
  for(const m of CAMPAIGN){for(const text of [m.act,m.title,m.briefing,m.success,...m.stages.flatMap(s=>[s.label,s.dialogue])])assert.ok(Object.hasOwn(germanCampaign,text),`${m.id}: ${text}`);for(const kind of ['intro','ending']){const scene=cinematicScene(m,kind);assert.ok(Object.hasOwn(germanCinematics,scene.place),scene.place);for(const frame of cinematicFrames(m,kind))assert.ok(Object.hasOwn(germanCinematics,frame.text)||Object.hasOwn(germanCampaign,frame.text),`${m.id}: ${frame.text}`);}}
  assert.equal(translateText('OBJECTIVE {current} / {total}: {label}',{current:2,total:4,label:'Test'}),'ZIEL 2 / 4: Test');assert.deepEqual(CAMPAIGN,before);f.selector.value='en';f.selector.change();assert.equal(translateText(CAMPAIGN[0].briefing),CAMPAIGN[0].briefing);
 });
 
 test('advanced skills include German names, descriptions and prerequisites without changing builds',async()=>{
- const {WEB_NODES,webRequirement,parseBuild,encodeBuild}=await import('../skills.mjs'),{germanAdvancedSkills}=await import('../localization-advanced-skills-de.mjs');const before=structuredClone(WEB_NODES),f=fixture('de'),build=parseBuild('v2;assault;2;0;00000000000000',3),code=encodeBuild(build);
+ const {WEB_NODES,webRequirement,parseBuild,encodeBuild}=await import('../skills.mjs'),{germanAdvancedSkills}=await import('../i18n/localization-advanced-skills-de.mjs');const before=structuredClone(WEB_NODES),f=fixture('de'),build=parseBuild('v2;assault;2;0;00000000000000',3),code=encodeBuild(build);
  for(const n of WEB_NODES){for(const text of [n.name,n.description,webRequirement(n)])assert.ok(Object.hasOwn(germanAdvancedSkills,text),`${n.id}: ${text}`);assert.notEqual(translateText(n.description),n.description);}
  assert.equal(encodeBuild(build),code);assert.deepEqual(WEB_NODES,before);f.selector.value='en';f.selector.change();assert.equal(translateText(WEB_NODES[0].description),WEB_NODES[0].description);
 });
@@ -54,7 +54,7 @@ test('skill summary and next-step localization preserve numeric values and sourc
 });
 
 test('static German campaign, results and battlefield labels have translations',async()=>{
- const {germanStatic}=await import('../localization-static-de.mjs');const {readFile}=await import('node:fs/promises'),html=await readFile(new URL('../index.html',import.meta.url),'utf8'),gameSource=await readFile(new URL('../game.js',import.meta.url),'utf8');
+ const {germanStatic}=await import('../i18n/localization-static-de.mjs');const {readFile}=await import('node:fs/promises'),html=await readFile(new URL('../index.html',import.meta.url),'utf8'),gameSource=await readFile(new URL('../game.js',import.meta.url),'utf8');
  // The mission board is generated from CAMPAIGN at runtime (buildMissionBoard):
  // its labels never appear in static HTML, so they are pinned on the builder.
  const generatedBoard=/^(MISSION \d\d|ACT [IV]+ ·)/;
@@ -68,7 +68,7 @@ test('battle templates preserve player names and tower values',()=>{
 });
 
 test('known command errors translate without changing simulation errors',async()=>{
- const {readFile}=await import('node:fs/promises'),{germanGameErrors}=await import('../localization-game-errors-de.mjs'),f=fixture('de');
+ const {readFile}=await import('node:fs/promises'),{germanGameErrors}=await import('../i18n/localization-game-errors-de.mjs'),f=fixture('de');
  for(const file of ['match.mjs','coop-input.mjs','firebase-party-game.mjs']){const source=await readFile(new URL('../'+file,import.meta.url),'utf8');for(const match of source.matchAll(/reason:'([^']+)'/g)){assert.ok(Object.hasOwn(germanGameErrors,match[1]),`${file}: ${match[1]}`);assert.notEqual(translateText(match[1]),match[1]);}}
  assert.equal(translateText('unrecognized remote error'),'unrecognized remote error');f.selector.value='en';f.selector.change();assert.equal(translateText('Tower not found.'),'Tower not found.');
 });

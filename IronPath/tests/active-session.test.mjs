@@ -286,7 +286,7 @@ test('account.js, index.html, and localization-account-de.mjs wire single-sessio
  const [account,html,deModule]=await Promise.all([
   readFile(new URL('../account.js',import.meta.url),'utf8'),
   readFile(new URL('../index.html',import.meta.url),'utf8'),
-  import('../localization-account-de.mjs')
+  import('../i18n/localization-account-de.mjs')
  ]);
  assert.match(account,/createWindowSessionId/);
  assert.match(account,/createSameBrowserSessionMonitor/);
