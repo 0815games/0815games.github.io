@@ -11,7 +11,7 @@ import {MAINTENANCE_PATH} from '../../maintenance-check.mjs';
 import {createFriendService,friendNameKey} from '../../friends.mjs';
 import {createCoopInvites} from '../../coop-invites.mjs';
 import {createCharacterDeletion} from '../../character-deletion.mjs';
-import {createFirebaseFourLobby} from '../../firebase-four-lobby.mjs';
+import {createFirebaseFourLobby} from '../../net/firebase-four-lobby.mjs';
 
 // The baseline is the checked-in owner reference, not a live Rules export.
 // Baseline, old release guard, and Firebase-only maintenance are separate runs.

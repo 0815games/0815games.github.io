@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see docs/PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261122-workshop1';
+import {getLanguage} from './language.mjs?v=20261122-net1';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,22 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'net1',build:'20261122-net1',pr:352,
+    title:{en:'Structure Move 3 · The Multiplayer Client Modules Now Live in net/',de:'Struktur-Umzug 3 · Die Mehrspieler-Clientmodule liegen jetzt in net/'},
+    shipped:[
+      {en:'Nothing changes in the game itself: lobbies, parties and online matches run exactly as before. Only the addresses of the network files moved.',de:'Am Spiel selbst ändert sich nichts: Lobbys, Partys und Online-Gefechte laufen genau wie vorher. Nur die Adressen der Netzwerk-Dateien sind umgezogen.'},
+      {en:'All 15 Firebase client modules (firebase-*.mjs: party channel and sessions, four-player lobby, durable and recovery sessions) moved from the flat game folder into IronPath/net/. The firebase/ folder with the database rules stays where it is.',de:'Alle 15 Firebase-Clientmodule (firebase-*.mjs: Party-Kanal und -Sitzungen, Vierer-Lobby, Durable- und Recovery-Sitzungen) sind aus dem flachen Spielordner nach IronPath/net/ gezogen. Der Ordner firebase/ mit den Datenbank-Regeln bleibt, wo er ist.'},
+      {en:'6 of the 15 modules are byte-identical to before; in the other 9 only the import paths point one folder up.',de:'6 der 15 Module sind bytegleich zu vorher; in den anderen 9 zeigen nur die Import-Pfade einen Ordner höher.'},
+      {en:'Raised the cache wave to 20261122-net1, because the module addresses changed: no device should keep loading the network code from its old place out of cache.',de:'Die Cache-Welle auf 20261122-net1 erhöht, weil sich die Modul-Adressen geändert haben: Kein Gerät soll den Netzwerk-Code weiter unter der alten Adresse aus dem Zwischenspeicher laden.'},
+    ],
+    open:[
+      {en:'Visual check after loading: the stamp must read BUILD 20261122-net1. The honest test for this move is online: create or join a party and start a match - the lobby must behave exactly as before.',de:'Sichtprüfung nach dem Laden: Der Stempel muss BUILD 20261122-net1 zeigen. Der ehrliche Test für diesen Umzug ist online: Party erstellen oder beitreten und ein Gefecht starten - die Lobby muss sich genau wie vorher verhalten.'},
+      {en:'No device acceptance yet: this move has not been checked on an iPhone or iPad.',de:'Noch keine Geräteabnahme: Dieser Umzug ist nicht auf einem iPhone oder iPad geprüft.'},
+      {en:'Next structure moves, one folder per release: battle/, ui/ and core/. The dictionaries live in i18n/, the workshop in workshop/.',de:'Die nächsten Struktur-Umzüge, je ein Ordner pro Stand: battle/, ui/ und core/. Die Wörterbücher liegen in i18n/, die Werkstatt in workshop/.'},
+      {en:'Still parked until the structure is done: the thicker pulsing selection ring on build pads (without any hover preview), as its own game release.',de:'Bis die Struktur steht, bleibt geparkt: der dickere pulsierende Auswahlring auf Bauplätzen (ohne jede Hover-Vorschau), als eigener Spiel-Stand.'},
+    ],
+  },
   {
     id:'workshop1',build:'20261122-workshop1',pr:350,
     title:{en:'Structure Move 2 · The Workshop Modules Now Live in workshop/',de:'Struktur-Umzug 2 · Die Werkstatt-Module liegen jetzt in workshop/'},

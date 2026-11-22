@@ -69,7 +69,7 @@ test('battle templates preserve player names and tower values',()=>{
 
 test('known command errors translate without changing simulation errors',async()=>{
  const {readFile}=await import('node:fs/promises'),{germanGameErrors}=await import('../i18n/localization-game-errors-de.mjs'),f=fixture('de');
- for(const file of ['match.mjs','coop-input.mjs','firebase-party-game.mjs']){const source=await readFile(new URL('../'+file,import.meta.url),'utf8');for(const match of source.matchAll(/reason:'([^']+)'/g)){assert.ok(Object.hasOwn(germanGameErrors,match[1]),`${file}: ${match[1]}`);assert.notEqual(translateText(match[1]),match[1]);}}
+ for(const file of ['match.mjs','coop-input.mjs','net/firebase-party-game.mjs']){const source=await readFile(new URL('../'+file,import.meta.url),'utf8');for(const match of source.matchAll(/reason:'([^']+)'/g)){assert.ok(Object.hasOwn(germanGameErrors,match[1]),`${file}: ${match[1]}`);assert.notEqual(translateText(match[1]),match[1]);}}
  assert.equal(translateText('unrecognized remote error'),'unrecognized remote error');f.selector.value='en';f.selector.change();assert.equal(translateText('Tower not found.'),'Tower not found.');
 });
 

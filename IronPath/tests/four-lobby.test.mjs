@@ -3,8 +3,8 @@ import {test} from 'node:test';
 // the motion projection the guests receive.
 
 import {projectCoopMotion} from '../coop-motion.mjs';
-import {createFirebasePartyChannel} from '../firebase-party-channel.mjs';
-import {createFirebasePartyClientSession, createFirebasePartyHostSession} from '../firebase-party-session.mjs';
+import {createFirebasePartyChannel} from '../net/firebase-party-channel.mjs';
+import {createFirebasePartyClientSession, createFirebasePartyHostSession} from '../net/firebase-party-session.mjs';
 import {createFourLobby, transitionFourLobby as transition} from '../four-lobby.mjs';
 import {createFourCoop, createTwoVsTwo} from '../four-modes.mjs';
 import {createPlayer} from '../match.mjs';

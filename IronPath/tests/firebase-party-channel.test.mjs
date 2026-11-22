@@ -1,5 +1,5 @@
 import { strict as assert } from 'node:assert';
-import { createFirebasePartyChannel } from '../firebase-party-channel.mjs';
+import { createFirebasePartyChannel } from '../net/firebase-party-channel.mjs';
 
 // Firebase-shaped in-memory mock; it tests transport behavior, NOT database rules.
 const values=new Map(),listeners=new Map(),writes=[];

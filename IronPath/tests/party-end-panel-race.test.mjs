@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {createFourPlayerPanel} from '../firebase-four-panel.mjs';
+import {createFourPlayerPanel} from '../net/firebase-four-panel.mjs';
 
 async function setup(onLeaveMatch){
  const nodes=new Map(),el=id=>{if(!nodes.has(id))nodes.set(id,{hidden:false,disabled:false,textContent:'',value:'',className:'',src:'',alt:'',innerHTML:'',title:'',children:[],setAttribute(name,value){this[name]=value;},append(...x){this.children.push(...x);},replaceChildren(...x){this.children=x;}});return nodes.get(id);};

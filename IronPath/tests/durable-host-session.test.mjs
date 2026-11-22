@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {createPartyHost,restorePartyHost} from '../party-host.mjs';
-import {createDurableHostSession} from '../firebase-durable-host-session.mjs';
+import {createDurableHostSession} from '../net/firebase-durable-host-session.mjs';
 import {createPlayer} from '../match.mjs';
 import {createMatch} from '../simulation.mjs';
 const ids=['alice','bob'];

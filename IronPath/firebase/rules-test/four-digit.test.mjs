@@ -46,8 +46,8 @@ test('four-digit requests require explicit host approval and cannot grant unauth
 
 test('four-digit adapter reserves a code and requires approval',async()=>{
   const {onValue,runTransaction,remove,update}=await import('firebase/database');
-  const {createFirebasePartyLobby}=await import('../../firebase-party-lobby.mjs');
-  const {createFourDigitLobby}=await import('../../firebase-four-digit-lobby.mjs');
+  const {createFirebasePartyLobby}=await import('../../net/firebase-party-lobby.mjs');
+  const {createFourDigitLobby}=await import('../../net/firebase-four-digit-lobby.mjs');
   const sdk={ref,get,set,onValue,runTransaction,remove,update};
   await assertSucceeds(set(at(host,'players/alice'),{name:'Alice',gender:'female',xp:0}));
   await assertSucceeds(set(at(guest,'players/bob'),{name:'Bob',gender:'female',xp:0}));
@@ -67,10 +67,10 @@ test('four-digit adapter reserves a code and requires approval',async()=>{
 
 test('host approves four-digit request and two clients play and rejoin', {timeout:25000}, async t=>{
   const {onValue,runTransaction,remove,update,onDisconnect,serverTimestamp}=await import('firebase/database');
-  const {createFirebasePartyLobby}=await import('../../firebase-party-lobby.mjs');
-  const {createFourDigitLobby}=await import('../../firebase-four-digit-lobby.mjs');
-  const {createFourDigitPanel}=await import('../../firebase-four-digit-panel.mjs');
-  const {createFirebasePartyGame}=await import('../../firebase-party-game.mjs');
+  const {createFirebasePartyLobby}=await import('../../net/firebase-party-lobby.mjs');
+  const {createFourDigitLobby}=await import('../../net/firebase-four-digit-lobby.mjs');
+  const {createFourDigitPanel}=await import('../../net/firebase-four-digit-panel.mjs');
+  const {createFirebasePartyGame}=await import('../../net/firebase-party-game.mjs');
   const {createPlayer}=await import('../../match.mjs');
   const sdk={ref,get,set,onValue,runTransaction,remove,update,onDisconnect,serverTimestamp};
   for(const [db,uid,name] of [[host,'alice','Alice'],[guest,'bob','Bob']])await set(at(db,`players/${uid}`),{name,gender:'female',xp:0});

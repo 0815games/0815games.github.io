@@ -1,4 +1,4 @@
-import {test} from 'node:test';import {strict as assert} from 'node:assert';import {createFirebaseDurableChannel} from '../firebase-durable-channel.mjs';
+import {test} from 'node:test';import {strict as assert} from 'node:assert';import {createFirebaseDurableChannel} from '../net/firebase-durable-channel.mjs';
 const a='a'.repeat(32),b='b'.repeat(32),party='c'.repeat(32);const base=`fourParties/${party}`,values=new Map(),listeners=new Map(),stale=[];
 const sdk={ref:(_db,p)=>p,onValue(path,cb){const list=listeners.get(path)||[];list.push(cb);listeners.set(path,list);cb({val:()=>values.get(path)??null});return()=>{stale.push(cb);listeners.set(path,(listeners.get(path)||[]).filter(x=>x!==cb));};},async set(path,value){values.set(path,value);for(const cb of listeners.get(path)||[])cb({val:()=>value});}};
 const emit=(path,value)=>{values.set(path,value);for(const cb of [...listeners.get(path)||[]])cb({val:()=>value});};

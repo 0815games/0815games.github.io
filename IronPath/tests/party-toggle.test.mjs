@@ -1,5 +1,5 @@
 import {strict as assert} from 'node:assert';
-import {createFourDigitPanel} from '../firebase-four-digit-panel.mjs';
+import {createFourDigitPanel} from '../net/firebase-four-digit-panel.mjs';
 const nodes=new Map();function node(){return {hidden:false,disabled:false,textContent:'',value:'',children:[],attrs:{},setAttribute(key,value){this.attrs[key]=value;},append(...items){this.children.push(...items);},replaceChildren(...items){this.children=items;}};}
 const document={getElementById(id){if(!nodes.has(id))nodes.set(id,node());return nodes.get(id);},createElement:node};
 let requestsListener,closed=0,leaves=0;

@@ -4,7 +4,7 @@ import {readFile} from 'node:fs/promises';
 import {initializeTestEnvironment,assertSucceeds,assertFails} from '@firebase/rules-unit-testing';
 import {ref,set,get,remove,update,onValue,runTransaction,onDisconnect,serverTimestamp} from 'firebase/database';
 import {webcrypto} from 'node:crypto';
-import {createFirebaseFourLobby} from '../../firebase-four-lobby.mjs';
+import {createFirebaseFourLobby} from '../../net/firebase-four-lobby.mjs';
 let env,alice,bob;const sdk={ref,set,get,remove,update,onValue,runTransaction,onDisconnect,serverTimestamp};
 before(async()=>{env=await initializeTestEnvironment({projectId:'demo-ironpath',database:{host:'127.0.0.1',port:9000,rules:await readFile(new URL('../doctrines.complete.draft.rules.json',import.meta.url),'utf8')}});alice=env.authenticatedContext('alice').database();bob=env.authenticatedContext('bob').database();});
 beforeEach(async()=>{await env.clearDatabase();await env.withSecurityRulesDisabled(async ctx=>{const db=ctx.database();await set(ref(db,'players/alice'),{name:'Alice',gender:'female',xp:10000,storyProgress:1});await set(ref(db,'players/bob'),{name:'Bob',gender:'female',xp:0});});});after(async()=>env.cleanup());

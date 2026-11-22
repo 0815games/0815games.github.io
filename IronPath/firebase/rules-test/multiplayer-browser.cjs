@@ -91,7 +91,7 @@ function guardedHtml(html){
   if(testRecovery){
    // Expose only the redacted error message from the temporary test copy;
    // recovery failures are normally swallowed into the user-facing ERROR state.
-   const file=path.join(out,'mp-browser-1','firebase-recoverable-game.mjs'),original=await fs.readFile(file,'utf8');
+   const file=path.join(out,'mp-browser-1','net','firebase-recoverable-game.mjs'),original=await fs.readFile(file,'utf8');
    const patched=original.replaceAll('catch{fail();}',"catch(error){window.__recoveryTestError=String(error?.message||'error');fail();}").replaceAll('onError:fail',"onError:error=>{window.__recoveryTestError=String(error?.message||'error');fail();}");
    assert.notEqual(patched,original);await fs.writeFile(file,patched);
   }
@@ -99,7 +99,7 @@ function guardedHtml(html){
    // Test-only initial condition: one team's bunker has 1 HP so an actual
    // enemy can end the match quickly. The host simulation and SDK remain real;
    // this does not claim the normal starting balance was played to defeat.
-   const file=path.join(out,'mp-browser-1','firebase-party-game.mjs'),original=await fs.readFile(file,'utf8');
+   const file=path.join(out,'mp-browser-1','net','firebase-party-game.mjs'),original=await fs.readFile(file,'utf8');
    const needle=';const core=createPartyHost(initial,{hostId});';
    assert.equal(original.split(needle).length,2,'the natural-end test patch must have one known target');
    await fs.writeFile(file,original.replace(needle,";if(mode==='versus')initial.lanes[hostId].hp=1;else if(mode==='two-vs-two')initial.lanes[0].hp=1;const core=createPartyHost(initial,{hostId});"));

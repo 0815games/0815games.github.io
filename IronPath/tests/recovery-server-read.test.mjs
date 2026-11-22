@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {readRecoveryFromServer} from '../firebase-recovery-server-read.mjs';
-import {createFirebaseRecoveryStore} from '../firebase-recovery-store.mjs';
+import {readRecoveryFromServer} from '../net/firebase-recovery-server-read.mjs';
+import {createFirebaseRecoveryStore} from '../net/firebase-recovery-store.mjs';
 import {createPartyHost} from '../party-host.mjs';
 import {createMatch} from '../simulation.mjs';
 import {createPlayer} from '../match.mjs';

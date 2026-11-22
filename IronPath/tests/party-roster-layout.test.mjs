@@ -10,7 +10,7 @@ import {readFileSync} from 'node:fs';
 // that fight the active theme.
 
 const css=readFileSync(new URL('../interface-redesign.css',import.meta.url),'utf8');
-const panel=readFileSync(new URL('../firebase-four-panel.mjs',import.meta.url),'utf8');
+const panel=readFileSync(new URL('../net/firebase-four-panel.mjs',import.meta.url),'utf8');
 
 test('the roster is a grid of cards, not a list of rows',()=>{
   const rule=/\.party-roster\{([^}]*)\}/.exec(css)?.[1]||'';

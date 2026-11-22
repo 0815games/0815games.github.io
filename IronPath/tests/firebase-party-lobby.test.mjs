@@ -1,5 +1,5 @@
 import {strict as assert} from 'node:assert';
-import {createFirebasePartyLobby} from '../firebase-party-lobby.mjs';
+import {createFirebasePartyLobby} from '../net/firebase-party-lobby.mjs';
 // Firebase-shaped mock. It verifies client behavior, not database security rules.
 const values=new Map(),listeners=new Map();
 const snapshot=value=>({val:()=>value??null});
