@@ -81,7 +81,7 @@ function replaceOnce(source,pattern,replacement,label){
      if(!activeState)throw Error('No active test fixture');
      activeState.documents++;res.writeHead(200,{'content-type':'text/html','cache-control':'no-store'}).end(html.replaceAll(build,activeState.served));return;
     }
-    if(pathname==='/IronPath/account.js'||pathname==='/IronPath/afk-session.mjs'){
+    if(pathname==='/IronPath/account.js'||pathname==='/IronPath/core/afk-session.mjs'){
      res.writeHead(200,{'content-type':'text/javascript','cache-control':'no-store'}).end(pathname.endsWith('/account.js')?account:afk);return;
     }
     const file=path.resolve(root,pathname.slice('/IronPath/'.length));if(!file.startsWith(root+path.sep))throw Error('Invalid path');
