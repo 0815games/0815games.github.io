@@ -261,6 +261,7 @@ export function formatPlan(plan){
 export const CONTRACT_TESTS=Object.freeze([
   'repo-structure','build-stamp','multiplayer-build-stamp','patch-notes',
   'release-stage-version','production-cors-probe','translation-coverage',
+  'reference-resolution',
 ]);
 
 // Credential shapes. Only added lines are scanned, and these four files are
