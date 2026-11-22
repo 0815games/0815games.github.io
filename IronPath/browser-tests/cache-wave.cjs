@@ -96,9 +96,11 @@ const oldUrls=[
  const server=http.createServer(async(req,res)=>{
   const url=new URL(req.url,'http://test.invalid');
   if(url.pathname==='/fixture'){res.writeHead(200,{'content-type':'text/html','cache-control':'no-store'}).end('<!doctype html><html><body><select id="languageSelect"><option value="de">Deutsch</option><option value="en">English</option></select></body></html>');return;}
-  // Root runtime modules plus the real layer manifest needed by avatar and
-  // friend portraits. No arbitrary nested paths or external fetches are served.
-  if(!/^\/IronPath\/(?:[\w.-]+|assets\/layers\/manifest)\.(?:mjs|js)$/.test(url.pathname)){res.writeHead(404).end();return;}
+  // Root runtime modules, the approved game module folders (GAME_MODULE_FOLDERS
+  // in release-tools/stage-version.mjs - keep this list in step with it), plus
+  // the real layer manifest needed by avatar and friend portraits. No arbitrary
+  // nested paths or external fetches are served.
+  if(!/^\/IronPath\/(?:(?:battle|core|i18n|net|ui|workshop)\/)?(?:[\w.-]+|assets\/layers\/manifest)\.(?:mjs|js)$/.test(url.pathname)){res.writeHead(404).end();return;}
   const key=url.pathname.slice('/IronPath/'.length)+url.search;requests.push(key);
   try{
    const body=stale.has(key)?'export const syntheticOldCache=true;':await readFile(path.join(root,url.pathname.slice('/IronPath/'.length)));
