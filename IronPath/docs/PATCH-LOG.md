@@ -599,7 +599,7 @@ jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderl
   unverändert.
 - **Branch / Basis:** `arena/f49da0c2-0815games-github-io` ab
   `b056ca3c68b9ddfdb675e1b80a5e7c975d7f0f95` (`main`, Merge von PR `#341`).
-- **Änderungen / Dateien:** neun Commits, je ein logischer Schritt.
+- **Änderungen / Dateien:** zehn Commits, je ein logischer Schritt.
   1. `e895087e` - 26 Markdown-Dateien aus der Spielwurzel nach `docs/` (34 relative Links
      umgeschrieben, 8 externe Referenzstellen nachgezogen: `../../AGENTS.md`, `patch-notes.mjs`, zwei
      Tests, `tower-specialization.mjs`, zwei READMEs); neu `README.md` als Strukturkarte; neu
@@ -623,9 +623,15 @@ jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderl
      `tests/patch-log-archive.test.mjs`.
   8. `e6d6c4ff` - neu `docs/PATCH-ABLAUF.md` und `docs/patch-log-vorlage.md`; die Vorlage im Log wird
      zum Verweis, damit sie nicht an zwei Stellen auseinanderläuft.
-  9. dieser Commit - Cache-Welle `20261121-road1` → `20261121-order1` über 79 Dateien per
+  9. `b8cf92aa` - Cache-Welle `20261121-road1` → `20261121-order1` über 79 Dateien per
      `scripts/patch-bump.mjs --apply`, Feldnotizen-Eintrag `order1` in `patch-notes.mjs`, dieser
      Log-Eintrag, `IPL-0072` ins Archiv verschoben.
+  10. dieser Commit - `docs/PATCH-ABLAUF.md` bekommt §11, eine Release-Checkliste mit **25 Kästchen**
+     zum Kopieren. Bisher waren §3, §7 und §8 Prosa und es gab im ganzen Arbeitsmaterial keinen
+     einzigen abhakbaren Punkt; unter Zeitdruck musste die Reihenfolge jedes Mal neu zusammengesucht
+     werden. Jedes Kästchen ist eine Zeile mit Zeiger auf den erklärenden Abschnitt, absichtlich keine
+     zweite Fassung der Regeln, damit nichts auseinanderlaufen kann - derselbe Grund, aus dem die
+     Log-Vorlage nur noch an einer Stelle steht.
 - **Prüfungen:** volle Suite vom Repo-Root im Serienlauf, genau wie CI, über dem gepushten Stand
   `e6d6c4ff`: **1258 tests / 1258 pass / 0 fail / 0 skipped, EXIT=0** (Log `/tmp/suite-docs-tools.log`
   des Arbeitsraums, nicht Teil des Repositorys). Nochmals über dem kompletten Endbaum **einschließlich

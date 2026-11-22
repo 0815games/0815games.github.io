@@ -248,3 +248,56 @@ Danach: neuer Feldnotizen-Eintrag, Log-Eintrag mit den Grenzen des Rückbaus
 (was dadurch **nicht** bewiesen ist), volle Suite, PR, Merge, Auslieferung
 belegen. Ein Rückbau ist eine gewählte Maßnahme und kein belegter Fix, solange
 die Ursache nicht nachgestellt ist.
+
+---
+
+## 11. Release-Checkliste zum Abhaken
+
+Zum Kopieren in eine Arbeitsdatei oder einen PR-Kommentar. Jedes Kästchen verweist
+auf den Abschnitt, der es erklärt - hier steht absichtlich keine zweite Fassung
+der Regeln, damit nichts auseinanderlaufen kann. **Nichts abhaken, was nicht
+belegt ist**; ein unbelegter Punkt bleibt offen und steht so im Log (§0).
+
+```text
+vor der Arbeit
+[ ] Patch-Log gelesen, letzter Eintrag und dessen offene Punkte bekannt      §1
+[ ] patch-check.mjs ohne Fehler; Hinweis "flacher Klon" beachtet             §1
+[ ] offene PRs und CI-Status geprüft, Basis ist main                         §1
+
+während der Arbeit
+[ ] ein logischer Schritt = ein Commit, Ziel und Dateien im Text             §2
+[ ] neue Wächter auf Bissfestigkeit geprüft (absichtlich kaputt gemacht)     §2
+[ ] nichts Ungebrauchtes in die Spielwurzel gelegt                           §2
+[ ] neue Dateien in Harness-Listen eingetragen, Suite grün                   §2
+
+nach der Änderung
+[ ] Serienlauf vom Repo-Root: tests/pass/fail/skipped notiert                §3
+[ ] zusätzliche Prüfstände je Änderung (Tabelle) gefahren                    §3
+[ ] patch-check.mjs: Stempel, Struktur, Log, Geheimnisse, Verträge           §3
+
+Cache-Welle
+[ ] patch-bump.mjs ohne --apply: Zahlen gegen die letzte Welle gerechnet     §4
+[ ] --apply: Nicht-?v=-Zeilen im Diff sind genau die Anker                   §4
+[ ] patch-notes.mjs: neuer RELEASED_PATCHES[0]-Eintrag, je Zeile DE und EN   §4
+[ ] patch-check.mjs meldet alle Anker mit dem neuen Token                    §4
+
+Patch-Log
+[ ] neuer Eintrag aus der Vorlage, alle Pflichtfelder                        §5
+[ ] Ereignisse erst nach dem tatsächlichen Ereignis, mit Kennung             §5
+[ ] Log führt die neuesten 20, ältester Eintrag vollständig ins Archiv       §5
+[ ] keine Zugangsdaten, Token, UIDs oder Schlüssel im Text                   §5
+
+Merge und Auslieferung
+[ ] CI grün; roter Check ist nicht mergbar                                   §6
+[ ] Merge-Commit-Kennung notiert                                             §7
+[ ] Pages-Build-Status und Inhalt auf main belegt                            §7
+[ ] ehrliche Grenze genannt, falls die live URL nicht abgerufen wurde        §7
+
+nach der Veröffentlichung
+[ ] Feldnotizen DE und EN, getrennt nach veröffentlicht und offen            §8
+[ ] Betreiber-Liste: was zu prüfen oder zu stellen ist                       §8
+[ ] keine Geräteabnahme behauptet, die nicht stattfand                       §8
+```
+
+Rückbau ist kein Punkt dieser Liste, sondern ein eigener Vorgang mit eigener
+Welle, eigenem Log-Eintrag und eigener Geräteabnahme: §10.
