@@ -728,3 +728,14 @@ sie geprüft wurde.
   - Keine Geräte- oder Browserabnahme: Es wurde keine Datei geändert, die der Browser lädt. Der Build-Stempel bleibt unverändert `20261121-order1`; eine Cache-Welle ist für diese Doku-/Aufräumänderung nicht nötig.
 - **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet` auf `arena/f3b31c90-0815games-github-io`. Commit, Push, PR, CI, Merge und Pages-Auslieferung sind noch nicht erfolgt und werden erst nach dem tatsächlichen Ereignis mit Kennung nachgetragen.
 - **Offen / nächster Schritt:** PR für diese zwei Punkte öffnen, CI abwarten und erst nach belegtem Merge/Pages-Stand als ausgeliefert bezeichnen. Danach getrennt angehen: Spielwurzel-Struktur der vielen JavaScript-/Moduldateien ordnen und anschließend die Patch-Skripte auf Zusammenlegung/Vereinfachung prüfen.
+
+### Ereignis-Nachtrag zu IPL-0093
+
+- **Commit / PR:** Der Arbeitscommit ist `0f2e1e4d14aa5c1151e10219232408800969620c` auf `arena/f3b31c90-0815games-github-io`; Pull-Request `#344` („Doppelblock reparieren und IronPath/empty löschen“) wurde mit diesem Stand geöffnet.
+- **CI:** `gh pr checks 344` endete mit **13 von 13 bestandenen Checks, 0 fehlgeschlagen, 0 ausstehend**. Belegt im Actions-Run `44975676529`, darunter `game-regressions` (Job `137064918377`), `database-rules` (Job `137064918320`) und `interface-browser-smoke` (Job `137064918143`), dazu die acht `party-finalization-browser`-Varianten und zwei Vercel-Checks.
+- **Merge:** `gh pr view 344 --json state,mergedAt,mergeCommit` ergab `state=MERGED`, `mergedAt=2026-11-22T02:31:00Z`, Merge-Commit `3e6aeb1f093aab2dc88abef4bc5bd4582f34d9dd` in `main`.
+- **Pages:** Der Workflow `pages build and deployment` lief als Run `44976460159` auf dem Merge-Commit mit `completed/success`; `gh api repos/0815games/0815games.github.io/pages/builds/latest` meldete danach `status=built`, `duration=46284` ms, `commit=3e6aeb1f093aab2dc88abef4bc5bd4582f34d9dd`.
+- **Auslieferung auf `main` belegt:** `IronPath/docs/PATCH-BLOECKE.md` ist per Contents-API vorhanden (131262 B, SHA `3cef02715916a0388685f5758a3d716823bc11e8`), `IronPath/docs/PATCH-LOG.md` ebenfalls (97407 B, SHA `041c0a59348550fd91c9290dbb54b2c2b741c425`), `IronPath/docs/PATCH-LOG-ARCHIV.md` ist vorhanden, und `IronPath/empty` liefert auf `main` **404** – die Datei ist also auch ausgeliefert entfernt.
+- **Ehrliche Grenzen:** Die Live-URL wurde nicht abgerufen; belegt sind Repository-Inhalt auf `main` und der fertige Pages-Build, nicht eine Sichtprüfung im Browser. Eine Geräteabnahme war für diese Änderung nicht vorgesehen, weil keine browsergeladene Datei geändert wurde. Ob `game-regressions` inzwischen Pflicht-Check ist, wurde für diesen Nachtrag nicht erneut geprüft.
+- **Herkunft dieses Nachtrags:** Er steht als eigener Commit auf demselben Arbeitszweig nach dem Merge von `#344`; Commit- und PR-Kennung dieses Nachtrags selbst stehen deshalb nicht hier, sondern in Git und im PR-Text.
+
