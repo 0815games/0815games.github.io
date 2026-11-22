@@ -679,3 +679,49 @@ jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderl
   doppelten Schlussblock in `PATCH-BLOECKE.md`. Danach Teil 2 des Auftrags aus `IPL-0091`: `#336`
   komplett neu implementiert (dickerer pulsierender Auswahlring, Hover-Vorschau mit Welle und Anzahl
   nächster Gegner, einschließlich der fehlenden deutschen Einträge für vier Literale).
+### Ereignis-Nachtrag zu IPL-0092 – Veröffentlichung belegt (nachträglich, 2026-11-22 UTC)
+
+Die folgenden Ereignisse sind eingetreten und geprüft; sie stehen hier, weil sie
+zur Zeit des Eintrags oben noch offen waren. Jede Zeile nennt die Kennung, mit der
+sie geprüft wurde.
+
+- **CI auf dem PR-Kopf:** `gh pr checks 342` = **13 von 13 pass, 0 fail**. Run
+  `44971539781` mit den Jobs `game-regressions` (`.../job/137052198313`) und
+  `database-rules` (`.../job/137052198482`), dazu `interface-browser-smoke`, acht
+  `party-finalization-browser`-Varianten und zwei Vercel-Checks. `game-regressions`
+  war damit zum dritten Mal in Folge grün (`#340`, `#341`, `#342`, je 13 von 13);
+  bei `#335` bis `#339` war derselbe Check jeweils rot (`#335` und `#339`
+  stichprobenartig nachgeprüft: `fail`) und wurde trotzdem gemergt.
+- **PR:** `gh pr view 342 --json state,mergedAt,mergeCommit` =
+  `state=MERGED mergedAt=2026-11-22T01:37:31Z`, Merge-Commit
+  `d9a02461b6c3921f45e4dbabb3a9a22cf61ac979` in `main`.
+- **Pages:** Workflow-Run `44972324714` (`pages build and deployment`)
+  `completed/success`; `gh api repos/.../pages/builds/latest` =
+  `status=built duration_ms=45446 commit=d9a02461b6c3921f45e4dbabb3a9a22cf61ac979
+  created=2026-11-22T01:37:32Z`.
+- **Auslieferung, über `gh api repos/.../contents/<pfad>?ref=main` belegt.** Neu
+  auf `main` vorhanden: `IronPath/docs/PATCH-ABLAUF.md` (13670 B),
+  `IronPath/docs/PATCH-LOG-ARCHIV.md` (259052 B), `IronPath/docs/PATCH-LOG.md`
+  (94065 B), `IronPath/scripts/patch-check.mjs` (18746 B),
+  `IronPath/scripts/patch-bump.mjs` (6709 B), `IronPath/scripts/patch-lib.mjs`
+  (5786 B), `IronPath/tests/patch-log-archive.test.mjs` (5034 B),
+  `IronPath/tests/patch-tooling.test.mjs` (16244 B), `IronPath/README.md`
+  (3956 B). Alte Pfade liefern `404`: `IronPath/PATCH-ABLAUF.md`,
+  `IronPath/PATCH-LOG.md`, `IronPath/map-review-render.mjs`,
+  `IronPath/workshop-service-config.mjs`. Stempel auf `main`:
+  `release-version.json` `"build": "20261121-order1"`, `index.html:7`
+  `<meta name="ironpath-build" content="20261121-order1">` und `index.html:213`
+  `BUILD 20261121-order1`. `IronPath/empty` liegt weiter mit 1 B in der
+  Spielwurzel - wie entschieden wurde nichts gelöscht.
+- **Ehrliche Grenzen.** Die live URL wurde **nicht** abgerufen; belegt ist der
+  Inhalt auf `main` und der fertige Pages-Build, nicht was ein Browser lädt.
+  **Keine Geräteabnahme** auf iPhone oder iPad. `game-regressions` ist weiter
+  **kein Pflicht-Check**: `branches/main/protection` liefert diesem Arbeitsraum
+  `403`, stellen kann das nur der Betreiber. Der doppelte Schlussblock in
+  `docs/PATCH-BLOECKE.md` ist weiter vorhanden und unentschieden.
+- **Herkunft dieses Nachtrags.** Er steht als eigener Commit auf dem Arbeitszweig
+  `arena/f49da0c2-0815games-github-io`, der mit PR `#342` gemergt wurde; die
+  Kennung des Commits und des PR, die **diesen Nachtrag** nach `main` bringen,
+  kann er nicht selbst enthalten - sie steht im PR-Text und in Git. Genau dieser
+  Umstand war bei `IPL-0091` der Grund, warum dessen Nachtrag auf `main` fehlte:
+  er lag nur im Vorzweig `a4d093ef` und wurde erst mit `5b8f3a68` übernommen.
