@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 
 function loadGameSource() {
   return readFile(new URL('../game.js', import.meta.url), 'utf8').then(src =>
-    src.replace(/(['"])\.\/([\w.-]+\.mjs)(?:\?[^'"]*)?\1/g, (_, q, file) => JSON.stringify(new URL(`../${file}`, import.meta.url).href))
+    src.replace(/(['"])\.\/([\w./-]+\.mjs)(?:\?[^'"]*)?\1/g, (_, q, file) => JSON.stringify(new URL(`../${file}`, import.meta.url).href))
   );
 }
 

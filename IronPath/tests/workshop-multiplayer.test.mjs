@@ -1,7 +1,7 @@
 import {test} from 'node:test';import {strict as assert} from 'node:assert';
-import {initializeWireWorkshop,applyWireWorkshopCommand} from '../workshop-wire.mjs';
-import {makeWorkshopOffer,lockWorkshopRoster,verifyWorkshopRoster,decodeMatchLoadout} from '../workshop-multiplayer.mjs';
-import {workshopEffects} from '../workshop-effects.mjs';
+import {initializeWireWorkshop,applyWireWorkshopCommand} from '../workshop/workshop-wire.mjs';
+import {makeWorkshopOffer,lockWorkshopRoster,verifyWorkshopRoster,decodeMatchLoadout} from '../workshop/workshop-multiplayer.mjs';
+import {workshopEffects} from '../workshop/workshop-effects.mjs';
 const matchId='0123456789abcdef0123456789abcdef';
 function profile(item){return initializeWireWorkshop({name:'A',armory:{scrap:100,owned:1<<(item-1),equipped:item}});}
 function fixture(mode='coop',ids=['alice','bob']){const profiles=Object.fromEntries(ids.map((id,i)=>[id,profile(i?3:1)]));return {profiles,args:{matchId,mode,playerIds:ids,offers:Object.fromEntries(ids.map(id=>[id,makeWorkshopOffer(profiles[id],mode)]))}};}

@@ -5,7 +5,7 @@ import {strict as assert} from 'node:assert';
 import {readFile} from 'node:fs/promises';
 import {initializeTestEnvironment,assertFails} from '@firebase/rules-unit-testing';
 import {ref,get,set,onValue,runTransaction} from 'firebase/database';
-import {initializeWireWorkshop,applyWireWorkshopCommand,decodeWorkshop,encodeWorkshop} from '../../workshop-wire.mjs';
+import {initializeWireWorkshop,applyWireWorkshopCommand,decodeWorkshop,encodeWorkshop} from '../../workshop/workshop-wire.mjs';
 let env,a,b,other;
 before(async()=>{
  env=await initializeTestEnvironment({projectId:'demo-ironpath',database:{host:'127.0.0.1',port:9000,rules:await readFile(new URL('../workshop-emulator-only.rules.json',import.meta.url),'utf8')}});
@@ -45,7 +45,7 @@ test('unsupported or corrupt workshop is never reset by a transaction',async()=>
 });
 
 test('concurrent completed-wave replays credit a boss only once',async()=>{
- const {applyWorkshopWaveCredit}=await import('../../workshop-wave-credit.mjs');
+ const {applyWorkshopWaveCredit}=await import('../../workshop/workshop-wave-credit.mjs');
  const receiptId='0123456789abcdef0123456789abcdef',options={kind:'coop',receiptId,mask:31};
  const ra=ref(a,'players/alice'),rb=ref(b,'players/alice');await set(ra,initializeWireWorkshop(base()));const stopA=await ready(ra),stopB=await ready(rb);
  try{
@@ -57,7 +57,7 @@ test('concurrent completed-wave replays credit a boss only once',async()=>{
 });
 
 test('workshop account service performs real emulator transactions',async()=>{
- const {createWorkshopAccount}=await import('../../workshop-account.mjs');
+ const {createWorkshopAccount}=await import('../../workshop/workshop-account.mjs');
  const account=createWorkshopAccount({db:a,auth:{currentUser:{uid:'alice'}},sdk:{ref,onValue,runTransaction},canEdit:()=>true});
  const reference=ref(a,'players/alice');await set(reference,base());
  assert.equal((await account.initialize()).status,'saved');assert.equal((await account.command({type:'craft',item:'boots'})).status,'saved');

@@ -1,8 +1,8 @@
 import {test} from 'node:test';import {strict as assert} from 'node:assert';
-import {creditSoloWave,legacyWaveReward} from '../workshop-solo-credit.mjs';
-import {initializeWireWorkshop,decodeWorkshop} from '../workshop-wire.mjs';
+import {creditSoloWave,legacyWaveReward} from '../workshop/workshop-solo-credit.mjs';
+import {initializeWireWorkshop,decodeWorkshop} from '../workshop/workshop-wire.mjs';
 import {rewardWave} from '../armory.mjs';
-import {receiptForBlock} from '../workshop-run-receipt.mjs';
+import {receiptForBlock} from '../workshop/workshop-run-receipt.mjs';
 const runId='ab'.repeat(16);
 const base=()=>initializeWireWorkshop({name:'Alice',gender:'female',xp:0,armory:{scrap:0,fortify:0,plating:0,owned:0,equipped:0}});
 // Emulates RTDB. `reject` behaves like undeployed rules: writes that add

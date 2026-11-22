@@ -2,8 +2,8 @@
 import {test,before,after,beforeEach} from 'node:test';import {strict as assert} from 'node:assert';
 import {readFile} from 'node:fs/promises';import {initializeTestEnvironment,assertFails,assertSucceeds} from '@firebase/rules-unit-testing';
 import {ref,set,get,onValue,runTransaction} from 'firebase/database';
-import {createWorkshopAccount} from '../../workshop-account.mjs';import {decodeWorkshop} from '../../workshop-wire.mjs';
-import {applyWorkshopWaveCredit} from '../../workshop-wave-credit.mjs';
+import {createWorkshopAccount} from '../../workshop/workshop-account.mjs';import {decodeWorkshop} from '../../workshop/workshop-wire.mjs';
+import {applyWorkshopWaveCredit} from '../../workshop/workshop-wave-credit.mjs';
 const id='0123456789abcdef0123456789abcdef';let env,alice,bob;
 before(async()=>{env=await initializeTestEnvironment({projectId:'demo-ironpath',database:{host:'127.0.0.1',port:9000,rules:await readFile(new URL('../workshop.complete.draft.rules.json',import.meta.url),'utf8')}});alice=env.authenticatedContext('alice').database();bob=env.authenticatedContext('bob').database();});
 beforeEach(async()=>{await env.clearDatabase();await env.withSecurityRulesDisabled(async ctx=>set(ref(ctx.database(),'players/alice'),{name:'Alice',gender:'female',xp:750,armory:{scrap:100,fortify:3,plating:1,owned:1,equipped:1},storyProgress:2,coopRewards:{[id]:3}}));});after(()=>env.cleanup());
@@ -28,7 +28,7 @@ test('wave credit transaction under candidate rules preserves workshop and exist
  try{const opts={kind:'solo',receiptId:id,mask:31};const credit=await runTransaction(r,current=>applyWorkshopWaveCredit(current,opts)??undefined,{applyLocally:false});assert.equal(credit.committed,true);const again=await runTransaction(r,current=>applyWorkshopWaveCredit(current,opts)??undefined,{applyLocally:false});assert.equal(again.committed,false);const p=(await get(r)).val();assert.equal(p.xp,1000);assert.equal(p.armory.scrap,180);assert.equal(decodeWorkshop(p.workshop).components,1);assert.equal(p.soloWorkshopReceipts[id],31);assert.equal(p.coopRewards[id],3);assert.equal(p.storyProgress,2);}finally{stop();}
 });
 test('free-tier solo path initializes once and credits a run receipt under candidate rules',async()=>{
- const {applySoloWaveReward}=await import('../../workshop-solo-reward.mjs');
+ const {applySoloWaveReward}=await import('../../workshop/workshop-solo-reward.mjs');
  const r=ref(alice,'players/alice'),stop=await ready(r),runId='cd'.repeat(16);
  try{
   const first=await runTransaction(r,current=>applySoloWaveReward(current,{runId,wave:5})??undefined,{applyLocally:false});assert.equal(first.committed,true);
@@ -37,7 +37,7 @@ test('free-tier solo path initializes once and credits a run receipt under candi
  }finally{stop();}
 });
 test('legacy tier never writes workshop fields and keeps the wave payable',async()=>{
- const {creditSoloWave}=await import('../../workshop-solo-credit.mjs');
+ const {creditSoloWave}=await import('../../workshop/workshop-solo-credit.mjs');
  const {rewardWave}=await import('../../armory.mjs');
  const r=ref(alice,'players/alice'),runId='ef'.repeat(16);
  const outcome=await creditSoloWave({sdk:{runTransaction},profileRef:r,amount:30,wave:5,runId,rewardWave,subscribe:()=>new Promise((resolve,reject)=>{let stop;stop=onValue(r,()=>resolve(stop||(()=>{})),reject);}),mode:'legacy'});
@@ -45,8 +45,8 @@ test('legacy tier never writes workshop fields and keeps the wave payable',async
  assert.equal(p.xp,780);assert.equal(p.workshop,undefined);assert.equal(p.soloWorkshopReceipts,undefined);assert.equal(p.storyProgress,2);
 });
 test('candidate rules preserve representative legacy saves through migration and a wave',async()=>{
- const {applySoloWaveReward}=await import('../../workshop-solo-reward.mjs');
- const {decodeWorkshop}=await import('../../workshop-wire.mjs');
+ const {applySoloWaveReward}=await import('../../workshop/workshop-solo-reward.mjs');
+ const {decodeWorkshop}=await import('../../workshop/workshop-wire.mjs');
  const runId='aa'.repeat(16);
  const shapes=[
   {name:'NoArmory',gender:'male',xp:0},

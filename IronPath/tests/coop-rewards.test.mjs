@@ -1,7 +1,7 @@
 import {strict as assert} from 'node:assert';
 import {test} from 'node:test';
 import {createCoopRewardQueue} from '../coop-rewards.mjs';
-import {initializeWireWorkshop,decodeWorkshop} from '../workshop-wire.mjs';
+import {initializeWireWorkshop,decodeWorkshop} from '../workshop/workshop-wire.mjs';
 import {createMatch,stepMatch} from '../simulation.mjs';
 import {createPlayer} from '../match.mjs';
 const party='ab'.repeat(16),profile={name:'Alice',gender:'female',level:1};

@@ -3,8 +3,8 @@
 // token provider, Admin-backed transactions, durable match fencing, request
 // limits, secure deployment and an explicit migration/rollback plan.
 import {createHash} from 'node:crypto';
-import {initializeWireWorkshop,applyWireWorkshopCommand,decodeWorkshop} from '../workshop-wire.mjs';
-import {validLegacy} from '../workshop-model.mjs';
+import {initializeWireWorkshop,applyWireWorkshopCommand,decodeWorkshop} from '../workshop/workshop-wire.mjs';
+import {validLegacy} from '../workshop/workshop-model.mjs';
 import {readArmory,upgradeArmory} from '../armory.mjs?v=20261112-tagless1';
 import {characterProgress} from '../progression.mjs?v=20261105-prestige1';
 import {canSaveSkillDraft} from '../skill-planner.mjs?v=20261104-doctrines1';

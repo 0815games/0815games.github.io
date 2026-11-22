@@ -1,5 +1,5 @@
-import {createWorkshopAccount} from './workshop-account.mjs?v=20261112-tagless1';
-import {createWorkshopView} from './workshop-view.mjs?v=20261112-tagless1';
+import {createWorkshopAccount} from './workshop/workshop-account.mjs?v=20261112-tagless1';
+import {createWorkshopView} from './workshop/workshop-view.mjs?v=20261112-tagless1';
 import {createSoldierScreen} from './soldier-screen.mjs?v=20261122-i18n1';
 import {localizeSkillSummary} from './skill-summary-localization.mjs?v=20261122-i18n1';
 import {renderSkillIndicators} from './skill-indicator.mjs?v=20261104-skillindicator1';
@@ -25,9 +25,9 @@ import {createDischargeNotice,createDischargeSignOut,DISCHARGE_MESSAGE} from './
 import {createCommandCenter} from './command-center.mjs?v=20261122-i18n1';
 import {featureEnabled} from './features.mjs?v=20261112-endless1';
 import {createEndlessLauncher,readLastEndlessRun,writeLastEndlessRun,ENDLESS_LAST_RUN_KEY} from './endless-launcher.mjs?v=20261122-i18n1';
-import {initializeWireWorkshop,applyWireWorkshopCommand} from './workshop-wire.mjs?v=20261112-tagless1';
+import {initializeWireWorkshop,applyWireWorkshopCommand} from './workshop/workshop-wire.mjs?v=20261112-tagless1';
 // Story completion writes progress and the mission's prestige trophy together.
-import {completeStoryMission,meltPrestige,decodeWorkshop as decodeWorkshopSafe} from './workshop-wire.mjs?v=20261112-tagless1';
+import {completeStoryMission,meltPrestige,decodeWorkshop as decodeWorkshopSafe} from './workshop/workshop-wire.mjs?v=20261112-tagless1';
 import {missingPrestige} from './prestige.mjs?v=20261112-pressure1';
 import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261122-i18n1';
 import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261122-i18n1';
@@ -62,7 +62,7 @@ import {rewardDelta} from './run-results.mjs?v=20261122-i18n1';
 import {createCoopRewardQueue} from './coop-rewards.mjs?v=20261122-i18n1';
 import {createPartyEndCoordinator} from './party-end-coordinator.mjs?v=20261122-i18n1';
 import {createPartySignOut} from './party-signout.mjs?v=20261122-i18n1';
-import {creditSoloWave} from './workshop-solo-credit.mjs?v=20261112-tagless1';
+import {creditSoloWave} from './workshop/workshop-solo-credit.mjs?v=20261112-tagless1';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import { getDatabase, ref, onValue, runTransaction as firebaseRunTransaction, get, remove as firebaseRemove, set as firebaseSet, update as firebaseUpdate, goOffline, onDisconnect, serverTimestamp, query, orderByKey, startAfter, limitToFirst, orderByChild, limitToLast } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';

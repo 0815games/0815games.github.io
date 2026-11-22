@@ -1,5 +1,5 @@
-import {createWorkshopMultiplayerMatch} from './workshop-multiplayer-game.mjs?v=20261122-i18n1';
-import {validWorkshopMatchLock,validWorkshopMatchState} from './workshop-match-validation.mjs?v=20261112-tagless1';
+import {createWorkshopMultiplayerMatch} from './workshop/workshop-multiplayer-game.mjs?v=20261122-i18n1';
+import {validWorkshopMatchLock,validWorkshopMatchState} from './workshop/workshop-match-validation.mjs?v=20261112-tagless1';
 import {guardMultiplayerTab} from './multiplayer-tab-guard.mjs?v=20261103-hardening2';
 import {createFourCoop,createTwoVsTwo,squadMapFor} from './four-modes.mjs?v=20261122-i18n1';
 import {createVersus} from './versus.mjs?v=20261122-i18n1';

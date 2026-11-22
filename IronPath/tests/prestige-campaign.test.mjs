@@ -2,9 +2,9 @@ import {test} from 'node:test';import {strict as assert} from 'node:assert';
 import {CAMPAIGN,campaignWaveContract,campaignDifficulty} from '../campaign.mjs';
 import {THREATS,campaignUnitScale,campaignBunker,campaignSurge} from '../campaign-pressure.mjs';
 import {PRESTIGE,PRESTIGE_IDS,prestigeEarned,missingPrestige,isPrestige} from '../prestige.mjs';
-import {validateWorkshop,unlockPrestige,craftWorkshop,equipWorkshop,modifyWorkshop,modsOf} from '../workshop-model.mjs';
-import {initializeWireWorkshop,applyWireWorkshopCommand,decodeWorkshop,encodeWorkshop,completeStoryMission,meltPrestige} from '../workshop-wire.mjs';
-import {captureWorkshopLoadout,workshopEffects} from '../workshop-effects.mjs';
+import {validateWorkshop,unlockPrestige,craftWorkshop,equipWorkshop,modifyWorkshop,modsOf} from '../workshop/workshop-model.mjs';
+import {initializeWireWorkshop,applyWireWorkshopCommand,decodeWorkshop,encodeWorkshop,completeStoryMission,meltPrestige} from '../workshop/workshop-wire.mjs';
+import {captureWorkshopLoadout,workshopEffects} from '../workshop/workshop-effects.mjs';
 import {createSoloDeployment} from '../solo-deployment.mjs';
 import {createPlayer} from '../match.mjs';
 

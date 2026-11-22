@@ -3,9 +3,9 @@
 // because a bug in any of the three spends the same scrap; each part keeps its
 // own scope so the three different `armory` fixtures cannot shadow each other.
 
-import {craftWorkshop, equipWorkshop, migrateWorkshop, modifyWorkshop, validateWorkshop} from '../workshop-model.mjs';
-import {applyBossRewards} from '../workshop-rewards.mjs';
-import {applyWorkshopCommand, initializeWorkshop} from '../workshop-transactions.mjs';
+import {craftWorkshop, equipWorkshop, migrateWorkshop, modifyWorkshop, validateWorkshop} from '../workshop/workshop-model.mjs';
+import {applyBossRewards} from '../workshop/workshop-rewards.mjs';
+import {applyWorkshopCommand, initializeWorkshop} from '../workshop/workshop-transactions.mjs';
 import {strict as assert} from 'node:assert';
 import {test} from 'node:test';
 

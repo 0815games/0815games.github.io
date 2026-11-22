@@ -1,5 +1,5 @@
 import {createSoloDeployment} from './solo-deployment.mjs?v=20261122-i18n1';
-import {newRunReceiptId} from './workshop-run-receipt.mjs?v=20261031-finale1';
+import {newRunReceiptId} from './workshop/workshop-run-receipt.mjs?v=20261031-finale1';
 import {canvasResolution} from './canvas-resolution.mjs?v=20261105-sharp1';
 import {createMapZoom} from './map-zoom.mjs?v=20261105-sharp1';
 import {featureEnabled} from './features.mjs?v=20261112-endless1';

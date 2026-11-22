@@ -1,4 +1,4 @@
-import {equipmentForPlayer} from './workshop-combat.mjs?v=20261112-tagless1';
+import {equipmentForPlayer} from './workshop/workshop-combat.mjs?v=20261112-tagless1';
 import {reserveBuildPad,releaseBuildPad,releaseBuildReservations} from './build-reservations.mjs?v=20261104-buildreservation1';
 import {getMap,createRandomMapId,sectorOf} from './maps.mjs?v=20261122-i18n1';
 import {activateCombos} from './skill-combos.mjs?v=20261122-i18n1';

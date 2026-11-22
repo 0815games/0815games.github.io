@@ -1,5 +1,5 @@
-import {createWorkshopMultiplayerMatch} from './workshop-multiplayer-game.mjs?v=20261122-i18n1';
-import {validWorkshopMatchLock,validWorkshopMatchState} from './workshop-match-validation.mjs?v=20261112-tagless1';
+import {createWorkshopMultiplayerMatch} from './workshop/workshop-multiplayer-game.mjs?v=20261122-i18n1';
+import {validWorkshopMatchLock,validWorkshopMatchState} from './workshop/workshop-match-validation.mjs?v=20261112-tagless1';
 // Integration adapter for the opt-in host-recovery trial: the host opens the
 // lobby with ?recovery=1, the party is marked recoverable, and this adapter
 // rebuilds the match from the latest durable checkpoint after a reload.

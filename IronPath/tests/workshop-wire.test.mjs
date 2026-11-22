@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {migrateWorkshop} from '../workshop-model.mjs';
-import {encodeWorkshop,decodeWorkshop,initializeWireWorkshop,applyWireWorkshopCommand} from '../workshop-wire.mjs';
+import {migrateWorkshop} from '../workshop/workshop-model.mjs';
+import {encodeWorkshop,decodeWorkshop,initializeWireWorkshop,applyWireWorkshopCommand} from '../workshop/workshop-wire.mjs';
 const plain=value=>JSON.parse(JSON.stringify(value));
 test('wire format retains empty collections and all legacy equipment',()=>{
  for(const armory of [null,{scrap:10,owned:1023,equipped:10,fortify:3}]){
