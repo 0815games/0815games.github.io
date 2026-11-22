@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {createPartySignOut} from '../party-signout.mjs';
+import {createPartySignOut} from '../core/party-signout.mjs';
 
 const flush=()=>new Promise(resolve=>setImmediate(resolve));
 function fixture(){

@@ -7,7 +7,7 @@ import {readBoundedBytes,readBoundedJson} from './bounded-json.mjs';
 import {formatPublicSiteConfig,formatGuardedAccountConfig,ACCOUNT_CONFIG_MARKER,validatePublicSiteConfig,validateSiteOrigin} from './public-site-config.mjs';
 
 export const CRITICAL_RELEASE_FILES=Object.freeze([
-  'index.html','account.js','account-services.mjs','release-config.mjs',
+  'index.html','account.js','core/account-services.mjs','release-config.mjs',
   'release-tools/guarded-game-entry.mjs','release-tools/public-site-config.mjs',
   'release-tools/guarded-game-bootstrap.mjs','release-tools/guarded-runtime.mjs',
   'release-tools/game-session.mjs','release-tools/release-control.mjs',

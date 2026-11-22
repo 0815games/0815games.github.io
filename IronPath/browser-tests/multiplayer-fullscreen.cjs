@@ -38,11 +38,11 @@ const assert=require('node:assert/strict');
      for(const id of ['languageGate','introOverlay','loading','authView','entry'])document.getElementById(id)?.setAttribute('hidden','');
      document.getElementById('gameView').hidden=false;
      const workspace=document.getElementById('gameWorkspace');workspace.hidden=false;workspace.dataset.screen='online';
-     const {startGame}=await import('./game.js'),{createPlayer,applyCommand}=await import('./match.mjs');
-     const {createMatch}=await import('./simulation.mjs');
-     const {createVersus,versusView,applyVersus}=await import('./versus.mjs');
-     const {createFourCoop,createTwoVsTwo,applyFourCommand}=await import('./four-modes.mjs');
-     const {bunkerStart}=await import('./solo-deployment.mjs');
+     const {startGame}=await import('./game.js'),{createPlayer,applyCommand}=await import('./core/match.mjs');
+     const {createMatch}=await import('./core/simulation.mjs');
+     const {createVersus,versusView,applyVersus}=await import('./core/versus.mjs');
+     const {createFourCoop,createTwoVsTwo,applyFourCommand}=await import('./core/four-modes.mjs');
+     const {bunkerStart}=await import('./core/solo-deployment.mjs');
      const ids=mode==='four-coop'?['alice','bob','cara']:mode==='two-vs-two'?['alice','bob','cara','dan']:['alice','bob'];
      const profile={name:'Alice',gender:'female',xp:750,armory:'',skills:''};
      const mapId=mode==='four-coop'?'g3-29e3779b1':mode==='two-vs-two'?'four-front':spec.classic?'road':'g3-19e3779b1';
@@ -81,7 +81,7 @@ const assert=require('node:assert/strict');
      // The first filled view follows the player's spawn, even when the bunker
      // is far from map centre. Select a nearby free pad before touching zoom.
      const nearSpawn=await page.evaluate(async()=>{
-      const {getMap}=await import('./maps.mjs'),{createBattleViewport,zoomBattleViewport,panBattleViewport}=await import('./battle/battle-viewport.mjs');
+      const {getMap}=await import('./core/maps.mjs'),{createBattleViewport,zoomBattleViewport,panBattleViewport}=await import('./battle/battle-viewport.mjs');
       const m=getMap(window.__mapId),r=document.getElementById('game').getBoundingClientRect(),height=Math.round(960*r.height/r.width),player=window.__player;
       let v=createBattleViewport(m.width,m.height,960,height);
       v=zoomBattleViewport(v,Math.max(v.width/v.worldWidth,v.height/v.worldHeight)/v.scale,{x:v.width/2,y:v.height/2});
@@ -100,7 +100,7 @@ const assert=require('node:assert/strict');
     // on an existing tower must select it with the correct world coordinates.
     await page.evaluate(()=>{const button=document.getElementById('mapZoom');if(button.getAttribute('aria-pressed')==='true')button.click();});
     const point=await page.evaluate(async()=>{
-     const {getMap}=await import('./maps.mjs'),{createBattleViewport}=await import('./battle/battle-viewport.mjs');
+     const {getMap}=await import('./core/maps.mjs'),{createBattleViewport}=await import('./battle/battle-viewport.mjs');
      const map=getMap(window.__mapId),canvas=document.getElementById('game'),r=canvas.getBoundingClientRect();
      const worldWidth=map.width||960,laneHeight=map.height||540,worldHeight=window.__mode==='versus'?laneHeight*2+20:laneHeight;
      const v=createBattleViewport(worldWidth,worldHeight,960,Math.round(960*r.height/r.width));
@@ -133,7 +133,7 @@ await page.waitForFunction(()=>document.getElementById('fieldNoticeText').textCo
      for(const [id,key] of [['mapBunker','bunker'],['mapEntry','entry']]){
       await page.locator(`#${id}`).click();
       const result=await page.evaluate(async key=>{
-       const {getMap}=await import('./maps.mjs'),map=getMap(window.__mapId),v=window.__viewport;
+       const {getMap}=await import('./core/maps.mjs'),map=getMap(window.__mapId),v=window.__viewport;
        const target=key==='bunker'?(map.bunker||{x:900,y:400}):map.path[0],w=v.width/v.scale,h=v.height/v.scale;
        const axis=(t,size,world)=>size>=world?(world-size)/2:Math.max(0,Math.min(world-size,t-size/2));
        return {x:v.x,y:v.y,expectedX:axis(target.x,w,v.worldWidth),expectedY:axis(target.y,h,v.worldHeight),target,worldWidth:v.worldWidth,worldHeight:v.worldHeight};
@@ -144,7 +144,7 @@ await page.waitForFunction(()=>document.getElementById('fieldNoticeText').textCo
     if(spec.mode==='coop'&&!spec.touch){
      // The existing settings button invokes the real Fullscreen API from a
      // user gesture. The field keeps its viewport after entering and exiting.
-     await page.evaluate(async()=>{const {setupFullscreen}=await import('./fullscreen.mjs');window.__full=setupFullscreen({document,button:document.getElementById('fullscreenToggle'),status:document.getElementById('fullscreenStatus')});document.getElementById('settingsDialog').showModal();});
+     await page.evaluate(async()=>{const {setupFullscreen}=await import('./core/fullscreen.mjs');window.__full=setupFullscreen({document,button:document.getElementById('fullscreenToggle'),status:document.getElementById('fullscreenStatus')});document.getElementById('settingsDialog').showModal();});
      assert.equal(await page.locator('#fullscreenToggle').isVisible(),true,'browser Fullscreen API is available');
      await page.locator('#fullscreenToggle').click();await page.waitForFunction(()=>!!document.fullscreenElement);
      await page.locator('#fullscreenToggle').click();await page.waitForFunction(()=>!document.fullscreenElement);

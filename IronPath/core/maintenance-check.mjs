@@ -1,7 +1,7 @@
 // Maintenance signal for the ordinary Firebase/Pages deployment. The public
 // record coordinates honest clients; only Firebase Rules enforce data access.
 // Neither this signal nor auth_time proves which JavaScript a browser executed.
-import {readBoundedJson} from './release-tools/bounded-json.mjs';
+import {readBoundedJson} from '../release-tools/bounded-json.mjs';
 
 export const MAINTENANCE_PATH='_ironpathMaintenance';
 // An empty, read-protected capability probe. The actual write remains protected

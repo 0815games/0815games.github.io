@@ -92,9 +92,9 @@ test('the current game runtime and full asset tree can be staged without changin
  const inventory=JSON.parse(await readFile(join(result.directory,'release-manifest.json'),'utf8'));
  const files=Object.keys(inventory.files);
  assert.ok(files.length>500,`full runtime and assets copied: ${files.length}`);
- for(const name of ['account.js','account-services.mjs','game.js','maps.mjs','style.css',
-  'friend-portrait.mjs','assets/friend-placeholder.svg','assets/layers/manifest.mjs',
-  'multiplayer-prompts.mjs','multiplayer-prompts.css','party-end-coordinator.mjs','party-signout.mjs','wave-consensus.mjs',
+ for(const name of ['account.js','core/account-services.mjs','game.js','core/maps.mjs','style.css',
+  'core/friend-portrait.mjs','assets/friend-placeholder.svg','assets/layers/manifest.mjs',
+  'core/multiplayer-prompts.mjs','multiplayer-prompts.css','core/party-end-coordinator.mjs','core/party-signout.mjs','core/wave-consensus.mjs',
   'assets/story-outpost.jpg','assets/manifest.webmanifest'])assert.ok(files.includes(name),name);
  assert.deepEqual(files.filter(name=>name.startsWith('release-tools/')).sort(),guardFiles.map(name=>`release-tools/${name}`).sort());
  const roots=(await readdir(source)).filter(name=>/\.(?:mjs|js|css)$/.test(name));

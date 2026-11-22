@@ -6,15 +6,15 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {runSolo,runCoop,runVersus,runFourCoop,runCampaign,GEARS} from './balance-harness.mjs';
-import {ITEMS} from '../armory.mjs?v=20261112-tagless1';
-import {CAMPAIGN,actOf,actEndIndex} from '../campaign.mjs';
-import {PRESSURE,campaignPressure} from '../campaign-pressure.mjs';
-import {getMap} from '../maps.mjs';
-import {legacyEquipmentEffects} from '../equipment-effects.mjs';
-import {createSoloDeployment} from '../solo-deployment.mjs';
-import {createVersus} from '../versus.mjs';
-import {createPlayer} from '../match.mjs';
-import {createMatch,stepMatch} from '../simulation.mjs';
+import {ITEMS} from '../core/armory.mjs?v=20261112-tagless1';
+import {CAMPAIGN,actOf,actEndIndex} from '../core/campaign.mjs';
+import {PRESSURE,campaignPressure} from '../core/campaign-pressure.mjs';
+import {getMap} from '../core/maps.mjs';
+import {legacyEquipmentEffects} from '../core/equipment-effects.mjs';
+import {createSoloDeployment} from '../core/solo-deployment.mjs';
+import {createVersus} from '../core/versus.mjs';
+import {createPlayer} from '../core/match.mjs';
+import {createMatch,stepMatch} from '../core/simulation.mjs';
 
 test('every mission resolves valid objectives on its generated field',()=>{
   assert.equal(CAMPAIGN.length,50);

@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {createFirebasePartyGame} from '../net/firebase-party-game.mjs';
-import {createPlayer} from '../match.mjs';
+import {createPlayer} from '../core/match.mjs';
 
 test('the four-player adapter runs a whole match on the in-memory Firebase SDK',async()=>{
 const ids=['alice','bob','cara','dan'],profiles=ids.map(id=>createPlayer(id,{name:id,gender:'female'}));

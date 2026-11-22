@@ -1,8 +1,8 @@
 import { applicationDefault, initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { getDatabase } from 'firebase-admin/database';
-import { createPlayer } from '../match.mjs';
-import { characterProgress } from '../progression.mjs';
+import { createPlayer } from '../core/match.mjs';
+import { characterProgress } from '../core/progression.mjs';
 import { createMatchService } from './service.mjs';
 
 // These are deployment configuration, not credentials. Service account credentials

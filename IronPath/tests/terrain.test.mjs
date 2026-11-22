@@ -2,12 +2,12 @@ import {test} from 'node:test';
 // Terrain effects on generated maps: range, damage, speed, ice and the drawn
 // battlefield. Both halves search the seeded map ids for the themes they need.
 
-import {drawCartoonBattle} from '../cartoon-art.mjs';
-import {getMap} from '../maps.mjs';
-import {createPlayer} from '../match.mjs';
-import {createPartyHost} from '../party-host.mjs';
-import {STEP, createMatch, stepMatch} from '../simulation.mjs';
-import {TERRAIN_BRIEFINGS, distanceToRoad, enemySpeedFactor, iceDamage, soldierSpeedFactor, targetingRange, terrainFor, weaponDamageFactor} from '../terrain.mjs';
+import {drawCartoonBattle} from '../core/cartoon-art.mjs';
+import {getMap} from '../core/maps.mjs';
+import {createPlayer} from '../core/match.mjs';
+import {createPartyHost} from '../core/party-host.mjs';
+import {STEP, createMatch, stepMatch} from '../core/simulation.mjs';
+import {TERRAIN_BRIEFINGS, distanceToRoad, enemySpeedFactor, iceDamage, soldierSpeedFactor, targetingRange, terrainFor, weaponDamageFactor} from '../core/terrain.mjs';
 import {strict as assert} from 'node:assert';
 
 test('terrain changes range, damage and speed on the generated maps',async()=>{

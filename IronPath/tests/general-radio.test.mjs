@@ -8,7 +8,7 @@ import {
   tutorialVoicePath,
   tutorialRadioSubtitle,
   createGeneralRadio,
-} from '../general-radio.mjs';
+} from '../core/general-radio.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 

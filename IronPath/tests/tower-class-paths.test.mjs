@@ -13,10 +13,10 @@ import {
   classTowerIgnoresClouds,
   classTowerDamageFactor,
   applyClassTowerHitEffects
-} from '../tower-class-paths.mjs';
-import {createPlayer,applyCommand,advanceSector,getSupplies,towerRefund,TOWER_COSTS} from '../match.mjs';
-import {createMatch,stepMatch} from '../simulation.mjs';
-import {createHost} from '../protocol.mjs';
+} from '../core/tower-class-paths.mjs';
+import {createPlayer,applyCommand,advanceSector,getSupplies,towerRefund,TOWER_COSTS} from '../core/match.mjs';
+import {createMatch,stepMatch} from '../core/simulation.mjs';
+import {createHost} from '../core/protocol.mjs';
 
 test('all six classes define two tower refinement tiers gated cleanly by ownership and class rank',()=>{
   for(const classId of ['assault','engineer','logistics','medic','recon','airDefense']){

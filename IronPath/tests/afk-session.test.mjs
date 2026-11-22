@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {AFK_DELAY_MS,createAfkTimer,createSessionTabLock} from '../afk-session.mjs';
+import {AFK_DELAY_MS,createAfkTimer,createSessionTabLock} from '../core/afk-session.mjs';
 
 const pause=()=>new Promise(resolve=>setImmediate(resolve));
 function fakeLocks(){

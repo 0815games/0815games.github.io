@@ -25,7 +25,7 @@ const build=JSON.parse(readFileSync(path.join(__dirname,'../release-version.json
      document.getElementById('gameView').hidden=false;
      const {setupLanguage,translateText:tr,onLanguageChange}=await import(`./language.mjs?v=${build}`);
      setupLanguage({document,storage:{getItem:()=> 'de',setItem(){}}});
-     const {createMultiplayerPrompts}=await import(`./multiplayer-prompts.mjs?v=${build}`);
+     const {createMultiplayerPrompts}=await import(`./core/multiplayer-prompts.mjs?v=${build}`);
      const center=createMultiplayerPrompts({document,translate:tr});onLanguageChange(()=>center.refresh());
      window.__center=center;window.__runs=0;window.__sender='<b>WWWWWWWWWWWWWW</b>';
      window.__item=key=>({key,title:()=>tr('SPEED REQUEST'),body:()=>tr('{name} requests 2× for wave {wave}. {approved}/{required} approved.',{name:window.__sender,wave:23,approved:0,required:3}),note:()=>tr('Battle continues while you decide.'),actions:[{id:'approve',label:()=>tr('APPROVE 2×'),run:()=>{window.__runs++;return true;}},{id:'decline',label:()=>tr('DECLINE'),run:()=>{window.__runs++;return true;}}]});

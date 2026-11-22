@@ -1,10 +1,10 @@
 import {strict as assert} from 'node:assert';
-import {COMBOS,CAPSTONES,comboTier} from '../skill-combos.mjs';
-import {SKILL_PATHS,parseBuild,encodeBuild,WEB_NODES,NODES_PER_CLASS} from '../skills.mjs';
-import {createPlayer,applyCommand} from '../match.mjs';
-import {createMatch,stepMatch} from '../simulation.mjs';
-import {createVersus,applyVersus} from '../versus.mjs';
-import {createCombatEffects} from '../combat-fx.mjs';
+import {COMBOS,CAPSTONES,comboTier} from '../core/skill-combos.mjs';
+import {SKILL_PATHS,parseBuild,encodeBuild,WEB_NODES,NODES_PER_CLASS} from '../core/skills.mjs';
+import {createPlayer,applyCommand} from '../core/match.mjs';
+import {createMatch,stepMatch} from '../core/simulation.mjs';
+import {createVersus,applyVersus} from '../core/versus.mjs';
+import {createCombatEffects} from '../core/combat-fx.mjs';
 
 const make=(id,classId,tier=1)=>{
   const combos='1'.repeat(tier)+'0'.repeat(3-tier);
@@ -121,7 +121,7 @@ const plain=match(noCombo),plainMoney=plain.money;
 assert.deepEqual(applyCommand(plain,'a',{type:'airstrike'}).combos,[]);
 assert.equal(plain.money,plainMoney+30,'main supply drop only without combo');
 
-const {createPartyHost}=await import('../party-host.mjs');
+const {createPartyHost}=await import('../core/party-host.mjs');
 const netMatch=createMatch([make('a','logistics',1),createPlayer('b',{name:'B',gender:'female'})]);
 netMatch.wave=1;netMatch.running=true;netMatch.spawnLeft=1;netMatch.spawnTimer=100;
 const host=createPartyHost(netMatch,{hostId:'a'});host.setPresence('a',true);host.setPresence('b',true);

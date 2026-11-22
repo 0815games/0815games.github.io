@@ -4,9 +4,9 @@ import {test} from 'node:test';
 // months apart; they describe one contract, so they live together now. Each
 // half keeps its own scope, so neither can shadow the other's fixtures.
 
-import {encodeLoadout, equipArmory, parseLoadout, readArmory, rewardWave, upgradeArmory} from '../armory.mjs';
-import {applyCommand, createPlayer} from '../match.mjs';
-import {createMatch, stepMatch} from '../simulation.mjs';
+import {encodeLoadout, equipArmory, parseLoadout, readArmory, rewardWave, upgradeArmory} from '../core/armory.mjs';
+import {applyCommand, createPlayer} from '../core/match.mjs';
+import {createMatch, stepMatch} from '../core/simulation.mjs';
 import {strict as assert} from 'node:assert';
 
 test('legacy saves move up the weapon store and pay duplicate items as scrap',async()=>{

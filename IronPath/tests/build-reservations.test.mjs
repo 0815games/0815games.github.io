@@ -1,10 +1,10 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {createPlayer,applyCommand} from '../match.mjs';
-import {createMatch,stepMatch,STEP} from '../simulation.mjs';
-import {createFourCoop,createTwoVsTwo,applyFourCommand,setFourPresence} from '../four-modes.mjs';
-import {createPartyHost} from '../party-host.mjs';
-import {BUILD_RESERVATION_SECONDS} from '../build-reservations.mjs';
+import {createPlayer,applyCommand} from '../core/match.mjs';
+import {createMatch,stepMatch,STEP} from '../core/simulation.mjs';
+import {createFourCoop,createTwoVsTwo,applyFourCommand,setFourPresence} from '../core/four-modes.mjs';
+import {createPartyHost} from '../core/party-host.mjs';
+import {BUILD_RESERVATION_SECONDS} from '../core/build-reservations.mjs';
 const players=['alice','bob','cara','dan'].map(name=>createPlayer(name,{name,gender:'female'}));
 const command=(type,pad,extra={})=>({type,pad,...extra});
 test('first reservation wins; owner only releases and builds, failures preserve reservation',()=>{

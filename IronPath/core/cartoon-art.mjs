@@ -1,4 +1,4 @@
-import {translateText as tr,getLanguage} from './language.mjs?v=20261122-ui1';
+import {translateText as tr,getLanguage} from '../language.mjs?v=20261122-ui1';
 import {towerDisplay} from './progression.mjs?v=20261105-prestige1';
 import {specializationRank} from './tower-specialization.mjs?v=20261122-ui1';
 import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261122-ui1';

@@ -1,10 +1,10 @@
 import {strict as assert} from 'node:assert';
-import {bossTelegraph,bossPhase} from '../boss-mechanics.mjs';
-import {countFieldThreats,ENEMY_INTEL,DAMAGE_MULTIPLIERS,makeEnemy} from '../combat.mjs';
-import {createCombatEffects} from '../combat-fx.mjs';
-import {createMatch,stepMatch,STEP} from '../simulation.mjs';
-import {createPlayer} from '../match.mjs';
-import {createPartyHost} from '../party-host.mjs';
+import {bossTelegraph,bossPhase} from '../core/boss-mechanics.mjs';
+import {countFieldThreats,ENEMY_INTEL,DAMAGE_MULTIPLIERS,makeEnemy} from '../core/combat.mjs';
+import {createCombatEffects} from '../core/combat-fx.mjs';
+import {createMatch,stepMatch,STEP} from '../core/simulation.mjs';
+import {createPlayer} from '../core/match.mjs';
+import {createPartyHost} from '../core/party-host.mjs';
 assert.deepEqual(countFieldThreats([{kind:'runner',hp:1},{kind:'tank',boss:'bossIronclad',hp:10},{kind:'tank',hp:0},{kind:'plane',hp:1}]),{infantry:0,runner:1,tank:1,plane:1});
 assert.equal(ENEMY_INTEL.runner.symbol,'S');assert.ok(DAMAGE_MULTIPLIERS[1].tank>DAMAGE_MULTIPLIERS[0].tank);assert.ok(DAMAGE_MULTIPLIERS[2].plane>DAMAGE_MULTIPLIERS[1].plane);
 for(const [kind,clock,key,seconds] of [['bossIronclad',6,'shield-warning',2],['bossIronclad',8,'shield',4],['bossBomber',10,'bomb-warning',2],['bossJuggernaut',8,'repair-warning',2],['bossCommander',8,'rally-warning',2],['bossCommander',10,'rally',4]]){const boss={boss:kind,bossClock:clock},tip=bossTelegraph(boss);assert.equal(tip.key,key);assert.equal(tip.seconds,seconds);assert.match(tip.text,new RegExp(`${seconds}s`));}
@@ -15,5 +15,5 @@ const host=createPartyHost(match,{hostId:'a'});host.setPresence('a',true);host.s
 const solo=createMatch([player('a')]);solo.wave=1;solo.running=true;solo.spawnLeft=1;solo.spawnTimer=100;solo.enemies=[{kind:'infantry',hp:0,maxHp:10,x:100,y:130,speed:0,segment:1,damage:10,reward:1}];const money=solo.money;stepMatch(solo);assert.equal(solo.money,money+1,'death feedback does not change rewards');assert.equal(solo.combatPops.length,1);for(let i=0;i<25;i++)stepMatch(solo);assert.equal(solo.combatPops.length,0,'death effects expire');
 const bomb=createMatch([player('a')]);bomb.running=true;bomb.wave=10;bomb.spawnLeft=1;bomb.spawnTimer=100;bomb.enemies=[{...makeEnemy('bossBomber',10),bossClock:12-STEP/2,x:300,y:130,segment:1,speed:0}];stepMatch(bomb);assert.equal(bomb.bunkerImpact.kind,'bossBomber');assert.equal(bomb.bunkerImpact.damage,8);
 console.log('Battle intel, timed boss warnings, kill cues and synchronized bunker impact passed.');
-const {projectCoopMotion}=await import('../coop-motion.mjs');
+const {projectCoopMotion}=await import('../core/coop-motion.mjs');
 const moving=createMatch([player('a')]);moving.wave=1;moving.players.a.x=100;moving.players.a.y=100;moving.players.a.direction={x:1,y:0};moving.players.a.mobileSupply={remaining:.1,bonus:30};const projected=projectCoopMotion(moving,.2);assert.ok(Math.abs(projected.players.a.x-133)<1e-8,'prediction accounts for temporary speed only while it lasts');assert.equal(moving.players.a.x,100,'prediction does not mutate simulation');

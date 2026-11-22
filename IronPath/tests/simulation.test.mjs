@@ -1,6 +1,6 @@
 import { strict as assert } from 'node:assert';
-import { createPlayer, applyCommand } from '../match.mjs';
-import { createMatch, stepMatch, getTowerRange } from '../simulation.mjs';
+import { createPlayer, applyCommand } from '../core/match.mjs';
+import { createMatch, stepMatch, getTowerRange } from '../core/simulation.mjs';
 assert.equal(getTowerRange({type:2,level:2}),155);
 assert.equal(getTowerRange({type:2,level:3,branch:1}),155*1.45);
 assert.equal(getTowerRange({type:2,level:6,branch:1}),155*1.45);

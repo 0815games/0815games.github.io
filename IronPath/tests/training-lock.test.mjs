@@ -5,10 +5,10 @@ import {strict as assert} from 'node:assert';
 // reported tutorial deadlock: "2 Türme = nicht genug Geld für ein Upgrade,
 // auch nicht nach Verkauf." The engine refuses the second build until the
 // first tower is upgraded; the build sheet shows the same lock.
-import {createSoloDeployment} from '../solo-deployment.mjs';
-import {createMatch} from '../simulation.mjs';
-import {createPlayer,applyCommand,trainingBuildLocked} from '../match.mjs';
-import {trainingContract} from '../training-run.mjs';
+import {createSoloDeployment} from '../core/solo-deployment.mjs';
+import {createMatch} from '../core/simulation.mjs';
+import {createPlayer,applyCommand,trainingBuildLocked} from '../core/match.mjs';
+import {trainingContract} from '../core/training-run.mjs';
 
 const player=()=>createPlayer('local',{name:'Recruit',gender:'female',level:1},850,450);
 const training=()=>createSoloDeployment({player:player(),mapId:'road',campaign:trainingContract()});

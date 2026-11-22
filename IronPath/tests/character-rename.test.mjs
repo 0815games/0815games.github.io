@@ -1,8 +1,8 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFileSync} from 'node:fs';
-import {createCharacterRename} from '../character-rename.mjs';
-import {characterNameKey} from '../character-name.mjs';
+import {createCharacterRename} from '../core/character-rename.mjs';
+import {characterNameKey} from '../core/character-name.mjs';
 import {buildBlock2RulesCandidate} from '../firebase/block2-rules-candidate.mjs';
 
 const read=name=>readFileSync(new URL(`../${name}`,import.meta.url),'utf8');

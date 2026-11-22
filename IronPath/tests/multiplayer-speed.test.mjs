@@ -1,7 +1,7 @@
 import {test} from 'node:test';import {strict as assert} from 'node:assert';
-import {createSpeedControl} from '../multiplayer-speed.mjs';
-import {createPartyHost} from '../party-host.mjs';
-import {createPlayer} from '../match.mjs';import {createMatch} from '../simulation.mjs';import {createFourCoop,createTwoVsTwo} from '../four-modes.mjs';import {createVersus} from '../versus.mjs';
+import {createSpeedControl} from '../core/multiplayer-speed.mjs';
+import {createPartyHost} from '../core/party-host.mjs';
+import {createPlayer} from '../core/match.mjs';import {createMatch} from '../core/simulation.mjs';import {createFourCoop,createTwoVsTwo} from '../core/four-modes.mjs';import {createVersus} from '../core/versus.mjs';
 const players=['a','b','c','d'].map(id=>createPlayer(id,{name:id,gender:'female'}));
 for(const [mode,match] of [['coop',createMatch(players.slice(0,2))],['versus',createVersus(players.slice(0,2),'road','a')],['four',createFourCoop(players,'a')],['2v2',createTwoVsTwo(players,'a',[['a','b'],['c','d']])]])test(`${mode}: unanimous approval, refusal, disconnect and one-wave expiry`,()=>{
  const fields=mode==='four'?[match.match]:mode==='2v2'?match.lanes:mode==='versus'?Object.values(match.lanes):[match];for(const f of fields){f.running=true;f.wave=1;}const c=createSpeedControl(match),ids=mode==='four'||mode==='2v2'?['a','b','c','d']:['a','b'];

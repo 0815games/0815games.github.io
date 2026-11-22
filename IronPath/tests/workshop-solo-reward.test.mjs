@@ -2,7 +2,7 @@ import {test} from 'node:test';import {strict as assert} from 'node:assert';
 import {applySoloWaveReward} from '../workshop/workshop-solo-reward.mjs';
 import {initializeWireWorkshop,decodeWorkshop} from '../workshop/workshop-wire.mjs';
 import {newRunReceiptId,receiptForBlock,waveCredit} from '../workshop/workshop-run-receipt.mjs';
-import {WAVE_COUNT} from '../combat.mjs';
+import {WAVE_COUNT} from '../core/combat.mjs';
 const runId='ab'.repeat(16);
 const base=()=>({name:'Alice',xp:0,armory:{scrap:0,fortify:2,plating:0,owned:0,equipped:0},campaign:1,storyProgress:2});
 const migrated=()=>initializeWireWorkshop(base());

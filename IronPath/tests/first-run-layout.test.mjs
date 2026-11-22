@@ -21,7 +21,7 @@ const html = readFileSync(resolve(root, 'index.html'), 'utf8');
 const field = readFileSync(resolve(root, 'field-command.css'), 'utf8');
 const redesign = readFileSync(resolve(root, 'interface-redesign.css'), 'utf8');
 const game = readFileSync(resolve(root, 'game.js'), 'utf8');
-const nav = readFileSync(resolve(root, 'command-center.mjs'), 'utf8');
+const nav = readFileSync(resolve(root, 'core/command-center.mjs'), 'utf8');
 
 // A property is decided by the LAST block that sets it, and one block can carry a
 // whole selector list. Reading only the last block would report a media override -
@@ -281,7 +281,7 @@ test('the coach can be reopened after it was dismissed', () => {
   // Stufe 1: the coach is feature-gated, so the replay is optional-chained -
   // with the flag off the action falls through to the tutorial replay.
   assert.match(show, /coach\?\.replay/, 'the field tutorial action replays the coach');
-  const commandCenter = readFileSync(resolve(root, 'command-center.mjs'), 'utf8');
+  const commandCenter = readFileSync(resolve(root, 'core/command-center.mjs'), 'utf8');
   assert.match(commandCenter, /menuTutorial[\s\S]*showTutorial/, 'the Command Center routes tutorial replay into showTutorial');
   const fieldMenu = readFileSync(resolve(root, 'ui/field-menu.mjs'), 'utf8');
   assert.doesNotMatch(fieldMenu, /fieldCoachReplay|fieldBack/, 'field menu no longer wires redundant replay/back buttons');
@@ -289,7 +289,7 @@ test('the coach can be reopened after it was dismissed', () => {
 });
 
 test('sprites ask for a redraw when they finish loading', () => {
-  const art = readFileSync(resolve(root, 'cartoon-art.mjs'), 'utf8');
+  const art = readFileSync(resolve(root, 'core/cartoon-art.mjs'), 'utf8');
   // The bug: sprites load on demand, the first frames draw the vector fallback, and
   // nothing told the loop the PNG had arrived - so the terrain layer kept its cached
   // fallback for the whole match. A phone decoded slowly enough to hit it every time.

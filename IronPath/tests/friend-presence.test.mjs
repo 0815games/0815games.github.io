@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {webcrypto} from 'node:crypto';
-import {createFriendPresence} from '../friend-presence.mjs';
+import {createFriendPresence} from '../core/friend-presence.mjs';
 const flush=()=>new Promise(r=>setTimeout(r,0));
 function fixture(){
  let now=1000000,register,release;const values=new Map([['.info/connected',true],['.info/serverTimeOffset',0]]),listeners=new Map(),ops=[];const notify=p=>{for(const cb of listeners.get(p)||[])cb({val:()=>values.get(p)??null});};

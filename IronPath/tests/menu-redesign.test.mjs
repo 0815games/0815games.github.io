@@ -91,7 +91,7 @@ test('Settings owns Account password-change and Danger Zone; Command utilities h
 test('account.js wires password-change, backdrop dismiss, menu dialog cleanup, and keeps pages-rollback delete hook', () => {
   const account = read('account.js');
   const css = read('menu-redesign.css');
-  const launcher = read('endless-launcher.mjs');
+  const launcher = read('core/endless-launcher.mjs');
 
   assert.ok(account.includes("$('menuDeleteCharacter').onclick=deleteCharacter;"),
     'build-pages-site.mjs literal delete handler hook must remain intact');
@@ -182,7 +182,7 @@ test('VIEW LAST RESULTS sits below mode cards, language toggles match, and HQ di
     const tag = html.slice(start, html.indexOf('</button>', start));
     assert.match(tag, /data-i18n="workspace\.back"/, `#${id} displays ← COMMAND CENTER back label`);
   }
-  const launcher = read('endless-launcher.mjs');
+  const launcher = read('core/endless-launcher.mjs');
   assert.doesNotMatch(launcher, /translateText\(\s*['"]command\.none['"]/, 'endless-launcher.mjs must not pass dotted message key to translateText');
 
   // Paket 2: single-column hero login dossier override without interface-redesign 2-column squeeze

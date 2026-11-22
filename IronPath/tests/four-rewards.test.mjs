@@ -1,7 +1,7 @@
 import {strict as assert} from 'node:assert';
-import {createPlayer} from '../match.mjs';
-import {createFourCoop,setFourPresence,stepFour} from '../four-modes.mjs';
-import {createCoopRewardQueue} from '../coop-rewards.mjs';
+import {createPlayer} from '../core/match.mjs';
+import {createFourCoop,setFourPresence,stepFour} from '../core/four-modes.mjs';
+import {createCoopRewardQueue} from '../core/coop-rewards.mjs';
 const ids=['alice','bob','cara','dan'],partyId='a1'.repeat(16),profiles=ids.map(id=>createPlayer(id,{name:id,gender:'female'})),match=createFourCoop(profiles,'alice');
 function clearWave(wave){match.match.wave=wave;match.match.running=true;match.match.spawnLeft=0;match.match.enemies=[];stepFour(match);}
 clearWave(1);setFourPresence(match,'dan',false);clearWave(2);setFourPresence(match,'dan',true);clearWave(3);

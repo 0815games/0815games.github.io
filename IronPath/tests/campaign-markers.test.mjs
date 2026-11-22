@@ -7,8 +7,8 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFileSync} from 'node:fs';
-import {CAMPAIGN} from '../campaign.mjs';
-import {getMap} from '../maps.mjs';
+import {CAMPAIGN} from '../core/campaign.mjs';
+import {getMap} from '../core/maps.mjs';
 
 const roadDistance=(p,path)=>{let m=1e9;for(let i=1;i<path.length;i++){const a=path[i-1],b=path[i],dx=b.x-a.x,dy=b.y-a.y,l2=dx*dx+dy*dy,t=l2?Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.y-a.y)*dy)/l2)):0;m=Math.min(m,Math.hypot(p.x-a.x-t*dx,p.y-a.y-t*dy));}return m;};
 // The marker draws its plate 48px left/right and 61px above the point, the

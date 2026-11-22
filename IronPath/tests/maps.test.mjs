@@ -1,9 +1,9 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {MAPS,getMap,isMapId,createRandomMapId,sectorOf,SECTOR_SPECS} from '../maps.mjs';
-import {createMatch,stepMatch} from '../simulation.mjs';
-import {createPlayer,applyCommand} from '../match.mjs';
-import {createPartyHost} from '../party-host.mjs';
+import {MAPS,getMap,isMapId,createRandomMapId,sectorOf,SECTOR_SPECS} from '../core/maps.mjs';
+import {createMatch,stepMatch} from '../core/simulation.mjs';
+import {createPlayer,applyCommand} from '../core/match.mjs';
+import {createPartyHost} from '../core/party-host.mjs';
 
 test('generated maps are laid out, simulated, snapshotted and reconnected identically',async()=>{
 const player=id=>createPlayer(id,{name:id,gender:'female',level:1},850,450);

@@ -1,5 +1,5 @@
 import {translateStaticDom} from '../language.mjs?v=20261122-ui1';
-import {applyFeatureVisibility} from '../features.mjs?v=20261112-endless1';
+import {applyFeatureVisibility} from '../core/features.mjs?v=20261112-endless1';
 // The intro is independent of authentication. When it ends, any loading or
 // connection error remains visible underneath instead of blocking sign-in.
 export function startIntro({document,window,duration=4300}){

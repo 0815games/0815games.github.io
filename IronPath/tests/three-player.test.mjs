@@ -1,8 +1,8 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {createPlayer} from '../match.mjs';
-import {createFourCoop,createTwoVsTwo} from '../four-modes.mjs';
-import {createPartyHost} from '../party-host.mjs';
+import {createPlayer} from '../core/match.mjs';
+import {createFourCoop,createTwoVsTwo} from '../core/four-modes.mjs';
+import {createPartyHost} from '../core/party-host.mjs';
 test('three players defend the large two-road map with separate supplies',()=>{
  const ids=['a','b','c'],players=ids.map((id,i)=>createPlayer(id,{name:id,gender:'female'},1200,200+i*30));
  const game=createFourCoop(players,'a');assert.equal(game.match.mapId,'four-front');assert.equal(Object.keys(game.members).length,3);assert.throws(()=>createTwoVsTwo(players,'a',[['a','b'],['c','d']]));

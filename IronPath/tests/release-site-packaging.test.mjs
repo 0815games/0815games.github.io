@@ -128,9 +128,9 @@ test('guarded staging refuses a missing game, an ambiguous account config, misma
   'runtime-fence.mjs','status-monitor.mjs','bounded-json.mjs','guarded-game-entry.mjs','public-site-config.mjs'];
  for(const name of guardNames)await writeFile(join(src,'release-tools',name),await readFile(join(source,'release-tools',name)));
  await writeFile(join(src,'assets','manifest.webmanifest'),'{"name":"Iron Path"}');
- await writeFile(join(src,'account-services.mjs'),'export const x=1;');await writeFile(join(src,'game.js'),'// game');
+ await mkdir(join(src,'core'),{recursive:true});await writeFile(join(src,'core','account-services.mjs'),'export const x=1;');await writeFile(join(src,'game.js'),'// game');
  const marked=` config:{projectId:'old-game'}, ${ACCOUNT_CONFIG_MARKER}`;
- const correct=`import {x} from './account-services.mjs?v=20261031-releaseguard1';\nconst fallback={\n${marked}\n};`;
+ const correct=`import {x} from './core/account-services.mjs?v=20261031-releaseguard1';\nconst fallback={\n${marked}\n};`;
  await writeFile(join(src,'account.js'),correct);
  const html='<!doctype html><html lang="en"><head></head><body><p class="build-stamp" aria-hidden="true">BUILD old</p><p class="build-stamp" aria-hidden="true">BUILD old</p><a href="../">← 0815 Games</a><script type="module" src="account.js?v=old"></script></body></html>';
  await writeFile(join(src,'index.html'),html);

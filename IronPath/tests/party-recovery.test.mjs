@@ -1,10 +1,10 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {createPartyHost,restorePartyHost} from '../party-host.mjs';
-import {createPlayer} from '../match.mjs';
-import {createMatch} from '../simulation.mjs';
-import {createVersus} from '../versus.mjs';
-import {createFourCoop,createTwoVsTwo} from '../four-modes.mjs';
+import {createPartyHost,restorePartyHost} from '../core/party-host.mjs';
+import {createPlayer} from '../core/match.mjs';
+import {createMatch} from '../core/simulation.mjs';
+import {createVersus} from '../core/versus.mjs';
+import {createFourCoop,createTwoVsTwo} from '../core/four-modes.mjs';
 const ids=['a','b','c','d'],players=ids.map(id=>createPlayer(id,{name:id,gender:'female'}));
 const cases=[['coop',2,p=>createMatch(p)],['versus',2,p=>createVersus(p,undefined,'a')],['four-coop',3,p=>createFourCoop(p,'a')],['four-coop',4,p=>createFourCoop(p,'a')],['two-vs-two',4,p=>createTwoVsTwo(p,'a',[['a','b'],['c','d']])]];
 for(const [mode,count,make] of cases)test(`checkpoint recovery core preserves ${mode} ${count} roster without replaying pending inputs`,()=>{

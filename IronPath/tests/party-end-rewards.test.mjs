@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {createCoopRewardQueue} from '../coop-rewards.mjs';
+import {createCoopRewardQueue} from '../core/coop-rewards.mjs';
 
 const flush=()=>new Promise(resolve=>setImmediate(resolve));
 const partyId='ab'.repeat(16);

@@ -1,7 +1,7 @@
 import http from 'node:http';
 import { WebSocket, WebSocketServer } from 'ws';
-import { createHost } from '../protocol.mjs';
-import { createMatch, STEP } from '../simulation.mjs';
+import { createHost } from '../core/protocol.mjs';
+import { createMatch, STEP } from '../core/simulation.mjs';
 
 // Experimental single-match process. No HTTP endpoint can provision a roster;
 // the caller must construct players from trusted server-side configuration.

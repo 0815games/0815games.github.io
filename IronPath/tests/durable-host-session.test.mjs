@@ -1,9 +1,9 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {createPartyHost,restorePartyHost} from '../party-host.mjs';
+import {createPartyHost,restorePartyHost} from '../core/party-host.mjs';
 import {createDurableHostSession} from '../net/firebase-durable-host-session.mjs';
-import {createPlayer} from '../match.mjs';
-import {createMatch} from '../simulation.mjs';
+import {createPlayer} from '../core/match.mjs';
+import {createMatch} from '../core/simulation.mjs';
 const ids=['alice','bob'];
 function setup(){const host=createPartyHost(createMatch(ids.map(id=>createPlayer(id,{name:id,gender:'female'}))),{hostId:'alice'}),frames=[],errors=[];let held,resolve,reject;const store={async initialize(checkpoint,views){held={checkpoint,views};return {generation:1,owner:'a'.repeat(32)};},publish(_f,checkpoint,views){held={checkpoint,views};return new Promise((ok,no)=>{resolve=ok;reject=no;});}};const session=createDurableHostSession({host,store,playerIds:ids,onCommitted:v=>frames.push(v),onError:e=>errors.push(e)});return {host,session,frames,errors,get held(){return held;},resolve:()=>resolve(),reject:()=>reject(Error('disk unavailable'))};}
 test('host-local command receipts are not delivered until the matching checkpoint is committed',async()=>{

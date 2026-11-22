@@ -1,9 +1,9 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {getMap} from '../maps.mjs';
-import {createPlayer,applyCommand} from '../match.mjs';
-import {createMatch,stepMatch} from '../simulation.mjs';
-import {createFourCoop,applyFourCommand,stepFour,SQUAD_MAP_POOL} from '../four-modes.mjs';
+import {getMap} from '../core/maps.mjs';
+import {createPlayer,applyCommand} from '../core/match.mjs';
+import {createMatch,stepMatch} from '../core/simulation.mjs';
+import {createFourCoop,applyFourCommand,stepFour,SQUAD_MAP_POOL} from '../core/four-modes.mjs';
 
 // Generated squad maps have two routes to the same bunker, and their numbers
 // of waypoints differ. These cases deliberately straddle the primary route's

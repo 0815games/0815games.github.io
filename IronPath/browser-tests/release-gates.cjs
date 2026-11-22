@@ -136,7 +136,7 @@ async function startEndless(page){
 async function visiblePad(page,index=null){
  await page.locator('#game').scrollIntoViewIfNeeded();
  return page.evaluate(async index=>{
-  const {getMap}=await import('./maps.mjs'),id=__testGameControl.getMapId(),map=getMap(id),r=document.getElementById('game').getBoundingClientRect();
+  const {getMap}=await import('./core/maps.mjs'),id=__testGameControl.getMapId(),map=getMap(id),r=document.getElementById('game').getBoundingClientRect();
   const points=map.pads.map((p,i)=>({index:i,x:r.left+p.x*r.width/960,y:r.top+p.y*r.height/540}));
   const visible=points.filter(p=>p.x>0&&p.x<innerWidth&&p.y>0&&p.y<innerHeight&&document.elementFromPoint(p.x,p.y)?.id==='game');
   if(index!==null)return visible.find(p=>p.index===index)||null;

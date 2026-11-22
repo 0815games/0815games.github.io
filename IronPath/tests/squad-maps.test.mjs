@@ -3,12 +3,12 @@
 // the headless harness measured for every pool entry.
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {getMap,mapPlayerCap} from '../maps.mjs';
-import {SQUAD_MAP_POOL,squadMapFor,createFourCoop,createTwoVsTwo} from '../four-modes.mjs';
-import {createPlayer} from '../match.mjs';
+import {getMap,mapPlayerCap} from '../core/maps.mjs';
+import {SQUAD_MAP_POOL,squadMapFor,createFourCoop,createTwoVsTwo} from '../core/four-modes.mjs';
+import {createPlayer} from '../core/match.mjs';
 import {runFourCoop,runCoop,runVersus,runTwoVsTwo,GEARS} from './balance-harness.mjs';
-import {createMatch,stepMatch} from '../simulation.mjs';
-import {applyCommand} from '../match.mjs';
+import {createMatch,stepMatch} from '../core/simulation.mjs';
+import {applyCommand} from '../core/match.mjs';
 
 test('every squad field exists, carries two roads and the V2 roadside look',()=>{
   assert.ok(SQUAD_MAP_POOL.includes('four-front'),'the classic frontier stays in the pool');

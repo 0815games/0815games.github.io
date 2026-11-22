@@ -1,5 +1,5 @@
 import {test} from 'node:test';import {strict as assert} from 'node:assert';
-import {createSoloDeployment} from '../solo-deployment.mjs';import {createPlayer} from '../match.mjs';import {initializeWireWorkshop,applyWireWorkshopCommand} from '../workshop/workshop-wire.mjs';import {equipmentForPlayer} from '../workshop/workshop-combat.mjs';
+import {createSoloDeployment} from '../core/solo-deployment.mjs';import {createPlayer} from '../core/match.mjs';import {initializeWireWorkshop,applyWireWorkshopCommand} from '../workshop/workshop-wire.mjs';import {equipmentForPlayer} from '../workshop/workshop-combat.mjs';
 const player=()=>createPlayer('local',{name:'Test',gender:'male',level:1,loadout:'0,0,1'});
 test('enabled endless deployment uses and freezes the saved workshop loadout instead of old equipment',()=>{
  let profile=initializeWireWorkshop({xp:0,armory:{owned:1,equipped:1,scrap:100}});profile=applyWireWorkshopCommand(profile,{type:'craft',item:'boots'});profile=applyWireWorkshopCommand(profile,{type:'equip',slot:'gear',item:'boots'});

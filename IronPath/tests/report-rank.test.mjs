@@ -1,11 +1,11 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFile} from 'node:fs/promises';
-import {reportRank} from '../report-promotion.mjs';
-import {rankForLevel} from '../rank-insignia.mjs';
-import {characterProgress} from '../progression.mjs';
-import {createMatch} from '../simulation.mjs';
-import {createPlayer,applyCommand} from '../match.mjs';
+import {reportRank} from '../core/report-promotion.mjs';
+import {rankForLevel} from '../core/rank-insignia.mjs';
+import {characterProgress} from '../core/progression.mjs';
+import {createMatch} from '../core/simulation.mjs';
+import {createPlayer,applyCommand} from '../core/match.mjs';
 
 // The rank line of the after-action report.
 //
@@ -53,8 +53,8 @@ async function setup(){
  globalThis.window={scrollBy(){},innerWidth:400,innerHeight:800,confirm:()=>true,matchMedia:()=>({matches:false,addEventListener(){}}),addEventListener(){}};
  globalThis.requestAnimationFrame=()=>1;
  let source=await readFile(new URL('../game.js',import.meta.url),'utf8');
- for(const file of ['features.mjs','solo-deployment.mjs','workshop/workshop-run-receipt.mjs','canvas-resolution.mjs','language.mjs','map-zoom.mjs','game-localization.mjs','story-localization.mjs','soldier-motion.mjs','ui/dialog-dismiss.mjs','focus-pause.mjs','story-cinematics.mjs','campaign.mjs','relics.mjs','story-mission.mjs','story-events.mjs','training-run.mjs','ui/first-run-coach.mjs','four-game-view.mjs','battle/battle-viewport-controller.mjs','battle/battle-viewport.mjs','run-results.mjs','coop-motion.mjs','boss-mechanics.mjs','battle/battle-sound.mjs','run-perks.mjs','terrain.mjs','maps.mjs','combat-fx.mjs','cartoon-art.mjs','match.mjs','combat.mjs','progression.mjs','battle/battle-xp-hud.mjs','tower-upgrade-cue.mjs','tower-specialization.mjs','tower-class-paths.mjs','ui/development-ui.mjs','report-promotion.mjs','rank-insignia.mjs','ground-tracks.mjs','ui/ability-hud.mjs','simulation.mjs','tutorial.mjs','coop-config.mjs','coop-client.mjs','coop-input.mjs','ui/field-notice.mjs','ui/map-intro.mjs'])source=source.replace(new RegExp(`'\\./${file.replace('.','\\.')}\\?[^']+'`),JSON.stringify(new URL('../'+file,import.meta.url).href));
- source=source.replace(/'\.\/skills\.mjs(?:\?[^']*)?'/,JSON.stringify(new URL('../skills.mjs',import.meta.url).href));
+ for(const file of ['core/features.mjs','core/solo-deployment.mjs','workshop/workshop-run-receipt.mjs','core/canvas-resolution.mjs','language.mjs','core/map-zoom.mjs','core/game-localization.mjs','core/story-localization.mjs','core/soldier-motion.mjs','ui/dialog-dismiss.mjs','core/focus-pause.mjs','core/story-cinematics.mjs','core/campaign.mjs','core/relics.mjs','core/story-mission.mjs','core/story-events.mjs','core/training-run.mjs','ui/first-run-coach.mjs','core/four-game-view.mjs','battle/battle-viewport-controller.mjs','battle/battle-viewport.mjs','core/run-results.mjs','core/coop-motion.mjs','core/boss-mechanics.mjs','battle/battle-sound.mjs','core/run-perks.mjs','core/terrain.mjs','core/maps.mjs','core/combat-fx.mjs','core/cartoon-art.mjs','core/match.mjs','core/combat.mjs','core/progression.mjs','battle/battle-xp-hud.mjs','core/tower-upgrade-cue.mjs','core/tower-specialization.mjs','core/tower-class-paths.mjs','ui/development-ui.mjs','core/report-promotion.mjs','core/rank-insignia.mjs','core/ground-tracks.mjs','ui/ability-hud.mjs','core/simulation.mjs','core/tutorial.mjs','core/coop-config.mjs','core/coop-client.mjs','core/coop-input.mjs','ui/field-notice.mjs','ui/map-intro.mjs'])source=source.replace(new RegExp(`'\\./${file.replace('.','\\.')}\\?[^']+'`),JSON.stringify(new URL('../'+file,import.meta.url).href));
+ source=source.replace(/'\.\/core\/skills\.mjs(?:\?[^']*)?'/,JSON.stringify(new URL('../core/skills.mjs',import.meta.url).href));
  const {startGame}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
  const match=createMatch(['alice','bob'].map(id=>createPlayer(id,{name:id,gender:'female'})));match.hostId='alice';match.players.alice.completedWaveMask=3;
  let tick=9,partyEnd=null;const commands=[],frames=[];

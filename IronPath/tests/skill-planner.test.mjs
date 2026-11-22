@@ -1,7 +1,7 @@
 import {strict as assert} from 'node:assert';
-import {prerequisites,relatedNodes,nodeMatches,skillBuildSummary,canSaveSkillDraft} from '../skill-planner.mjs';
-import {parseBuild,encodeBuild,webRequirement,WEB_NODES} from '../skills.mjs';
-import {characterProgress} from '../progression.mjs';
+import {prerequisites,relatedNodes,nodeMatches,skillBuildSummary,canSaveSkillDraft} from '../core/skill-planner.mjs';
+import {parseBuild,encodeBuild,webRequirement,WEB_NODES} from '../core/skills.mjs';
+import {characterProgress} from '../core/progression.mjs';
 import {renderSkillTree} from '../ui/development-ui.mjs';
 
 // Assault build: rank 3, Quick Trigger (slot 0), Mastery 1 (slot 2), Doctrine A1 (slot 7)

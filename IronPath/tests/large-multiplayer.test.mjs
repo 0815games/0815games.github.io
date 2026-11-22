@@ -1,8 +1,8 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {getMap,createRandomMapId} from '../maps.mjs';
-import {bunkerStart} from '../solo-deployment.mjs';
-import {createPlayer} from '../match.mjs';
+import {getMap,createRandomMapId} from '../core/maps.mjs';
+import {bunkerStart} from '../core/solo-deployment.mjs';
+import {createPlayer} from '../core/match.mjs';
 import {createFirebasePartyGame} from '../net/firebase-party-game.mjs';
 import {runCoop,GEARS} from './balance-harness.mjs';
 

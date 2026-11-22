@@ -1,8 +1,8 @@
 import {strict as assert} from 'node:assert';
-import {readArmory,rewardWave,upgradeArmory,equipArmory,encodeLoadout,parseLoadout} from '../armory.mjs';
-import {createPlayer,applyCommand} from '../match.mjs';
-import {createMatch,stepMatch} from '../simulation.mjs';
-import {serviceMedals} from '../service-record.mjs';
+import {readArmory,rewardWave,upgradeArmory,equipArmory,encodeLoadout,parseLoadout} from '../core/armory.mjs';
+import {createPlayer,applyCommand} from '../core/match.mjs';
+import {createMatch,stepMatch} from '../core/simulation.mjs';
+import {serviceMedals} from '../core/service-record.mjs';
 let a=readArmory({scrap:1000,fortify:0,plating:0,owned:63,equipped:1});
 for(const wave of [14,16,18,20])a=rewardWave(a,wave);assert.equal(a.owned,1023);const duplicate=rewardWave(a,20);assert.equal(duplicate.scrap,a.scrap+20);
 a=upgradeArmory(a,'supply');a=upgradeArmory(a,'safeguard');a=equipArmory(a,10);assert.equal(encodeLoadout(a),'0,0,10;0,0;1,1');assert.deepEqual(parseLoadout(encodeLoadout(a)),{fortify:0,plating:0,equipped:10,repair:0,gun:0,supply:1,safeguard:1});assert.equal(equipArmory({...a,owned:63},10),null);

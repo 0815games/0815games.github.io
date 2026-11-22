@@ -1,8 +1,8 @@
 import {strict as assert} from 'node:assert';
-import {rewardDelta,completedWaves,expectedXP,waveRewardSummary,nextSteps} from '../run-results.mjs';
-import {createPlayer,applyCommand} from '../match.mjs';
-import {createMatch,stepMatch} from '../simulation.mjs';
-import {comboCue} from '../skill-combos.mjs';
+import {rewardDelta,completedWaves,expectedXP,waveRewardSummary,nextSteps} from '../core/run-results.mjs';
+import {createPlayer,applyCommand} from '../core/match.mjs';
+import {createMatch,stepMatch} from '../core/simulation.mjs';
+import {comboCue} from '../core/skill-combos.mjs';
 const before={xp:280,armory:{scrap:20,owned:0}},after={xp:310,armory:{scrap:30,owned:1}};
 assert.deepEqual(rewardDelta(before,after),{xp:30,scrap:10,items:['Field Scope'],levels:1,unlocks:[]});
 assert.deepEqual(rewardDelta(after,{xp:350,armory:{scrap:50,owned:1}}),{xp:40,scrap:20,items:[],levels:0,unlocks:[]});

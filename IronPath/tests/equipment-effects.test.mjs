@@ -1,7 +1,7 @@
 import {test} from 'node:test';import {strict as assert} from 'node:assert';
-import {legacyEquipmentEffects} from '../equipment-effects.mjs';
-import {createPlayer,applyCommand} from '../match.mjs';import {createMatch,stepMatch} from '../simulation.mjs';
-import {projectCoopMotion} from '../coop-motion.mjs';
+import {legacyEquipmentEffects} from '../core/equipment-effects.mjs';
+import {createPlayer,applyCommand} from '../core/match.mjs';import {createMatch,stepMatch} from '../core/simulation.mjs';
+import {projectCoopMotion} from '../core/coop-motion.mjs';
 const player=(id,item)=>createPlayer(id,{name:id,gender:'male',level:2,skills:'v2;assault;1;0;00000000000000',loadout:`0,0,${item}`},100,130);
 test('legacy effects table has neutral invalid items and wave-six thresholds',()=>{
  assert.deepEqual(legacyEquipmentEffects(99,20),legacyEquipmentEffects(0,20));assert.deepEqual(legacyEquipmentEffects('1',20),legacyEquipmentEffects(0,20));

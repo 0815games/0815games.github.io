@@ -1,8 +1,8 @@
 import {strict as assert} from 'node:assert';
-import {projectCoopMotion} from '../coop-motion.mjs';
-import {createMatch,stepMatch,STEP} from '../simulation.mjs';
-import {createPlayer} from '../match.mjs';
-import {getMap} from '../maps.mjs';
+import {projectCoopMotion} from '../core/coop-motion.mjs';
+import {createMatch,stepMatch,STEP} from '../core/simulation.mjs';
+import {createPlayer} from '../core/match.mjs';
+import {getMap} from '../core/maps.mjs';
 const state=createMatch([createPlayer('a',{name:'A',gender:'female'}),createPlayer('b',{name:'B',gender:'male'})]);
 const path=getMap(state.mapId).path;
 state.players.a.x=100;state.players.a.y=100;state.players.a.direction={x:1,y:0};state.players.b.x=200;state.players.b.y=100;state.players.b.target={x:203,y:100};

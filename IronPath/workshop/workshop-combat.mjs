@@ -1,10 +1,10 @@
 // The live equipment path: routes each player's gear to its effects. A match
 // carries either a legacy one-slot loadout or a captured workshop snapshot;
 // a broken workshop lock fails closed instead of falling back silently.
-import {legacyEquipmentEffects} from '../equipment-effects.mjs?v=20261107-balance1';
+import {legacyEquipmentEffects} from '../core/equipment-effects.mjs?v=20261107-balance1';
 import {workshopEffects} from './workshop-effects.mjs?v=20261112-tagless1';
 import {decodeMatchLoadout} from './workshop-multiplayer.mjs?v=20261112-tagless1';
-import {applyRelicBonus} from '../relics.mjs?v=20261112-tagless1';
+import {applyRelicBonus} from '../core/relics.mjs?v=20261112-tagless1';
 
 export function equipmentForPlayer(state,player){
  const lock=state.experimentalWorkshop;

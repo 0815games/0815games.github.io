@@ -65,7 +65,7 @@ const languageToken=readFileSync(require('node:path').join(__dirname,'../game.js
       const workspace=document.getElementById('gameWorkspace');workspace.hidden=false;workspace.dataset.screen='online';
       const {setupLanguage,translateText,onLanguageChange}=await import(`./language.mjs?v=${languageToken}`);
       setupLanguage({document,storage:{getItem:()=>language,setItem(){}}});
-      const {createMultiplayerPrompts}=await import(`./multiplayer-prompts.mjs?v=${languageToken}`);
+      const {createMultiplayerPrompts}=await import(`./core/multiplayer-prompts.mjs?v=${languageToken}`);
       const promptCenter=createMultiplayerPrompts({document,translate:translateText});onLanguageChange(()=>promptCenter.refresh());window.__promptCenter=promptCenter;
       const {startGame}=await import('./game.js');
       const profile={name,gender:'female',xp:0,armory:'',skills:''};

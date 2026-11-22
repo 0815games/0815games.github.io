@@ -1,5 +1,5 @@
 import { strict as assert } from 'node:assert';
-import { createCoopClient } from '../coop-client.mjs';
+import { createCoopClient } from '../core/coop-client.mjs';
 const sockets=[];
 class Socket {
   constructor(url){this.url=url;this.readyState=0;this.handlers={};this.sent=[];sockets.push(this);}

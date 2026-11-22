@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {createMultiplayerPrompts} from '../multiplayer-prompts.mjs';
+import {createMultiplayerPrompts} from '../core/multiplayer-prompts.mjs';
 
 function fixture(){
  const nodes=new Map(),listeners=new Map();let modal=false,now=1000,timer=null;

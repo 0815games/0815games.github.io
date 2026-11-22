@@ -1,9 +1,9 @@
 import {strict as assert} from 'node:assert';
-import {bossPhase,bossWeaponFactor,bossPhaseLabel,bossTelegraph,crossedCycle} from '../boss-mechanics.mjs';
-import {makeEnemy,BOSSES,STORY_BOSSES,missionFormation,waveFormation} from '../combat.mjs';
-import {createMatch,stepMatch,STEP} from '../simulation.mjs';
-import {createPlayer} from '../match.mjs';
-import {createPartyHost} from '../party-host.mjs';
+import {bossPhase,bossWeaponFactor,bossPhaseLabel,bossTelegraph,crossedCycle} from '../core/boss-mechanics.mjs';
+import {makeEnemy,BOSSES,STORY_BOSSES,missionFormation,waveFormation} from '../core/combat.mjs';
+import {createMatch,stepMatch,STEP} from '../core/simulation.mjs';
+import {createPlayer} from '../core/match.mjs';
+import {createPartyHost} from '../core/party-host.mjs';
 const player=id=>createPlayer(id,{name:id,gender:'female'});
 assert.equal(bossPhase({boss:'bossIronclad',bossClock:7.9}),'normal');assert.equal(bossPhase({boss:'bossIronclad',bossClock:8}),'shield');assert.equal(bossWeaponFactor({boss:'bossIronclad',bossClock:8}),.6);assert.equal(bossPhase({boss:'bossIronclad',bossClock:12}),'normal');
 assert.equal(bossPhase({boss:'bossBomber',bossClock:10}),'bomb-warning');assert.match(bossPhaseLabel({boss:'bossBomber',bossClock:10}),/incoming/);assert.equal(bossPhase({boss:'bossJuggernaut',bossClock:8}),'repair-warning');assert.equal(bossPhase({boss:'bossCommander',bossClock:10}),'rally');assert.equal(crossedCycle(11.99,12.01,12),true);

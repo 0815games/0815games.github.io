@@ -4,7 +4,7 @@
 import siteConfig from '../release-config.mjs';
 import {validatePublicSiteConfig,validateSiteOrigin} from './public-site-config.mjs';
 import {createGuardedGameBootstrap} from './guarded-game-bootstrap.mjs';
-import {installGuardedAccountSession} from '../account-services.mjs?v=20261031-releaseguard1';
+import {installGuardedAccountSession} from '../core/account-services.mjs?v=20261031-releaseguard1';
 
 const $=id=>document.getElementById(id);
 const game=$('ironpath-guarded-game'),hold=$('ironpath-guarded-hold');

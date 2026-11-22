@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {buildRoadPath,maxCentrelineDeviation,cornerDeviation,DEFAULT_CORNER_RADIUS} from '../road-geometry.mjs';
-import {MAPS,getMap} from '../maps.mjs';
+import {buildRoadPath,maxCentrelineDeviation,cornerDeviation,DEFAULT_CORNER_RADIUS} from '../core/road-geometry.mjs';
+import {MAPS,getMap} from '../core/maps.mjs';
 
 // The road is an orthogonal zigzag: every shipped map turns at exactly 90
 // degrees. These tests hold the geometry that the painter used to fake, and

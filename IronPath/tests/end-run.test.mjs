@@ -1,7 +1,7 @@
 import {strict as assert} from 'node:assert';
-import {createPlayer,applyCommand} from '../match.mjs';
-import {createMatch,stepMatch} from '../simulation.mjs';
-import {createPartyHost} from '../party-host.mjs';
+import {createPlayer,applyCommand} from '../core/match.mjs';
+import {createMatch,stepMatch} from '../core/simulation.mjs';
+import {createPartyHost} from '../core/party-host.mjs';
 const p=id=>createPlayer(id,{name:id,gender:'female'});
 for(const wave of [0,1,5,21]){
  const s=createMatch([p('solo')]);s.wave=wave;s.running=true;s.spawnLeft=5;s.pendingPerk=wave===5?5:0;s.hp=70;

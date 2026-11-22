@@ -1,6 +1,6 @@
 import {strict as assert} from 'node:assert';
 import {randomFillSync} from 'node:crypto';
-import {createPartyCode,parsePartyCode} from '../party-code.mjs';
+import {createPartyCode,parsePartyCode} from '../core/party-code.mjs';
 const crypto={getRandomValues:randomFillSync},seen=new Set();
 for(let i=0;i<100;i++){
   const {partyId,inviteCode}=createPartyCode(crypto);

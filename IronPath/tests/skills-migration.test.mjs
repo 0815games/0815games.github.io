@@ -7,8 +7,8 @@ import {
   readLegacySkillBackup,
   summarizeSkillMigration,
   migrateSkillsProfile
-} from '../skills-migration.mjs';
-import {DEFAULT_BUILD,MAX_CLASS_POINTS,pointsLeft,parseBuild} from '../skills.mjs';
+} from '../core/skills-migration.mjs';
+import {DEFAULT_BUILD,MAX_CLASS_POINTS,pointsLeft,parseBuild} from '../core/skills.mjs';
 
 function makeStorage(){
   const map=new Map();

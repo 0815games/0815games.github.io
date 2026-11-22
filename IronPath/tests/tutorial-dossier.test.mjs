@@ -1,8 +1,8 @@
 import { test } from 'node:test';
 import { strict as assert } from 'node:assert';
 import { readFileSync } from 'node:fs';
-import { createTutorialDossier } from '../tutorial-dossier.mjs';
-import { createCommandCenter } from '../command-center.mjs';
+import { createTutorialDossier } from '../core/tutorial-dossier.mjs';
+import { createCommandCenter } from '../core/command-center.mjs';
 
 function makeDossierDocument({ mutateScrollOnOpen = false } = {}) {
   const nodes = new Map();

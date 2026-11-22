@@ -11,7 +11,7 @@ import {
  createSameBrowserSessionMonitor,
  createWindowSessionId,
  getOrCreateClientSessionId
-} from '../active-session.mjs';
+} from '../core/active-session.mjs';
 import {applyBlock9dSessionRules,buildBlock9dSessionCandidate} from '../firebase/block9d-session-candidate.mjs';
 
 function makeMemoryStorage(initial={}){

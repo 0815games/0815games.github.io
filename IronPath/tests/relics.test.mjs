@@ -1,11 +1,11 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {CAMPAIGN,ACTS,actOf,actEndIndex,actComplete,STORY_FORMAT} from '../campaign.mjs';
-import {RELICS,relicEarned,earnedRelicIds,relicBonus,applyRelicBonus,isRelic} from '../relics.mjs';
+import {CAMPAIGN,ACTS,actOf,actEndIndex,actComplete,STORY_FORMAT} from '../core/campaign.mjs';
+import {RELICS,relicEarned,earnedRelicIds,relicBonus,applyRelicBonus,isRelic} from '../core/relics.mjs';
 import {completeStoryMission,meltPrestige,encodeWorkshop,decodeWorkshop} from '../workshop/workshop-wire.mjs';
 import {captureWorkshopLoadout,workshopEffects} from '../workshop/workshop-effects.mjs';
-import {prestigeEarned,PRESTIGE_IDS} from '../prestige.mjs';
-import {THREATS} from '../campaign-pressure.mjs';
+import {prestigeEarned,PRESTIGE_IDS} from '../core/prestige.mjs';
+import {THREATS} from '../core/campaign-pressure.mjs';
 
 const workshop=()=>({version:1,components:0,owned:[],equipped:{weapon:'standard',gear:'none',gadget:'none'},mods:{}});
 

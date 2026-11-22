@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import { strict as assert } from 'node:assert';
-import {createTutorial,TUTORIAL_STEPS} from '../tutorial.mjs';
+import {createTutorial,TUTORIAL_STEPS} from '../core/tutorial.mjs';
 import {readFileSync,readdirSync,existsSync} from 'node:fs';
 import {join,normalize} from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -121,8 +121,8 @@ test('an account that finished the old briefing is offered the new one',()=>{
 test('only tutorial.mjs spells out the briefing marker',()=>{
  // The bug was a second copy of the key that did not move when the tour changed,
  // so the invariant worth pinning is that there is no second copy at all.
- assert.match(readFileSync(new URL('../tutorial.mjs',import.meta.url),'utf8'),/const TUTORIAL_EDITION=\d+;/);
- for(const name of ['account.js','game.js','ui/first-run-ending.mjs','training-run.mjs','command-center.mjs']){
+ assert.match(readFileSync(new URL('../core/tutorial.mjs',import.meta.url),'utf8'),/const TUTORIAL_EDITION=\d+;/);
+ for(const name of ['account.js','game.js','ui/first-run-ending.mjs','core/training-run.mjs','core/command-center.mjs']){
   const source=readFileSync(new URL('../'+name,import.meta.url),'utf8');
   assert.ok(!/ironpath:tutorial:v/.test(source),`${name} must not hard-code the briefing key`);
  }
@@ -185,7 +185,7 @@ test('every import of a module agrees on that module cache token',()=>{
  const split=[...tokens].filter(([,seen])=>seen.size>1);
  assert.deepEqual(split.map(([target,seen])=>`${target}: ${[...seen.keys()].join(' vs ')} (${[...seen.values()].flat().join(', ')})`),[],
   'importers of one module must share its cache token');
- assert.ok(tokens.get('tutorial.mjs')?.size===1,'the tour is imported through a token');
+ assert.ok(tokens.get('core/tutorial.mjs')?.size===1,'the tour is imported through a token');
 });
 
 // The SHOW TASK pills (battlefield coach + command-center guide) must end with
@@ -202,7 +202,7 @@ test('every import of a module agrees on that module cache token',()=>{
  // yellow ring and its dashed arrow kept floating over the main menu. The
  // coach optics live outside #gameView, so entering the Command Center has
  // to park them all - card, ring, arrow and recall pill.
- const center=readFileSync(new URL('../command-center.mjs',import.meta.url),'utf8');
+ const center=readFileSync(new URL('../core/command-center.mjs',import.meta.url),'utf8');
  assert.match(center,/navigateToMenu[\s\S]*?getGame\(\)\?\.parkCoach\?\.\(\);/,'entering the menu parks the coach overlay');
  assert.match(game,/parkCoach\(\)\{try\{coach\?\.dismiss\?\.\(\);\}/,'parking pauses the card like its own close button');
  assert.match(game,/for\(const id of \['firstRunCoach','coachRecall'\]\)/,'the card and the pill are hidden');

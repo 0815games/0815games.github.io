@@ -1,5 +1,5 @@
-import {parseBuild,encodeBuild,isLegacyBuildString} from '../skills.mjs?v=20261122-ui1';
-import {createPartyCode} from '../party-code.mjs?v=20261101-shortcode1';
+import {parseBuild,encodeBuild,isLegacyBuildString} from '../core/skills.mjs?v=20261122-ui1';
+import {createPartyCode} from '../core/party-code.mjs?v=20261101-shortcode1';
 // Player-hosted Firebase lobby primitives, live behind the party panel.
 // Access control MUST be provided by Realtime Database rules; this module is
 // not itself authorization.

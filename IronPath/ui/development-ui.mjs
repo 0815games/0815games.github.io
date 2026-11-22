@@ -1,8 +1,8 @@
-import {nodeMatches} from '../skill-planner.mjs?v=20261122-ui1';
+import {nodeMatches} from '../core/skill-planner.mjs?v=20261122-ui1';
 // Presentation only: all progression and transactions remain in the existing models.
-import {SKILL_PATHS,SKILL_PATH_MAP,pointsLeft,classNodes,webReady,webRequirement} from '../skills.mjs?v=20261122-ui1';
-import {CAPSTONES} from '../skill-combos.mjs?v=20261122-ui1';
-import {TOWER_CLASS_PATHS} from '../tower-class-paths.mjs?v=20261122-ui1';
+import {SKILL_PATHS,SKILL_PATH_MAP,pointsLeft,classNodes,webReady,webRequirement} from '../core/skills.mjs?v=20261122-ui1';
+import {CAPSTONES} from '../core/skill-combos.mjs?v=20261122-ui1';
+import {TOWER_CLASS_PATHS} from '../core/tower-class-paths.mjs?v=20261122-ui1';
 const NS='http://www.w3.org/2000/svg';
 export const CLASS_COLORS={
   assault:'#d89970',

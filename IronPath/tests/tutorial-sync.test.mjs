@@ -9,7 +9,7 @@ import {
   shouldPayTutorialReward,
   applyTutorialRewardProfile,
   createTutorialSync,
-} from '../tutorial-sync.mjs';
+} from '../core/tutorial-sync.mjs';
 
 test('initialOfferedTutorial emits schema-compliant record for new recruits', () => {
   const rec = initialOfferedTutorial();

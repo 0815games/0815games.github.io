@@ -1,7 +1,7 @@
 import {strict as assert} from 'node:assert';
-import {WAVES,WAVE_COUNT,MAX_WAVE_MASK} from '../combat.mjs';
-import {createPlayer,applyCommand} from '../match.mjs';
-import {createMatch,stepMatch} from '../simulation.mjs';
+import {WAVES,WAVE_COUNT,MAX_WAVE_MASK} from '../core/combat.mjs';
+import {createPlayer,applyCommand} from '../core/match.mjs';
+import {createMatch,stepMatch} from '../core/simulation.mjs';
 assert.equal(WAVE_COUNT,20);assert.equal(MAX_WAVE_MASK,1048575);assert.equal(WAVES.length,20);
 assert.ok(WAVES[14].filter(x=>x==='tank').length>WAVES[13].filter(x=>x==='tank').length,'wave 15 is a tank-heavy milestone');
 assert.ok(WAVES[19].filter(x=>x==='tank').length>WAVES[18].filter(x=>x==='tank').length,'final wave is a tank-heavy milestone');

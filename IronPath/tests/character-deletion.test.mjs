@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {createCharacterDeletion} from '../character-deletion.mjs';
-import {friendNameKey} from '../friends.mjs';
+import {createCharacterDeletion} from '../core/character-deletion.mjs';
+import {friendNameKey} from '../core/friends.mjs';
 
 const code='a'.repeat(32),connection='b'.repeat(32),key=friendNameKey('Alice');
 function fixture(initial={}){

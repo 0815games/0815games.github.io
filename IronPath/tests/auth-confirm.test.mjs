@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFileSync} from 'node:fs';
-import {setupAuthForm} from '../auth-form.mjs';
+import {setupAuthForm} from '../core/auth-form.mjs';
 
 // Point 3 of the list: "Passwort 2× + Gleichheitscheck". A typo in a hidden
 // password field would lock the player out of the account they just created,

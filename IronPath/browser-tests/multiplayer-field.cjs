@@ -46,8 +46,8 @@ const assert=require('node:assert/strict');
       // place even if the game's own capture listener stops it afterwards.
       window.__clicks=[];
       document.addEventListener('click',e=>window.__clicks.push({trusted:e.isTrusted,detail:e.detail,target:e.target.id}),true);
-      const {startGame}=await import('./game.js'),{createPlayer}=await import('./match.mjs');
-      const {createFourCoop,applyFourCommand}=await import('./four-modes.mjs');
+      const {startGame}=await import('./game.js'),{createPlayer}=await import('./core/match.mjs');
+      const {createFourCoop,applyFourCommand}=await import('./core/four-modes.mjs');
       const ids=['alice','bob','cara'],profile={name:'Alice',gender:'female',xp:750,armory:'',skills:''};
       const match=createFourCoop(ids.map(id=>createPlayer(id,{...profile,name:id})),'alice','four-front');
       const mine=applyFourCommand(match,'alice',{type:'build',pad:4,towerType:0});
@@ -73,7 +73,7 @@ const assert=require('node:assert/strict');
     // Reference the same documented camera geometry, not the old 960x540
     // projection: the logical height changes with the portrait canvas.
     const setView=async(fill)=>page.evaluate(async fill=>{
-      const {getMap}=await import('./maps.mjs');const {createBattleViewport,zoomBattleViewport}=await import('./battle/battle-viewport.mjs');
+      const {getMap}=await import('./core/maps.mjs');const {createBattleViewport,zoomBattleViewport}=await import('./battle/battle-viewport.mjs');
       const map=getMap('four-front'),r=document.getElementById('game').getBoundingClientRect();
       const height=document.getElementById('game').dataset.fullBattle==='true'?Math.round(960*r.height/r.width):540;
       let v=createBattleViewport(map.width,map.height,960,height);
@@ -81,7 +81,7 @@ const assert=require('node:assert/strict');
       window.__view=v;
     },fill);
     const point=async index=>page.evaluate(async index=>{
-      const {getMap}=await import('./maps.mjs'),pad=getMap('four-front').pads[index],v=window.__view,r=document.getElementById('game').getBoundingClientRect();
+      const {getMap}=await import('./core/maps.mjs'),pad=getMap('four-front').pads[index],v=window.__view,r=document.getElementById('game').getBoundingClientRect();
       const x=r.left+(pad.x-v.x)*v.scale*r.width/v.width,y=r.top+(pad.y-v.y)*v.scale*r.height/v.height;
       return {x,y,target:document.elementFromPoint(x,y)?.id};
     },index);

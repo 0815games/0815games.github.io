@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {createPartyEndCoordinator} from '../party-end-coordinator.mjs';
+import {createPartyEndCoordinator} from '../core/party-end-coordinator.mjs';
 
 const flush=()=>new Promise(resolve=>setImmediate(resolve));
 const ids=['alice','bob','cara'];

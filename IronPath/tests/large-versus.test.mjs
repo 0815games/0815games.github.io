@@ -1,9 +1,9 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {getMap} from '../maps.mjs';
-import {bunkerStart} from '../solo-deployment.mjs';
-import {createPlayer} from '../match.mjs';
-import {createVersus,applyVersus,versusView} from '../versus.mjs';
+import {getMap} from '../core/maps.mjs';
+import {bunkerStart} from '../core/solo-deployment.mjs';
+import {createPlayer} from '../core/match.mjs';
+import {createVersus,applyVersus,versusView} from '../core/versus.mjs';
 import {runVersus,GEARS} from './balance-harness.mjs';
 
 const maps=['g3-19e3779b1','g3-17c2a4b8e','g3-100000001','g3-100000009'];

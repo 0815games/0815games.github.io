@@ -6,7 +6,7 @@
 // ink edits on each gender's reference base head, masked cleanly with zero
 // skin/eyes/collar bleed so any hairstyle and beard fit any base head without
 // double eyebrows or old-face ghosting.
-import {HAIR_COLORS,FACES,HAIRS,BEARDS} from './assets/layers/manifest.mjs?v=20261119-avatar3';
+import {HAIR_COLORS,FACES,HAIRS,BEARDS} from '../assets/layers/manifest.mjs?v=20261119-avatar3';
 
 export const NO_LAYER=Object.freeze({id:null,label:null});
 export const DEFAULT_COLOR_ID='brown';

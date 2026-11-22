@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {createFriendService,friendNameKey} from '../friends.mjs';
+import {createFriendService,friendNameKey} from '../core/friends.mjs';
 import {readFileSync} from 'node:fs';
 const makeStore=()=>{const values=new Map(),listeners=new Map();const read=p=>{if(values.has(p))return values.get(p);const v={};for(const [k,x] of values)if(k.startsWith(p+'/')){const key=k.slice(p.length+1);if(!key.includes('/'))v[key]=x;}return Object.keys(v).length?v:null;};const emit=p=>{for(const [k,set] of listeners)if(k===p||p.startsWith(k+'/'))for(const cb of set)cb({val:()=>read(k)});};return {values,sdk:{ref:(_db,p)=>p,async get(p){return {val:()=>read(p)};},async set(p,v){values.set(p,v);emit(p);},async remove(p){for(const k of [...values.keys()])if(k===p||k.startsWith(p+'/'))values.delete(k);emit(p);},onValue(p,cb){if(!listeners.has(p))listeners.set(p,new Set());listeners.get(p).add(cb);cb({val:()=>read(p)});return()=>listeners.get(p).delete(cb);}}};};
 test('service sends, observes, accepts and removes a friend request',async()=>{

@@ -5,8 +5,8 @@ import {join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {GAME_MODULE_FOLDERS} from '../release-tools/stage-version.mjs';
 import {setupRecruitScreen} from '../ui/recruit-screen.mjs';
-import {defaultAvatar,encodeAvatar,AVATAR_STORAGE_KEY} from '../avatar.mjs';
-import {layerOptions} from '../avatar-layers.mjs';
+import {defaultAvatar,encodeAvatar,AVATAR_STORAGE_KEY} from '../core/avatar.mjs';
+import {layerOptions} from '../core/avatar-layers.mjs';
 
 function memory(saved={}){
   const store={...saved};

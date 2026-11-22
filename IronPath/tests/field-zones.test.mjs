@@ -3,10 +3,10 @@ import {strict as assert} from 'node:assert';
 // Stage 3 of the map rework: sector fields carry marked patches (thin ice,
 // deep bog, rubble, ambush trail, dust) whose rules key off the enemy's
 // POSITION, not fixed path indices - one field can mix several terrains.
-import {getMap,zoneAt,SECTOR_SPECS} from '../maps.mjs';
-import {createMatch,stepMatch,STEP} from '../simulation.mjs';
-import {createPlayer} from '../match.mjs';
-import {enemySpeedFactor,iceDamage,weaponDamageFactor} from '../terrain.mjs';
+import {getMap,zoneAt,SECTOR_SPECS} from '../core/maps.mjs';
+import {createMatch,stepMatch,STEP} from '../core/simulation.mjs';
+import {createPlayer} from '../core/match.mjs';
+import {enemySpeedFactor,iceDamage,weaponDamageFactor} from '../core/terrain.mjs';
 
 const player=(id='local')=>createPlayer(id,{name:id,gender:'female',level:1},850,450);
 const distance=(p,a,b)=>{const dx=b.x-a.x,dy=b.y-a.y,t=Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.y-a.y)*dy)/(dx*dx+dy*dy)));return Math.hypot(p.x-a.x-t*dx,p.y-a.y-t*dy);};

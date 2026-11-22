@@ -1,8 +1,8 @@
 import {strict as assert} from 'node:assert';
-import {getMap} from '../maps.mjs';
-import {createPlayer,applyCommand} from '../match.mjs';
-import {createMatch,stepMatch} from '../simulation.mjs';
-import {createFourCoop,createTwoVsTwo,applyFourCommand,stepFour,setFourPresence,fourReady} from '../four-modes.mjs';
+import {getMap} from '../core/maps.mjs';
+import {createPlayer,applyCommand} from '../core/match.mjs';
+import {createMatch,stepMatch} from '../core/simulation.mjs';
+import {createFourCoop,createTwoVsTwo,applyFourCommand,stepFour,setFourPresence,fourReady} from '../core/four-modes.mjs';
 const ids=['a','b','c','d'];
 const makePlayers=()=>ids.map((id,i)=>createPlayer(id,{name:`Player ${id}`,gender:'female'},1200,200+i*30));
 const map=getMap('four-front');assert.equal(map.width,1440);assert.equal(map.height,720);assert.equal(map.paths.length,2);assert.equal(map.pads.length,16);

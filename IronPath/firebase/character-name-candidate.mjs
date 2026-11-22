@@ -14,9 +14,9 @@ import {readFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {buildSocialCleanupCandidate} from './social-cleanup-candidate.mjs';
-import {CHARACTER_NAME_RESERVATION_GRACE_MS} from '../character-name.mjs';
+import {CHARACTER_NAME_RESERVATION_GRACE_MS} from '../core/character-name.mjs';
 import {MAINTENANCE_GATE} from '../release-tools/maintenance-rules.mjs';
-import {MAINTENANCE_PATH} from '../maintenance-check.mjs';
+import {MAINTENANCE_PATH} from '../core/maintenance-check.mjs';
 
 // The same regex style the published rules use for `friendNames`. Firebase
 // evaluates these with RE2; a non-capturing group made every read AND write

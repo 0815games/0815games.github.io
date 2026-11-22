@@ -1,8 +1,8 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {createPlayer} from '../match.mjs';
-import {createFourCoop,createTwoVsTwo,applyFourCommand} from '../four-modes.mjs';
-import {projectFourGameView} from '../four-game-view.mjs';
+import {createPlayer} from '../core/match.mjs';
+import {createFourCoop,createTwoVsTwo,applyFourCommand} from '../core/four-modes.mjs';
+import {projectFourGameView} from '../core/four-game-view.mjs';
 const ids=['a','b','c','d'],players=()=>ids.map(id=>createPlayer(id,{name:id,gender:'female'}));
 test('co-op view maps the guest requester and all pending approvals without mutating host state',()=>{
  const game=createFourCoop(players(),'a'),result=applyFourCommand(game,'c',{type:'startWave'}),snapshot={tick:1,match:game};

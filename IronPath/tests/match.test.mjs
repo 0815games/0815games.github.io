@@ -1,5 +1,5 @@
 import { strict as assert } from 'node:assert';
-import { createPlayer, applyCommand, towerRefund, TOWER_COSTS } from '../match.mjs';
+import { createPlayer, applyCommand, towerRefund, TOWER_COSTS } from '../core/match.mjs';
 const state={ended:false, money:300, towers:[], enemies:[{hp:100}], players:{
   alice:createPlayer('alice',{name:'Alice',gender:'female',level:2,skills:'v2;assault;1;0;00000000000000'}),
   bob:createPlayer('bob',{name:'Bob',gender:'male',level:2,skills:'v2;assault;1;0;00000000000000'},100,100)

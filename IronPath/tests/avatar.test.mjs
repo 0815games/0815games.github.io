@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {FEMALE_LOOKS,MALE_LOOKS,looksFor,AVATAR_STORAGE_KEY,DEFAULT_HAIR_COLOR,defaultAvatar,encodeAvatar,decodeAvatar,resolveAvatar,storeAvatar,randomAvatar} from '../avatar.mjs';
+import {FEMALE_LOOKS,MALE_LOOKS,looksFor,AVATAR_STORAGE_KEY,DEFAULT_HAIR_COLOR,defaultAvatar,encodeAvatar,decodeAvatar,resolveAvatar,storeAvatar,randomAvatar} from '../core/avatar.mjs';
 
 const EXPECTED_LEGACY_LOOKS={
   female:{crop:{faceId:'f1',hairId:'crop',beardId:null},bob:{faceId:'f1',hairId:'bob',beardId:null},

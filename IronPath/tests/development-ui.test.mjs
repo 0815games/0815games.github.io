@@ -2,7 +2,7 @@ import {strict as assert} from 'node:assert';
 import {existsSync,statSync} from 'node:fs';
 import {join} from 'node:path';
 import {renderSkillTree,armoryIcon,classBadgeSvg,towerClassIcon,CLASS_ARTWORKS} from '../ui/development-ui.mjs';
-import {parseBuild,encodeBuild,SKILL_PATHS} from '../skills.mjs';
+import {parseBuild,encodeBuild,SKILL_PATHS} from '../core/skills.mjs';
 
 class Element{
   constructor(tag){this.tag=tag;this.children=[];this.attrs={};this.dataset={};this.style={setProperty(k,v){this[k]=v;}};}

@@ -5,7 +5,7 @@
 // and layers in painted mission artwork thumbnails + General Vance radio clip
 // notifications per training step.
 import {translateText as tr} from '../language.mjs?v=20261122-ui1';
-import {createCoachHighlight} from '../coach-highlight.mjs?v=20261112-coachptr1';
+import {createCoachHighlight} from '../core/coach-highlight.mjs?v=20261112-coachptr1';
 
 export const COACH_STEPS = Object.freeze([
   Object.freeze({

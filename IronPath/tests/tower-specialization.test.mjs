@@ -4,10 +4,10 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFileSync} from 'node:fs';
-import {createMatch,stepMatch} from '../simulation.mjs';
-import {getMap} from '../maps.mjs';
-import {createPlayer,applyCommand,TOWER_COSTS} from '../match.mjs';
-import {specializationRank,towerKit,upgradeCostFor,branchUnlockLevel,branchUnlocked,anyBranchUnlocked,BRANCH_COUNT} from '../tower-specialization.mjs';
+import {createMatch,stepMatch} from '../core/simulation.mjs';
+import {getMap} from '../core/maps.mjs';
+import {createPlayer,applyCommand,TOWER_COSTS} from '../core/match.mjs';
+import {specializationRank,towerKit,upgradeCostFor,branchUnlockLevel,branchUnlocked,anyBranchUnlocked,BRANCH_COUNT} from '../core/tower-specialization.mjs';
 
 function field({type=0,branch=null,level=3,enemies=[],players}={}){
   const state=createMatch(players||[createPlayer('local',{name:'A',gender:'female'})],'road');
@@ -124,7 +124,7 @@ test('Veteran Kit II fires faster near its hero and III discounts its upgrades',
 });
 
 test('Twin MG III removes the aircraft penalty against planes and air bosses',async()=>{
-  const {towerDamage}=await import('../combat.mjs');
+  const {towerDamage}=await import('../core/combat.mjs');
   assert.ok(Math.abs(towerDamage(0,4,0,'plane')-10*1.9*.6)<1e-9,'rank II still carries the 0.6 aircraft multiplier');
   assert.ok(Math.abs(towerDamage(0,5,0,'plane')-22)<1e-9,'rank III deals full base damage (22) to aircraft');
   assert.ok(Math.abs(towerDamage(0,6,0,'plane')-25)<1e-9,'prestige keeps rank III full aircraft damage');
@@ -189,16 +189,16 @@ test('the kit data, UI and wiring are pinned',()=>{
   assert.match(game,/Then RANK \{rank\}: \{mechanic\}/,'the upgrade summary names the next rank');
   assert.match(game,/Trophy gun! The boss kill pays \+25 supplies\./,'the bounty notice is wired');
   assert.match(game,/rank2:'Suppression nest/,'every kit carries its rank mechanics');
-  const sim=readFileSync(new URL('../simulation.mjs',import.meta.url),'utf8');
+  const sim=readFileSync(new URL('../core/simulation.mjs',import.meta.url),'utf8');
   assert.match(sim,/applyHitEffects\(state,tower,target,dealt,events,rewardTeam\)/,'the simulation applies hit effects');
   assert.match(sim,/towerDamageBonus\(state,tower,target\)/,'kit damage rides the shot');
   assert.match(sim,/\*towerIntervalFactor\(state,tower,p\)/,'kit fire rate rides the timer');
-  const match=readFileSync(new URL('../match.mjs',import.meta.url),'utf8');
+  const match=readFileSync(new URL('../core/match.mjs',import.meta.url),'utf8');
   assert.match(match,/upgradeCostFor\(tower,upgradeCost\(tower\.level\)\)/,'the upgrade price honors the Veteran discount');
   assert.match(match,/branchUnlocked\(command\.branch,player\.level\)/,'the protocol asks the shared unlock rule');
   assert.doesNotMatch(match,/player\.level<5|player\.level<10/,'and keeps no second copy of the thresholds');
   assert.match(game,/branchUnlockLevel\(i\)/,'the branch menu asks it too');
-  const art=readFileSync(new URL('../cartoon-art.mjs',import.meta.url),'utf8');
+  const art=readFileSync(new URL('../core/cartoon-art.mjs',import.meta.url),'utf8');
   assert.match(art,/specializationRank\(tower\)/,'the canvas draws rank chevrons');
   const de=readFileSync(new URL('../i18n/localization-towers-de.mjs',import.meta.url),'utf8');
   assert.match(de,/RANG II ab Stufe 4/,'the rank track is German');
@@ -209,4 +209,4 @@ test('the kit data, UI and wiring are pinned',()=>{
 function awaitImport(){
   return cached;
 }
-import * as cached from '../tower-specialization.mjs';
+import * as cached from '../core/tower-specialization.mjs';

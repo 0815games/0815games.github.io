@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {sameMaintenanceControl,transitionMaintenance} from '../admin-maintenance.mjs';
+import {sameMaintenanceControl,transitionMaintenance} from '../core/admin-maintenance.mjs';
 
 const open={format:1,mode:'open',authAfterMs:1000},closed={...open,mode:'maintenance'};
 function fixture(initial=open){

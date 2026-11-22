@@ -33,9 +33,9 @@ await guest.close();await host.close();assert.throws(()=>host.watchInputs(()=>{}
 console.log('Firebase party packet channel tests passed (mock SDK; no security rules tested).');
 
 // Exercise the real shared host through the channel, still using the mock SDK.
-const {createPartyHost}=await import('../party-host.mjs');
-const {createMatch}=await import('../simulation.mjs');
-const {createPlayer}=await import('../match.mjs');
+const {createPartyHost}=await import('../core/party-host.mjs');
+const {createMatch}=await import('../core/simulation.mjs');
+const {createPlayer}=await import('../core/match.mjs');
 const runtime=createPartyHost(createMatch([createPlayer('alice',{name:'Alice',gender:'female'}),createPlayer('bob',{name:'Bob',gender:'male'})]));
 runtime.setPresence('alice',true);runtime.setPresence('bob',true);
 const host2=createFirebasePartyChannel({...config,partyId:'anotherParty',auth:aliceAuth});

@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {createPlayer} from '../match.mjs';
-import {bunkerStart} from '../solo-deployment.mjs';
+import {createPlayer} from '../core/match.mjs';
+import {bunkerStart} from '../core/solo-deployment.mjs';
 import {createFirebaseRecoverableGame} from '../net/firebase-recoverable-game.mjs';
 
 // A minimal hierarchical in-memory SDK, not Firebase or its rules. It allows

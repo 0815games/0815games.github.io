@@ -2,15 +2,15 @@ import {test} from 'node:test';
 // The four-player lobby and its transport: roster slots, the wire contract and
 // the motion projection the guests receive.
 
-import {projectCoopMotion} from '../coop-motion.mjs';
+import {projectCoopMotion} from '../core/coop-motion.mjs';
 import {createFirebasePartyChannel} from '../net/firebase-party-channel.mjs';
 import {createFirebasePartyClientSession, createFirebasePartyHostSession} from '../net/firebase-party-session.mjs';
-import {createFourLobby, transitionFourLobby as transition} from '../four-lobby.mjs';
-import {createFourCoop, createTwoVsTwo} from '../four-modes.mjs';
-import {createPlayer} from '../match.mjs';
-import {createPartyHost} from '../party-host.mjs';
-import {createHost, restoreHost} from '../protocol.mjs';
-import {createMatch} from '../simulation.mjs';
+import {createFourLobby, transitionFourLobby as transition} from '../core/four-lobby.mjs';
+import {createFourCoop, createTwoVsTwo} from '../core/four-modes.mjs';
+import {createPlayer} from '../core/match.mjs';
+import {createPartyHost} from '../core/party-host.mjs';
+import {createHost, restoreHost} from '../core/protocol.mjs';
+import {createMatch} from '../core/simulation.mjs';
 import {strict as assert} from 'node:assert';
 
 test('the four-player lobby moves a roster through its transitions',async()=>{

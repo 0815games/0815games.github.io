@@ -19,7 +19,7 @@ const bootstrap=`
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import {initializeAuth,browserSessionPersistence,connectAuthEmulator,onAuthStateChanged,signInWithEmailAndPassword,signOut} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import {getDatabase,connectDatabaseEmulator,ref,get,onValue,runTransaction,serverTimestamp} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
-import {createAdminPanel} from './admin-panel.mjs';
+import {createAdminPanel} from './core/admin-panel.mjs';
 const config=${JSON.stringify(config)},app=initializeApp(config,'ironpath-maintenance-admin');
 const auth=initializeAuth(app,{persistence:browserSessionPersistence});connectAuthEmulator(auth,'http://127.0.0.1:9099',{disableWarnings:true});
 const db=getDatabase(app);connectDatabaseEmulator(db,'127.0.0.1',9000);

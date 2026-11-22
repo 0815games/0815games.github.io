@@ -4,7 +4,7 @@ import { productionModuleUrl } from './production-module.mjs';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
-import { createSettings, readSettings, writeSettings, defaultSettings, SETTINGS_KEY } from '../settings.mjs';
+import { createSettings, readSettings, writeSettings, defaultSettings, SETTINGS_KEY } from '../core/settings.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -271,7 +271,7 @@ test('the dialog that switches the language is German itself', async () => {
   const fromMarkup = [...settingsMarkup.matchAll(/data-i18n-(?:aria-label|text)="([^"]+)"/g)].map(match => match[1].replace(/&amp;/g, '&'));
   assert.ok(fromMarkup.length >= 16, 'the dialog has complete translated copy');
 
-  const source = readFileSync(resolve(root, 'settings.mjs'), 'utf8');
+  const source = readFileSync(resolve(root, 'core/settings.mjs'), 'utf8');
   const fromCode = [
     ...[...source.matchAll(/(?:title|text): '([^']+)'/g)].map(match => match[1]),
     ...[...source.matchAll(/[:?] '([^']{20,})'/g)].map(match => match[1]),
