@@ -11,7 +11,7 @@ setupLanguage({
  storage:{getItem:key=>key==='ironpath:language'?'de':null,setItem(){}},
 });
 
-const plan=readFileSync(new URL('../FIRST-RUN-DEVICE-TEST.md',import.meta.url),'utf8');
+const plan=readFileSync(new URL('../docs/FIRST-RUN-DEVICE-TEST.md',import.meta.url),'utf8');
 
 test('the device plan quotes the German the build actually shows',()=>{
  // Strings the app translates at runtime: the plan must quote what translateText
@@ -65,7 +65,7 @@ test('the plan lists the keys a tester has to clear to repeat a first run',()=>{
 });
 
 test('the plan covers every open first-run checklist row',()=>{
- const checklist=readFileSync(new URL('../CHECKLIST.md',import.meta.url),'utf8');
+ const checklist=readFileSync(new URL('../docs/CHECKLIST.md',import.meta.url),'utf8');
  assert.match(checklist,/Validate the first run on a real phone and a real desktop browser/);
  assert.ok(plan.includes('real phone'));
  assert.ok(plan.includes('Fullscreen'),'fullscreen validation is a checklist row');

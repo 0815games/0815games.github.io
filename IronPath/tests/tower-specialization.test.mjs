@@ -1,4 +1,4 @@
-// Tower specialization kits (Punkt 7, TOWER-SPECIALIZATION-PLAN.md): ranks
+// Tower specialization kits (Punkt 7, docs/TOWER-SPECIALIZATION-PLAN.md): ranks
 // derive from tower.level, mechanics ride the simulation's own vocabulary.
 // Every kit is driven through the REAL stepMatch - no mocks of the engine.
 import {test} from 'node:test';

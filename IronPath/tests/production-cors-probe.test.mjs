@@ -1,13 +1,18 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
+import {fileURLToPath} from 'node:url';
 import {spawnSync} from 'node:child_process';
 
 const require=createRequire(import.meta.url);
 const {probeUrls,isAllowedRequest,validateControl}=require('../browser-tests/production-cors-probe.cjs');
+// The probe is started with a repository-relative path, so the child needs the
+// repository root as cwd. Without it this test only passes when the suite runs
+// from the repository root, and reports a red probe from anywhere else.
+const repoRoot=fileURLToPath(new URL('../../',import.meta.url));
 
 test('production browser probe requires explicit opt-in before loading browser tooling',()=>{
- const result=spawnSync(process.execPath,['IronPath/browser-tests/production-cors-probe.cjs'],{encoding:'utf8'});
+ const result=spawnSync(process.execPath,['IronPath/browser-tests/production-cors-probe.cjs'],{encoding:'utf8',cwd:repoRoot});
  assert.equal(result.status,2);assert.match(result.stderr,/--read-only-live/);
 });
 

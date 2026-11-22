@@ -1,5 +1,5 @@
 // Tower specialization kits: the level-3 branch choice grows into a ranked
-// kit (see TOWER-SPECIALIZATION-PLAN.md). Ranks DERIVE from the tower's
+// kit (see docs/TOWER-SPECIALIZATION-PLAN.md). Ranks DERIVE from the tower's
 // level - nothing is stored that the protocol, the snapshots or the
 // stale-command guard would have to learn:
 //
