@@ -26,7 +26,7 @@
 //     Until those Rules are published an abandoned entry simply stays put,
 //     which is the safe direction: the name is blocked, not duplicated.
 
-import {characterNameKey,sameCharacterName} from './character-name.mjs?v=20261121-order1';
+import {characterNameKey,sameCharacterName} from './character-name.mjs?v=20261122-i18n1';
 
 const validUid=id=>typeof id==='string'&&id.length>0&&id.length<=128&&!/[.#$\[\]/\u0000-\u001f\u007f]/.test(id);
 

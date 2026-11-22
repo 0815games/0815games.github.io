@@ -5,7 +5,7 @@
 // volume synchronization with Settings, and safe audio cleanup on view/account
 // transitions.
 
-import {getLanguage} from './language.mjs?v=20261121-order1';
+import {getLanguage} from './language.mjs?v=20261122-i18n1';
 
 export const GENERAL_NAME=Object.freeze({
   en:'GENERAL VANCE · SECTOR COMMAND',
