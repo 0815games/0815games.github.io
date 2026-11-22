@@ -30,6 +30,31 @@ wird mitveröffentlicht — auch wenn es kein Spieler je importiert. Deshalb gil
 > In `IronPath/` (Wurzel) liegt keine Doku, kein Entwicklungsskript und kein
 > Modul ohne Importeur. `IronPath/tests/repo-structure.test.mjs` prüft das.
 
+## Modul-Ordner im Spiel (im Aufbau)
+
+Die Spielmodule wandern schrittweise aus der flachen Wurzel in Fach-Ordner.
+Verbindlich ist die Liste `GAME_MODULE_FOLDERS` in
+`release-tools/stage-version.mjs` — der Packager kopiert genau diese Ordner
+rekursiv in jeden Release-Build, und der Struktur-Wächter liest dieselbe Liste,
+damit beide nie auseinanderlaufen:
+
+| Ordner | Inhalt |
+| --- | --- |
+| `battle/` | Gefecht: Simulation, Kampf, Wellen, Türme im Feld |
+| `core/` | Grundlagen: Sprache, Einstellungen, Version, gemeinsame Bausteine |
+| `i18n/` | Deutsche Wörterbücher (`localization-*-de.mjs`) und Sprachlogik |
+| `net/` | Firebase-/Mehrspieler-Clientmodule (`firebase-*`, Party, Freunde) |
+| `ui/` | Oberfläche: HUD, Menüs, Dialoge, Bildschirme |
+| `workshop/` | Werkstatt: Baupläne, Mods, Prestige |
+
+Solange ein Ordner noch nicht existiert, ist das kein Fehler — die Gruppen
+ziehen eine nach der anderen um, jeder Umzug als eigener Patch. In der Wurzel
+bleiben dauerhaft die Eintrittspunkte (`index.html`, `admin.html`,
+`version.html`, `account.js`, `game.js`, die `*-entry.mjs`), die `.css`-Dateien
+und `release-version.json`. In einem Modul-Ordner liegt nur Code
+(`.mjs`/`.js`/`.css`); alles andere lässt der Packager laut scheitern statt es
+still zu verlieren.
+
 ## Arbeitsmaterial
 
 | Ordner | Inhalt | Wird ausgeliefert? |

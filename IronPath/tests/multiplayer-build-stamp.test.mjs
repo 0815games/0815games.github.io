@@ -1,6 +1,9 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {readFileSync,readdirSync} from 'node:fs';
+import {readFileSync,readdirSync,existsSync} from 'node:fs';
+import {join} from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {GAME_MODULE_FOLDERS} from '../release-tools/stage-version.mjs';
 
 test('multiplayer camera, CSS and account entry use the current build wave',()=>{
  const read=name=>readFileSync(new URL(`../${name}`,import.meta.url),'utf8');
@@ -58,8 +61,21 @@ test('changed browser modules and their importers share one cache wave without s
   'social-notifications.mjs','soldier-profile.mjs','soldier-screen.mjs','solo-deployment.mjs','story-map-art.mjs','tower-class-paths.mjs','tower-specialization.mjs','tower-upgrade-cue.mjs','training-run.mjs','tutorial-dossier.mjs','tutorial-sync.mjs','tutorial.mjs',
   'version-check.mjs','version-ui.mjs','versus.mjs','wave-consensus.mjs','workshop-multiplayer-game.mjs','workshop-solo.mjs'
  ]);
- const seen=new Set(),pattern=/["'](?:\.\/)?([\w.-]+\.(?:mjs|js))(?:\?v=([\w-]+))?["']/g;
- for(const file of readdirSync(root).filter(name=>/\.(?:mjs|js|html)$/.test(name))){
+ const seen=new Set(),pattern=/["'][^"']*?([\w.-]+\.(?:mjs|js))(?:\?v=([\w-]+))?["']/g;
+ // Scan the importers wherever the structure puts them: root files today, the
+ // approved module folders after a group moves. A root-only scan would keep
+ // passing while the moved importers cache a split wave.
+ const rootDir=fileURLToPath(root),scanFiles=[];
+ const walk=(dir,prefix)=>{
+  for(const entry of readdirSync(dir,{withFileTypes:true})){
+   const rel=prefix?`${prefix}/${entry.name}`:entry.name;
+   if(entry.isDirectory())walk(join(dir,entry.name),rel);
+   else if(entry.isFile()&&/\.(?:mjs|js|html)$/.test(entry.name))scanFiles.push(rel);
+  }
+ };
+ for(const name of readdirSync(rootDir))if(/\.(?:mjs|js|html)$/.test(name))scanFiles.push(name);
+ for(const folder of GAME_MODULE_FOLDERS)if(existsSync(join(rootDir,folder)))walk(join(rootDir,folder),folder);
+ for(const file of scanFiles){
   for(const match of read(file).matchAll(pattern))if(names.has(match[1])){
    seen.add(match[1]);assert.equal(match[2],stamp,`${file} must not cache an old ${match[1]} or load a second instance`);
   }
