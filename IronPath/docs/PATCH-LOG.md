@@ -3,7 +3,7 @@
 Dieses Protokoll ist der dauerhafte Einstiegspunkt für zukünftige Änderungen.
 Es ergänzt den [Patchplan](PATCH-BLOECKE.md) und das [Datenblatt](DATENBLATT.md),
 aber ersetzt weder Git noch die GitHub-PR-Historie. Die dazugehörige
-[Arbeitsanweisung](../AGENTS.md) verlangt, dieses Log vor der Arbeit zu lesen
+[Arbeitsanweisung](../../AGENTS.md) verlangt, dieses Log vor der Arbeit zu lesen
 und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
 
 ## So wird protokolliert
@@ -3422,7 +3422,7 @@ Grenzen / Offen:
 - **Zeit / Quelle:** 2026-10-31 UTC (Sitzungsvorgabe); GitHub-Merge-Zeitpunkt von [PR #319](https://github.com/0815games/0815games.github.io/pull/319) (`782b46fa4d521f7a07801f49301576f02a288e6a` auf `main`): `2026-11-19T05:38:35Z` (alle 13/13 PR-Checks und anschließende `main`-Workflows bestanden).
 - **Block / Ziel:** Block-5-RTDB-Rules-Abschluss protokollieren; **Block 9 (Einheitliches Menü-Layout & Kommandotafeln)** vor Block 6 (Tutorial) einschieben, damit Block 6 direkt auf der neuen Menüführung aufbaut. Block 7 bleibt unverändert der letzte Ausbau-Block.
 - **Branch / Basis:** `arena/66c63134-0815games-github-io`, Ausgangs-HEAD `782b46fa4d521f7a07801f49301576f02a288e6a`.
-- **Betreiberbestätigung (ohne unabhängigen Serverabruf aus der Sandbox):** Der Betreiber bestätigte, dass die in [`IronPath/firebase/BLOCK5-RULES-TO-PUBLISH.json`](firebase/BLOCK5-RULES-TO-PUBLISH.json) bereitgestellten Block-5-RTDB-Rules live in der Firebase Console veröffentlicht wurden.
+- **Betreiberbestätigung (ohne unabhängigen Serverabruf aus der Sandbox):** Der Betreiber bestätigte, dass die in [`IronPath/firebase/BLOCK5-RULES-TO-PUBLISH.json`](../firebase/BLOCK5-RULES-TO-PUBLISH.json) bereitgestellten Block-5-RTDB-Rules live in der Firebase Console veröffentlicht wurden.
 - **Änderungen / Dateien:**
   - `IronPath/PATCH-BLOECKE.md` (Block-5-Rules als vom Betreiber live bestätigt markiert, Block 9 in Übersicht, Reihenfolge & Abschnitt `### 9.` vor Block 6 eingeordnet)
   - `IronPath/patch-notes.mjs` & `IronPath/tests/patch-notes.test.mjs` (`block9` als `active` direkt vor `block6` / `next` in `PLANNED_PATCHES`, `block7` unverändert zuletzt; Block-5-Text aktualisiert)
@@ -3514,7 +3514,7 @@ Grenzen / Offen:
 ## IPL-0074 – Block-9d-RTDB-Rules live bestätigt (`BLOCK9D-RULES-TO-PUBLISH.json`)
 - **Zeit / Quelle:** 2026-10-31 UTC (Sitzungsvorgabe); nach Merge von [PR #323](https://github.com/0815games/0815games.github.io/pull/323) (`6e634551830de16ab6fcd690144b4c0a929e5f08`).
 - **Branch / Basis:** `arena/f7cdd26a-0815games-github-io` ab `6e634551830de16ab6fcd690144b4c0a929e5f08` (`main`).
-- **Betreiberbestätigung (ohne unabhängigen Serverabruf aus der Sandbox):** Der Betreiber bestätigte, dass die in [`IronPath/firebase/BLOCK9D-RULES-TO-PUBLISH.json`](firebase/BLOCK9D-RULES-TO-PUBLISH.json) bereitgestellten Block-9d-RTDB-Rules (inkl. `/rules/activeSessions/$uid`) live in der Firebase Console veröffentlicht wurden.
+- **Betreiberbestätigung (ohne unabhängigen Serverabruf aus der Sandbox):** Der Betreiber bestätigte, dass die in [`IronPath/firebase/BLOCK9D-RULES-TO-PUBLISH.json`](../firebase/BLOCK9D-RULES-TO-PUBLISH.json) bereitgestellten Block-9d-RTDB-Rules (inkl. `/rules/activeSessions/$uid`) live in der Firebase Console veröffentlicht wurden.
 - **Änderungen / Dateien:**
   - `IronPath/PATCH-BLOECKE.md`, `IronPath/PATCH-LOG.md` (`IPL-0073` Merge/Deploy nachgetragen + `IPL-0074` protokolliert), `IronPath/patch-notes.mjs` (`block9d`-Eintrag aktualisiert: `BLOCK9D-RULES-TO-PUBLISH.json` als vom Betreiber veröffentlicht dokumentiert, verbleibender offener Punkt auf echte Desktop-/Handy-Sichtung vor Block 6 bereinigt).
 - **Offen:** Echte Desktop- und Handy-Sichtung auf `20261119-block9d` (inkl. Einzelsitzungs-Schutz über mehrere Fenster/Geräte) vor Beginn von Block 6.
@@ -3561,7 +3561,7 @@ Grenzen / Offen:
 
 ## IPL-0078 – Block 2 (`20261119-block2`): Strenges `NFC_CASEFOLD_V2`, stiller Login-Backfill, Konflikt-Dialog & `BLOCK2`-Rules-Kandidat
 - **Zeit / Quelle:** 2026-10-31 UTC (Sitzungsvorgabe); Arbeitsbranch `arena/ef607625-0815games-github-io` ab `25b8c332358889e5694a425672f83ac7b023ee15` (`main`), Status: `lokal/uncommittet`.
-- **Block / Ziel:** Block 2 (eindeutige globale Soldatennamen & Alt-Duplikate) gemäß Betreiberentscheid fertigstellen: (1) vollständiges Unicode-Case-Folding (`NFC_CASEFOLD_V2`) ohne Abweichung zwischen Spielclient (`character-name.mjs`) und Audit (`audit-character-names.py`), (2) stille Login-Reservierung in `characterNames/<key>` bei freien Namen, (3) ausschließlich bei Alt-Duplikaten (`taken`) ein blockierender Umbenennungs-Dialog (`#nameConflictDialog`) ohne allgemeine Umbenennungs-Schaltfläche und ohne Verlust von EP/Ausrüstung/Skills/Kampagne, (4) sichere sitzungsübergreifende Namensfreigabe beim Löschen, (5) streng additiver Publish-Kandidat [`firebase/BLOCK2-RULES-TO-PUBLISH.json`](firebase/BLOCK2-RULES-TO-PUBLISH.json) direkt auf Basis des live laufenden [`firebase/BLOCK9D-RULES-TO-PUBLISH.json`](firebase/BLOCK9D-RULES-TO-PUBLISH.json).
+- **Block / Ziel:** Block 2 (eindeutige globale Soldatennamen & Alt-Duplikate) gemäß Betreiberentscheid fertigstellen: (1) vollständiges Unicode-Case-Folding (`NFC_CASEFOLD_V2`) ohne Abweichung zwischen Spielclient (`character-name.mjs`) und Audit (`audit-character-names.py`), (2) stille Login-Reservierung in `characterNames/<key>` bei freien Namen, (3) ausschließlich bei Alt-Duplikaten (`taken`) ein blockierender Umbenennungs-Dialog (`#nameConflictDialog`) ohne allgemeine Umbenennungs-Schaltfläche und ohne Verlust von EP/Ausrüstung/Skills/Kampagne, (4) sichere sitzungsübergreifende Namensfreigabe beim Löschen, (5) streng additiver Publish-Kandidat [`firebase/BLOCK2-RULES-TO-PUBLISH.json`](../firebase/BLOCK2-RULES-TO-PUBLISH.json) direkt auf Basis des live laufenden [`firebase/BLOCK9D-RULES-TO-PUBLISH.json`](../firebase/BLOCK9D-RULES-TO-PUBLISH.json).
 - **Änderungen / Dateien:**
   - **Namens-Normalisierung & Claim-Sicherheit:** `IronPath/character-name.mjs` (`NFC_CASEFOLD_V2`, 101-teilige Casefold-Tabelle + Cherokee-Mapping + zweistufige NFC-Normalisierung; unabhängige 2–24 UTF-16-Grenze / 96-Byte-UTF-8-Schlüssellänge), `IronPath/character-name-claim.mjs` (`reducerCalled`-Prüfung liefert `unsupported` statt fälschlichem `taken` bei unaufgerufenen synthetischen `runTransaction`-Mocks), `IronPath/firebase/name-policy-fixtures.json` (`version: 2`, `same === casefoldSame`), `IronPath/scripts/audit-character-names.py`, `IronPath/firebase/CHARACTER-NAME-AUDIT.md`.
   - **Stiller Login-Backfill & Konflikt-UI:** `IronPath/character-name-conflict.mjs`, `IronPath/account.js` (`nameConflictHandler.reconcile`, Cross-Session-`releaseNameKey`-Prüfung per `get` in `deleteCharacter`, `isReady`-/`normalReleaseSafety`-Schutz), `IronPath/index.html` (`#nameConflictDialog`), `IronPath/menu-redesign.css`, `IronPath/localization-account-de.mjs`.
@@ -3590,7 +3590,7 @@ Grenzen / Offen:
 ## IPL-0080 – Block-2- & vorgezogene Block-6-RTDB-Rules live bestätigt (`BLOCK2-RULES-TO-PUBLISH.json`)
 - **Zeit / Quelle:** 2026-10-31 UTC (Sitzungsvorgabe); auf PR #327 (`arena/ef607625-0815games-github-io`, nach `37a2103`).
 - **Branch / Basis:** `arena/ef607625-0815games-github-io`, Ausgangs-HEAD `37a2103` (`25b8c3323` auf `main`).
-- **Betreiberbestätigung (ohne unabhängigen Serverabruf aus der Sandbox):** Der Betreiber bestätigte, dass die in [`IronPath/firebase/BLOCK2-RULES-TO-PUBLISH.json`](firebase/BLOCK2-RULES-TO-PUBLISH.json) (SHA-256 `914981b62198dbbff3651ab294834ff453d4eaf46450c062a9239149303915ee`) bereitgestellten Block-2-RTDB-Rules (`characterNames/$key` mit `MAINTENANCE_GATE`, ungelistetes Umbenennungsrecht auf `players/$uid/name`) inklusive des vorgezogenen Block-6-Schemas (`players/$uid/tutorial`) live in der Firebase Console veröffentlicht wurden.
+- **Betreiberbestätigung (ohne unabhängigen Serverabruf aus der Sandbox):** Der Betreiber bestätigte, dass die in [`IronPath/firebase/BLOCK2-RULES-TO-PUBLISH.json`](../firebase/BLOCK2-RULES-TO-PUBLISH.json) (SHA-256 `914981b62198dbbff3651ab294834ff453d4eaf46450c062a9239149303915ee`) bereitgestellten Block-2-RTDB-Rules (`characterNames/$key` mit `MAINTENANCE_GATE`, ungelistetes Umbenennungsrecht auf `players/$uid/name`) inklusive des vorgezogenen Block-6-Schemas (`players/$uid/tutorial`) live in der Firebase Console veröffentlicht wurden.
 - **Änderungen / Dateien:**
   - `IronPath/PATCH-BLOECKE.md` (Block-2-Rules-Veröffentlichung inkl. vorgezogenem Block-6-`players/$uid/tutorial`-Schema als vom Betreiber live bestätigt markiert, offene Punkte auf Screenreader & echte Mehrgeräte-Abnahme aktualisiert)
   - `IronPath/patch-notes.mjs` (`RELEASED_PATCHES[0]` `block2` sowie `PLANNED_PATCHES` `block2`/`block6`: `BLOCK2-RULES-TO-PUBLISH.json` als vom Betreiber live bestätigt eingetragen, offene Hinweise auf Geräteabnahme bereinigt)

@@ -4,8 +4,8 @@ Diese Hinweise gelten für Änderungen an `IronPath/` sowie für dazugehörige
 Tests, GitHub-Pull-Requests und Releases. Andere Projekte im Repository sind
 davon nicht betroffen.
 
-1. Vor Beginn `IronPath/PATCH-LOG.md` lesen, danach bei Bedarf
-   `IronPath/PATCH-BLOECKE.md` und `IronPath/DATENBLATT.md`. Bereits vorhandene
+1. Vor Beginn `IronPath/docs/PATCH-LOG.md` lesen, danach bei Bedarf
+   `IronPath/docs/PATCH-BLOECKE.md` und `IronPath/docs/DATENBLATT.md`. Bereits vorhandene
    Arbeit, den aktuellen Branch und uncommittete Änderungen berücksichtigen.
 2. Jeden in sich abgeschlossenen Arbeitsschritt im Patch-Log festhalten: Ziel,
    betroffene Dateien, tatsächliche Änderungen, Tests und Ergebnisse,
@@ -41,7 +41,7 @@ davon nicht betroffen.
    Blöcke aktualisieren. Jede Zeile braucht eine deutsche und eine englische
    Fassung; `IronPath/tests/patch-notes.test.mjs` lässt eine fehlende Sprache
    nicht durch. Veröffentlichte Arbeit und offene Punkte bleiben getrennt, und
-   kein Eintrag behauptet eine Geräteabnahme. Die Schnellübersicht in `IronPath/PATCH-BLOECKE.md` bei Fortschritt
+   kein Eintrag behauptet eine Geräteabnahme. Die Schnellübersicht in `IronPath/docs/PATCH-BLOECKE.md` bei Fortschritt
    und Nutzerfeedback aktualisieren, ohne offene Kriterien oder bereits gebaute
    Funktionen zu streichen. Bei Bedarf das Patch-Log verlinken.
 

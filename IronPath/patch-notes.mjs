@@ -1,7 +1,7 @@
 // Field notes: the patch log, readable inside the game.
 //
-// Why this file exists. The full protocol lives in PATCH-LOG.md and the plan in
-// PATCH-BLOECKE.md - both are Markdown for the repository, not for a phone. The
+// Why this file exists. The full protocol lives in docs/PATCH-LOG.md and the plan in
+// docs/PATCH-BLOECKE.md - both are Markdown for the repository, not for a phone. The
 // operator asked for exactly that content where he plays: what the last patches
 // changed and which blocks are still ahead. So this module is the in-game view
 // of the same two lists, and nothing else.
@@ -18,7 +18,7 @@
 //     The wording below says so instead of implying a finished feature;
 //   * entries are edited by hand after a real release. Nothing here is
 //     generated from Git, so an entry is only true once the matching commit,
-//     merge and Pages run are proven - see PATCH-LOG.md.
+//     merge and Pages run are proven - see docs/PATCH-LOG.md.
 
 import {getLanguage} from './language.mjs?v=20261121-road1';
 
@@ -40,7 +40,7 @@ export const PATCH_LABELS=Object.freeze({
 });
 
 // What is already on the website. Newest first. Only entries whose commit,
-// merge and Pages run are proven in PATCH-LOG.md belong here; `build` is the
+// merge and Pages run are proven in docs/PATCH-LOG.md belong here; `build` is the
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([

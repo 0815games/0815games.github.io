@@ -30,7 +30,7 @@ den genannten Merge-/Commit-Vorgang laufen. Der zuletzt abgefragte Zustand war
 bereits `maintenance`. Vor jeder Aktion den tatsächlichen Zustand neu prüfen;
 zum Öffnen ist das berechtigte Firebase-Administratorkonto nötig. Die folgenden
 Schritte sind ein **Operatorplan**, kein Beleg für einen abgeschlossenen Cutover
-oder Rollback. Der Patchplan in `../PATCH-BLOECKE.md` unterscheidet erledigte
+oder Rollback. Der Patchplan in `../docs/PATCH-BLOECKE.md` unterscheidet erledigte
 Teilfälle und offene Anforderungen; tatsächliche Releaseereignisse stehen im
 Patch-Log.
 
