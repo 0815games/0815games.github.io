@@ -2,7 +2,7 @@
 // play - the personal record, the battlefield choice, the last run and the
 // current loadout. Navigation only; the run itself starts through the same
 // chooseEndless path the one-click flow used.
-import {translate,translateText} from '../language.mjs?v=20261122-ui1';
+import {translate,translateText} from '../language.mjs?v=20261122-core1';
 
 // The free-play generator themes (maps.mjs draws one of five at random); the
 // launcher offers them as a choice plus true random. Labels reuse the

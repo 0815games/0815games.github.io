@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see docs/PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261122-ui1';
+import {getLanguage} from './language.mjs?v=20261122-core1';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,22 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'core1',build:'20261122-core1',pr:358,
+    title:{en:'Structure Move 6 · The Core Modules Now Live in core/ - the New Layout Is Complete',de:'Struktur-Umzug 6 · Die Kern-Module liegen jetzt in core/ - die neue Ordnung ist komplett'},
+    shipped:[
+      {en:'Nothing changes in the game itself: every battle, menu and online match behaves exactly as before. Only the addresses of the core files moved.',de:'Am Spiel selbst ändert sich nichts: Jedes Gefecht, Menü und Online-Spiel verhält sich genau wie vorher. Nur die Adressen der Kern-Dateien sind umgezogen.'},
+      {en:'All 101 remaining game modules moved from the flat game folder into IronPath/core/. Only the entry points (account, game start, language) plus the pages and stylesheets stay in the top folder, next to the six domain folders battle/, core/, i18n/, net/, ui/ and workshop/.',de:'Alle 101 verbliebenen Spielmodule sind aus dem flachen Spielordner nach IronPath/core/ gezogen. Nur die Eintrittspunkte (Konto, Spielstart, Sprache) sowie Seiten und Stylesheets bleiben im Hauptordner, neben den sechs Fach-Ordnern battle/, core/, i18n/, net/, ui/ und workshop/.'},
+      {en:'82 of the 101 modules are byte-identical to before; in the other 19 only the import paths point one folder up.',de:'82 der 101 Module sind bytegleich zu vorher; in den anderen 19 zeigen nur die Import-Pfade einen Ordner höher.'},
+      {en:'Raised the cache wave to 20261122-core1, because the module addresses changed: no device should keep loading the core code from its old place out of cache.',de:'Die Cache-Welle auf 20261122-core1 erhöht, weil sich die Modul-Adressen geändert haben: Kein Gerät soll den Kern-Code weiter unter der alten Adresse aus dem Zwischenspeicher laden.'},
+    ],
+    open:[
+      {en:'Visual check after loading: the stamp must read BUILD 20261122-core1. The honest test for this move is the whole game: the login scene, a solo battle and an online party must work exactly as before.',de:'Sichtprüfung nach dem Laden: Der Stempel muss BUILD 20261122-core1 zeigen. Der ehrliche Test für diesen Umzug ist das ganze Spiel: Anmelde-Szene, ein Solo-Gefecht und eine Online-Party müssen genau wie vorher funktionieren.'},
+      {en:'No device acceptance yet: this move has not been checked on an iPhone or iPad.',de:'Noch keine Geräteabnahme: Dieser Umzug ist nicht auf einem iPhone oder iPad geprüft.'},
+      {en:'Note for rollbacks: protected builds from before this release cannot be verified with the new file list - a rollback must point at builds from 20261122-core1 onward.',de:'Hinweis für Rollbacks: Geschützte Builds von vor diesem Stand lassen sich mit der neuen Dateiliste nicht mehr prüfen - ein Rollback muss auf Stände ab 20261122-core1 zeigen.'},
+      {en:'Next: the three patch scripts merge into a single patch command (structure phase 3). Still parked: the thicker pulsing selection ring on build pads (without any hover preview), as its own game release.',de:'Als Nächstes: Die drei Patch-Skripte werden zu einem einzigen Patch-Befehl zusammengeführt (Struktur-Phase 3). Weiter geparkt: der dickere pulsierende Auswahlring auf Bauplätzen (ohne jede Hover-Vorschau), als eigener Spiel-Stand.'},
+    ]
+  },
   {
     id:'ui1',build:'20261122-ui1',pr:356,
     title:{en:'Structure Move 5 · The Interface Modules Now Live in ui/',de:'Struktur-Umzug 5 · Die Oberflächen-Module liegen jetzt in ui/'},
