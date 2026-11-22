@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see docs/PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261122-battle1';
+import {getLanguage} from './language.mjs?v=20261122-ui1';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,22 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'ui1',build:'20261122-ui1',pr:356,
+    title:{en:'Structure Move 5 · The Interface Modules Now Live in ui/',de:'Struktur-Umzug 5 · Die Oberflächen-Module liegen jetzt in ui/'},
+    shipped:[
+      {en:'Nothing changes in the game itself: menus, dialogs and the heads-up display behave exactly as before. Only the addresses of the interface files moved.',de:'Am Spiel selbst ändert sich nichts: Menüs, Dialoge und die HUD-Anzeige verhalten sich genau wie vorher. Nur die Adressen der Oberflächen-Dateien sind umgezogen.'},
+      {en:'All 25 interface modules (screens, menus, dialogs and HUD parts such as the login scene, the field menu and the ability HUD) moved from the flat game folder into IronPath/ui/.',de:'Alle 25 Oberflächen-Module (Bildschirme, Menüs, Dialoge und HUD-Teile wie die Anmelde-Szene, das Feldmenü und das Fähigkeits-HUD) sind aus dem flachen Spielordner nach IronPath/ui/ gezogen.'},
+      {en:'12 of the 25 modules are byte-identical to before; in the other 13 only the import paths point one folder up.',de:'12 der 25 Module sind bytegleich zu vorher; in den anderen 13 zeigen nur die Import-Pfade einen Ordner höher.'},
+      {en:'Raised the cache wave to 20261122-ui1, because the module addresses changed: no device should keep loading the interface code from its old place out of cache.',de:'Die Cache-Welle auf 20261122-ui1 erhöht, weil sich die Modul-Adressen geändert haben: Kein Gerät soll den Oberflächen-Code weiter unter der alten Adresse aus dem Zwischenspeicher laden.'},
+    ],
+    open:[
+      {en:'Visual check after loading: the stamp must read BUILD 20261122-ui1. The honest test for this move is the interface itself: the login scene, menus and dialogs plus a battle with the HUD must work exactly as before.',de:'Sichtprüfung nach dem Laden: Der Stempel muss BUILD 20261122-ui1 zeigen. Der ehrliche Test für diesen Umzug ist die Oberfläche selbst: Anmelde-Szene, Menüs und Dialoge plus ein Gefecht mit HUD müssen genau wie vorher funktionieren.'},
+      {en:'No device acceptance yet: this move has not been checked on an iPhone or iPad.',de:'Noch keine Geräteabnahme: Dieser Umzug ist nicht auf einem iPhone oder iPad geprüft.'},
+      {en:'One structure move remains: core/. The dictionaries live in i18n/, the workshop in workshop/, the multiplayer client in net/, the battle modules in battle/.',de:'Ein Struktur-Umzug bleibt: core/. Die Wörterbücher liegen in i18n/, die Werkstatt in workshop/, der Mehrspieler-Client in net/, die Kampf-Module in battle/.'},
+      {en:'Still parked until the structure is done: the thicker pulsing selection ring on build pads (without any hover preview), as its own game release.',de:'Bis die Struktur steht, bleibt geparkt: der dickere pulsierende Auswahlring auf Bauplätzen (ohne jede Hover-Vorschau), als eigener Spiel-Stand.'},
+    ]
+  },
   {
     id:'battle1',build:'20261122-battle1',pr:354,
     title:{en:'Structure Move 4 · The Battle Modules Now Live in battle/',de:'Struktur-Umzug 4 · Die Kampf-Module liegen jetzt in battle/'},
