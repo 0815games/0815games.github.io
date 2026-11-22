@@ -60,5 +60,5 @@ als Korrektur sichtbar.
 Die neuesten **20** Einträge liegen in [`PATCH-LOG.md`](PATCH-LOG.md), ältere in
 [`PATCH-LOG-ARCHIV.md`](PATCH-LOG-ARCHIV.md). Beim Verschieben wandert der ganze
 Eintrag einschließlich seiner Nachträge; beide Dateien zusammen müssen lückenlos
-und doppelfrei sein. `../scripts/patch-check.mjs` und
+und doppelfrei sein. `../scripts/patch.mjs` (Unterbefehl `check`) und
 `../tests/patch-log-archive.test.mjs` prüfen das.

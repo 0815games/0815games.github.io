@@ -5,14 +5,13 @@ import {mkdtemp,mkdir,writeFile,rm,readFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {anchorReport,currentToken,tokenHistogram} from '../scripts/patch-lib.mjs';
-import {planBump,applyBump,verifyBump,formatPlan} from '../scripts/patch-bump.mjs';
-import {runPatchCheck,tapSummary,patchLogState,LOG_KEEP,CONTRACT_TESTS} from '../scripts/patch-check.mjs';
+import {anchorReport,currentToken,tokenHistogram,planBump,applyBump,verifyBump,
+  formatPlan,runPatchCheck,tapSummary,patchLogState,LOG_KEEP,CONTRACT_TESTS} from '../scripts/patch.mjs';
 
 // Contract tests for the patch tooling.
 //
-// patch-bump.mjs rewrites the cache wave of a real release, and patch-check.mjs
-// is the verdict people act on. Both are exercised here against a miniature
+// patch.mjs bump rewrites the cache wave of a real release, and patch.mjs
+// check is the verdict people act on. Both are exercised here against a miniature
 // repository that carries the same shapes as IronPath: the seven anchors, an
 // older asset revision that must survive, and field notes whose historical
 // `build:` fields must not move. Without a fixture these tools could only be
@@ -79,7 +78,7 @@ export const PLANNED_PATCHES=[];
   'docs/PATCH-BLOECKE.md':'# Patchblöcke\n\n- [ ] offen\n',
   'docs/DATENBLATT.md':'# Datenblatt\n',
   'docs/CHECKLIST.md':'# Checkliste\n',
-  'scripts/patch-bump.mjs':'// development tool, never shipped\nexport const tool=true;\n',
+  'scripts/patch.mjs':'// development tool, never shipped\nexport const tool=true;\n',
   'tests/fixture-only.test.mjs':`import {test} from 'node:test';\ntest('fixture',()=>{});\n`,
   'assets/old-art.jpg':'not really a jpg\n',
 };
@@ -297,3 +296,34 @@ test('the real tree passes the pre-flight check',async()=>{
   assert.equal(contracts[0].level,'ok');
   assert.match(contracts[0].text,new RegExp(`^${CONTRACT_TESTS.length} Dateien: \\d+ Tests`));
 },{timeout:240000});
+
+test('the merged CLI dispatches check and bump and refuses contradictions',async t=>{
+  const {root}=await fixture(t);
+  const script=join(IRONPATH,'scripts','patch.mjs');
+  const runCli=(...args)=>{
+    try{
+      return {code:0,output:execFileSync(process.execPath,[script,...args],{encoding:'utf8'})};
+    }catch(error){return {code:error.status,output:`${error.stdout??''}${error.stderr??''}`};}
+  };
+
+  const bare=runCli();
+  assert.equal(bare.code,2,'ohne Unterbefehl ist die Antwort eine Gebrauchsanweisung');
+  assert.match(bare.output,/patch\.mjs check/);
+  assert.match(bare.output,/patch\.mjs bump/);
+
+  const unknown=runCli('frobnicate');
+  assert.equal(unknown.code,2,'ein unbekannter Unterbefehl wird nicht geraten');
+
+  const fast=runCli('check','--fast','--root',root,'--no-contracts');
+  assert.equal(fast.code,0,fast.output);
+  assert.match(fast.output,/Patch-Prüfung/);
+
+  const contradiction=runCli('check','--fast','--suite','--root',root);
+  assert.equal(contradiction.code,2,'--fast und --suite zusammen sind ein Widerspruch, kein Modus');
+
+  const dry=runCli('bump',NEW,'--root',root);
+  assert.equal(dry.code,0,dry.output);
+  assert.match(dry.output,/Trockenlauf/);
+  assert.match(dry.output,new RegExp(`Cache-Welle ${OLD}`));
+  assert.equal(currentToken(root),OLD,'der Trockenlauf hat nichts geschrieben');
+});

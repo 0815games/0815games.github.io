@@ -8,9 +8,8 @@ Verbindlich ist [`../../AGENTS.md`](../../AGENTS.md). Diese Datei macht dieselbe
 Regeln konkret und nennt die Werkzeuge, die sie prüfen. Bei Widerspruch gilt
 `AGENTS.md`.
 
-Werkzeuge: [`../scripts/patch-check.mjs`](../scripts/patch-check.mjs) (prüft,
-schreibt nichts) und [`../scripts/patch-bump.mjs`](../scripts/patch-bump.mjs)
-(schreibt die Cache-Welle). Struktur der Ordner:
+Werkzeug: [`../scripts/patch.mjs`](../scripts/patch.mjs) mit den Unterbefehlen
+`check` (prüft, schreibt nichts) und `bump` (schreibt die Cache-Welle). Struktur der Ordner:
 [`../README.md`](../README.md).
 
 ---
@@ -36,7 +35,7 @@ Emulatorergebnis ist kein Produktivnachweis.
 ## 1. Vor der Arbeit
 
 ```sh
-node IronPath/scripts/patch-check.mjs          # Vorprüfung, wenige Sekunden
+node IronPath/scripts/patch.mjs check --fast   # Vorprüfung, wenige Sekunden
 gh pr list --state open                        # liegt schon etwas in der Luft?
 ```
 
@@ -82,7 +81,7 @@ gh pr list --state open                        # liegt schon etwas in der Luft?
 ## 3. Nach der Änderung, vor dem Commit
 
 ```sh
-node IronPath/scripts/patch-check.mjs --suite   # Verträge + volle Suite, ~6 min
+node IronPath/scripts/patch.mjs check --suite   # Verträge + volle Suite, ~6 min
 ```
 
 Bindend ist der Serienlauf **vom Repo-Root**, genau wie in CI:
@@ -115,8 +114,8 @@ zwei `build-stamp`-Elemente in `index.html`, `LOGIN_SCENE_VERSION`, zwei
 `browser-tests`) und an mehreren hundert Importen.
 
 ```sh
-node IronPath/scripts/patch-bump.mjs 20261122-neu1            # Trockenlauf
-node IronPath/scripts/patch-bump.mjs 20261122-neu1 --apply    # schreiben
+node IronPath/scripts/patch.mjs bump 20261122-neu1            # Trockenlauf
+node IronPath/scripts/patch.mjs bump 20261122-neu1 --apply    # schreiben
 ```
 
 Der Trockenlauf nennt jede Zeile ohne `?v=`, die sich ändern würde. Das müssen
@@ -128,7 +127,7 @@ dann ist das Token irgendwohin gewandert, wo es nichts zu suchen hat.
 Markdown. Ältere Token an unveränderter Kunst und an Multiplayer-Assets bleiben
 ebenfalls stehen — das ist Vertrag, kein Fund.
 
-Nach `--apply` ist `patch-check.mjs` **rot**, bis der neue Eintrag in
+Nach `--apply` ist `patch.mjs check` **rot**, bis der neue Eintrag in
 `patch-notes.mjs` existiert. Das ist Absicht: eine Welle ohne Feldnotizen
 soll nicht durchrutschen.
 
@@ -153,7 +152,7 @@ oder Nutzerbestätigungen.
 **Archiv-Regel:** `PATCH-LOG.md` führt die neuesten **20** Einträge, alles Ältere
 steht in [`PATCH-LOG-ARCHIV.md`](PATCH-LOG-ARCHIV.md). Zusammen müssen sie
 lückenlos und doppelfrei sein, und das Archiv darf nichts Neues enthalten als das
-Log. `patch-check.mjs` meldet Lücken, Doppelte, Überlappung und Überlauf;
+Log. `patch.mjs check` meldet Lücken, Doppelte, Überlappung und Überlauf;
 `tests/patch-log-archive.test.mjs` lässt ein Aufteilen nicht durch, bei dem
 Einträge verloren gehen.
 
@@ -163,11 +162,11 @@ und in beiden Köpfen die Kennungsgrenze nachgezogen (`IPL-0001 bis IPL-00xx`).
 Ereignis-Nachträge bleiben bei ihrem Eintrag. Ein Teiler-Skript darf nur auf
 einem Log laufen, das **alle** Einträge enthält: auf einem bereits geteilten Log
 würde es das Archiv aus den 20 Einträgen neu schreiben und 72 Einträge
-zerstören. Deshalb steht hier kein Werkzeug dafür, und `patch-check.mjs` meldet
+zerstören. Deshalb steht hier kein Werkzeug dafür, und `patch.mjs check` meldet
 den Überlauf, statt ihn selbst zu beheben.
 
 Nicht ins Log: Passwörter, Token, UIDs, Freundes- oder Partycodes, private
-Profile, Firebase-Schlüssel. `patch-check.mjs` prüft neue Zeilen auf
+Profile, Firebase-Schlüssel. `patch.mjs check` prüft neue Zeilen auf
 Schlüsselmuster.
 
 ---
@@ -178,6 +177,11 @@ Schlüsselmuster.
 - Push **nur auf den Arbeitszweig** dieser Sitzung, PR gegen `main`.
 - CI beobachten: `gh pr checks <nummer>`. `--watch` bricht in dieser Umgebung
   gelegentlich ab; Polling mit `gh pr checks <nummer>` und `sleep` ist zuverlässig.
+- **Schnelltor zuerst:** `game-regressions` beginnt mit
+  `node IronPath/scripts/patch.mjs check --fast` (Stempel, Wellen, Struktur,
+  Log, Git-Vergleich, Geheimnisse, Verträge — wenige Sekunden). Rot dort
+  heißt: erst Stempel, Log oder Diff klären; die volle Suite danach bleibt
+  unverändert Pflicht und wird durch das Schnelltor nicht ersetzt.
 - **Rot ist nicht mergbar.** `game-regressions` war bei #335–#339 rot und wurde
   trotzdem gemergt; das ist der Grund für den Rückbau auf #334. Offen und nur vom
   Betreiber zu erledigen: `game-regressions` zum Pflicht-Check machen
@@ -188,7 +192,7 @@ Schlüsselmuster.
 ## 7. Nach dem Merge: Auslieferung belegen
 
 ```sh
-node IronPath/scripts/patch-check.mjs --online --pr <nummer> --verify-main
+node IronPath/scripts/patch.mjs check --online --pr <nummer> --verify-main
 ```
 
 Geprüft werden: PR-Status und Merge-Commit, die Checks des PR, der
@@ -221,8 +225,8 @@ Umgebung der ausgehende Zugriff auf den Seiten-Host.
 
 ## 9. Was die Werkzeuge nicht tun
 
-`patch-check.mjs` liest und meldet; es committet, merged, deployed oder öffnet
-keine Wartung. `patch-bump.mjs` schreibt ausschließlich Token und verlangt dafür
+`patch.mjs check` liest und meldet; es committet, merged, deployed oder öffnet
+keine Wartung. `patch.mjs bump` schreibt ausschließlich Token und verlangt dafür
 `--apply`. Kein Git-Hook erzwingt etwas: Wer außen am Repository arbeitet, muss
 Ereignisse selbst nachtragen.
 
@@ -233,7 +237,7 @@ Ereignisse selbst nachtragen.
   1242 Tests, 1 Fehler statt 0. Inzwischen behoben.
 - Ein verschachtelter Prüflauf erbt `NODE_TEST_CONTEXT=child-v8` und schreibt sein
   TAP in den Elternkanal: leerer stdout, sieht aus wie ein Absturz.
-  `patch-check.mjs` entfernt die Variable vor Unterprozessen.
+  `patch.mjs` entfernt die Variable vor Unterprozessen.
 - `-P 4` zählt anders als der Serienlauf (einmal 26 statt 25 Fehler). Aussagen
   nur aus dem Lauf, den auch CI fährt.
 - Orthogonal-symmetrische Testdaten decken halbwinklige Formelfehler nicht: eine
@@ -251,7 +255,7 @@ Muster: `PATCH-LOG.md` IPL-0090 und PR #340 (Rückbau auf #334).
 ```sh
 git checkout <guter Commit> -- IronPath/
 git rm -f -q IronPath/<Dateien, die es damals nicht gab>
-node IronPath/scripts/patch-bump.mjs <neue Welle> --apply
+node IronPath/scripts/patch.mjs bump <neue Welle> --apply
 ```
 
 Danach: neuer Feldnotizen-Eintrag, Log-Eintrag mit den Grenzen des Rückbaus
@@ -271,7 +275,7 @@ belegt ist**; ein unbelegter Punkt bleibt offen und steht so im Log (§0).
 ```text
 vor der Arbeit
 [ ] Patch-Log gelesen, letzter Eintrag und dessen offene Punkte bekannt      §1
-[ ] patch-check.mjs ohne Fehler; Hinweis "flacher Klon" beachtet             §1
+[ ] patch.mjs check ohne Fehler; Hinweis "flacher Klon" beachtet             §1
 [ ] offene PRs und CI-Status geprüft, Basis ist main                         §1
 
 während der Arbeit
@@ -283,13 +287,13 @@ während der Arbeit
 nach der Änderung
 [ ] Serienlauf vom Repo-Root: tests/pass/fail/skipped notiert                §3
 [ ] zusätzliche Prüfstände je Änderung (Tabelle) gefahren                    §3
-[ ] patch-check.mjs: Stempel, Struktur, Log, Geheimnisse, Verträge           §3
+[ ] patch.mjs check: Stempel, Struktur, Log, Geheimnisse, Verträge           §3
 
 Cache-Welle
-[ ] patch-bump.mjs ohne --apply: Zahlen gegen die letzte Welle gerechnet     §4
+[ ] patch.mjs bump ohne --apply: Zahlen gegen die letzte Welle gerechnet     §4
 [ ] --apply: Nicht-?v=-Zeilen im Diff sind genau die Anker                   §4
 [ ] patch-notes.mjs: neuer RELEASED_PATCHES[0]-Eintrag, je Zeile DE und EN   §4
-[ ] patch-check.mjs meldet alle Anker mit dem neuen Token                    §4
+[ ] patch.mjs check meldet alle Anker mit dem neuen Token                    §4
 
 Patch-Log
 [ ] neuer Eintrag aus der Vorlage, alle Pflichtfelder                        §5

@@ -1,25 +1,260 @@
-// Pre- and post-flight checks for one patch.
+// One patch tool with two subcommands: check and bump.
 //
-// This tool exists because the same discipline had to be reconstructed by hand
-// for every release: which tests pin the stamp, which lines a bump must not
-// touch, what proves a merge actually reached the player. It reads files, runs
-// the contract tests, and - only when asked - looks at Git, GitHub and Pages.
-// It never writes anything and never merges, deploys or publishes.
+// This file merges the former patch-lib.mjs, patch-check.mjs and
+// patch-bump.mjs (Phase 3 of the folder restructure, IPL-0094/IPL-0101).
+// check verifies a release stamp, bump writes one. Both must agree on what
+// "the stamp" is, otherwise a bump can pass its own check by accident.
+// Everything they share lives in the first section: the token shape, the
+// places that carry the token outside a `?v=` import, which files a bump
+// rewrites, and which occurrences must stay historical.
 //
 // Usage:
-//   node IronPath/scripts/patch-check.mjs                 # Vorprüfung, schnell
-//   node IronPath/scripts/patch-check.mjs --suite         # + volle Suite (Serienlauf)
-//   node IronPath/scripts/patch-check.mjs --online        # + PR, CI, Pages
-//   node IronPath/scripts/patch-check.mjs --online --verify-main --pr 342
-//   node IronPath/scripts/patch-check.mjs --root <pfad>   # anderer Baum (Fixtures)
+//   node IronPath/scripts/patch.mjs check                 # Schnelltest: Stempel, Log, Geheimnisse, Verträge
+//   node IronPath/scripts/patch.mjs check --fast          # dasselbe, ausdrücklich ohne Suite (CI-Eingangstor)
+//   node IronPath/scripts/patch.mjs check --suite         # + volle Suite (Serienlauf)
+//   node IronPath/scripts/patch.mjs check --online        # + PR, CI, Pages
+//   node IronPath/scripts/patch.mjs check --online --verify-main --pr 342
+//   node IronPath/scripts/patch.mjs check --root <pfad>   # anderer Baum (Fixtures)
+//   node IronPath/scripts/patch.mjs bump 20261122-order1            # Trockenlauf
+//   node IronPath/scripts/patch.mjs bump 20261122-order1 --apply    # schreiben
+//   node IronPath/scripts/patch.mjs bump <neu> --from <alt> --root <pfad>
+//
+// check never writes anything and never merges, deploys or publishes.
+// bump writes token strings only, and only with --apply.
 import {execFileSync} from 'node:child_process';
-import {existsSync,readdirSync,readFileSync} from 'node:fs';
+import {existsSync,readFileSync,writeFileSync,readdirSync} from 'node:fs';
 import {dirname,join,relative,resolve} from 'node:path';
-import {pathToFileURL} from 'node:url';
-import {
-  IRONPATH,TOKEN_IN_TEXT,anchorReport,codeFiles,currentToken,readIfExists,
-  tokenHistogram,
-} from './patch-lib.mjs';
+import {fileURLToPath,pathToFileURL} from 'node:url';
+
+export const IRONPATH=fileURLToPath(new URL('..',import.meta.url));
+export const REPO_ROOT=fileURLToPath(new URL('../..',import.meta.url));
+
+// A cache wave token: 20YYMMDD plus a lowercase release name.
+export const TOKEN_PATTERN=/^20\d{6}-[a-z0-9]+$/;
+export const TOKEN_IN_TEXT=/20\d{6}-[a-z0-9]+/g;
+
+// Files a bump rewrites. Markdown is excluded on purpose: PATCH-LOG.md and the
+// plans quote old tokens as history, and rewriting them would falsify the record.
+const CODE_FILE=/\.(?:mjs|js|cjs|json|html|css)$/;
+const SKIPPED_DIRECTORY=new Set(['node_modules','.git']);
+
+export const escapeRegExp=value=>value.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+
+export function readIfExists(path){
+  return existsSync(path)?readFileSync(path,'utf8'):null;
+}
+
+export function codeFiles(root=IRONPATH){
+  const found=[],queue=[root];
+  while(queue.length){
+    const directory=queue.pop();
+    for(const entry of readdirSync(directory,{withFileTypes:true})){
+      if(SKIPPED_DIRECTORY.has(entry.name)||entry.name.startsWith('.')) continue;
+      const full=join(directory,entry.name);
+      if(entry.isDirectory()) queue.push(full);
+      else if(entry.isFile()&&CODE_FILE.test(entry.name)) found.push(full);
+    }
+  }
+  return found.sort();
+}
+
+const one=(source,pattern)=>{const match=pattern.exec(source);return match?[match[1]]:[]};
+const every=(source,pattern)=>[...source.matchAll(pattern)].map(match=>match[1]);
+
+// Every occurrence of the build token that is not a `?v=` import.
+//
+// These are the places a hand-made bump forgets. Missing one of them does not
+// stop the game from loading, which is exactly why they need a check instead of
+// a habit: a phone then keeps serving the previous login art, or the loading
+// scene advertises a build the modules do not have.
+//
+// `patch-notes.mjs` is deliberately part of this list. Its first `build:` field
+// belongs to RELEASED_PATCHES[0], and tests/patch-notes.test.mjs requires that
+// field to equal release-version.json. After a bump the check therefore fails
+// until the new field-notes entry exists - the tool cannot ship a cache wave
+// nobody documented.
+export const STAMP_ANCHORS=Object.freeze([
+  {label:'release-version.json → build',file:'release-version.json',
+   find:source=>one(source,/"build":\s*"([^"]+)"/)},
+  {label:'index.html → <meta name="ironpath-build">',file:'index.html',
+   find:source=>one(source,/<meta name="ironpath-build" content="([^"]+)"/)},
+  {label:'index.html → class="build-stamp"',file:'index.html',expect:2,
+   find:source=>every(source,/class="build-stamp"[^>]*>BUILD ([^<]+)/g)},
+  {label:'ui/login-scene.mjs → LOGIN_SCENE_VERSION',file:'ui/login-scene.mjs',
+   find:source=>one(source,/LOGIN_SCENE_VERSION\s*=\s*'([^']+)'/)},
+  {label:'patch-notes.mjs → RELEASED_PATCHES[0].build',file:'patch-notes.mjs',
+   find:source=>one(source,/RELEASED_PATCHES[\s\S]*?build:'([^']+)'/)},
+  {label:'browser-tests/avatar-handover.cjs → Fallback',file:'browser-tests/avatar-handover.cjs',
+   find:source=>one(source,/\?\.\s*content\s*\|\|\s*'([^']+)'/)},
+  {label:'browser-tests/interface-smoke.cjs → Meldung',file:'browser-tests/interface-smoke.cjs',
+   find:source=>one(source,/New version ([0-9a-z-]+)/)},
+]);
+
+// Occurrences of an old token that must survive a bump. In `patch-notes.mjs`
+// only `?v=` imports move; every `build:` field and every sentence quoting a
+// wave stays, because those lines state what was actually released.
+export const PROTECTED_FILES=Object.freeze([
+  {file:'patch-notes.mjs',
+   reason:'build:-Felder und Protokollsätze veröffentlichter Patches bleiben stehen; nur ?v=-Importe wandern'},
+]);
+
+export function currentToken(root=IRONPATH){
+  const source=readIfExists(join(root,'release-version.json'));
+  const match=source&&/"build":\s*"([^"]+)"/.exec(source);
+  return match?match[1]:null;
+}
+
+// Reads every anchor and reports what it actually found.
+export function anchorReport(root=IRONPATH){
+  return STAMP_ANCHORS.map(anchor=>{
+    const source=readIfExists(join(root,anchor.file));
+    const expected=anchor.expect??1;
+    const values=source===null?[]:anchor.find(source);
+    const unique=[...new Set(values)];
+    return {
+      label:anchor.label,file:anchor.file,expected,found:values.length,values,unique,
+      missingFile:source===null,
+      ok:source!==null&&values.length===expected&&unique.length===1,
+    };
+  });
+}
+
+// Which wave tokens the tree carries, and how often. Many old tokens are correct:
+// unchanged art and untouched multiplayer assets keep their own revision, so this
+// is information for a human, never a verdict on its own.
+export function tokenHistogram(root=IRONPATH){
+  const counts=new Map();
+  for(const file of codeFiles(root)){
+    const source=readIfExists(file);
+    if(!source) continue;
+    for(const match of source.matchAll(TOKEN_IN_TEXT)){
+      const entry=counts.get(match[0])??{token:match[0],count:0,files:new Set()};
+      entry.count+=1;
+      entry.files.add(relative(root,file));
+      counts.set(match[0],entry);
+    }
+  }
+  return [...counts.values()].sort((a,b)=>b.count-a.count||a.token.localeCompare(b.token));
+}
+
+// ---------------------------------------------------------------------------
+// bump: plan, write and verify a new cache wave token across IronPath/.
+//
+// The bump is mechanical, but two mistakes are easy and both are invisible
+// in the game: forgetting one of the places that carry the token outside a
+// `?v=` import, and rewriting the historical `build:` fields and sentences
+// in patch-notes.mjs, which state what was actually released. The planner
+// prints every line that is not a `?v=` import and refuses unknown shapes.
+// ---------------------------------------------------------------------------
+
+// Files allowed to carry the token somewhere other than a `?v=` import. Anything
+// else is a finding: it means the token leaked into a new place, or an anchor
+// moved and this list is out of date.
+const ANCHOR_FILES=new Set([
+  'release-version.json','index.html','ui/login-scene.mjs',
+  'browser-tests/avatar-handover.cjs','browser-tests/interface-smoke.cjs',
+]);
+
+export function planBump({root=IRONPATH,from=currentToken(root),to}={}){
+  const problems=[];
+  if(typeof to!=='string'||!TOKEN_PATTERN.test(to))
+    problems.push(`Das neue Token erfüllt nicht 20YYMMDD-name: ${JSON.stringify(to)}`);
+  if(typeof from!=='string'||!TOKEN_PATTERN.test(from))
+    problems.push(`Kein gültiges altes Token gefunden (release-version.json): ${JSON.stringify(from)}`);
+  if(from&&to&&from===to) problems.push('Alt und neu sind dasselbe Token - nichts zu tun.');
+
+  const protectedFiles=new Set(PROTECTED_FILES.map(entry=>entry.file));
+  const versioned=new RegExp(`\\?v=${escapeRegExp(from)}`,'g');
+  const files=[];const nonVersion=[];const kept=[];
+  let tokens=0;
+
+  if(!problems.length) for(const path of codeFiles(root)){
+    const source=readIfExists(path);
+    if(!source||!source.includes(from)) continue;
+    const file=relative(root,path);
+    const isProtected=protectedFiles.has(file);
+    const touched=[];
+    source.split('\n').forEach((line,index)=>{
+      if(!line.includes(from)) return;
+      const total=line.split(from).length-1;
+      const versionedCount=(line.match(versioned)||[]).length;
+      const record={line:index+1,text:line.trim().slice(0,150),total,replaced:0};
+      if(isProtected){
+        // Historical record: only imports move, everything else stays.
+        record.replaced=versionedCount;
+        if(versionedCount) touched.push({...record,kind:'?v='});
+        if(total-versionedCount>0)
+          kept.push({file,line:index+1,text:record.text,count:total-versionedCount});
+        return;
+      }
+      record.replaced=total;
+      touched.push({...record,kind:versionedCount?'?v=':'anchor'});
+      if(total-versionedCount>0){
+        const entry={file,line:index+1,text:record.text,count:total-versionedCount};
+        nonVersion.push(entry);
+        if(!ANCHOR_FILES.has(file))
+          problems.push(`Unbekannte Stelle ohne ?v= in ${file}:${index+1} - ANCHOR_FILES prüfen`);
+      }
+    });
+    const count=touched.reduce((sum,entry)=>sum+entry.replaced,0);
+    if(count){files.push({file,path,touched});tokens+=count;}
+  }
+
+  return {root,from,to,files,tokens,nonVersion,kept,problems,
+    anchorFilesTouched:[...new Set(nonVersion.map(entry=>entry.file))].sort()};
+}
+
+export function applyBump(plan){
+  if(plan.problems.length) throw new Error(`Bump abgelehnt: ${plan.problems.join(' | ')}`);
+  const protectedFiles=new Set(PROTECTED_FILES.map(entry=>entry.file));
+  const written=[];
+  for(const entry of plan.files){
+    const source=readFileSync(entry.path,'utf8');
+    const out=protectedFiles.has(entry.file)
+      ? source.split(`?v=${plan.from}`).join(`?v=${plan.to}`)
+      : source.split(plan.from).join(plan.to);
+    if(out===source) continue;
+    writeFileSync(entry.path,out);
+    written.push(entry.file);
+  }
+  return {written:written.length,files:written};
+}
+
+// Re-reads every anchor after writing. A bump that leaves one anchor behind is
+// reported here, not by a player with a stale loading screen.
+export function verifyBump({root=IRONPATH,to=currentToken(root)}={}){
+  const report=anchorReport(root);
+  const wrong=report.filter(anchor=>!anchor.ok||anchor.unique[0]!==to);
+  return {to,report,wrong,ok:wrong.length===0};
+}
+
+export function formatPlan(plan){
+  const lines=[
+    `Cache-Welle ${plan.from} → ${plan.to}`,
+    `${plan.files.length} Dateien, ${plan.tokens} Token-Vorkommen`,
+    '',
+    `Zeilen ohne ?v= (${plan.nonVersion.length}) - das müssen die bekannten Anker sein:`,
+  ];
+  for(const entry of plan.nonVersion) lines.push(`  ${entry.file}:${entry.line}  ${entry.text.slice(0,110)}`);
+  lines.push('',`Historisch behalten in patch-notes.mjs (${plan.kept.length} Zeilen):`);
+  for(const entry of plan.kept) lines.push(`  ${entry.file}:${entry.line}  ${entry.text.slice(0,110)}`);
+  if(plan.problems.length){
+    lines.push('','PROBLEME:');
+    for(const problem of plan.problems) lines.push(`  ${problem}`);
+  }
+  return lines.join('\n');
+}
+
+// ---------------------------------------------------------------------------
+// check: pre- and post-flight checks for one patch.
+//
+// This section exists because the same discipline had to be reconstructed
+// by hand for every release: which tests pin the stamp, which lines a bump
+// must not touch, what proves a merge actually reached the player. It reads
+// files, runs the contract tests, and - only when asked - looks at Git,
+// GitHub and Pages. It never writes anything and never merges, deploys or
+// publishes.
+// ---------------------------------------------------------------------------
 
 // The contracts a cache wave or a field-notes entry can break. They run in well
 // under two seconds, so they belong to every pre-flight, not only to CI.
@@ -319,20 +554,63 @@ export function formatFindings(result){
   return lines.join('\n');
 }
 
+// ---------------------------------------------------------------------------
+// CLI dispatch. Importing this module (the tests do) never runs the CLI.
+// ---------------------------------------------------------------------------
+
 const isMain=process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href;
 if(isMain){
-  const args=process.argv.slice(2);
-  const value=name=>{const index=args.indexOf(name);return index>=0?args[index+1]:null};
-  const root=value('--root')??IRONPATH;
-  const result=await runPatchCheck({
-    root,
-    contracts:!args.includes('--no-contracts'),
-    suite:args.includes('--suite'),
-    online:args.includes('--online'),
-    verifyMain:args.includes('--verify-main'),
-    pr:value('--pr'),
-    base:value('--base')??'origin/main',
-  });
-  console.log(formatFindings(result));
-  process.exit(result.failed?1:0);
+  const [command,...args]=process.argv.slice(2);
+  const usage=[
+    'Usage:',
+    '  node IronPath/scripts/patch.mjs check [--fast|--suite] [--online] [--verify-main] [--pr <nummer>] [--base <ref>] [--root <pfad>] [--no-contracts]',
+    '  node IronPath/scripts/patch.mjs bump <neuesToken> [--from <alt>] [--apply] [--root <pfad>]',
+  ].join('\n');
+  if(command==='bump'){
+    const flag=name=>{const index=args.indexOf(name);return index>=0?args[index+1]:null};
+    const apply=args.includes('--apply');
+    const to=args.find(value=>!value.startsWith('--')&&value!==flag('--from')&&value!==flag('--root'));
+    const root=flag('--root')??IRONPATH;
+    const from=flag('--from')??currentToken(root);
+    if(!to){
+      console.log('Usage: node IronPath/scripts/patch.mjs bump <neuesToken> [--from <alt>] [--apply] [--root <pfad>]');
+      process.exit(2);
+    }
+    const plan=planBump({root,from,to});
+    console.log(formatPlan(plan));
+    if(plan.problems.length){console.log('\nNichts geschrieben.');process.exit(1);}
+    if(!apply){console.log('\nTrockenlauf: nichts geschrieben. Mit --apply ausführen.');process.exit(0);}
+    const result=applyBump(plan);
+    const verdict=verifyBump({root,to});
+    console.log(`\nGeschrieben: ${result.written} Dateien.`);
+    console.log(verdict.ok
+      ? `Anker-Prüfung: alle ${verdict.report.length} Anker tragen ${to}.`
+      : `Anker-Prüfung FEHLGESCHLAGEN: ${verdict.wrong.map(entry=>`${entry.label} = ${entry.unique.join('/')||'nichts'}`).join('; ')}`);
+    console.log(verdict.ok
+      ? 'Nächster Schritt: neuen Eintrag in patch-notes.mjs (RELEASED_PATCHES[0]) und im Patch-Log anlegen.'
+      : '');
+    process.exit(verdict.ok?0:1);
+  }
+  if(command==='check'){
+    const value=name=>{const index=args.indexOf(name);return index>=0?args[index+1]:null};
+    const fast=args.includes('--fast');
+    if(fast&&args.includes('--suite')){
+      console.log('Widerspruch: --fast laesst die Suite weg, --suite fordert sie an. Eines von beiden streichen.');
+      process.exit(2);
+    }
+    const root=value('--root')??IRONPATH;
+    const result=await runPatchCheck({
+      root,
+      contracts:!args.includes('--no-contracts'),
+      suite:args.includes('--suite'),
+      online:args.includes('--online'),
+      verifyMain:args.includes('--verify-main'),
+      pr:value('--pr'),
+      base:value('--base')??'origin/main',
+    });
+    console.log(formatFindings(result));
+    process.exit(result.failed?1:0);
+  }
+  console.log(usage);
+  process.exit(2);
 }

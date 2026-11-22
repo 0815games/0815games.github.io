@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFileSync,existsSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
-import {patchLogState,LOG_KEEP} from '../scripts/patch-check.mjs';
+import {patchLogState,LOG_KEEP} from '../scripts/patch.mjs';
 
 // The patch log keeps its newest entries and archives the rest. Splitting a
 // 4000-line protocol by hand is exactly the kind of step where entries go
