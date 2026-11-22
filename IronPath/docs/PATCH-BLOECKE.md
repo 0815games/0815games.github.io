@@ -1378,14 +1378,3 @@ Suite und eigener Cache-Welle neu landen.
 ## Gemeinsame Freigabe
 
 Neue Punkte bleiben offen, bis ihr jeweiliger Code, automatisierte Tests und passende Geräte-/Mehrspielertests abgeschlossen sind. Firebase-Tests verwenden zunächst Emulatoren und synthetische Daten. Produktive Rules und Migrationen benötigen einen aktuellen Sicherheits-, Kompatibilitäts- und Backup-Check. Nach sinnvollen geprüften Schritten soll die Website veröffentlicht und das Spiel wieder für Tests geöffnet werden; dieser Plan schaltet die Wartung nicht selbst.
-twerden sowie nach Abklingzeit.
-  *(Unit-Tests inkl. Abklingzeit bestanden; CI-/Geräteabnahme offen.)*
-- [x] **Admin-Login-Einstieg im Loginscreen (`index.html`, `interface-redesign.css`, `localization-more-static-de.mjs`, `release-tools/stage-version.mjs`):**
-  Übersetzter Link `#adminLoginLink` (`Admin login` / `Admin-Login`) in
-  `.dossier-bottom` außerhalb von `aria-hidden` auf `#authView` ergänzt; in
-  isolierten geschützten Test-Builds (`stage-version.mjs`) wird `.dossier-admin`
-  automatisch entfernt. *(Packaging-Tests bestanden; CI-/Geräteabnahme offen.)*
-
-## Gemeinsame Freigabe
-
-Neue Punkte bleiben offen, bis ihr jeweiliger Code, automatisierte Tests und passende Geräte-/Mehrspielertests abgeschlossen sind. Firebase-Tests verwenden zunächst Emulatoren und synthetische Daten. Produktive Rules und Migrationen benötigen einen aktuellen Sicherheits-, Kompatibilitäts- und Backup-Check. Nach sinnvollen geprüften Schritten soll die Website veröffentlicht und das Spiel wieder für Tests geöffnet werden; dieser Plan schaltet die Wartung nicht selbst.

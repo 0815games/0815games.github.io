@@ -6,7 +6,7 @@ aber ersetzt weder Git noch die GitHub-PR-Historie. Die dazugehörige
 [Arbeitsanweisung](../../AGENTS.md) verlangt, dieses Log vor der Arbeit zu lesen
 und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
 
-Die Einträge IPL-0001 bis IPL-0072 stehen im
+Die Einträge IPL-0001 bis IPL-0073 stehen im
 [Archiv](PATCH-LOG-ARCHIV.md); hier stehen die neuesten 20. Beide Dateien
 zusammen sind lückenlos und doppelfrei - `../scripts/patch-check.mjs` und
 `../tests/patch-log-archive.test.mjs` prüfen das.
@@ -42,20 +42,6 @@ zusammen sind lückenlos und doppelfrei - `../scripts/patch-check.mjs` und
 Die Vorlage steht als einzige Quelle in
 [patch-log-vorlage.md](patch-log-vorlage.md), zusammen mit der Erklärung, was in
 jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderlaufen.
-
-## IPL-0073 – Block 9d (`20261119-block9d`, PR #323): Einzelsitzungs-Schutz (`activeSessions`), randfreie Gemälde, UI-/Sprachauswahl-Fixes & DE-Lokalisierung
-- **Zeit / Quelle:** 2026-10-31 UTC (Sitzungsvorgabe); Arbeitsbranch `arena/92c6a81f-0815games-github-io` ab `583a1c7a53e499d5d2e7effb81906f607762b7a1` (`main`), PR #323.
-- **Block / Ziel:** Vier Arbeitspakete auf Block-9-Basis umsetzen: (1) verhindern, dass derselbe Account in zwei Browser-Fenstern/Geräten gleichzeitig aktiv bleibt (`activeSessions/$uid`-Lease + Übernahme-Option & RTDB-Regelkandidat), (2) weiße Außenränder/Zierrahmen an Gemälden sauber beschneiden und `#menuResults` unter den Spielmodi anordnen, (3) unsichtbares `#languageSelect` in den Einstellungen, `.session-takeover-field`-Vererbung, Desktop-Dialog-Scroll & Mobile-`<380px`-Layouts beheben, (4) verbleibende unübersetzte Texte (`endless-launcher.mjs` `command.none`, statische HTML-Knoten, `#enlistStamp`, offener AFK-Dialog, Freundes-/Lobby-Fehler) zweisprachig schließen.
-- **Änderungen / Dateien:**
-  - **Paket 1 (Single-Session & Rules):** `IronPath/active-session.mjs`, `IronPath/account.js`, `IronPath/index.html` (`#sessionTakeoverField`/`#sessionTakeoverCheck`), `IronPath/localization-account-de.mjs`, `IronPath/firebase/{block9d-session-candidate.mjs,firebase-block9d.emulator.json,BLOCK9D-SESSION-ROLLOUT.md,BLOCK9D-RULES-TO-PUBLISH.json}`, `IronPath/tests/active-session.test.mjs`, `IronPath/firebase/rules-test/{active-session.test.mjs,active-session-browser.cjs,package.json}`, `.github/workflows/ironpath-firebase-rules.yml`.
-  - **Paket 2 (Artwork & Command-Layout):** `IronPath/assets/{story-tower,story-marsh,story-rook,story-sera,endless-frontline,class-medic,armory-kit}.jpg` rand-/rahmenfrei beschnitten und per Lanczos auf Zielmaß skaliert; `IronPath/index.html` (`#menuResults` nach `.mode-grid`); `IronPath/menu-redesign.css` (Desktop-Grid-Zeilen, `.command-results`-Balken, `overflow: hidden; background-clip: padding-box` auf Modus-/Endlos-/Feldschule-Karten).
-  - **Paket 3 (UI- & Layout-Fixes):** `IronPath/menu-redesign.css` (`#settingsDialog .language-flag-control`/`.flag-icon`/`select`-Reset auf `position: static; opacity: 1`, `.session-takeover-field`-Reset, Desktop-Dialog-`overflow-y: auto`, Mobile `#skillDialog[open] .skills-header` & `@media (max-width: 380px)`).
-  - **Paket 4 (DE-Lokalisierung):** `IronPath/endless-launcher.mjs` (`translate('command.none')`), `IronPath/tests/endless-launcher.test.mjs`, `IronPath/recruit-screen.mjs` (`refresh()` aktualisiert `#enlistStamp`), `IronPath/account.js` (`recruitScreen.refresh()` & `paintAfkRestCard()` bei Sprachwechsel), `IronPath/index.html` (`data-i18n-text`-Attribute ergänzt), `IronPath/localization-more-static-de.mjs` & `IronPath/localization-account-de.mjs` vervollständigt.
-  - **Cache-Welle & Tests:** `IronPath/tests/{menu-redesign,multiplayer-build-stamp}.test.mjs`, `IronPath/browser-tests/{interface-smoke,command-center,cache-wave,avatar-handover}.cjs`, `IronPath/release-version.json`, `IronPath/patch-notes.mjs` (`block9d`, `pr: 323`) & gesamte `?v=20261119-block9d`-Cache-Welle.
-- **Prüfungen:**
-  - `node --test IronPath/tests/*.test.mjs` (über alle 258 Dateien: **1.159 bestanden, 0 fehlgeschlagen, 1 übersprungen**), `node IronPath/stress-tests/run.mjs` sowie GitHub CI Run `44518821803` (**13/13 Checks bestanden**, inkl. `database-rules` mit `test:block9d` und `interface-browser-smoke` mit `active-session-browser.cjs`).
-  - Nach Merge auf `main` (`6e634551`, `2026-11-19T12:06:00Z`): `pages-build-deployment` (`44520734267`) und `Iron Path Firebase party rules` (`44520735878`, **11/11 Jobs**) komplett **grün**.
-- **Git / PR / Release:** PR #323 gemergt (`6e634551`) auf `main`; `20261119-block9d` auf GitHub Pages live.
 
 ## IPL-0074 – Block-9d-RTDB-Rules live bestätigt (`BLOCK9D-RULES-TO-PUBLISH.json`)
 - **Zeit / Quelle:** 2026-10-31 UTC (Sitzungsvorgabe); nach Merge von [PR #323](https://github.com/0815games/0815games.github.io/pull/323) (`6e634551830de16ab6fcd690144b4c0a929e5f08`).
@@ -725,3 +711,20 @@ sie geprüft wurde.
   kann er nicht selbst enthalten - sie steht im PR-Text und in Git. Genau dieser
   Umstand war bei `IPL-0091` der Grund, warum dessen Nachtrag auf `main` fehlte:
   er lag nur im Vorzweig `a4d093ef` und wurde erst mit `5b8f3a68` übernommen.
+
+## IPL-0093 – Doppelblock im Patchplan repariert und `IronPath/empty` gelöscht (keine Spieländerung, keine Cache-Welle)
+
+- **Zeit / Quelle:** Betreiberauftrag in dieser Sitzung, wörtlich: „Mach die 2 punkte bitte fertig.“ Grundlage sind die zuvor getroffenen Entscheidungen: doppelten Schlussblock in `docs/PATCH-BLOECKE.md` reparieren und `IronPath/empty` jetzt doch löschen.
+- **Block / Ziel:** Kein Spiel-Block. Ziel ist nur, die zwei offenen Aufräumpunkte aus der Repository-Ordnung abzuschließen, ohne Spieldateien, Balance, Speicherstände oder Mehrspieler zu ändern.
+- **Branch / Basis:** `arena/f3b31c90-0815games-github-io` ab `4e26e00995a957f0e325f212ff19e5a9e3e989d5` (`main`, Merge von PR `#343`).
+- **Änderungen / Dateien:**
+  - `IronPath/docs/PATCH-BLOECKE.md`: Die doppelte Wiederholung am Dateiende entfernt (Zeilen 1381–1391, 1.066 Zeichen). Vor dem Schnitt wurde zeichenweise geprüft: Der entfernte Teil ist nur die Wiederholung des schon vorhandenen Schlusses und beginnt mitten im Wort (`twerden sowie nach Abklingzeit.`); die vollständige Fassung mit Admin-Login-Punkt und `## Gemeinsame Freigabe` bleibt genau einmal stehen. Marker danach: `## Gemeinsame Freigabe` 1×, Admin-Login-Punkt 1×.
+  - `IronPath/empty`: Die unreferenzierte 1-Byte-Datei (nur Zeilenumbruch) gelöscht. Im Baum gibt es keinen Code-Verweis auf diese Datei; `release-tools/stage-version.mjs` kopiert aus der Spielwurzel nur `.mjs`/`.js`/`.css`, daher war `empty` auch nicht Teil des Release-Inventars. Die frühere Entscheidung „nichts löschen“ ist für diese eine Datei durch den ausdrücklichen Betreiberwunsch aufgehoben; der historische Feldnotizen-Satz zu PR `#342` bleibt als damaliger Stand unverändert und wird durch diesen Eintrag für die Gegenwart abgelöst.
+  - `IronPath/docs/PATCH-LOG.md` und `IronPath/docs/PATCH-LOG-ARCHIV.md`: `IPL-0073` vollständig ans Ende des Archivs verschoben, die Kennungsgrenzen in beiden Köpfen auf `IPL-0001` bis `IPL-0073` nachgezogen und dieser Eintrag als neuester angehängt. Das Log führt damit weiter die neuesten 20 Einträge (`IPL-0074` bis `IPL-0093`).
+- **Prüfungen:**
+  - Zieltests vor der Log-Rotation: `node --test IronPath/tests/repo-structure.test.mjs IronPath/tests/patch-log-archive.test.mjs IronPath/tests/patch-tooling.test.mjs` = **23 Tests, 23 bestanden, 0 fehlgeschlagen, 0 übersprungen**.
+  - Gesamtsuite im zunächst flachen Klon: `node --test IronPath/tests/*.test.mjs` = **1.258 Tests, 1.257 bestanden, 0 fehlgeschlagen, 1 übersprungen**. Der eine übersprungene Test war `release-pages-site` wegen fehlender Vorfahren-Commits im flachen Klon; nach `git fetch --unshallow origin` lief `node --test IronPath/tests/release-pages-site.test.mjs` mit **6/6 bestanden, 0 übersprungen** nach.
+  - Nach der Log-Rotation: `node --test IronPath/tests/patch-log-archive.test.mjs IronPath/tests/repo-structure.test.mjs` = **12 Tests, 12 bestanden, 0 fehlgeschlagen, 0 übersprungen**; `node IronPath/scripts/patch-check.mjs` = **93 Einträge `IPL-0001` bis `IPL-0093` lückenlos (Log 20 + Archiv 73), 0 Fehler, 1 Hinweis** (zum Prüfzeitpunkt noch uncommittete Änderungen).
+  - Keine Geräte- oder Browserabnahme: Es wurde keine Datei geändert, die der Browser lädt. Der Build-Stempel bleibt unverändert `20261121-order1`; eine Cache-Welle ist für diese Doku-/Aufräumänderung nicht nötig.
+- **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet` auf `arena/f3b31c90-0815games-github-io`. Commit, Push, PR, CI, Merge und Pages-Auslieferung sind noch nicht erfolgt und werden erst nach dem tatsächlichen Ereignis mit Kennung nachgetragen.
+- **Offen / nächster Schritt:** PR für diese zwei Punkte öffnen, CI abwarten und erst nach belegtem Merge/Pages-Stand als ausgeliefert bezeichnen. Danach getrennt angehen: Spielwurzel-Struktur der vielen JavaScript-/Moduldateien ordnen und anschließend die Patch-Skripte auf Zusammenlegung/Vereinfachung prüfen.
