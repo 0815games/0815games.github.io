@@ -1,6 +1,6 @@
 # Iron Path – Patch-Log: Archiv
 
-Ältere Einträge IPL-0001 bis IPL-0095. Die neuesten 20 stehen in
+Ältere Einträge IPL-0001 bis IPL-0096. Die neuesten 20 stehen in
 [PATCH-LOG.md](PATCH-LOG.md); die Regeln für beide Dateien dort und in
 [`../../AGENTS.md`](../../AGENTS.md). Beim Verschieben wandert ein Eintrag immer
 vollständig einschließlich seiner Ereignis-Nachträge.
@@ -4236,3 +4236,33 @@ sie geprüft wurde.
 - **Auslieferung auf `main` belegt:** `IronPath/i18n/localization-de.mjs` und `IronPath/i18n/localization-firstrun-de.mjs` sind per Contents-API vorhanden (HTTP 200), die alte Adresse `IronPath/localization-de.mjs` liefert **404**, und `release-version.json` auf `main` trägt `"build": "20261122-i18n1"`. Die 14 inhaltlich unveränderten Wörterbücher haben im Staging-Vergleich vor dem Merge denselben SHA-256 wie vorher.
 - **Ehrliche Grenzen:** Die Live-URL wurde nicht abgerufen; belegt sind Inhalt auf `main` und der fertige Pages-Build. **Keine Geräteabnahme:** Ob ein iPhone die Wörterbücher unter den neuen Adressen lädt und der Stempel `BUILD 20261122-i18n1` angezeigt wird, ist Sache der Betreiber-Sichtprüfung (Sprache auf Deutsch stellen und prüfen, dass überall deutsche Texte stehen).
 - **Herkunft dieses Nachtrags:** Er steht als eigener Commit auf demselben Arbeitszweig nach dem Merge von `#348`; seine eigene Commit- und PR-Kennung steht deshalb nicht hier, sondern in Git und im PR-Text.
+
+## IPL-0096 – Phase 2, Scheibe 2: Die 17 Werkstatt-Module ziehen nach `workshop/` (eigene Cache-Welle folgt im selben PR)
+
+- **Zeit / Quelle:** Betreiber: „Let's go“ zur nächsten Scheibe nach `IPL-0095`. Grundlage bleiben die vier Entscheidungen aus `IPL-0094` (Gruppen nach Fachgebiet, scheibenweise, ein PR pro Gruppe).
+- **Block / Ziel:** Kein Spiel-Block. Alle 17 `workshop-*.mjs` der Spielwurzel liegen künftig in `IronPath/workshop/`. Spielverhalten, Werkstatt-Regeln, Speicherstände und Mehrspieler bleiben unverändert; nur die Modul-Adressen ändern sich, deshalb trägt derselbe PR wieder eine eigene Cache-Welle (zweiter Commit, sobald die PR-Nummer existiert). Die `workshop-view.css` bleibt als Stylesheet in der Wurzel, wie für CSS entschieden.
+- **Branch / Basis:** `arena/de0dad79-0815games-github-io` ab `2ab2b1127fb3ffc0fb946633d58f9721e027f4d4` (`main`, Merge von PR `#349`).
+- **Änderungen / Dateien:**
+  - 17 Dateien per `git mv` nach `IronPath/workshop/` verschoben. 7 davon sind inhaltlich bytegleich; in 10 Dateien zeigen Importe auf Wurzel-Module jetzt eine Ebene hoch; Geschwister-Importe innerhalb von `workshop/` bleiben `./`.
+  - 9 Wurzel-Dateien zeigen auf `./workshop/workshop-…` (`account.js`, `game.js`, `match.mjs`, `simulation.mjs`, `solo-deployment.mjs`, `coop-motion.mjs`, `coop-rewards.mjs`, `firebase-party-game.mjs`, `firebase-recoverable-game.mjs`).
+  - Mitgezogen: `IronPath/server/` (3 Dateien importieren `../workshop/workshop-…`), `IronPath/firebase/rules-test/` (4 Dateien, `../../workshop/workshop-…`), 21 Testdateien (`../workshop/workshop-…`), der Stempel-Test-Schlüssel `workshop/workshop-multiplayer-game.mjs` in `multiplayer-build-stamp` (dessen Abhängigkeits-Karte liest die Datei unter diesem Pfad) und der dynamische Import in `browser-tests/command-center.cjs` (`./workshop/workshop-view.mjs`, `./workshop/workshop-wire.mjs`; das Stylesheet `workshop-view.css` bleibt an der Wurzel).
+  - 13 Harness-Listen führen den Eintrag jetzt als `workshop/workshop-run-receipt.mjs`, weil die Harnische den Pfad so ersetzen, wie er im Import von `game.js` steht und die Datei relativ zur Spielwurzel laden.
+  - `IronPath/tests/endless-retreat-viewport.test.mjs`: Die generische Ersetzungs-Regex dieses Harness kannte keine Schrägstriche (`[\w.-]+`) und hätte das umgezogene Modul nicht ersetzt — der erste Gesamtlauf wurde daran rot (`ERR_UNSUPPORTED_RESOLVE_REQUEST` im data:-Import, 3 Tests). Die Zeichenklasse umfasst jetzt auch `/`; es war die einzige Stelle mit diesem generischen Muster.
+  - `IronPath/docs/PATCH-LOG.md` und `IronPath/docs/PATCH-LOG-ARCHIV.md`: `IPL-0076` vollständig ins Archiv, Grenzen auf `IPL-0001` bis `IPL-0076` nachgezogen; das Log führt die neuesten 20 (`IPL-0077` bis `IPL-0096`).
+- **Prüfungen:**
+  - Betroffene Tests gezielt vorab: 147 Tests über alle `workshop-*`-Suiten, die 13 Harnische und die Verträge — ein Fund (`multiplayer-build-stamp` las die verschobene Datei unter altem Pfad), danach grün.
+  - Staging-Vergleich gegen den `main`-Stand (Baseline per `git worktree` auf `2ab2b112`): **711 gestagte Dateien vorher und nachher**; 17 neue `workshop/`-Adressen, 7 Module mit identischem SHA-256, 9 Wurzel-Dateien mit gleicher Adresse und neuem Inhalt (nur Import-Pfade).
+  - Gesamtsuite im vollständigen Klon: erster Lauf **1.257/1.260** (der oben genannte `endless-retreat-viewport`-Harness), nach dem Fix `node --test IronPath/tests/*.test.mjs` = **1.260 Tests, 1.260 bestanden, 0 fehlgeschlagen, 0 übersprungen, Exit 0**. `patch-check` vor dem Log-Eintrag: **0 Fehler**.
+  - Cache-Welle als zweiter Commit desselben PR: Feldnotizen-Eintrag `workshop1` (DE+EN, `pr: 350`) in `patch-notes.mjs` angelegt, danach `patch-bump 20261122-workshop1 --apply` — Trockenlauf nannte vorab exakt **79 Dateien, 276 Token-Vorkommen und die 7 bekannten Anker-Zeilen**; die Anker-Prüfung meldete danach alle 7 Anker auf `20261122-workshop1`.
+- **Git / PR / Release:** Erster Commit `79564fbf` auf `arena/de0dad79-0815games-github-io`, Pull-Request `#350` („Phase 2 (workshop): Werkstatt-Module ziehen nach IronPath/workshop“) damit eröffnet. Der Wellen-Commit folgt in demselben PR; CI, Merge und Pages-Auslieferung sind noch nicht erfolgt und werden erst nach dem tatsächlichen Ereignis mit Kennung nachgetragen. Keine Geräteabnahme bisher; die Sichtprüfung lautet auf `BUILD 20261122-workshop1` und eine unverändert öffnende Werkstatt.
+- **Offen / nächster Schritt:** PR öffnen, Wellen-Commit nachschieben, CI abwarten, erst nach belegtem Merge/Pages-Stand als ausgeliefert bezeichnen. Danach `net/`, `battle/`, `ui/`, `core/` je eigenem PR. Der Bauplatz-Auswahlring aus PR `#336` (ohne Hover-Vorschau) bleibt geparkt, bis die Struktur steht.
+
+### Ereignis-Nachtrag zu IPL-0096
+
+- **Commits / PR:** Umzug `79564fbf` und Cache-Welle `01a9d171` auf `arena/de0dad79-0815games-github-io`; Pull-Request `#350` („Phase 2 (workshop): Werkstatt-Module ziehen nach IronPath/workshop“).
+- **CI:** `gh pr checks 350` endete im ersten Lauf mit **13 von 13 bestandenen Checks, 0 fehlgeschlagen, 0 ausstehend** (Actions-Run `44986235379`; `game-regressions` Job `137097298394`, `database-rules` Job `137097298142`, `interface-browser-smoke` Job `137097298434`). Anders als bei der `i18n`-Scheibe musste kein Browser-Test nachgezogen werden — der `cache-wave`-Testserver kannte den Ordner `workshop/` bereits aus dem Wegbereiter.
+- **Merge:** `gh pr view 350 --json state,mergedAt,mergeCommit` ergab `state=MERGED`, `mergedAt=2026-11-22T04:52:24Z`, Merge-Commit `930b4e38a16991518d74d4c49a3d1e1d278be8b4` in `main`.
+- **Pages:** `pages/builds/latest` meldete danach `status=built`, Dauer 40.588 ms, Commit `930b4e38a16991518d74d4c49a3d1e1d278be8b4`.
+- **Auslieferung auf `main` belegt:** `IronPath/workshop/workshop-wire.mjs` und `IronPath/workshop/workshop-view.mjs` sind per Contents-API vorhanden (HTTP 200), die alte Adresse `IronPath/workshop-wire.mjs` liefert **404**, und `release-version.json` auf `main` trägt `"build": "20261122-workshop1"`.
+- **Ehrliche Grenzen:** Die Live-URL wurde nicht abgerufen; belegt sind Inhalt auf `main` und der fertige Pages-Build. **Keine Geräteabnahme:** Stempel `BUILD 20261122-workshop1` und die unverändert öffnende Werkstatt (Gegenstände, Schrott, ausgerüstete Teile) sind Sache der Betreiber-Sichtprüfung.
+- **Herkunft dieses Nachtrags:** Er steht als eigener Commit auf demselben Arbeitszweig nach dem Merge von `#350`; seine eigene Commit- und PR-Kennung steht deshalb nicht hier, sondern in Git und im PR-Text.
