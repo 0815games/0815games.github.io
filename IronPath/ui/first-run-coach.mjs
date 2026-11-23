@@ -4,7 +4,7 @@
 // evidence-based gating and SVG pad/element highlighter from createCoachHighlight,
 // and layers in painted mission artwork thumbnails + General Vance radio clip
 // notifications per training step.
-import {translateText as tr} from '../language.mjs?v=20261123-endless2';
+import {translateText as tr} from '../language.mjs?v=20261123-endless3';
 import {createCoachHighlight} from '../core/coach-highlight.mjs?v=20261112-coachptr1';
 
 export const COACH_STEPS = Object.freeze([
@@ -15,7 +15,7 @@ export const COACH_STEPS = Object.freeze([
     caption:'WAVE 1 OF 7',
     when:null,
     target:{pad:'first-free'},
-    art:'assets/tutorial-soldier.jpg?v=20261123-endless2',
+    art:'assets/tutorial-soldier.jpg?v=20261123-endless3',
     voiceClip:'mission-welcome',
   }),
   Object.freeze({
@@ -26,7 +26,7 @@ export const COACH_STEPS = Object.freeze([
     when:'build',
     ask:'Build one tower to continue',
     target:{pad:'first-free'},
-    art:'assets/tutorial-build.jpg?v=20261123-endless2',
+    art:'assets/tutorial-build.jpg?v=20261123-endless3',
     voiceClip:'mission-build',
   }),
   Object.freeze({
@@ -37,7 +37,7 @@ export const COACH_STEPS = Object.freeze([
     when:'upgrade',
     ask:'Upgrade that tower to continue',
     target:{pad:'occupied'},
-    art:'assets/tutorial-build.jpg?v=20261123-endless2',
+    art:'assets/tutorial-build.jpg?v=20261123-endless3',
     voiceClip:'mission-upgrade',
   }),
   Object.freeze({
@@ -48,7 +48,7 @@ export const COACH_STEPS = Object.freeze([
     when:'move',
     ask:'Send your soldier somewhere',
     target:null,
-    art:'assets/tutorial-soldier.jpg?v=20261123-endless2',
+    art:'assets/tutorial-soldier.jpg?v=20261123-endless3',
     voiceClip:'mission-hero',
   }),
   Object.freeze({
@@ -58,7 +58,7 @@ export const COACH_STEPS = Object.freeze([
     caption:'WATCH THE SUPPLY COUNT',
     when:null,
     target:{element:'#moneyPanel'},
-    art:'assets/tutorial-defend.jpg?v=20261123-endless2',
+    art:'assets/tutorial-defend.jpg?v=20261123-endless3',
     voiceClip:'mission-supplies',
   }),
   Object.freeze({
@@ -69,7 +69,7 @@ export const COACH_STEPS = Object.freeze([
     when:'deploy',
     ask:'Press Deploy to start the wave',
     target:{element:'#start'},
-    art:'assets/tutorial-defend.jpg?v=20261123-endless2',
+    art:'assets/tutorial-defend.jpg?v=20261123-endless3',
     voiceClip:null,
   }),
   Object.freeze({
@@ -79,7 +79,7 @@ export const COACH_STEPS = Object.freeze([
     caption:'RANK 3 & SKY COVER',
     when:null,
     target:{element:'#speed'},
-    art:'assets/tutorial-airstrike.jpg?v=20261123-endless2',
+    art:'assets/tutorial-airstrike.jpg?v=20261123-endless3',
     voiceClip:'mission-specialize',
   }),
   Object.freeze({
@@ -89,7 +89,7 @@ export const COACH_STEPS = Object.freeze([
     caption:'BOSS OF WAVE 7',
     when:'boss',
     target:null,
-    art:'assets/tutorial-airstrike.jpg?v=20261123-endless2',
+    art:'assets/tutorial-airstrike.jpg?v=20261123-endless3',
     voiceClip:'mission-boss',
   }),
 ]);

@@ -130,7 +130,8 @@ test('endless stage carries arrows and deploy inside one artwork, record at bott
   assert.match(css, /#endlessLaunch #endlessDeploy\s*\{[^}]*position:\s*absolute/, 'DEPLOY sits on the artwork, not above it');
   assert.match(css, /#endlessLaunch \.endless-theme-card\s*\{[^}]*align-items:\s*flex-start/, 'the battlefield name holds the top of the artwork, DEPLOY owns the bottom');
   assert.match(css, /#endlessLaunch #endlessDeploy\s*\{[^}]*font-family:\s*"Arial Black"[^}]*letter-spacing:\s*0\.22em[^}]*box-shadow:[^}]*0 0 18px rgba\(232, 201, 124/, 'DEPLOY is a stencil plate with a glowing brass frame, readable on every artwork');
-  assert.match(endless, /endless-arrow-icon" viewBox="0 0 48 48"/, 'endless arrows render as filled military double chevrons');
+  assert.match(endless, /endless-arrow-icon" viewBox="0 0 28 48"/, 'endless arrows render as classic slim line chevrons');
+  assert.doesNotMatch(css, /#endlessLaunch #endlessDeploy\s*\{[^}]*min-width/, 'DEPLOY is only as wide as its stencil lettering, never a full-width bar');
 
   const boardStart = html.indexOf('id="campaignBoard"');
   const boardEnd = html.indexOf('class="campaign-quick-select"', boardStart);
