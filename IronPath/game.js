@@ -825,11 +825,14 @@ function renderResults(target){
         $('sectorText').textContent=tr('Fall back now. Your towers are lost in the retreat; you carry over a {refund} supply demolition refund.',{refund:state.towers.reduce((sum,tower)=>sum+Math.floor(.6*(TOWER_COSTS[tower.type]+(towerUpgradeInvestment(tower.level)??0)+classPathInvested(tower))),0)});
       }
     }
-    if($('bossAlert')){
+    {
+      // The mid-field boss banner is the only boss announcement now: the old
+      // top-edge alert with its boss health bar is gone. The warning tone and
+      // the screen-reader line ride along unchanged.
       const bossInterval=activeTraining&&!coop?TRAINING_BOSS_EVERY:5;
       const boss=state.enemies.find(e=>e.boss&&e.hp>0),incoming=state.running&&state.wave%bossInterval===0&&state.spawnLeft>0?bossForWave(state.wave,bossInterval):null,info=boss?BOSSES.find(b=>b.kind===boss.boss):incoming;
-      $('bossAlert').hidden=!info||state.ended;if(state.ended)bossBanner.hide();
-      if(info){const signal=boss?bossTelegraph(boss):null,key=boss?`${boss.boss}:${signal?.key||'normal'}`:null;if(signal?.warning&&bossSignal?.startsWith(`${boss.boss}:`)&&bossSignal!==key){sound.play('warning');$('bossAnnouncement').textContent=`${tr(info.label)}: ${localizedBossSignal(signal)}`;}bossSignal=key;bossBanner.announce(`${state.wave}:${info.kind}`,{eyebrow:tr(boss?'BOSS ON THE FIELD':'BOSS INCOMING'),name:tr(info.label),text:tr(info.description)});$('bossAlert').classList.toggle('is-warning',!!signal?.warning);$('bossAlertTitle').textContent=tr(boss?'BOSS · {name}':'BOSS INCOMING · {name}',{name:tr(info.label)});$('bossAlertInfo').textContent=signal?localizedBossSignal(signal):tr((boss&&bossPhaseLabel(boss))||info.description);$('bossHealth').hidden=!boss;if(boss)$('bossHealthFill').style.width=`${Math.max(0,Math.min(100,100*boss.hp/boss.maxHp))}%`;}else bossSignal=null;
+      if(state.ended)bossBanner.hide();
+      if(info){const signal=boss?bossTelegraph(boss):null,key=boss?`${boss.boss}:${signal?.key||'normal'}`:null;if(signal?.warning&&bossSignal?.startsWith(`${boss.boss}:`)&&bossSignal!==key){sound.play('warning');$('bossAnnouncement').textContent=`${tr(info.label)}: ${localizedBossSignal(signal)}`;}bossSignal=key;bossBanner.announce(`${state.wave}:${info.kind}`,{eyebrow:tr(boss?'BOSS ON THE FIELD':'BOSS INCOMING'),name:tr(info.label),text:tr(info.description)});}else bossSignal=null;
     }
     const threats=countFieldThreats(state.enemies);for(const [kind,id] of [['infantry','threatInfantry'],['runner','threatRunner'],['tank','threatTank'],['plane','threatPlane']])$(id).textContent=String(threats[kind]);const summary=Object.entries(threats).filter(([,n])=>n).map(([kind,n])=>`${tr(ENEMY_TYPES[kind].label)} ${n}`).join(' · ');$('threatSummary').textContent=summary||tr('No enemies on field');
     $('wave').textContent=`${state.wave} / ∞`; $('health').textContent=Math.max(0,Math.ceil(state.hp)); $('money').textContent=supplies();if($('moneyLabel'))$('moneyLabel').textContent=coop?tr('YOUR SUPPLIES'):tr('SUPPLIES'); $('enemies').textContent=state.enemies.length+state.spawnLeft; xpHud.render(state.players[me()]?.level);
