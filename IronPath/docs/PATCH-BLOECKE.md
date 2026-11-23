@@ -1071,7 +1071,7 @@ Die eigene Lebensanzeige ist im HUD sichtbar; bei Auswahl oder Beschädigung sin
 - [x] Infanterie bedroht vor allem **Soldaten in Reichweite**, Panzer vor allem **nahe Türme**; schnelle Scouts bleiben vorrangig auf dem Weg zum Bunker. Flugzeuge und bestehende Bosse zunächst nicht zusätzlich mit neuen Dauerangriffen überladen. Konkrete Reichweiten, Schaden und Häufigkeit pro Gegnertyp müssen durch Tests festgelegt werden.
 - [x] Angriffe sind begrenzt, mit sichtbarer Vorwarnung und eigenem Abklingintervall. Ein Angriff trifft nur ein noch gültiges Ziel; tote Gegner schießen nicht weiter, Soldaten können aus der Reichweite ausweichen. Eine Obergrenze gleichzeitiger Angreifer pro Ziel und ein langsamer Einstieg in den ersten Wellen schützen vor unlesbarem Fokusfeuer.
 - [x] Gegner bleiben auf ihren vorhandenen Wegen und verfolgen Spieler nicht endlos über die Karte. Kein Friendly Fire und keine Angriffe auf das gegnerische Feld im Überlebens-Wettkampf. Vorhandene Bosswarnungen, Gelände und Flug-/Bodentypen bleiben nachvollziehbar.
-- [ ] Neues Feedback erklärt, **wer** angegriffen wird und wie man reagiert. Im Tutorial wird das System sicher und verständlich eingeführt; der bestehende Fünf-Wellen-Vertrag und seine Abschluss-/Belohnungslogik dürfen nicht blockiert werden.
+- [ ] Neues Feedback erklärt, **wer** angegriffen wird und wie man reagiert. Im Tutorial wird das System sicher und verständlich eingeführt; der bestehende Fünf-Wellen-Vertrag und seine Abschluss-/Belohnungslogik dürfen nicht blockiert werden. *(Teilschritt `IPL-0113`: Lebensbalken an Soldat und Türmen jetzt immer sichtbar statt nur bei Schaden.)*
 
 ### E3. Reparatur statt harter Verlustspirale
 

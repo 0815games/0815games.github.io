@@ -1,6 +1,6 @@
 # Iron Path – Patch-Log: Archiv
 
-Ältere Einträge IPL-0001 bis IPL-0092. Die neuesten 20 stehen in
+Ältere Einträge IPL-0001 bis IPL-0093. Die neuesten 20 stehen in
 [PATCH-LOG.md](PATCH-LOG.md); die Regeln für beide Dateien dort und in
 [`../../AGENTS.md`](../../AGENTS.md). Beim Verschieben wandert ein Eintrag immer
 vollständig einschließlich seiner Ereignis-Nachträge.
@@ -4144,3 +4144,30 @@ sie geprüft wurde.
   kann er nicht selbst enthalten - sie steht im PR-Text und in Git. Genau dieser
   Umstand war bei `IPL-0091` der Grund, warum dessen Nachtrag auf `main` fehlte:
   er lag nur im Vorzweig `a4d093ef` und wurde erst mit `5b8f3a68` übernommen.
+
+## IPL-0093 – Doppelblock im Patchplan repariert und `IronPath/empty` gelöscht (keine Spieländerung, keine Cache-Welle)
+
+- **Zeit / Quelle:** Betreiberauftrag in dieser Sitzung, wörtlich: „Mach die 2 punkte bitte fertig.“ Grundlage sind die zuvor getroffenen Entscheidungen: doppelten Schlussblock in `docs/PATCH-BLOECKE.md` reparieren und `IronPath/empty` jetzt doch löschen.
+- **Block / Ziel:** Kein Spiel-Block. Ziel ist nur, die zwei offenen Aufräumpunkte aus der Repository-Ordnung abzuschließen, ohne Spieldateien, Balance, Speicherstände oder Mehrspieler zu ändern.
+- **Branch / Basis:** `arena/f3b31c90-0815games-github-io` ab `4e26e00995a957f0e325f212ff19e5a9e3e989d5` (`main`, Merge von PR `#343`).
+- **Änderungen / Dateien:**
+  - `IronPath/docs/PATCH-BLOECKE.md`: Die doppelte Wiederholung am Dateiende entfernt (Zeilen 1381–1391, 1.066 Zeichen). Vor dem Schnitt wurde zeichenweise geprüft: Der entfernte Teil ist nur die Wiederholung des schon vorhandenen Schlusses und beginnt mitten im Wort (`twerden sowie nach Abklingzeit.`); die vollständige Fassung mit Admin-Login-Punkt und `## Gemeinsame Freigabe` bleibt genau einmal stehen. Marker danach: `## Gemeinsame Freigabe` 1×, Admin-Login-Punkt 1×.
+  - `IronPath/empty`: Die unreferenzierte 1-Byte-Datei (nur Zeilenumbruch) gelöscht. Im Baum gibt es keinen Code-Verweis auf diese Datei; `release-tools/stage-version.mjs` kopiert aus der Spielwurzel nur `.mjs`/`.js`/`.css`, daher war `empty` auch nicht Teil des Release-Inventars. Die frühere Entscheidung „nichts löschen“ ist für diese eine Datei durch den ausdrücklichen Betreiberwunsch aufgehoben; der historische Feldnotizen-Satz zu PR `#342` bleibt als damaliger Stand unverändert und wird durch diesen Eintrag für die Gegenwart abgelöst.
+  - `IronPath/docs/PATCH-LOG.md` und `IronPath/docs/PATCH-LOG-ARCHIV.md`: `IPL-0073` vollständig ans Ende des Archivs verschoben, die Kennungsgrenzen in beiden Köpfen auf `IPL-0001` bis `IPL-0073` nachgezogen und dieser Eintrag als neuester angehängt. Das Log führt damit weiter die neuesten 20 Einträge (`IPL-0074` bis `IPL-0093`).
+- **Prüfungen:**
+  - Zieltests vor der Log-Rotation: `node --test IronPath/tests/repo-structure.test.mjs IronPath/tests/patch-log-archive.test.mjs IronPath/tests/patch-tooling.test.mjs` = **23 Tests, 23 bestanden, 0 fehlgeschlagen, 0 übersprungen**.
+  - Gesamtsuite im zunächst flachen Klon: `node --test IronPath/tests/*.test.mjs` = **1.258 Tests, 1.257 bestanden, 0 fehlgeschlagen, 1 übersprungen**. Der eine übersprungene Test war `release-pages-site` wegen fehlender Vorfahren-Commits im flachen Klon; nach `git fetch --unshallow origin` lief `node --test IronPath/tests/release-pages-site.test.mjs` mit **6/6 bestanden, 0 übersprungen** nach.
+  - Nach der Log-Rotation: `node --test IronPath/tests/patch-log-archive.test.mjs IronPath/tests/repo-structure.test.mjs` = **12 Tests, 12 bestanden, 0 fehlgeschlagen, 0 übersprungen**; `node IronPath/scripts/patch-check.mjs` = **93 Einträge `IPL-0001` bis `IPL-0093` lückenlos (Log 20 + Archiv 73), 0 Fehler, 1 Hinweis** (zum Prüfzeitpunkt noch uncommittete Änderungen).
+  - Keine Geräte- oder Browserabnahme: Es wurde keine Datei geändert, die der Browser lädt. Der Build-Stempel bleibt unverändert `20261121-order1`; eine Cache-Welle ist für diese Doku-/Aufräumänderung nicht nötig.
+- **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet` auf `arena/f3b31c90-0815games-github-io`. Commit, Push, PR, CI, Merge und Pages-Auslieferung sind noch nicht erfolgt und werden erst nach dem tatsächlichen Ereignis mit Kennung nachgetragen.
+- **Offen / nächster Schritt:** PR für diese zwei Punkte öffnen, CI abwarten und erst nach belegtem Merge/Pages-Stand als ausgeliefert bezeichnen. Danach getrennt angehen: Spielwurzel-Struktur der vielen JavaScript-/Moduldateien ordnen und anschließend die Patch-Skripte auf Zusammenlegung/Vereinfachung prüfen.
+
+### Ereignis-Nachtrag zu IPL-0093
+
+- **Commit / PR:** Der Arbeitscommit ist `0f2e1e4d14aa5c1151e10219232408800969620c` auf `arena/f3b31c90-0815games-github-io`; Pull-Request `#344` („Doppelblock reparieren und IronPath/empty löschen“) wurde mit diesem Stand geöffnet.
+- **CI:** `gh pr checks 344` endete mit **13 von 13 bestandenen Checks, 0 fehlgeschlagen, 0 ausstehend**. Belegt im Actions-Run `44975676529`, darunter `game-regressions` (Job `137064918377`), `database-rules` (Job `137064918320`) und `interface-browser-smoke` (Job `137064918143`), dazu die acht `party-finalization-browser`-Varianten und zwei Vercel-Checks.
+- **Merge:** `gh pr view 344 --json state,mergedAt,mergeCommit` ergab `state=MERGED`, `mergedAt=2026-11-22T02:31:00Z`, Merge-Commit `3e6aeb1f093aab2dc88abef4bc5bd4582f34d9dd` in `main`.
+- **Pages:** Der Workflow `pages build and deployment` lief als Run `44976460159` auf dem Merge-Commit mit `completed/success`; `gh api repos/0815games/0815games.github.io/pages/builds/latest` meldete danach `status=built`, `duration=46284` ms, `commit=3e6aeb1f093aab2dc88abef4bc5bd4582f34d9dd`.
+- **Auslieferung auf `main` belegt:** `IronPath/docs/PATCH-BLOECKE.md` ist per Contents-API vorhanden (131262 B, SHA `3cef02715916a0388685f5758a3d716823bc11e8`), `IronPath/docs/PATCH-LOG.md` ebenfalls (97407 B, SHA `041c0a59348550fd91c9290dbb54b2c2b741c425`), `IronPath/docs/PATCH-LOG-ARCHIV.md` ist vorhanden, und `IronPath/empty` liefert auf `main` **404** – die Datei ist also auch ausgeliefert entfernt.
+- **Ehrliche Grenzen:** Die Live-URL wurde nicht abgerufen; belegt sind Repository-Inhalt auf `main` und der fertige Pages-Build, nicht eine Sichtprüfung im Browser. Eine Geräteabnahme war für diese Änderung nicht vorgesehen, weil keine browsergeladene Datei geändert wurde. Ob `game-regressions` inzwischen Pflicht-Check ist, wurde für diesen Nachtrag nicht erneut geprüft.
+- **Herkunft dieses Nachtrags:** Er steht als eigener Commit auf demselben Arbeitszweig nach dem Merge von `#344`; Commit- und PR-Kennung dieses Nachtrags selbst stehen deshalb nicht hier, sondern in Git und im PR-Text.
