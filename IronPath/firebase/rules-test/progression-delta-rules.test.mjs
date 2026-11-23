@@ -8,16 +8,23 @@ import {ref, get, set, update} from 'firebase/database';
 // (../PROGRESSION-DELTA-CAPS-TO-PUBLISH.json): Ehrliche Schreibungen des
 // echten Clients gehen durch, Ein-Schreibungs-Sprünge ans Limit nicht.
 let env, alice;
+const now = Math.floor(Date.now() / 1000);
+const claims = () => ({iat: now, auth_time: now - 30, firebase: {sign_in_provider: 'password', identities: {}}});
 before(async () => {
   env = await initializeTestEnvironment({projectId: 'demo-ironpath', database: {host: '127.0.0.1', port: 9000, rules: await readFile(new URL('../PROGRESSION-DELTA-CAPS-TO-PUBLISH.json', import.meta.url), 'utf8')}});
-  alice = env.authenticatedContext('alice').database();
+  alice = env.authenticatedContext('alice', claims()).database();
 });
 beforeEach(async () => {
   await env.clearDatabase();
-  await env.withSecurityRulesDisabled(ctx => set(ref(ctx.database(), 'players/alice'), {
-    name: 'Alice', gender: 'female', xp: 900, campaign: 3,
-    armory: {scrap: 100, fortify: 0, plating: 0, repair: 0, gun: 0, supply: 0, safeguard: 0, owned: 1, equipped: 1},
-  }));
+  // Die Live-Regeln tragen das Wartungs-Gate (format 1 / open); ohne den
+  // Stempel in der Datenbank bleibt jede Schreibung zu Recht verweigert.
+  await env.withSecurityRulesDisabled(async ctx => {
+    await set(ref(ctx.database(), '_ironpathMaintenance'), {format: 1, mode: 'open', authAfterMs: 0});
+    await set(ref(ctx.database(), 'players/alice'), {
+      name: 'Alice', gender: 'female', xp: 900, campaign: 3,
+      armory: {scrap: 100, fortify: 0, plating: 0, repair: 0, gun: 0, supply: 0, safeguard: 0, owned: 1, equipped: 1},
+    });
+  });
 });
 after(async () => env.cleanup());
 
