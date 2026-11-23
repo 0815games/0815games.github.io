@@ -6,7 +6,7 @@ aber ersetzt weder Git noch die GitHub-PR-Historie. Die dazugehörige
 [Arbeitsanweisung](../../AGENTS.md) verlangt, dieses Log vor der Arbeit zu lesen
 und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
 
-Die Einträge IPL-0001 bis IPL-0095 stehen im
+Die Einträge IPL-0001 bis IPL-0096 stehen im
 [Archiv](PATCH-LOG-ARCHIV.md); hier stehen die neuesten 20. Beide Dateien
 zusammen sind lückenlos und doppelfrei - `../scripts/patch.mjs` (Unterbefehl `check`) und
 `../tests/patch-log-archive.test.mjs` prüfen das.
@@ -49,37 +49,6 @@ jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderl
 
 
 
-
-
-## IPL-0096 – Phase 2, Scheibe 2: Die 17 Werkstatt-Module ziehen nach `workshop/` (eigene Cache-Welle folgt im selben PR)
-
-- **Zeit / Quelle:** Betreiber: „Let's go“ zur nächsten Scheibe nach `IPL-0095`. Grundlage bleiben die vier Entscheidungen aus `IPL-0094` (Gruppen nach Fachgebiet, scheibenweise, ein PR pro Gruppe).
-- **Block / Ziel:** Kein Spiel-Block. Alle 17 `workshop-*.mjs` der Spielwurzel liegen künftig in `IronPath/workshop/`. Spielverhalten, Werkstatt-Regeln, Speicherstände und Mehrspieler bleiben unverändert; nur die Modul-Adressen ändern sich, deshalb trägt derselbe PR wieder eine eigene Cache-Welle (zweiter Commit, sobald die PR-Nummer existiert). Die `workshop-view.css` bleibt als Stylesheet in der Wurzel, wie für CSS entschieden.
-- **Branch / Basis:** `arena/de0dad79-0815games-github-io` ab `2ab2b1127fb3ffc0fb946633d58f9721e027f4d4` (`main`, Merge von PR `#349`).
-- **Änderungen / Dateien:**
-  - 17 Dateien per `git mv` nach `IronPath/workshop/` verschoben. 7 davon sind inhaltlich bytegleich; in 10 Dateien zeigen Importe auf Wurzel-Module jetzt eine Ebene hoch; Geschwister-Importe innerhalb von `workshop/` bleiben `./`.
-  - 9 Wurzel-Dateien zeigen auf `./workshop/workshop-…` (`account.js`, `game.js`, `match.mjs`, `simulation.mjs`, `solo-deployment.mjs`, `coop-motion.mjs`, `coop-rewards.mjs`, `firebase-party-game.mjs`, `firebase-recoverable-game.mjs`).
-  - Mitgezogen: `IronPath/server/` (3 Dateien importieren `../workshop/workshop-…`), `IronPath/firebase/rules-test/` (4 Dateien, `../../workshop/workshop-…`), 21 Testdateien (`../workshop/workshop-…`), der Stempel-Test-Schlüssel `workshop/workshop-multiplayer-game.mjs` in `multiplayer-build-stamp` (dessen Abhängigkeits-Karte liest die Datei unter diesem Pfad) und der dynamische Import in `browser-tests/command-center.cjs` (`./workshop/workshop-view.mjs`, `./workshop/workshop-wire.mjs`; das Stylesheet `workshop-view.css` bleibt an der Wurzel).
-  - 13 Harness-Listen führen den Eintrag jetzt als `workshop/workshop-run-receipt.mjs`, weil die Harnische den Pfad so ersetzen, wie er im Import von `game.js` steht und die Datei relativ zur Spielwurzel laden.
-  - `IronPath/tests/endless-retreat-viewport.test.mjs`: Die generische Ersetzungs-Regex dieses Harness kannte keine Schrägstriche (`[\w.-]+`) und hätte das umgezogene Modul nicht ersetzt — der erste Gesamtlauf wurde daran rot (`ERR_UNSUPPORTED_RESOLVE_REQUEST` im data:-Import, 3 Tests). Die Zeichenklasse umfasst jetzt auch `/`; es war die einzige Stelle mit diesem generischen Muster.
-  - `IronPath/docs/PATCH-LOG.md` und `IronPath/docs/PATCH-LOG-ARCHIV.md`: `IPL-0076` vollständig ins Archiv, Grenzen auf `IPL-0001` bis `IPL-0076` nachgezogen; das Log führt die neuesten 20 (`IPL-0077` bis `IPL-0096`).
-- **Prüfungen:**
-  - Betroffene Tests gezielt vorab: 147 Tests über alle `workshop-*`-Suiten, die 13 Harnische und die Verträge — ein Fund (`multiplayer-build-stamp` las die verschobene Datei unter altem Pfad), danach grün.
-  - Staging-Vergleich gegen den `main`-Stand (Baseline per `git worktree` auf `2ab2b112`): **711 gestagte Dateien vorher und nachher**; 17 neue `workshop/`-Adressen, 7 Module mit identischem SHA-256, 9 Wurzel-Dateien mit gleicher Adresse und neuem Inhalt (nur Import-Pfade).
-  - Gesamtsuite im vollständigen Klon: erster Lauf **1.257/1.260** (der oben genannte `endless-retreat-viewport`-Harness), nach dem Fix `node --test IronPath/tests/*.test.mjs` = **1.260 Tests, 1.260 bestanden, 0 fehlgeschlagen, 0 übersprungen, Exit 0**. `patch-check` vor dem Log-Eintrag: **0 Fehler**.
-  - Cache-Welle als zweiter Commit desselben PR: Feldnotizen-Eintrag `workshop1` (DE+EN, `pr: 350`) in `patch-notes.mjs` angelegt, danach `patch-bump 20261122-workshop1 --apply` — Trockenlauf nannte vorab exakt **79 Dateien, 276 Token-Vorkommen und die 7 bekannten Anker-Zeilen**; die Anker-Prüfung meldete danach alle 7 Anker auf `20261122-workshop1`.
-- **Git / PR / Release:** Erster Commit `79564fbf` auf `arena/de0dad79-0815games-github-io`, Pull-Request `#350` („Phase 2 (workshop): Werkstatt-Module ziehen nach IronPath/workshop“) damit eröffnet. Der Wellen-Commit folgt in demselben PR; CI, Merge und Pages-Auslieferung sind noch nicht erfolgt und werden erst nach dem tatsächlichen Ereignis mit Kennung nachgetragen. Keine Geräteabnahme bisher; die Sichtprüfung lautet auf `BUILD 20261122-workshop1` und eine unverändert öffnende Werkstatt.
-- **Offen / nächster Schritt:** PR öffnen, Wellen-Commit nachschieben, CI abwarten, erst nach belegtem Merge/Pages-Stand als ausgeliefert bezeichnen. Danach `net/`, `battle/`, `ui/`, `core/` je eigenem PR. Der Bauplatz-Auswahlring aus PR `#336` (ohne Hover-Vorschau) bleibt geparkt, bis die Struktur steht.
-
-### Ereignis-Nachtrag zu IPL-0096
-
-- **Commits / PR:** Umzug `79564fbf` und Cache-Welle `01a9d171` auf `arena/de0dad79-0815games-github-io`; Pull-Request `#350` („Phase 2 (workshop): Werkstatt-Module ziehen nach IronPath/workshop“).
-- **CI:** `gh pr checks 350` endete im ersten Lauf mit **13 von 13 bestandenen Checks, 0 fehlgeschlagen, 0 ausstehend** (Actions-Run `44986235379`; `game-regressions` Job `137097298394`, `database-rules` Job `137097298142`, `interface-browser-smoke` Job `137097298434`). Anders als bei der `i18n`-Scheibe musste kein Browser-Test nachgezogen werden — der `cache-wave`-Testserver kannte den Ordner `workshop/` bereits aus dem Wegbereiter.
-- **Merge:** `gh pr view 350 --json state,mergedAt,mergeCommit` ergab `state=MERGED`, `mergedAt=2026-11-22T04:52:24Z`, Merge-Commit `930b4e38a16991518d74d4c49a3d1e1d278be8b4` in `main`.
-- **Pages:** `pages/builds/latest` meldete danach `status=built`, Dauer 40.588 ms, Commit `930b4e38a16991518d74d4c49a3d1e1d278be8b4`.
-- **Auslieferung auf `main` belegt:** `IronPath/workshop/workshop-wire.mjs` und `IronPath/workshop/workshop-view.mjs` sind per Contents-API vorhanden (HTTP 200), die alte Adresse `IronPath/workshop-wire.mjs` liefert **404**, und `release-version.json` auf `main` trägt `"build": "20261122-workshop1"`.
-- **Ehrliche Grenzen:** Die Live-URL wurde nicht abgerufen; belegt sind Inhalt auf `main` und der fertige Pages-Build. **Keine Geräteabnahme:** Stempel `BUILD 20261122-workshop1` und die unverändert öffnende Werkstatt (Gegenstände, Schrott, ausgerüstete Teile) sind Sache der Betreiber-Sichtprüfung.
-- **Herkunft dieses Nachtrags:** Er steht als eigener Commit auf demselben Arbeitszweig nach dem Merge von `#350`; seine eigene Commit- und PR-Kennung steht deshalb nicht hier, sondern in Git und im PR-Text.
 
 
 ## IPL-0097 – Phase 2, Scheibe 3: Die 15 Firebase-Clientmodule ziehen nach `net/` (eigene Cache-Welle folgt im selben PR)
@@ -480,3 +449,19 @@ jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderl
 - **Prüfungen:** `block-e-host` 9/9; `balance-suite` + `coop-balance` 18/18 (automatisierte Nachmessung, ~97 s); `patch.mjs check --fast` 0 Fehler (Log 115 Einträge lückenlos); Gesamtsuite 1307 Tests, 1306 bestanden, 1 übersprungen (bekannter `release-pages-site`-Flachklon-Skip; nach `git fetch --unshallow origin` gezielt 6/6 ohne Skip nachgeholt) – effektiv 1307/1307.
 - **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet`. Commit, Push, PR, CI und Merge werden nach tatsächlichem Ereignis nachgetragen. Da keine browsergeladene Datei ändert, ist keine Pages-Auslieferungsprüfung nötig; der Merge hält Tests und Doku auf `main` aktuell.
 - **Offen / nächster Schritt:** Menschliche Balance mit Block C (Betreiber im Spiel) und Emulator-Transportfälle für 2–4 Clients. Danach Punkt 2 der Reihenfolge: Sicherheit – Zuwachs-Deckel pro Schreibung in den Firebase-Fortschrittsregeln (additiver Kandidat + Publish-Datei, Betreiber veröffentlicht).
+
+## IPL-0116 – Sicherheit: Zuwachs-Deckel pro Schreibung in den Fortschritts-Regeln (Publish-Datei, Betreiber veröffentlicht)
+- **Zeit / Quelle:** 2026-11-23 UTC; Betreiber: „Dann nimm den mündlichen Teil raus aus deiner Prüfung und danach weiter." Der menschliche Balance-Eindruck ist damit aus der offenen Liste gestrichen (Block E gilt als abgeschlossen); danach Punkt 2 der Reihenfolge in `docs/AUSBAU-PLAN.md`.
+- **Block / Ziel:** Sicherheit. Die Live-Regeln begrenzten Fortschritt nur über Monotonie und Obergrenze: Ein manipulierter Client konnte XP (→10.000.000), Bestenlisten-Welle (→10.000), Endlos-Zähler und Scrap in einer einzigen Schreibung ans Limit setzen.
+- **Branch / Basis:** `arena/e1cf6356-0815games-github-io` ab `23225689dd9077fb9332248530bf739d5a8e8f43` (`main`, Merge PR `#377`).
+- **Änderungen / Dateien:**
+  - `IronPath/docs/AUSBAU-PLAN.md` / `PATCH-BLOECKE.md`: Menschlicher Balance-Teil aus den offenen Punkten entfernt (Betreiber-Entscheid; bleibt sein Eindruck im Spiel, kein Prüfposten). Block E damit abgeschlossen bis auf Emulator-Transportfälle.
+  - `IronPath/firebase/progression-delta-candidate.mjs` (neu): `applyProgressionDeltaCaps` verschärft exakt sieben `.validate`-Zeilen und bricht bei jeder Abweichung vom geprüften Ausgangstext ab (Drift-Schutz). Deckel: XP +5.000 (ehrlich max. 1.020/Welle), `storyProgress` +1, `endlessRuns` +1, `endlessWaves` +1.000, `endlessBosses` +200, Scrap-Zuwachs +1.000 (Ausgeben frei), Bestenlisten-Welle +500 (Erstwert ≤ 500).
+  - `IronPath/firebase/PROGRESSION-DELTA-CAPS-TO-PUBLISH.json` (neu): aus dem aktuellen Live-Stand (`ENDLESS-LAST-RUN-TO-PUBLISH.json`) generiert; Python-Diff beweist exakt 7 geänderte Blätter, keine neuen/entfernten Schlüssel. `WORKSHOP-RULES-TO-PUBLISH.json` unberührt.
+  - `IronPath/firebase/PROGRESSION-DELTA-ROLLOUT.md` (neu): Publish-Anleitung mit Deckel-Tabelle und Rückfallweg.
+  - `IronPath/tests/progression-delta-rules.test.mjs` (neu, 3 Tests): Publish-Datei = Basis + Kandidat (reproduzierbar), Deckel über ehrlichem Spiel und unter dem Ein-Schreibungs-Sprung, Drift-Abbruch.
+  - `IronPath/firebase/rules-test/progression-delta-rules.test.mjs` (neu) + `firebase-delta.emulator.json` + npm-Skript `test:delta-caps` + CI-Schritt in `.github/workflows/ironpath-firebase-rules.yml`: Emulator-Beweis gegen die exakte Publish-Datei (ehrliche Schreibungen durch, Sprünge abgelehnt, Scrap-Ausgeben frei).
+  - Log-Rotation `IPL-0096` ins Archiv (Haupt `IPL-0097…IPL-0116`, Archiv bis `IPL-0096`).
+- **Prüfungen:** Pin-Test 3/3; `rules-publish-dry-run.mjs` gegen den Live-Stand mit Kandidat: 0 Blocker, exakt 7 Prüfpunkte (die sieben beabsichtigten Zeilen). Emulator-Beweis läuft in der CI (`database-rules`), lokal kein Java/Emulator. `patch.mjs check --fast`: 0 Fehler. Gesamtsuite 1310 Tests, 1309 bestanden + 1 bekannter Flachklon-Skip (`release-pages-site` nach Unshallow gezielt 6/6) – effektiv 1310/1310.
+- **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet`. Commit, Push, PR, CI und Merge werden nach tatsächlichem Ereignis nachgetragen. **Die Regeln selbst veröffentlicht der Betreiber** (Datei + Anleitung oben); erst seine Meldung macht den Schutz live.
+- **Offen / nächster Schritt:** Betreiber-Publish der Delta-Datei. Danach Punkt 3: Sektor-Modifikatoren für Endlos-Identität.
