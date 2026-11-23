@@ -1,11 +1,11 @@
 // Unified multiplayer lobby adapter. Firebase rules MUST
 // enforce all actor, request, roster-lock and path constraints independently.
 import {createPartyCode} from '../core/party-code.mjs?v=20261101-shortcode1';
-import {createFourLobby} from '../core/four-lobby.mjs?v=20261123-prestige1';
+import {createFourLobby} from '../core/four-lobby.mjs?v=20261123-party6';
 import {availablePartyModes,canStartParty} from '../core/multiplayer-lobby.mjs?v=20261103-unified1';
 const validUid=id=>typeof id==='string'&&id.length>0&&id.length<=128&&!/[.#$\[\]/\u0000-\u001f\u007f]/.test(id);
 const validParty=id=>typeof id==='string'&&/^[a-f0-9]{32}$/.test(id);
-const validCode=code=>typeof code==='string'&&/^[0-9]{4}$/.test(code);
+const validCode=code=>typeof code==='string'&&/^[0-9]{4}(?:[0-9]{2})?$/.test(code);
 export function fourTeamRosters(manifest){if(!manifest||!Array.isArray(manifest.playerIds)||!availablePartyModes(manifest.playerIds.length).includes(manifest.mode)||new Set(manifest.playerIds).size!==manifest.playerIds.length||manifest.playerIds.some(id=>!validUid(id))||manifest.hostId!==manifest.playerIds[0]||!validConfig(manifest))throw Error('Invalid started roster');return [0,1].map(team=>manifest.playerIds.filter((_,i)=>manifest.teams[i]===team));}
 function validConfig(config){return config&&['coop','versus','four-coop','two-vs-two'].includes(config.mode)&&Array.isArray(config.teams)&&config.teams.length===4&&config.teams.every(t=>t===0||t===1)&&config.teams.filter(t=>t===0).length===2;}
 export function createFirebaseFourLobby({db,auth,sdk,crypto=globalThis.crypto,recoveryEnabled=false}){
@@ -15,7 +15,13 @@ export function createFirebaseFourLobby({db,auth,sdk,crypto=globalThis.crypto,re
   const ref=path=>sdk.ref(db,path),party=(id,path)=>{if(!validParty(id))throw Error('Invalid party');return ref(`fourParties/${id}/${path}`);};
   async function read(path){const value=(await sdk.get(path)).val();check();return value;}
   async function transactionWithCache(path,update){let unwatch;await new Promise((resolve,reject)=>{unwatch=sdk.onValue(path,resolve,reject);});try{check();const result=await sdk.runTransaction(path,update,{applyLocally:false});check();return result;}finally{unwatch?.();}}
-  function code(){const bytes=new Uint32Array(1);do{crypto.getRandomValues(bytes);}while(bytes[0]>=4294960000);return String(bytes[0]%10000).padStart(4,'0');}
+  // Six-digit codes (AUSBAU-PLAN Punkt 5), with the same pre-publish fallback
+  // as the two-player lobby: a refused six-digit key means the new rules are
+  // not live yet, so creation retries in the four-digit space both rulesets
+  // accept and keeps this lobby instance there. Joining (validCode) accepts
+  // both lengths, so pre-switch parties run out naturally.
+  let sixDigit=true;
+  function code(){const bytes=new Uint32Array(1);const limit=sixDigit?4294000000:4294960000,mod=sixDigit?1000000:10000;do{crypto.getRandomValues(bytes);}while(bytes[0]>=limit);return String(bytes[0]%mod).padStart(sixDigit?6:4,'0');}
   function watch(path,callback,onError){check();if(typeof callback!=='function')throw Error('Callback required');return sdk.onValue(path,s=>{if(auth.currentUser?.uid===uid)callback(s.val());},onError);}
   return {
     async create(profile){
@@ -23,7 +29,9 @@ export function createFirebaseFourLobby({db,auth,sdk,crypto=globalThis.crypto,re
       try{
         for(let i=0;i<3;i++){const id=createPartyCode(crypto).partyId,result=await sdk.runTransaction(party(id,'hostId'),v=>v===null?uid:undefined,{applyLocally:false});check();if(result.committed){partyId=id;break;}}
         if(!partyId)throw Error('Could not reserve party');
-        for(let i=0;i<40;i++){const candidate=code(),slot=ref(`fourCodes/${candidate}/hostId`);if(await read(slot)!==null)continue;try{const result=await sdk.runTransaction(slot,v=>v===null?uid:undefined,{applyLocally:false});check();if(result.committed){inviteCode=candidate;break;}}catch(error){check();if(await read(slot)!==null)continue;throw error;}}
+        const claimFourCode=async()=>{for(let i=0;i<40;i++){const candidate=code(),slot=ref(`fourCodes/${candidate}/hostId`);if(await read(slot)!==null)continue;try{const result=await sdk.runTransaction(slot,v=>v===null?uid:undefined,{applyLocally:false});check();if(result.committed)return candidate;}catch(error){check();if(await read(slot)!==null)continue;throw error;}}return null;};
+        try{inviteCode=await claimFourCode();}
+        catch(error){check();if(!sixDigit)throw error;sixDigit=false;inviteCode=await claimFourCode();}
         if(inviteCode===null)throw Error('No party code available');
         await sdk.set(party(partyId,'inviteCode'),inviteCode);check();await sdk.set(ref(`fourCodes/${inviteCode}/partyId`),partyId);check();
         await sdk.set(party(partyId,`profiles/${uid}`),profile);check();await sdk.set(party(partyId,'config'),{mode:'four-coop',teams:[0,0,1,1]});check();

@@ -1,24 +1,38 @@
-// Staged four-digit request flow. The separate four-digit Firebase rules must be
-// deployed before this adapter can be enabled; the code alone grants no access.
+// Party-code request flow (AUSBAU-PLAN Punkt 5): codes are six digits now, so
+// the 10,000-code space can no longer be enumerated in seconds. Joining keeps
+// accepting four-digit codes - parties live one session, so codes handed out
+// before the switch simply run out instead of breaking mid-game. Until the
+// operator publishes the six-digit rules the database still refuses six-digit
+// keys; creation then falls back to four digits for the rest of this lobby
+// instance instead of failing the party (the endlessLastRun pattern).
 const validId=value=>typeof value==='string'&&value.length>0&&value.length<=128&&!/[.#$\[\]/\u0000-\u001f\u007f]/.test(value);
-const validCode=value=>typeof value==='string'&&/^[0-9]{4}$/.test(value);
+const validCode=value=>typeof value==='string'&&/^[0-9]{4}(?:[0-9]{2})?$/.test(value);
 const validParty=value=>typeof value==='string'&&/^[a-f0-9]{32}$/.test(value);
 export function createFourDigitLobby({db,auth,sdk,crypto=globalThis.crypto,lobby}){
-  if(!db||!auth||!sdk||!lobby||!['ref','get','set','remove','runTransaction','onValue'].every(k=>typeof sdk[k]==='function')||typeof crypto?.getRandomValues!=='function')throw Error('Invalid four-digit lobby');
+  if(!db||!auth||!sdk||!lobby||!['ref','get','set','remove','runTransaction','onValue'].every(k=>typeof sdk[k]==='function')||typeof crypto?.getRandomValues!=='function')throw Error('Invalid party-code lobby');
   const uid=auth.currentUser?.uid;if(!validId(uid))throw Error('Sign in required');
   const check=()=>{if(auth.currentUser?.uid!==uid)throw Error('Party identity changed');};
   const ref=path=>sdk.ref(db,path);
-  function code(){const bytes=new Uint32Array(1);do{crypto.getRandomValues(bytes);}while(bytes[0]>=4294960000);return String(bytes[0]%10000).padStart(4,'0');}
+  let sixDigit=true;
+  function code(){const bytes=new Uint32Array(1);const limit=sixDigit?4294000000:4294960000,mod=sixDigit?1000000:10000;do{crypto.getRandomValues(bytes);}while(bytes[0]>=limit);return String(bytes[0]%mod).padStart(sixDigit?6:4,'0');}
+  async function claimCode(){
+    for(let i=0;i<40;i++){
+      const candidate=code(),slot=ref(`partyCodes/${candidate}/hostId`);
+      if((await sdk.get(slot)).exists()){check();continue;}
+      try{const claimed=await sdk.runTransaction(slot,value=>value===null?uid:undefined,{applyLocally:false});check();if(claimed.committed)return candidate;}
+      catch(error){check();if((await sdk.get(slot)).exists())continue;throw error;}
+    }
+    return null;
+  }
   return {
     async create(){
       check();const party=await lobby.create();let inviteCode=null;
       try{
-        for(let i=0;i<40;i++){
-          const candidate=code(),slot=ref(`partyCodes/${candidate}/hostId`);
-          if((await sdk.get(slot)).exists()){check();continue;}
-          try{const claimed=await sdk.runTransaction(slot,value=>value===null?uid:undefined,{applyLocally:false});check();if(claimed.committed){inviteCode=candidate;break;}}
-          catch(error){check();if((await sdk.get(slot)).exists())continue;throw error;}
-        }
+        // A refused six-digit key means the six-digit rules are not live yet:
+        // fall back to the four-digit space both rulesets accept, once, and
+        // keep the party creatable instead of stranding the host.
+        try{inviteCode=await claimCode();}
+        catch(error){check();if(!sixDigit)throw error;sixDigit=false;inviteCode=await claimCode();}
         if(inviteCode===null)throw Error('No party code available');
         await sdk.set(ref(`parties/${party.partyId}/inviteCode`),inviteCode);check();
         await sdk.set(ref(`partyCodes/${inviteCode}/partyId`),party.partyId);check();

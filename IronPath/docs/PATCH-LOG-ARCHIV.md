@@ -1,6 +1,6 @@
 # Iron Path – Patch-Log: Archiv
 
-Ältere Einträge IPL-0001 bis IPL-0098. Die neuesten 20 stehen in
+Ältere Einträge IPL-0001 bis IPL-0099. Die neuesten 20 stehen in
 [PATCH-LOG.md](PATCH-LOG.md); die Regeln für beide Dateien dort und in
 [`../../AGENTS.md`](../../AGENTS.md). Beim Verschieben wandert ein Eintrag immer
 vollständig einschließlich seiner Ereignis-Nachträge.
@@ -4326,3 +4326,37 @@ sie geprüft wurde.
 - **Auslieferung auf `main` belegt:** `IronPath/battle/battle-sound.mjs` ist per Contents-API vorhanden (HTTP 200), die alte Adresse `IronPath/battle-sound.mjs` liefert **404**, und `release-version.json` auf `main` trägt `"build": "20261122-battle1"`.
 - **Ehrliche Grenzen:** Die Live-URL wurde nicht abgerufen; belegt sind Inhalt auf `main` und der fertige Pages-Build. **Keine Geräteabnahme:** Stempel `BUILD 20261122-battle1` und ein unverändertes Gefecht (Klang, Kamera, XP-Anzeige) sind Sache der Betreiber-Sichtprüfung; auch die Sichtprüfungen zu `net1` (Party-Beitritt), `workshop1` (Werkstatt) und den Deutsch-Texten stehen noch aus.
 - **Herkunft dieses Nachtrags:** Er steht als eigener Commit auf demselben Arbeitszweig nach dem Merge von `#354`; seine eigene Commit- und PR-Kennung steht deshalb nicht hier, sondern in Git und im PR-Text.
+
+## IPL-0099 – Phase 2, Scheibe 5: Die 25 Oberflächen-Module ziehen nach `ui/` (eigene Cache-Welle folgt im selben PR)
+
+- **Zeit / Quelle:** Betreiber-Vorgabe „und weiter“ plus ausdrückliche Umfangswahl für diese Scheibe: Zuschnitt „Eng“ (25 Dateien) statt der breiten Variante (~45) oder nur der Suffix-Dateien (10). Grundlage bleiben die vier Entscheidungen aus `IPL-0094`.
+- **Block / Ziel:** Kein Spiel-Block. Alle `*-ui`-, `*-screen`-, `*-hud`- und `*-indicator`-Module plus die reinen Szenen-/Menü-/Overlay-Module (25 Dateien) liegen künftig in `IronPath/ui/`. Grenzfälle mit eigener Logik (`settings`, `command-center`, `friends`, `tutorial`) bleiben für die letzte Scheibe `core/`. Spielverhalten bleibt unverändert; nur die Modul-Adressen ändern sich, deshalb trägt derselbe PR wieder eine eigene Cache-Welle (zweiter Commit, sobald die PR-Nummer existiert).
+- **Branch / Basis:** `arena/00013c21-0815games-github-io` ab `3a58a104f026ae658f36ae633daa3aeb1e21b593` (`main`, Merge von PR `#355`).
+- **Änderungen / Dateien:**
+  - 25 Dateien per `git mv` nach `IronPath/ui/` verschoben. 12 davon sind inhaltlich bytegleich; in 13 zeigen Importe auf Wurzel-Module jetzt eine Ebene hoch; Geschwister-Importe innerhalb von `ui/` (z. B. `dialog-dismiss`, `popover-host`, `friend-indicator`) bleiben `./`.
+  - Wurzel-Importeure: `IronPath/account.js` (19 Importe), `IronPath/game.js` (6), `maintenance-bootstrap.mjs` und `tutorial.mjs` (je 1) zeigen auf `./ui/…`; `IronPath/index.html` lädt das Intro jetzt als `ui/intro.mjs` (das HTML selbst bleibt in der Wurzel).
+  - **Die Anker-Datei der Patch-Werkzeuge zieht mit:** `login-scene.mjs` ist einer der sieben Stempel-Anker (`LOGIN_SCENE_VERSION`). `scripts/patch-lib.mjs`, `scripts/patch-bump.mjs` und `scripts/patch-check.mjs` führen sie jetzt als `ui/login-scene.mjs`; die Miniatur-Fixture in `tests/patch-tooling.test.mjs` legt sie entsprechend unter `ui/` an (mit `../language.mjs`-Import wie im echten Baum).
+  - Mitgezogen: 35 Testdateien (Importe und Lesezugriffe `../ui/…`), der Lesepfad und die Import-Regex in `tests/first-run-german.test.mjs` (`../language.mjs` aus `ui/`), drei aktive Datei-Links in `docs/PATCH-BLOECKE.md`, die Ersetzungslisten von 13 UI-Testdateien sowie einzelne Lesezugriffe in `tests/first-run-layout.test.mjs`, `tests/settings.test.mjs` und `tests/tutorial.test.mjs`.
+  - Browser-Fahrten: `cache-wave.cjs` (vier absolute Importe und sechs Namen der aktuellen Erwartungsliste auf `ui/…`; historische Wellenlisten unverändert) und die Seiten-Importe in `friends-sections.cjs` und `multiplayer-prompt-layout.cjs`. Die `friends-ui`-Ersatztexte in `avatar-handover.cjs`, `character-discharge.cjs` und `name-conflict.cjs` werden per Basisname eingespielt und enthalten keine Importe — sie bleiben unverändert (Regel aus `IPL-0097`).
+  - `IronPath/docs/PATCH-LOG.md` und `IronPath/docs/PATCH-LOG-ARCHIV.md`: `IPL-0079` vollständig ins Archiv, Grenzen auf `IPL-0001` bis `IPL-0079` nachgezogen; das Log führt die neuesten 20 (`IPL-0080` bis `IPL-0099`).
+- **Korrekturen an den eigenen Umbauten, alle lokal gefunden:**
+  - Die erste gezielte Runde fing vier Stellen: die Werkzeug-Fixture (oben), den `first-run-german`-Lesepfad samt Regex und die drei `PATCH-BLOECKE`-Links, die der Markdown-Link-Wächter als ziellos meldete.
+  - Die erste Gesamtsuite meldete **27 Fehler in 13 UI-Testdateien**: Deren Harness baut aus einer Liste nackter Dateinamen die echten Modul-URLs und schreibt damit die Importe von `game.js` um; die sechs Oberflächen-Namen standen dort noch ohne Ordner (Muster wie `battle/…` in denselben Listen). Die Listen führen jetzt `ui/…`; danach war die Suite grün. Merksatz für `core/`: Solche Ersetzungslisten müssen bei jedem Umzug mit durchsucht werden — sie enthalten keine Importe und fallen in der Referenz-Inventur nicht auf.
+  - Ein übersprungener Test im selben Lauf betraf nicht den Umbau: Der frische Zweig war flach geklont; nach `git fetch --unshallow origin` lief er mit (Endstand 0 übersprungen).
+- **Prüfungen:**
+  - Betroffene Tests gezielt: 58 Vertrags-/Struktur-Tests und 69 UI-Harness-Tests — nach den oben benannten Korrekturen **alle bestanden**.
+  - Staging-Vergleich gegen den `main`-Stand (Baseline per `git worktree` auf `3a58a104`, gleiche Build-ID `20990101-baseline1`): **712 gestagte Dateien vorher und nachher**; 25 neue `ui/`-Adressen, 12 Module mit identischem SHA-256; mit gleicher Adresse und neuem Inhalt nur `account.js`, `game.js`, `index.html`, `maintenance-bootstrap.mjs` und `tutorial.mjs`; das `release-manifest.json` unterscheidet sich nur durch die neuen Adressen.
+  - Gesamtsuite im vollständigen Klon: `node --test IronPath/tests/*.test.mjs` = **1.260 Tests, 1.260 bestanden, 0 fehlgeschlagen, 0 übersprungen, Exit 0**. `patch-check` vor dem Log-Eintrag: **0 Fehler** (2 Hinweise).
+  - Cache-Welle als zweiter Commit desselben PR: Feldnotizen-Eintrag `ui1` (DE+EN, `pr: 356`) in `patch-notes.mjs` angelegt, danach `patch-bump 20261122-ui1 --apply` — Trockenlauf nannte vorab exakt **79 Dateien, 276 Token-Vorkommen und die 7 bekannten Anker-Zeilen** (darunter erstmals `ui/login-scene.mjs`); die Anker-Prüfung meldete danach alle 7 Anker auf `20261122-ui1`, und die Gesamtsuite lief auf der neuen Welle erneut **1.260/1.260** (Exit 0).
+- **Git / PR / Release:** Der erste Commit entsteht auf `arena/00013c21-0815games-github-io`; PR-Nummer, CI, Merge und Pages-Auslieferung sind noch nicht erfolgt und werden erst nach dem tatsächlichen Ereignis mit Kennung nachgetragen. Keine Geräteabnahme bisher; die Sichtprüfung des Betreibers lautet auf `BUILD 20261122-ui1`, die Anmelde-Szene und ein Gefecht mit HUD und Feldmenü.
+- **Offen / nächster Schritt:** PR öffnen, Wellen-Commit nachschieben, CI abwarten, erst nach belegtem Merge/Pages-Stand als ausgeliefert bezeichnen. Danach bleibt in Phase 2 nur `core/`; anschließend Phase 3 (Patch-CLI). Der Bauplatz-Auswahlring aus PR `#336` (ohne Hover-Vorschau) bleibt geparkt, bis die Struktur steht. Die Sichtprüfungen zu `battle1` (Gefecht), `net1` (Party), `workshop1` (Werkstatt) und den Deutsch-Texten stehen ebenfalls noch aus.
+
+### Ereignis-Nachtrag zu IPL-0099
+
+- **Commits / PR:** Umzug `4e85e50c` und Cache-Welle `7392f0d5` auf `arena/00013c21-0815games-github-io`; Pull-Request `#356` („Phase 2 (ui): Oberflächen-Module ziehen nach IronPath/ui“).
+- **CI:** `gh pr checks 356` endete im ersten Lauf mit **13 von 13 bestandenen Checks, 0 fehlgeschlagen, 0 ausstehend**. Die zwei Rot-Runden dieser Scheibe (Werkzeug-Fixture, Harness-Ersetzungslisten) fing die lokale Suite vor dem ersten Push; die drei Fallen der vorigen Scheiben waren vorab geprüft.
+- **Merge:** `gh pr view 356 --json state,mergedAt,mergeCommit` ergab `state=MERGED`, `mergedAt=2026-11-22T11:40:50Z`, Merge-Commit `728c59e968b0f576e81b9004c3f15e2f175a2a87` in `main`.
+- **Pages:** `pages/builds` meldete danach `status=built`, Dauer 40.964 ms, Commit `728c59e9`.
+- **Auslieferung auf `main` belegt:** `IronPath/ui/intro.mjs` und `IronPath/ui/login-scene.mjs` sind per Contents-API vorhanden (HTTP 200), die alte Adresse `IronPath/intro.mjs` liefert **404**, und `release-version.json` auf `main` trägt `"build": "20261122-ui1"`.
+- **Ehrliche Grenzen:** Die Live-URL wurde nicht abgerufen; belegt sind Inhalt auf `main` und der fertige Pages-Build. **Keine Geräteabnahme:** Stempel `BUILD 20261122-ui1`, die Anmelde-Szene und ein Gefecht mit HUD und Feldmenü sind Sache der Betreiber-Sichtprüfung; auch die Sichtprüfungen zu `battle1` (Gefecht), `net1` (Party), `workshop1` (Werkstatt) und den Deutsch-Texten stehen noch aus.
+- **Herkunft dieses Nachtrags:** Er steht als eigener Commit auf demselben Arbeitszweig nach dem Merge von `#356`; seine eigene Commit- und PR-Kennung steht deshalb nicht hier, sondern in Git und im PR-Text.

@@ -1,4 +1,4 @@
-import {translateText as tr} from '../language.mjs?v=20261123-prestige1';
+import {translateText as tr} from '../language.mjs?v=20261123-party6';
 import {bindDialogBackdrop} from '../ui/dialog-dismiss.mjs?v=20261104-dismiss1';
 // The practice steps open the real dialogs in sandbox mode (see account.js). The
 // callbacks are injected so this module never needs the account app itself.
@@ -11,7 +11,7 @@ export const TUTORIAL_STEPS = [
   {title:'Move your hero',text:'Tap open ground to move. On a keyboard, use WASD or the arrow keys. Your hero automatically fires at nearby enemies once deployed.',scene:'hero',caption:'MOVE INTO POSITION'},
   {title:'Start the battle',text:'Use Field Intel below the map to identify threats and tower counters. Start each wave with Deploy. Use Speed in solo. You start without an ability; unlock one after reaching level 2. Defeated enemies provide supplies; cleared waves earn XP and loot. After each boss choose a temporary field upgrade; rare upgrades can change how towers fight.',scene:'battle',caption:'HOLD THE LINE'},
   {title:'Find your way around',text:'Each new operation generates a different battlefield. On a phone, swipe the enlarged map sideways or use Entry and Bunker to jump around. Open Terrain effects for battlefield rules and watch the marked zones: dust, cover, ice and mud change combat. Open How to play for sound and this briefing. A co-op battle continues while the briefing is open.',scene:'map',caption:'SWIPE THE MAP'},
-  {title:'Play together',text:'Open MULTIPLAYER to create a party for two to four players. Invite an accepted friend to join directly, or share the four-digit code and approve their join request. The host chooses a mode and requests waves; guests approve or choose Not Yet. Competitive modes pause if a player disconnects. Keep the host browser open.',scene:'hero',caption:'ONE PARTY · YOUR SQUAD'},
+  {title:'Play together',text:'Open MULTIPLAYER to create a party for two to four players. Invite an accepted friend to join directly, or share the six-digit code and approve their join request. The host chooses a mode and requests waves; guests approve or choose Not Yet. Competitive modes pause if a player disconnects. Keep the host browser open.',scene:'hero',caption:'ONE PARTY · YOUR SQUAD'},
   {title:'Practice the Skills menu',text:'At level 2, you earn your first skill point. Pick one of six classes, select a skill card to see its details, unlock it, then save your build. Try it here on a sample soldier: nothing you do is saved.',scene:'skills',caption:'EXAMPLE BUILD',practice:'skills',dialogs:['skills']},
   {title:'Practice the Armory',text:'Use Equipment to equip unlocked rewards, Bunker to upgrade defenses, and Service Record to see medals. Try it on a sample soldier: nothing you do is saved.',scene:'armory',caption:'EXAMPLE ARMORY',practice:'armory',dialogs:['armory']},
   // These two open the REAL dialogs against a sample soldier. Nothing is saved.

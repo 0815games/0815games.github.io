@@ -268,6 +268,16 @@ jobs:
             python3 -c "from pathlib import Path; s=Path('prestige-effort-output.log').read_text().splitlines(); i=[n for n,l in enumerate(s) if l.startswith('not ok') or l.startswith('Error:')]; t='\n'.join('\n'.join(s[n:n+18]) for n in i) if i else '\n'.join(s[-30:]); print('::error title=Prestige/effort rules output::'+t[:3800].replace('%','%25').replace('\r','%0D').replace('\n','%0A'))"
             exit 1
           fi
+      - name: Run six-digit party-code rules tests (publish candidate, emulator only)
+        shell: bash
+        run: |
+          if npm run test:party-six > party-six-output.log 2>&1; then
+            cat party-six-output.log
+          else
+            cat party-six-output.log
+            python3 -c "from pathlib import Path; s=Path('party-six-output.log').read_text().splitlines(); i=[n for n,l in enumerate(s) if l.startswith('not ok') or l.startswith('Error:')]; t='\n'.join('\n'.join(s[n:n+18]) for n in i) if i else '\n'.join(s[-30:]); print('::error title=Six-digit party-code rules output::'+t[:3800].replace('%','%25').replace('\r','%0D').replace('\n','%0A'))"
+            exit 1
+          fi
       - name: Test Firebase-only maintenance Rules (emulator only; not a deployment)
         shell: bash
         run: |
