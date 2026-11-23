@@ -1,5 +1,5 @@
-// Staged UI for the four-digit approval flow. Only enable with matching rules.
-import {translateText as tr} from '../language.mjs?v=20261123-prestige1';
+// UI for the party-code approval flow (six-digit codes since AUSBAU-PLAN Punkt 5; four-digit codes from before the switch still join).
+import {translateText as tr} from '../language.mjs?v=20261123-party6';
 export function createFourDigitPanel({document,createLobby,createApproval,getProfile,onJoinMatch,onLeaveMatch,confirmMatch,confirmClose=()=>true,enabled=false}){
   const $=id=>document.getElementById(id),root=$('firebaseParty'),requests=$('partyRequests'),toggle=$('partyToggle');
   let base=null,approval=null,party=null,unwatch=[],profileWatch=null,guest=null,guestReady=false,matchGuest=null,started=false,busy=false,version=0;
@@ -48,10 +48,10 @@ export function createFourDigitPanel({document,createLobby,createApproval,getPro
     base=createLobby();approval=createApproval(base);const result=await approval.create();if(current!==version)return;
     party={...result,role:'host'};render(tr('Preparing your party…'));watchHost(current);
     await base.publishProfile(party.partyId,getProfile());if(current!==version||!party)return;
-    watchGuest(current);unwatch.push(approval.watchRequests(party.inviteCode,values=>showRequests(current,values),()=>{if(current===version)render(tr('Could not read join requests.'));}));render(tr('Share the four-digit code. Approve your teammate when they ask to join.'));
+    watchGuest(current);unwatch.push(approval.watchRequests(party.inviteCode,values=>showRequests(current,values),()=>{if(current===version)render(tr('Could not read join requests.'));}));render(tr('Share the six-digit code. Approve your teammate when they ask to join.'));
   });
   $('partyJoin').onclick=()=>run(async current=>{
-    const code=$('partyCodeInput').value.trim();if(!/^\d{4}$/.test(code)){render(tr('Enter the four-digit party code.'));return;}
+    const code=$('partyCodeInput').value.trim();if(!/^\d{4}(?:\d{2})?$/.test(code)){render(tr('Enter the party code.'));return;}
     base=createLobby();approval=createApproval(base);const result=await approval.request(code,getProfile().name);if(current!==version)return;
     party={...result,role:'pending'};$('partyCodeInput').value='';render(tr('Request sent. Waiting for host approval…'));watchHost(current);
     let accepting=false,confirmingMatch=false;

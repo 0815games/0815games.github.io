@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see docs/PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261123-prestige1';
+import {getLanguage} from './language.mjs?v=20261123-party6';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,20 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'party6',build:'20261123-party6',pr:381,
+    title:{en:'Six-Digit Party Codes · A Million Doors Instead of Ten Thousand',de:'Sechsstellige Party-Codes · Eine Million Türen statt zehntausend'},
+    shipped:[
+      {en:'Good news from HQ: the prestige and war-effort rules are live, so the ladder and the fund now save as they should.',de:'Gute Nachricht vom HQ: Die Prestige- und Kriegsanstrengungs-Regeln sind live — Leiter und Fonds speichern jetzt wie vorgesehen.'},
+      {en:'Party codes are six digits now. A four-digit code had only 10,000 combinations - any signed-in account could try them all and knock on every open party. Six digits make that a million doors; the host approval behind the door works exactly as before.',de:'Party-Codes sind jetzt sechsstellig. Ein vierstelliger Code hatte nur 10.000 Kombinationen - jedes angemeldete Konto konnte alle durchprobieren und an jede offene Party klopfen. Sechs Stellen machen eine Million Türen daraus; die Host-Freigabe hinter der Tür funktioniert genau wie bisher.'},
+      {en:'Codes from before the switch keep working until their party ends: joining accepts the old four digits too, and friend invitations carry both lengths. Only newly created parties get six digits.',de:'Codes von vor der Umstellung funktionieren weiter, bis ihre Party endet: Der Beitritt akzeptiert auch die alten vier Stellen, und Freundes-Einladungen tragen beide Längen. Nur neu erstellte Partys bekommen sechs Stellen.'},
+      {en:'One honest note again: the database rules pin the code length themselves, so the six-digit space only truly opens once HQ publishes the matching rules (one paste in the console). Until then, party creation falls back to four digits instead of failing - parties keep working either way.',de:'Wieder ein ehrlicher Hinweis: Die Datenbank-Regeln nageln die Code-Länge selbst fest, deshalb öffnet sich der sechsstellige Raum erst ganz, wenn das HQ die passenden Regeln veröffentlicht (ein Einfügen in der Konsole). Bis dahin fällt die Party-Erzeugung auf vier Stellen zurück, statt zu scheitern - Partys funktionieren so oder so.'},
+      {en:'Raised the cache wave to 20261123-party6, because the party panels and lobbies changed: no device should knock with an old code book.',de:'Die Cache-Welle auf 20261123-party6 erhöht, weil Party-Tafeln und Lobbys sich geändert haben: Kein Gerät soll mit einem alten Code-Buch anklopfen.'},
+    ],
+    open:[
+      {en:'Next on the plan: measure the startup requests before deciding anything about bundling.',de:'Als Nächstes auf dem Plan: die Start-Requests erst messen, bevor über Bündelung entschieden wird.'},
+    ]
+  },
   {
     id:'prestige1',build:'20261123-prestige1',pr:380,
     title:{en:'War Effort and Campaign Prestige · Spend the Surplus, Replay the Story Harder',de:'Kriegsanstrengung und Kampagnen-Prestige · Überschuss ausgeben, Geschichte härter erneut spielen'},

@@ -1,9 +1,9 @@
-import {translateText as tr,onLanguageChange} from '../language.mjs?v=20261123-prestige1';
+import {translateText as tr,onLanguageChange} from '../language.mjs?v=20261123-party6';
 // Unified online party panel. The server rules remain the authority for roster changes.
 import {availablePartyModes} from '../core/multiplayer-lobby.mjs?v=20261103-unified1';
-import {fourTeamRosters} from './firebase-four-lobby.mjs?v=20261123-prestige1';
-import {rankForLevel,rankInsigniaSvg} from '../core/rank-insignia.mjs?v=20261123-prestige1';
-import {FRIEND_PORTRAIT_PLACEHOLDER} from '../core/friend-portrait.mjs?v=20261123-prestige1';
+import {fourTeamRosters} from './firebase-four-lobby.mjs?v=20261123-party6';
+import {rankForLevel,rankInsigniaSvg} from '../core/rank-insignia.mjs?v=20261123-party6';
+import {FRIEND_PORTRAIT_PLACEHOLDER} from '../core/friend-portrait.mjs?v=20261123-party6';
 export function createFourPlayerPanel({document,createLobby,getProfile,onMatch,confirmStart=async()=>true,confirmClose=async()=>false,confirmForceClose=async()=>false,onLeaveMatch=async()=>{},onRequestHostEnd=async()=>false,canCompleteEnd=()=>false,canForceCloseEnd=()=>false,promptCenter=null,onViewRequests=()=>{},portraitFor=null}={}){
   if(!document||![createLobby,getProfile,onMatch,confirmStart,confirmClose,confirmForceClose,onLeaveMatch,onRequestHostEnd,canCompleteEnd,canForceCloseEnd,onViewRequests].every(fn=>typeof fn==='function'))throw Error('Invalid panel configuration');
   // Optional, and deliberately the caller's decision: WHOSE face may be shown
@@ -185,7 +185,7 @@ export function createFourPlayerPanel({document,createLobby,getProfile,onMatch,c
   });
   async function join(code,expectedPartyId=null){return run(async gen=>{
     if(party){status('Leave your current party first.');return false;}
-    if(!/^\d{4}$/.test(code)){status('Enter a four-digit code.');return false;}
+    if(!/^\d{4}(?:\d{2})?$/.test(code)){status('Enter a party code.');return false;}
     if(!await confirmStart()||gen!==generation)return false;
     const active=createLobby();lobby=active;const result=await active.request(code,getProfile().name,expectedPartyId);if(gen!==generation){await active.cancel(code);return false;}
     party={...result,role:'pending'};status(expectedPartyId?'Joining invited party…':'Request sent. Waiting for approval.');watchParty(gen);
@@ -197,7 +197,7 @@ export function createFourPlayerPanel({document,createLobby,getProfile,onMatch,c
   });}
   $('fourPartyJoin').onclick=()=>join($('fourPartyCodeInput').value.trim());
   $('fourPartyResume').onclick=()=>run(async gen=>{
-    const code=$('fourPartyCodeInput').value.trim();if(!/^\d{4}$/.test(code)){status('Enter the four-digit party code.');return;}
+    const code=$('fourPartyCodeInput').value.trim();if(!/^\d{4}(?:\d{2})?$/.test(code)){status('Enter the party code.');return;}
     if(!await confirmStart()||gen!==generation)return;
     const active=createLobby();lobby=active;const result=await active.resumeHost(code);if(gen!==generation)return;
     party={...result,role:'host'};started=true;watchParty(gen);watchMember(gen);render();status('Recovering the match…');

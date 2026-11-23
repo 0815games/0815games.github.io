@@ -18,7 +18,7 @@ export const germanMoreStatic=Object.freeze({
   "03 / ONLINE": "03 / ONLINE",
   "YOUR SOLDIER": "DEIN SOLDAT",
   "ALPHA TEST": "ALPHATEST",
-  "Connect with a four-digit code. The host approves the second player and chooses a game mode.": "Verbinde dich mit einem vierstelligen Code. Der Host bestätigt den zweiten Spieler und wählt einen Spielmodus.",
+  "Connect with a six-digit code. The host approves the second player and chooses a game mode.": "Verbinde dich mit einem sechsstelligen Code. Der Host bestätigt den zweiten Spieler und wählt einen Spielmodus.",
   "1 vs 1 uses two equally sized, separate battlefields with the same waves.": "1 gegen 1 nutzt zwei gleich große, getrennte Schlachtfelder mit denselben Wellen.",
   "Complete waves together to earn XP. While both players are active, enemies spawn with 50% more health and each player receives 70% of base supply rewards (rounded down). If your teammate leaves, newly spawned enemies and rewards return to solo rates until they rejoin.": "Schließt gemeinsam Wellen ab, um EP zu verdienen. Solange beide Spieler aktiv sind, erscheinen Gegner mit 50% mehr Lebenspunkten und jeder Spieler erhält 70% der Grundvorratsbelohnungen (abgerundet). Verlässt dein Mitspieler das Spiel, gelten für neu erscheinende Gegner und Belohnungen wieder die Solowerte, bis er zurückkehrt.",
   "SOLO CAMPAIGN": "SOLOKAMPAGNE",
