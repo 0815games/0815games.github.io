@@ -1,18 +1,18 @@
 import {equipmentForPlayer} from '../workshop/workshop-combat.mjs?v=20261112-tagless1';
 import {reserveBuildPad,releaseBuildPad,releaseBuildReservations} from './build-reservations.mjs?v=20261104-buildreservation1';
-import {getMap,createRandomMapId,sectorOf} from './maps.mjs?v=20261123-endless5';
-import {activateCombos} from './skill-combos.mjs?v=20261123-endless5';
+import {getMap,createRandomMapId,sectorOf} from './maps.mjs?v=20261123-life1';
+import {activateCombos} from './skill-combos.mjs?v=20261123-life1';
 import {parseLoadout} from './armory.mjs?v=20261112-tagless1';
-import {parseBuild,abilityName,webBonuses,specialistUnlocked} from './skills.mjs?v=20261123-endless5';
-import {classUpgradeState,classPathConfig,classPathInvested} from './tower-class-paths.mjs?v=20261123-endless5';
+import {parseBuild,abilityName,webBonuses,specialistUnlocked} from './skills.mjs?v=20261123-life1';
+import {classUpgradeState,classPathConfig,classPathInvested} from './tower-class-paths.mjs?v=20261123-life1';
 // Shared command rules. These functions have no DOM, Firebase or network dependency.
 // The caller must derive playerId from the authenticated session, never the payload.
 import { upgradeCost, towerUpgradeInvestment } from './progression.mjs?v=20261105-prestige1';
-import { waveFormation,missionFormation,SOLDIER_MAX_HP,towerMaxHp,repairQuote } from './combat.mjs?v=20261123-endless5';
-import { upgradeCostFor, branchUnlocked } from './tower-specialization.mjs?v=20261123-endless5';
+import { waveFormation,missionFormation,SOLDIER_MAX_HP,towerMaxHp,repairQuote } from './combat.mjs?v=20261123-life1';
+import { upgradeCostFor, branchUnlocked } from './tower-specialization.mjs?v=20261123-life1';
 import { RUN_PERKS,perkOffers } from './run-perks.mjs?v=20261102-terrain4';
 import {campaignSurge} from './campaign-pressure.mjs?v=20261112-pressure1';
-import {waveRosterPresent,waveFieldsReady,makeWaveRequest,replyToWaveRequest} from './wave-consensus.mjs?v=20261123-endless5';
+import {waveRosterPresent,waveFieldsReady,makeWaveRequest,replyToWaveRequest} from './wave-consensus.mjs?v=20261123-life1';
 export const TOWER_COSTS = [50, 80, 65, 75];
 export const PAD_COUNT = 10;
 
