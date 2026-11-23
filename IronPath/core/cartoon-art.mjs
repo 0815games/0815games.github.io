@@ -1,11 +1,11 @@
-import {translateText as tr,getLanguage} from '../language.mjs?v=20261122-core1';
+import {translateText as tr,getLanguage} from '../language.mjs?v=20261122-ring1';
 import {towerDisplay} from './progression.mjs?v=20261105-prestige1';
-import {specializationRank} from './tower-specialization.mjs?v=20261122-core1';
-import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261122-core1';
-import {ENEMY_INTEL} from './combat.mjs?v=20261122-core1';
+import {specializationRank} from './tower-specialization.mjs?v=20261122-ring1';
+import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261122-ring1';
+import {ENEMY_INTEL} from './combat.mjs?v=20261122-ring1';
 import {bossPhase} from './boss-mechanics.mjs?v=20261031-finale1';
 import {shotTrace,shotsToDraw} from './shot-tracers.mjs?v=20261117-shots1';
-import {buildRoadPath} from './road-geometry.mjs?v=20261122-core1';
+import {buildRoadPath} from './road-geometry.mjs?v=20261122-ring1';
 // Drawing only: the simulation, coordinates and hit areas stay unchanged.
 const ink='#1d3028',paper='#f1e7c4';
 function line(ctx,points,color=ink,width=3){ctx.beginPath();points.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();}
@@ -423,7 +423,7 @@ function bunker(ctx,state,notify,approach=0){
   line(ctx,[[p1.x,p1.y-17],[p2.x,p2.y-17]],'#6b563c',4);
   ctx.fillStyle='#344231';ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText('BUNKER',0,-44);ctx.textAlign='start';
 }
-function pad(ctx,p,tower,selected,types,notify){
+function pad(ctx,p,tower,selected,types,notify,pulse=1){
   const x=p.x,y=p.y;
   // V2 field art: the build plate is a painted concrete weapons emplacement -
   // part of the ground, in the same rendered look as the buildings. The
@@ -436,7 +436,11 @@ function pad(ctx,p,tower,selected,types,notify){
     shape(ctx,[[x-22,y-9],[x-15,y-18],[x+15,y-18],[x+22,y-9],[x+22,y+9],[x+15,y+18],[x-15,y+18],[x-22,y+9]],tower?'#223a2c':'#1a322b',null,0);
     for(const [sx,sy] of [[-24,-11],[24,-11],[-24,11],[24,11]])oval(ctx,x+sx,y+sy,4,2.5,'#93ab9c',null);
   }
-  if(selected){ctx.save();ctx.strokeStyle='#cfe3d6';ctx.lineWidth=2.5;ctx.setLineDash([7,6]);ctx.beginPath();ctx.ellipse(x,y,33,23,0,0,Math.PI*2);ctx.stroke();ctx.restore();}
+  // The selection ring is the one animated affordance on an empty pad: thick
+  // enough to read at a glance, breathing via globalAlpha. The caller passes
+  // the pulse (1 when reduced motion is on), so this stays a pure function
+  // of its arguments and a recording canvas can pin it exactly.
+  if(selected){ctx.save();ctx.strokeStyle='#d4eee0';ctx.lineWidth=3.2;ctx.globalAlpha=pulse;ctx.setLineDash([8,5]);ctx.beginPath();ctx.ellipse(x,y,34,24,0,0,Math.PI*2);ctx.stroke();ctx.restore();}
   if(!tower){line(ctx,[[x-13,y-8],[x+13,y-8]],'#78988b',1);ctx.fillStyle='#dce7d7';ctx.font='bold 9px Arial';ctx.textAlign='center';ctx.fillText(tr('BUILD'),x,y+5);ctx.textAlign='start';return;}
   const display=towerDisplay(tower.level);
   // A prestige tower has been paid for twice over, so it is allowed to glow.
@@ -1004,9 +1008,10 @@ export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,th
     const lx=a.x+ux*88-uy*34,ly=a.y+uy*88+ux*34;
     ctx.textAlign='center';ctx.lineWidth=4;ctx.strokeStyle=paper;ctx.strokeText(tr('ENEMY ENTRY'),lx,ly);ctx.fillStyle='#344231';ctx.fillText(tr('ENEMY ENTRY'),lx,ly);ctx.textAlign='start';
   }
-  const selected=state.towers.find(t=>t.pad===state.selectedPad);if(selected&&!state.ended){const p=pads[selected.pad];ctx.beginPath();ctx.arc(p.x,p.y,getTowerRange(selected),0,Math.PI*2);ctx.fillStyle='rgba(129,179,164,.10)';ctx.fill();ctx.strokeStyle='#b1d3c6';ctx.lineWidth=1.5;ctx.setLineDash([5,7]);ctx.stroke();ctx.setLineDash([]);}
+  const selected=state.towers.find(t=>t.pad===state.selectedPad);if(selected&&!state.ended){const p=pads[selected.pad];ctx.save();ctx.beginPath();ctx.arc(p.x,p.y,getTowerRange(selected),0,Math.PI*2);ctx.fillStyle='rgba(139,190,173,.14)';ctx.fill();ctx.globalAlpha=reducedMotion?1:.88+.12*Math.sin(storyTime/.42);ctx.strokeStyle='#c2dfd2';ctx.lineWidth=2.2;ctx.setLineDash([6,5]);ctx.stroke();ctx.restore();}
   if(!reducedMotion)for(const tower of state.towers){const owner=state.players[tower.ownerId],p=pads[tower.pad];if(p&&owner?.active!==false&&owner?.overdrive>0){ctx.beginPath();ctx.ellipse(p.x,p.y,31,27,0,0,Math.PI*2);ctx.strokeStyle='#fff1a3';ctx.lineWidth=3;ctx.setLineDash([5,5]);ctx.stroke();ctx.setLineDash([]);}}
-  pads.forEach((p,i)=>pad(ctx,p,state.towers.find(t=>t.pad===i),state.selectedPad===i,types,onSpritesReady));
+  const selectionPulse=reducedMotion?1:.85+.15*Math.sin(storyTime/.3);
+  pads.forEach((p,i)=>pad(ctx,p,state.towers.find(t=>t.pad===i),state.selectedPad===i,types,onSpritesReady,selectionPulse));
   // The soldier is drawn from the first frame, not from wave one. He used to appear
   // only while `state.wave>0`, and since the movement order itself was accepted
   // before the first deploy (the simulation walks him there), the hero moved
