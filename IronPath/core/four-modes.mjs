@@ -1,10 +1,10 @@
 import {releaseBuildReservations} from './build-reservations.mjs?v=20261104-buildreservation1';
 // Transport-independent four-player rules, live through the Firebase party
 // game: three- and four-player squads and 2v2 teams play on the squad fields.
-import {createMatch,stepMatch} from './simulation.mjs?v=20261123-skill1';
-import {applyCommand} from './match.mjs?v=20261123-skill1';
-import {getMap} from './maps.mjs?v=20261123-skill1';
-import {waveRosterPresent,waveFieldsReady,makeWaveRequest,replyToWaveRequest} from './wave-consensus.mjs?v=20261123-skill1';
+import {createMatch,stepMatch} from './simulation.mjs?v=20261123-blocke1';
+import {applyCommand} from './match.mjs?v=20261123-blocke1';
+import {getMap} from './maps.mjs?v=20261123-blocke1';
+import {waveRosterPresent,waveFieldsReady,makeWaveRequest,replyToWaveRequest} from './wave-consensus.mjs?v=20261123-blocke1';
 export const FOUR_PLAYER_MAP='four-front';
 // Squad fields mix the hand-built frontier with vetted generated retreat
 // sectors: every entry carries two roads and enough pads for four wallets,

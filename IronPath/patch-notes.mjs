@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see docs/PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261123-skill1';
+import {getLanguage} from './language.mjs?v=20261123-blocke1';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,19 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'blocke1',build:'20261123-blocke1',pr:368,
+    title:{en:'Block E, Slice 1 · Enemies Now Threaten Soldiers and Towers',de:'Block E, Scheibe 1 · Gegner bedrohen jetzt Soldaten und Türme'},
+    shipped:[
+      {en:'Infantry now turns on soldiers in reach and tanks shell nearby towers. Every attack is announced first with a warning ring around the attacker and its target - step out of reach in time and the strike hits nothing. The opening waves stay quiet while you learn the field.',de:'Infanterie wendet sich jetzt gegen Soldaten in Reichweite, Panzer beschießen nahe Türme. Jeder Angriff kündigt sich vorher mit einem Warnring um Angreifer und Ziel an - wer rechtzeitig aus der Reichweite tritt, wird nicht getroffen. Die ersten Wellen bleiben ruhig, um das Feld kennenzulernen.'},
+      {en:'Your soldier has his own life now. At zero he is down for a few seconds - not out of the match, no lost progress - and returns at full strength near the bunker, briefly protected. Your ability recharge is never reset by falling.',de:'Der eigene Soldat hat jetzt eigenes Leben. Bei null ist er wenige Sekunden kampfunfähig - nicht aus dem Einsatz, kein verlorener Fortschritt - und kehrt mit voller Stärke nahe dem Bunker zurück, kurz geschützt. Die Fähigkeits-Aufladung wird durch einen Ausfall nie zurückgesetzt.'},
+      {en:'Towers have life too, shown as a slim bar when they are worn. A tower at zero stays dark on its pad and stops firing until it is repaired: the repair is offered in the tower view with its price up front, and after every survived wave damaged towers regain a quarter of their life for free.',de:'Auch Türme haben Leben, bei Abnutzung als schmaler Balken sichtbar. Ein Turm auf null bleibt dunkel auf seinem Bauplatz stehen und feuert nicht, bis er repariert ist: Die Reparatur wird in der Turm-Ansicht mit Preis vorab angeboten, und nach jeder überstandenen Welle erhalten beschädigte Türme ein Viertel ihres Lebens kostenlos zurück.'},
+      {en:'Raised the cache wave to 20261123-blocke1, because the battle core changed deeply: no device should keep fighting under the old sky out of cache.',de:'Die Cache-Welle auf 20261123-blocke1 erhöht, weil sich der Gefechtskern tiefgreifend geändert hat: Kein Gerät soll mit dem alten Stand aus dem Zwischenspeicher weiterkämpfen.'},
+    ],
+    open:[
+      {en:'Block E continues in the next slice: hit feedback and a tutorial introduction, detailed host and reconnect checks, and play-tested balance.',de:'Block E geht in der nächsten Scheibe weiter: Treffer-Feedback und eine Tutorial-Einführung, Host- und Reconnect-Prüfung im Detail sowie spielgetestete Balance.'},
+    ]
+  },
   {
     id:'skill1',build:'20261123-skill1',pr:367,
     title:{en:'Ability Recharge Waits for the Next Wave',de:'Fähigkeits-Aufladung wartet auf die nächste Welle'},
