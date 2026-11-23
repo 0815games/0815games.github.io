@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see docs/PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261123-sector1';
+import {getLanguage} from './language.mjs?v=20261123-prestige1';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,19 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'prestige1',build:'20261123-prestige1',pr:380,
+    title:{en:'War Effort and Campaign Prestige · Spend the Surplus, Replay the Story Harder',de:'Kriegsanstrengung und Kampagnen-Prestige · Überschuss ausgeben, Geschichte härter erneut spielen'},
+    shipped:[
+      {en:'Your spare scrap has a purpose now: the armory takes donations to the War Effort. Every 500 scrap raises a tier (ten in all), and each tier sends your solo operations out with +3 starting supplies. It is stored progress on your profile, not a purchase - the donations stay donated.',de:'Dein übriger Schrott hat jetzt ein Ziel: Das Armory nimmt Spenden für die Kriegsanstrengung an. Alle 500 Schrott steigt eine Stufe (zehn insgesamt), und jede Stufe schickt deine Solo-Einsätze mit +3 Startvorräten los. Das ist gespeicherter Fortschritt auf deinem Profil, kein Kauf - Spenden bleiben gespendet.'},
+      {en:'Finished missions can be replayed under prestige pressure: choose a prestige tier in the mission brief (one rung above your best so far), and the contract stiffens - more enemy health, harder bunker hits, wider surge waves. Clearing a new rung pays bonus scrap and raises your campaign prestige for every mission.',de:'Abgeschlossene Missionen lassen sich jetzt unter Prestige-Druck erneut spielen: Wähle im Missions-Briefing eine Prestige-Stufe (eine Sprosse über deiner bisherigen Bestleistung), und der Vertrag wird härter - mehr Gegner-Leben, härtere Bunkertreffer, breitere Ansturm-Wellen. Eine neue Sprosse zu schaffen zahlt Bonus-Schrott und hebt dein Kampagnen-Prestige für alle Missionen.'},
+      {en:'One honest note: the prestige ladder and the war effort fund save into two new profile fields, and those only stick once HQ publishes the matching database rules (one paste in the console, instructions ship with the update). Until then the game plays exactly as before and the two counters simply wait.',de:'Ein ehrlicher Hinweis: Prestige-Leiter und Kriegsanstrengungs-Fonds speichern in zwei neue Profilfelder, und die greifen erst, sobald das HQ die passenden Datenbank-Regeln veröffentlicht (ein Einfügen in der Konsole, die Anleitung liegt dem Update bei). Bis dahin spielt sich alles wie bisher, und die beiden Zähler warten einfach.'},
+      {en:'Raised the cache wave to 20261123-prestige1, because the mission board and armory changed: no device should load the new operation with an old manifest.',de:'Die Cache-Welle auf 20261123-prestige1 erhöht, weil Missionsbrett und Armory sich geändert haben: Kein Gerät soll den neuen Einsatz mit einem alten Stand laden.'},
+    ],
+    open:[
+      {en:'Next on the plan: harder-to-guess six-digit party codes.',de:'Als Nächstes auf dem Plan: schwerer zu erratende, sechsstellige Party-Codes.'},
+    ]
+  },
   {
     id:'sector1',build:'20261123-sector1',pr:379,
     title:{en:'Endless Sectors With a Temper · Armor, Air, Iron Storm',de:'Endlos-Sektoren mit Charakter · Panzer, Luft, Eisensturm'},

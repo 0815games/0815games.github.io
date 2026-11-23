@@ -9,14 +9,15 @@
 //
 // A campaign mission is a contract, not a sandbox: it carries a threat level that
 // decides its wave count, enemy scale and bunker health (see campaign-pressure).
-import {createMatch} from './simulation.mjs?v=20261123-sector1';
-import {createWorkshopSoloMatch} from '../workshop/workshop-solo.mjs?v=20261123-sector1';
+import {createMatch} from './simulation.mjs?v=20261123-prestige1';
+import {createWorkshopSoloMatch} from '../workshop/workshop-solo.mjs?v=20261123-prestige1';
 import {decodeWorkshop} from '../workshop/workshop-wire.mjs?v=20261112-tagless1';
-import {threatFor,campaignUnitScale,campaignBunker,campaignWaves,campaignSurge,campaignPressure} from './campaign-pressure.mjs?v=20261112-pressure1';
-import {TRAINING_WAVES,TRAINING_UNIT,TRAINING_BUNKER,TRAINING_BOSS_UNIT,TRAINING_BOSS_EVERY,TRAINING_SUPPLIES} from './training-run.mjs?v=20261123-sector1';
+import {threatFor,campaignUnitScale,campaignBunker,campaignWaves,campaignSurge,campaignPressure,prestigeScale} from './campaign-pressure.mjs?v=20261112-pressure1';
+import {warEffortBonus} from './war-effort.mjs?v=20261123-prestige1';
+import {TRAINING_WAVES,TRAINING_UNIT,TRAINING_BUNKER,TRAINING_BOSS_UNIT,TRAINING_BOSS_EVERY,TRAINING_SUPPLIES} from './training-run.mjs?v=20261123-prestige1';
 import {relicBonus} from './relics.mjs?v=20261112-tagless1';
-import {storyBossKind} from './combat.mjs?v=20261123-sector1';
-import {getMap} from './maps.mjs?v=20261123-sector1';
+import {storyBossKind} from './combat.mjs?v=20261123-prestige1';
+import {getMap} from './maps.mjs?v=20261123-prestige1';
 
 // Where a soldier stands when a run begins. A story mission starts at its first
 // stage marker ("Soldier starts every time at the bunker!" was the report that
@@ -49,7 +50,7 @@ export function createSoloDeployment({player,mapId,profile,workshopEnabled=false
   if(!workshop)throw new Error('A valid workshop is required for a workshop deployment');
   const state=createWorkshopSoloMatch(player,workshop,mapId,profile);
   if(contract)applyContract(state,campaign,threat,training);
-  return state;
+  return applyWarEffort(state,profile);
  }
  // The classic path has no snapshot to carry them, so the account's earned
  // relics ride on the match state and merge into the legacy effects.
@@ -57,6 +58,15 @@ export function createSoloDeployment({player,mapId,profile,workshopEnabled=false
  state.relicBonus=relic;
  state.maxHp+=relic.bunkerHealth;state.hp+=relic.bunkerHealth;state.money+=relic.startSupplies;
  if(contract)applyContract(state,campaign,threat,training);
+ return applyWarEffort(state,profile);
+}
+// The war effort (AUSBAU-PLAN 4a) sends a solo operation out with extra
+// starting supplies: a small, stored logistics reward for donated scrap.
+// Applied once here so the legacy and workshop paths pay identically;
+// multiplayer matches are built elsewhere and never see it.
+function applyWarEffort(state,profile){
+ const bonus=warEffortBonus(profile);
+ if(bonus.startSupplies&&!state.individualSupplies)state.money=(state.money||0)+bonus.startSupplies;
  return state;
 }
 // A mission's pressure is applied after the match is built, so endless solo and
@@ -70,9 +80,13 @@ function applyContract(state,campaign,threat,training=false){
  // (see PRESSURE in campaign-pressure.mjs): it levels the generated fields
  // onto one difficulty curve per threat grade.
  const pressure=campaignPressure(campaign);
+ // NG+ (AUSBAU-PLAN 4b): a prestige replay stacks its tier on the contract -
+ // tougher units, harder hits, wider surges. Wave count and bunker stay the
+ // mission's own, and the training contract never carries prestige.
+ const prestige=training?{tier:0,unit:1,damage:1,squad:0}:prestigeScale(campaign.prestige);
  state.campaignContract=training
   ?{missionId:campaign.id,threat:'training',waves:TRAINING_WAVES,unit:TRAINING_UNIT,squad:0,bossUnit:TRAINING_BOSS_UNIT,bossEvery:TRAINING_BOSS_EVERY}
-  :{missionId:campaign.id,threat:campaign.threat??'standard',waves:campaignWaves(campaign.threat),unit:campaignUnitScale(campaign.threat,1)*pressure,squad:threat.squad,damage:threat.damage*pressure,bossFinal:campaign.boss?storyBossKind(campaign.boss):null};
+  :{missionId:campaign.id,threat:campaign.threat??'standard',waves:campaignWaves(campaign.threat),unit:Math.round(campaignUnitScale(campaign.threat,1)*pressure*prestige.unit*1000)/1000,squad:threat.squad,damage:Math.round(threat.damage*pressure*prestige.damage*1000)/1000,bossFinal:campaign.boss?storyBossKind(campaign.boss):null,...(prestige.tier?{prestige:prestige.tier,surgeBonus:prestige.squad}:{})};
  // Only the training contract raises the wallet: its coach gates the upgrade card
  // on the field, and the endless start (125) could not buy the dearest tower AND
  // its first upgrade. A floor, not an override - equipment that grants start

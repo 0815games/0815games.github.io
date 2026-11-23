@@ -91,3 +91,16 @@ export function campaignBunker(base,tHp){
 
 // Wave contract for a mission: the number of waves the operation runs for.
 export function campaignWaves(threat){return threatFor(threat).wave;}
+
+// Campaign NG+ (AUSBAU-PLAN Punkt 4b): a completed mission can be replayed
+// under prestige pressure. The tier is one global ladder on the profile
+// (campaignPrestige, see campaign-prestige.mjs); the pressure itself is the
+// same vocabulary as a threat - tougher units, harder bunker hits, wider
+// surge squads - stacked on top of the mission's own contract. The wave
+// count and the bunker never move: the contract stays readable, the fight
+// gets meaner. Tier 10 on an iron contract is the long-term wall.
+export const PRESTIGE_MAX_TIER=10;
+export function prestigeScale(tier){
+  const t=Number.isSafeInteger(tier)&&tier>0?Math.min(tier,PRESTIGE_MAX_TIER):0;
+  return {tier:t,unit:1+.15*t,damage:1+.1*t,squad:Math.min(4,t)};
+}
