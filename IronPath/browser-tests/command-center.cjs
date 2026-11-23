@@ -98,7 +98,7 @@ if (!commandCenterToken) throw new Error('account.js does not import command-cen
     // less than half the viewport, unlike the 450px modal it replaced.
     // The dossier dressing is real styling, not decoration in a dead file: the
     // card must paint its own plate and draw one tick per step.
-    assert.equal(await page.locator('#coachPips i').count(),8,'a tick per coach card');
+    assert.equal(await page.locator('#coachPips i').count(),9,'a tick per coach card');
     assert.equal(await page.locator('#coachPips i[data-done]').count(),1,'one tick marked on the first card');
     const plate=await page.locator('#firstRunCoach').evaluate(e=>{const s=getComputedStyle(e);return `${s.backgroundImage} ${s.borderTopWidth} ${s.borderTopColor}`;});
     assert.match(plate,/gradient/,'the card paints its own plate, not bare text over the field');
