@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see docs/PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261123-endless2';
+import {getLanguage} from './language.mjs?v=20261123-endless3';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,18 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'endless3',build:'20261123-endless3',pr:371,
+    title:{en:'Endless Stage · Classic Arrows, Letter-Wide DEPLOY',de:'Endless-Bühne · Klassische Pfeile, schriftbreites DEPLOY'},
+    shipped:[
+      {en:'The arrows are the classic slim line chevrons again, finished in dark olive and brass - the heavy riveted armour plates are gone.',de:'Die Pfeile sind wieder die klassischen schlanken Linien-Chevrons, in dunklem Oliv und Messing gehalten - die schweren genieteten Panzerplatten sind weg.'},
+      {en:'DEPLOY keeps its glowing stencil plate, but it is only as wide as its lettering now: a compact launch stamp centred at the bottom of the picture instead of a wide bar.',de:'DEPLOY behält seine leuchtende Stencil-Platte, ist aber nur noch so breit wie seine Schrift: ein kompakter Start-Stempel mittig an der Bildunterkante statt einer breiten Leiste.'},
+      {en:'Raised the cache wave to 20261123-endless3, because the endless stage changed: no device should keep showing the old stage out of cache.',de:'Die Cache-Welle auf 20261123-endless3 erhöht, weil sich die Endless-Bühne geändert hat: Kein Gerät soll die alte Bühne aus dem Zwischenspeicher zeigen.'},
+    ],
+    open:[
+      {en:'Block E continues in the next slice: hit feedback and a tutorial introduction, detailed host and reconnect checks, and play-tested balance.',de:'Block E geht in der nächsten Scheibe weiter: Treffer-Feedback und eine Tutorial-Einführung, Host- und Reconnect-Prüfung im Detail sowie spielgetestete Balance.'},
+    ]
+  },
   {
     id:'endless2',build:'20261123-endless2',pr:370,
     title:{en:'Endless Stage Polish · Stencil DEPLOY with a Glowing Frame',de:'Endless-Bühne Feinschliff · Stencil-DEPLOY mit Glow-Rahmen'},
