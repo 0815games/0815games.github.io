@@ -1,83 +1,85 @@
 import {createWorkshopAccount} from './workshop/workshop-account.mjs?v=20261112-tagless1';
 import {createWorkshopView} from './workshop/workshop-view.mjs?v=20261112-tagless1';
-import {createSoldierScreen} from './ui/soldier-screen.mjs?v=20261123-sector1';
-import {localizeSkillSummary} from './core/skill-summary-localization.mjs?v=20261123-sector1';
+import {createSoldierScreen} from './ui/soldier-screen.mjs?v=20261123-prestige1';
+import {localizeSkillSummary} from './core/skill-summary-localization.mjs?v=20261123-prestige1';
 import {renderSkillIndicators} from './ui/skill-indicator.mjs?v=20261104-skillindicator1';
-import {setupLanguage,translate,translateText,onLanguageChange,getLanguage} from './language.mjs?v=20261123-sector1';
+import {setupLanguage,translate,translateText,onLanguageChange,getLanguage} from './language.mjs?v=20261123-prestige1';
 import {setupFullscreen} from './core/fullscreen.mjs?v=20261104-fullscreen1';
-import {setupFieldMenu} from './ui/field-menu.mjs?v=20261123-sector1';
-import {createSettings,readSettings} from './core/settings.mjs?v=20261123-sector1';
-import {createPasswordChange} from './core/password-change.mjs?v=20261123-sector1';
+import {setupFieldMenu} from './ui/field-menu.mjs?v=20261123-prestige1';
+import {createSettings,readSettings} from './core/settings.mjs?v=20261123-prestige1';
+import {createPasswordChange} from './core/password-change.mjs?v=20261123-prestige1';
 // Field notes: the patch log as a screen. Read-only, so it is wired next to the
 // settings dialog and nothing else in the account has to know about it.
-import {createPatchNotes} from './patch-notes.mjs?v=20261123-sector1';
+import {createPatchNotes} from './patch-notes.mjs?v=20261123-prestige1';
 import {bindDisclosureDismiss} from './ui/disclosure-dismiss.mjs?v=20261104-dismissall1';
 import {bindDialogBackdrop} from './ui/dialog-dismiss.mjs?v=20261104-dismiss1';
-import {setupLeaderboard} from './ui/leaderboards-ui.mjs?v=20261123-sector1';
-import {createLeaderboardService,createScoreReporter,waveFromMask} from './core/leaderboards.mjs?v=20261123-sector1';
-import {setupFriends} from './ui/friends-ui.mjs?v=20261123-sector1';
-import {createMultiplayerPrompts} from './core/multiplayer-prompts.mjs?v=20261123-sector1';
+import {setupLeaderboard} from './ui/leaderboards-ui.mjs?v=20261123-prestige1';
+import {createLeaderboardService,createScoreReporter,waveFromMask} from './core/leaderboards.mjs?v=20261123-prestige1';
+import {setupFriends} from './ui/friends-ui.mjs?v=20261123-prestige1';
+import {createMultiplayerPrompts} from './core/multiplayer-prompts.mjs?v=20261123-prestige1';
 import {createCharacterDeletion} from './core/character-deletion.mjs?v=20261031-patch8';
-import {validateCharacterName,characterNameKey} from './core/character-name.mjs?v=20261123-sector1';
-import {createCharacterNameClaim} from './core/character-name-claim.mjs?v=20261123-sector1';
-import {createCharacterNameConflictHandler} from './core/character-name-conflict.mjs?v=20261123-sector1';
-import {createDischargeNotice,createDischargeSignOut,DISCHARGE_MESSAGE} from './ui/discharge-notice.mjs?v=20261123-sector1';
-import {createCommandCenter} from './core/command-center.mjs?v=20261123-sector1';
+import {validateCharacterName,characterNameKey} from './core/character-name.mjs?v=20261123-prestige1';
+import {createCharacterNameClaim} from './core/character-name-claim.mjs?v=20261123-prestige1';
+import {createCharacterNameConflictHandler} from './core/character-name-conflict.mjs?v=20261123-prestige1';
+import {createDischargeNotice,createDischargeSignOut,DISCHARGE_MESSAGE} from './ui/discharge-notice.mjs?v=20261123-prestige1';
+import {createCommandCenter} from './core/command-center.mjs?v=20261123-prestige1';
 import {featureEnabled} from './core/features.mjs?v=20261112-endless1';
-import {createEndlessLauncher,readLastEndlessRun,sanitizeEndlessLastRun,writeLastEndlessRun,ENDLESS_LAST_RUN_KEY} from './core/endless-launcher.mjs?v=20261123-sector1';
+import {createEndlessLauncher,readLastEndlessRun,sanitizeEndlessLastRun,writeLastEndlessRun,ENDLESS_LAST_RUN_KEY} from './core/endless-launcher.mjs?v=20261123-prestige1';
 import {initializeWireWorkshop,applyWireWorkshopCommand} from './workshop/workshop-wire.mjs?v=20261112-tagless1';
 // Story completion writes progress and the mission's prestige trophy together.
 import {completeStoryMission,meltPrestige,decodeWorkshop as decodeWorkshopSafe} from './workshop/workshop-wire.mjs?v=20261112-tagless1';
 import {missingPrestige} from './core/prestige.mjs?v=20261112-pressure1';
-import {createFirebaseRecoverableGame} from './net/firebase-recoverable-game.mjs?v=20261123-sector1';
-import {createFourPlayerPanel} from './net/firebase-four-panel.mjs?v=20261123-sector1';
-import {watchFriendPortrait} from './core/friend-portrait.mjs?v=20261123-sector1';
-import {createFirebaseFourLobby} from './net/firebase-four-lobby.mjs?v=20261123-sector1';
-import {skillBuildSummary,canSaveSkillDraft} from './core/skill-planner.mjs?v=20261123-sector1';
-import {setupAuthForm} from './core/auth-form.mjs?v=20261123-sector1';
-import {applyLoginScene} from './ui/login-scene.mjs?v=20261123-sector1';
+import {donateWarEffort as donateWarEffortCore,readWarEffort,warEffortTier,WAR_EFFORT_DONATION,WAR_EFFORT_TIER_COST,WAR_EFFORT_GOAL,WAR_EFFORT_MAX_TIER} from './core/war-effort.mjs?v=20261123-prestige1';
+import {recordPrestigeClear as recordPrestigeClearCore} from './core/campaign-prestige.mjs?v=20261123-prestige1';
+import {createFirebaseRecoverableGame} from './net/firebase-recoverable-game.mjs?v=20261123-prestige1';
+import {createFourPlayerPanel} from './net/firebase-four-panel.mjs?v=20261123-prestige1';
+import {watchFriendPortrait} from './core/friend-portrait.mjs?v=20261123-prestige1';
+import {createFirebaseFourLobby} from './net/firebase-four-lobby.mjs?v=20261123-prestige1';
+import {skillBuildSummary,canSaveSkillDraft} from './core/skill-planner.mjs?v=20261123-prestige1';
+import {setupAuthForm} from './core/auth-form.mjs?v=20261123-prestige1';
+import {applyLoginScene} from './ui/login-scene.mjs?v=20261123-prestige1';
 import {createAccountServices,requiresAccountGuard} from './core/account-services.mjs?v=20261031-releaseguard1';
-import {createVersionUI} from './ui/version-ui.mjs?v=20261123-sector1';
-import {createWriteTracker} from './core/version-check.mjs?v=20261123-sector1';
+import {createVersionUI} from './ui/version-ui.mjs?v=20261123-prestige1';
+import {createWriteTracker} from './core/version-check.mjs?v=20261123-prestige1';
 import {createAfkTimer,createSessionTabLock} from './core/afk-session.mjs?v=20261031-update3';
-import {createActiveSessionManager,createSameBrowserSessionMonitor,createWindowSessionId} from './core/active-session.mjs?v=20261123-sector1';
+import {createActiveSessionManager,createSameBrowserSessionMonitor,createWindowSessionId} from './core/active-session.mjs?v=20261123-prestige1';
 import {drawAfkRestScene} from './ui/afk-rest-scene.mjs?v=20261117-afkart1';
 import {createMaintenanceUI} from './ui/maintenance-ui.mjs?v=20261031-update3';
 import {getMaintenanceBoot} from './core/maintenance-bootstrap.mjs?v=20261031-update3';
 import {MAINTENANCE_PATH,createMaintenanceMonitor,isSessionAfterCutoff} from './core/maintenance-check.mjs?v=20261031-update3';
 import {serviceMedals} from './core/service-record.mjs?v=20261112-tagless1';
-import {createConfirmation} from './ui/confirmation.mjs?v=20261123-sector1';
-import {renderSkillTree,armoryIcon} from './ui/development-ui.mjs?v=20261123-sector1';
-import {runFirstRunEnding,endingDone,markEndingDone,createEndingHandoffs,FIELD_SCHOOL_ENTRIES} from './ui/first-run-ending.mjs?v=20261123-sector1';
-import {createGuide,forgetGuideSeen} from './ui/first-run-guide.mjs?v=20261123-sector1';
-import {initialOfferedTutorial,shouldAutoPresentTutorial,tutorialResumeTarget,shouldPayTutorialReward,createTutorialSync} from './core/tutorial-sync.mjs?v=20261123-sector1';
-import {createGeneralRadio} from './core/general-radio.mjs?v=20261123-sector1';
-import {createTutorialDossier} from './core/tutorial-dossier.mjs?v=20261123-sector1';
-import {createMenuTour} from './ui/menu-tour.mjs?v=20261123-sector1';
-import {mountOverlayPopover} from './ui/popover-host.mjs?v=20261123-sector1';
+import {createConfirmation} from './ui/confirmation.mjs?v=20261123-prestige1';
+import {renderSkillTree,armoryIcon} from './ui/development-ui.mjs?v=20261123-prestige1';
+import {runFirstRunEnding,endingDone,markEndingDone,createEndingHandoffs,FIELD_SCHOOL_ENTRIES} from './ui/first-run-ending.mjs?v=20261123-prestige1';
+import {createGuide,forgetGuideSeen} from './ui/first-run-guide.mjs?v=20261123-prestige1';
+import {initialOfferedTutorial,shouldAutoPresentTutorial,tutorialResumeTarget,shouldPayTutorialReward,createTutorialSync} from './core/tutorial-sync.mjs?v=20261123-prestige1';
+import {createGeneralRadio} from './core/general-radio.mjs?v=20261123-prestige1';
+import {createTutorialDossier} from './core/tutorial-dossier.mjs?v=20261123-prestige1';
+import {createMenuTour} from './ui/menu-tour.mjs?v=20261123-prestige1';
+import {mountOverlayPopover} from './ui/popover-host.mjs?v=20261123-prestige1';
 import {ITEMS,readArmory,rewardWave,upgradeArmory,equipArmory,encodeLoadout} from './core/armory.mjs?v=20261112-tagless1';
-import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement,webBonuses} from './core/skills.mjs?v=20261123-sector1';
-import {migrateSkillsProfile,needsSkillMigration,readLegacySkillBackup,summarizeSkillMigration} from './core/skills-migration.mjs?v=20261123-sector1';
-import {rewardDelta} from './core/run-results.mjs?v=20261123-sector1';
-import {createCoopRewardQueue} from './core/coop-rewards.mjs?v=20261123-sector1';
-import {createPartyEndCoordinator} from './core/party-end-coordinator.mjs?v=20261123-sector1';
-import {createPartySignOut} from './core/party-signout.mjs?v=20261123-sector1';
+import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement,webBonuses} from './core/skills.mjs?v=20261123-prestige1';
+import {migrateSkillsProfile,needsSkillMigration,readLegacySkillBackup,summarizeSkillMigration} from './core/skills-migration.mjs?v=20261123-prestige1';
+import {rewardDelta} from './core/run-results.mjs?v=20261123-prestige1';
+import {createCoopRewardQueue} from './core/coop-rewards.mjs?v=20261123-prestige1';
+import {createPartyEndCoordinator} from './core/party-end-coordinator.mjs?v=20261123-prestige1';
+import {createPartySignOut} from './core/party-signout.mjs?v=20261123-prestige1';
 import {creditSoloWave} from './workshop/workshop-solo-credit.mjs?v=20261112-tagless1';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import { getDatabase, ref, onValue, runTransaction as firebaseRunTransaction, get, remove as firebaseRemove, set as firebaseSet, update as firebaseUpdate, goOffline, onDisconnect, serverTimestamp, query, orderByKey, startAfter, limitToFirst, orderByChild, limitToLast } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
-import { createFirebasePartyLobby } from './net/firebase-party-lobby.mjs?v=20261123-sector1';
-import { createFourDigitPanel } from './net/firebase-four-digit-panel.mjs?v=20261123-sector1';
+import { createFirebasePartyLobby } from './net/firebase-party-lobby.mjs?v=20261123-prestige1';
+import { createFourDigitPanel } from './net/firebase-four-digit-panel.mjs?v=20261123-prestige1';
 import { createFourDigitLobby } from './net/firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
-import { startGame } from './game.js?v=20261123-sector1';
-import { createFirebasePartyGame } from './net/firebase-party-game.mjs?v=20261123-sector1';
-import { createPlayer } from './core/match.mjs?v=20261123-sector1';
-import { bunkerStart } from './core/solo-deployment.mjs?v=20261123-sector1';
+import { startGame } from './game.js?v=20261123-prestige1';
+import { createFirebasePartyGame } from './net/firebase-party-game.mjs?v=20261123-prestige1';
+import { createPlayer } from './core/match.mjs?v=20261123-prestige1';
+import { bunkerStart } from './core/solo-deployment.mjs?v=20261123-prestige1';
 import { resolveAvatar,encodeAvatar,AVATAR_STORAGE_KEY } from './core/avatar.mjs?v=20261119-avatar3';
 import { composePortrait,facePortrait } from './core/avatar-layers.mjs?v=20261119-avatar3';
 import { createAvatarSync } from './core/avatar-sync.mjs?v=20261119-avatar3';
-import { setupRecruitScreen } from './ui/recruit-screen.mjs?v=20261123-sector1';
-import { renderRankInsignia } from './core/rank-insignia.mjs?v=20261123-sector1';
+import { setupRecruitScreen } from './ui/recruit-screen.mjs?v=20261123-prestige1';
+import { renderRankInsignia } from './core/rank-insignia.mjs?v=20261123-prestige1';
 import { characterProgress } from './core/progression.mjs?v=20261105-prestige1';
 
 // Firebase's actual write promises remain pending while offline, including when
@@ -628,6 +630,44 @@ function endlessRecord(){
 }
 async function bestSoloWave(){try{const snap=await get(ref(db,`leaderboards/solo/${user?.uid}`));return snap?.val()?.wave||0;}catch{return 0;}}
 let endlessLastRunEnabled=true;
+// Campaign prestige (AUSBAU-PLAN 4b) writes its own profile field, in its
+// own transaction, for the same reason as the last run below: until the
+// operator publishes PRESTIGE-EFFORT-TO-PUBLISH.json the database refuses
+// the field, and that refusal must never block a mission save. A refused
+// record disables itself for the session; the ladder simply stays where
+// the profile last confirmed it.
+let prestigeRecordEnabled=true;
+async function recordPrestigeRecord(tier){
+  if(!prestigeRecordEnabled||inSandbox()||!user||!profile)return {committed:false};
+  const currentUser=user,version=sessionVersion;
+  try{
+    const result=await runTransaction(ref(db,`players/${currentUser.uid}`),current=>recordPrestigeClearCore(current,tier)??undefined,{applyLocally:false});
+    if(version!==sessionVersion||user?.uid!==currentUser.uid)return {committed:false};
+    if(result.committed){profile=result.snapshot.val();commandCenter?.render();}
+    return {committed:!!result.committed,profile:result.committed?profile:null};
+  }catch{prestigeRecordEnabled=false;return {committed:false};}
+}
+// The war effort donation (AUSBAU-PLAN 4a) is an armory-shaped save with its
+// own transaction: it moves scrap into the stored fund. Until the prestige/
+// effort rules are published the transaction is refused and the armory
+// explains that, instead of touching any other save path.
+async function saveWarEffortDonation(amount){
+  if(inSandbox()){
+    const next=donateWarEffortCore(viewProfile(),amount);
+    if(!next){gameControl?.playCue?.('uiError');$('armoryStatus').textContent=translateText('Not enough scrap for that in the sample.');return;}
+    sandboxAPI.apply(next);gameControl?.playCue?.('uiEquip');$('armoryStatus').textContent=translateText('Sample data: nothing is saved.');renderArmory();return;
+  }
+  if(!canEditSkills()){gameControl?.playCue?.('uiError');$('armoryStatus').textContent=translateText('Finish the match and leave the party before changing your armory.');return;}
+  if(savingArmory||!user||!profile)return;
+  savingArmory=true;const currentUser=user,version=sessionVersion;$('armoryStatus').textContent=translateText('Saving…');
+  try{
+    const result=await runTransaction(ref(db,`players/${currentUser.uid}`),current=>donateWarEffortCore(current,amount)??undefined,{applyLocally:false});
+    if(version!==sessionVersion||user?.uid!==currentUser.uid)return;
+    if(!result.committed){gameControl?.playCue?.('uiError');$('armoryStatus').textContent=translateText('The war effort could not be funded. The database rules may not carry it yet.');return;}
+    profile=result.snapshot.val();commandCenter?.render();gameControl?.playCue?.('uiEquip');$('armoryStatus').textContent=translateText('Saved for your next match.');renderArmory();
+  }catch(error){if(version===sessionVersion){gameControl?.playCue?.('uiError');$('armoryStatus').textContent=translateText('Could not save. Check your connection and database rules.');}}
+  finally{if(version===sessionVersion)savingArmory=false;}
+}
 async function recordEndlessRun(summary){
   writeLastEndlessRun(window.localStorage,summary);
   // The last run belongs to the soldier, not the device: it is written to the
@@ -782,6 +822,7 @@ const account={...(versionUI?{beforeNewGame}:{}),recordScore:(mode,wave)=>scoreR
   }
   return await tutorialSync.beginMenuTour(0);
  },
+ recordPrestige:recordPrestigeRecord,donateWarEffort:(amount)=>saveWarEffortDonation(amount),
  awardXP:async (amount,wave,runId=null)=>{if(inSandbox())return {committed:false};const currentUser=user,version=sessionVersion;if(!currentUser||!profile||!Number.isInteger(wave)||wave<1||!Number.isSafeInteger(wave))return;$('saveStatus').textContent=translateText('Saving +{amount} XP and loot…',{amount});try{
   // Free tier: no paid backend. Campaign and every report without a run receipt
   // keep the legacy additive save. Endless solo with a receipt credits legacy
@@ -1673,6 +1714,11 @@ function renderArmory(){
   for(const [kind,name,description] of [['fortify','Fortification','+10 maximum bunker health per rank.'],['plating','Plating','10% less bunker damage per rank.'],['repair','Repair Crew','Restore 3 bunker health per rank after each cleared wave.'],['gun','Bunker Gun','Bunker fires for 5 damage per rank every 3 seconds at nearby enemies.'],['supply','Supply Relay','From wave 6, each active soldier receives 3 supplies per rank after each wave. Unlocks at soldier level 5.'],['safeguard','Emergency Bulwark','From wave 6, bunker takes 2% less damage per rank while below half health. Unlocks at soldier level 5.']]){
     const rank=a[kind],advanced=['supply','safeguard'].includes(kind),cost=(rank+1)*(advanced?50:30),locked=advanced&&level(viewProfile().xp)<5;add(defenses,{icon:kind,title:translateText(name),description:`${translateText(description)} ${translateText('In co-op the highest player rank applies.')}`,eyebrow:translateText('PERMANENT UPGRADE'),rank,label:rank===3?translateText('MAX RANK'):locked?translateText('UNLOCKS AT LEVEL 5'):translateText('UPGRADE · {cost} SCRAP',{cost}),disabled:rank===3||locked||a.scrap<cost,action:async()=>{const version=sessionVersion;if(await confirmation.ask({title:()=>translateText('Upgrade {name}?',{name:translateText(name)}),text:()=>translateText('Spend {cost} scrap on {name}?',{cost,name:translateText(name)}),accept:'UPGRADE'})&&version===sessionVersion)await saveArmory(current=>readArmory(current)[kind]===rank?upgradeArmory(current,kind):null);}});
   }
+  // War effort (AUSBAU-PLAN 4a): the permanent scrap sink. Donated scrap is
+  // stored progress, not a purchase - each funded tier sends solo operations
+  // out with extra starting supplies, and the fund ends at its goal.
+  const effort=readWarEffort(viewProfile()),effortTier=warEffortTier(viewProfile()),funded=effort>=WAR_EFFORT_GOAL;
+  add(defenses,{icon:'supply',title:translateText('War Effort'),description:translateText('Fund the valley logistics with spare scrap. Every {cost} scrap raises a tier; each tier sends your solo operations out with +3 starting supplies. {donated} of {goal} scrap funded.',{cost:WAR_EFFORT_TIER_COST,donated:effort,goal:WAR_EFFORT_GOAL}),eyebrow:translateText('WAR EFFORT · TIER {tier} / {max}',{tier:effortTier,max:WAR_EFFORT_MAX_TIER}),label:funded?translateText('FULLY FUNDED'):translateText('DONATE · {cost} SCRAP',{cost:WAR_EFFORT_DONATION}),disabled:funded||a.scrap<WAR_EFFORT_DONATION,action:async()=>{const version=sessionVersion;if(await confirmation.ask({title:()=>translateText('Fund the war effort?'),text:()=>translateText('Donate {cost} scrap to the valley logistics? Donations are permanent progress and cannot be refunded.',{cost:WAR_EFFORT_DONATION}),accept:'DONATE'})&&version===sessionVersion)await saveWarEffortDonation(WAR_EFFORT_DONATION);}});
   const equipment=section('Your equipment','ONE SLOT','equipment');
   ITEMS.forEach((item,i)=>{const id=i+1,owned=!!(a.owned&(1<<i)),equipped=a.equipped===id;add(equipment,{icon:item.icon,title:translateText(item.name),description:translateText(item.description),eyebrow:equipped?translateText('EQUIPPED'):owned?translateText('UNLOCKED'):translateText('WAVE {wave} REWARD',{wave:item.wave}),state:equipped?'is-equipped':owned?'':'is-locked',label:owned?translateText(equipped?'EQUIPPED':'EQUIP'):translateText('UNLOCKS ON WAVE {wave}',{wave:item.wave}),disabled:!owned||equipped,action:()=>void saveArmory(current=>equipArmory(current,id))});});
   const unequip=document.createElement('button');unequip.type='button';unequip.className='armory-unequip';unequip.textContent=translateText('UNEQUIP ITEM');unequip.disabled=a.equipped===0;unequip.onclick=()=>void saveArmory(current=>equipArmory(current,0));equipment.parentElement.append(unequip);chooseArmoryCategory(armoryCategory);

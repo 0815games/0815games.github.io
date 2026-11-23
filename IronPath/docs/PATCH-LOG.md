@@ -6,7 +6,7 @@ aber ersetzt weder Git noch die GitHub-PR-Historie. Die dazugehörige
 [Arbeitsanweisung](../../AGENTS.md) verlangt, dieses Log vor der Arbeit zu lesen
 und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
 
-Die Einträge IPL-0001 bis IPL-0097 stehen im
+Die Einträge IPL-0001 bis IPL-0098 stehen im
 [Archiv](PATCH-LOG-ARCHIV.md); hier stehen die neuesten 20. Beide Dateien
 zusammen sind lückenlos und doppelfrei - `../scripts/patch.mjs` (Unterbefehl `check`) und
 `../tests/patch-log-archive.test.mjs` prüfen das.
@@ -50,36 +50,6 @@ jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderl
 
 
 
-
-## IPL-0098 – Phase 2, Scheibe 4: Die 6 Kampf-Module ziehen nach `battle/` (eigene Cache-Welle folgt im selben PR)
-
-- **Zeit / Quelle:** Betreiber: „und weiter“ — Fortsetzung der Phase 2 nach der `net/`-Scheibe (`IPL-0097`). Grundlage bleiben die vier Entscheidungen aus `IPL-0094`.
-- **Block / Ziel:** Kein Spiel-Block. Alle 6 `battle-*.mjs` der Spielwurzel (Kampf-Klang und -Musik, Kamera-Viewport, XP-HUD) liegen künftig in `IronPath/battle/`. Spielverhalten bleibt unverändert; nur die Modul-Adressen ändern sich, deshalb trägt derselbe PR wieder eine eigene Cache-Welle (zweiter Commit, sobald die PR-Nummer existiert).
-- **Branch / Basis:** `arena/c1f67000-0815games-github-io` ab `dbdcdb8577b97852b8d5d489090a3c9b65905ef3` (`main`, Merge von PR `#353`).
-- **Änderungen / Dateien:**
-  - 6 Dateien per `git mv` nach `IronPath/battle/` verschoben. 4 davon sind inhaltlich bytegleich; `battle-sound.mjs` und `battle-xp-hud.mjs` zeigen mit je einem Import (`../story-map-art.mjs`, `../progression.mjs`) eine Ebene hoch; Geschwister-Importe innerhalb von `battle/` bleiben `./`.
-  - Wurzel-Importeur: `IronPath/game.js` (4 Importe auf `./battle/…` umgestellt). `settings.mjs` nennt `battle-sound.mjs` nur in einem erklärenden Kommentar; `patch-notes.mjs` nennt die Module nur in alten Feldnotizen-Texten — beides unverändert.
-  - Mitgezogen: 19 Testdateien (`../battle/battle-…`), davon der echte Lesezugriff `battle/battle-viewport-controller.mjs` in `tests/multiplayer-build-stamp.test.mjs`; die zwei absoluten Importe (`/IronPath/battle/battle-sound.mjs`, `/IronPath/battle/battle-music.mjs`) und die fünf Namen der aktuellen Erwartungsliste in `IronPath/browser-tests/cache-wave.cjs` — die historischen Wellenlisten derselben Datei bleiben unangetastet; die Seiten-Importe in `browser-tests/multiplayer-field.cjs` (4×), `browser-tests/multiplayer-fullscreen.cjs` (2×) und `firebase/rules-test/multiplayer-browser.cjs` (1×) zeigen jetzt auf `./battle/battle-viewport.mjs`.
-  - **Bewusst nicht angefasst:** Der instrumentierte Ersatz in `multiplayer-fullscreen.cjs` importiert `./battle-viewport-controller.mjs?instrumented=1` relativ zur Adresse der ersetzten Datei selbst; diese Adresse liegt jetzt in `battle/`, also bleibt das `./` dort korrekt (Gegenstück zum `net/`-Mock-Fund aus `IPL-0097`: gleiche Regel, umgekehrtes Ergebnis).
-  - **Korrektur am eigenen Test-Umbau:** Der Stempel-Test `multiplayer-build-stamp` prüft seine 90er-Fixture über **Basisnamen** (der Scan-Regex kennt keine Ordner); mein Codemod hatte die fünf `battle/`-Namen zunächst mit Ordner in diese Liste geschrieben (Fixture-Assertion rot) und beim Zurückdrehen versehentlich auch den echten Lesezugriff auf Basisname gesetzt (ENOENT rot). Endstand: Fixture bleibt bei Basisnamen — wie die `firebase-…`- und `localization-…`-Einträge dort auch — und nur der Lesezugriff trägt `battle/`. Beide Rot-Funde kamen aus der lokalen gezielten Testrunde, nicht aus der CI.
-  - `IronPath/docs/PATCH-LOG.md` und `IronPath/docs/PATCH-LOG-ARCHIV.md`: `IPL-0078` vollständig ins Archiv, Grenzen auf `IPL-0001` bis `IPL-0078` nachgezogen; das Log führt die neuesten 20 (`IPL-0079` bis `IPL-0098`).
-- **Prüfungen:**
-  - Betroffene Tests gezielt: 45 Vertrags-, Struktur- und Kampf-Tests in 8 Dateien — nach den zwei oben benannten Korrekturen **alle bestanden**.
-  - Staging-Vergleich gegen den `main`-Stand (Baseline per `git worktree` auf `dbdcdb85`, gleiche Build-ID `20990101-baseline1`): **712 gestagte Dateien vorher und nachher**; 6 neue `battle/`-Adressen, 4 Module mit identischem SHA-256, `game.js` als einzige Datei mit gleicher Adresse und neuem Inhalt; das `release-manifest.json` unterscheidet sich nur durch die neuen Adressen.
-  - Gesamtsuite im vollständigen Klon: `node --test IronPath/tests/*.test.mjs` = **1.260 Tests, 1.260 bestanden, 0 fehlgeschlagen, 0 übersprungen, Exit 0**. `patch-check` vor dem Log-Eintrag: **0 Fehler** (1 Hinweis).
-  - Cache-Welle als zweiter Commit desselben PR: Feldnotizen-Eintrag `battle1` (DE+EN, `pr: 354`) in `patch-notes.mjs` angelegt, danach `patch-bump 20261122-battle1 --apply` — Trockenlauf nannte vorab exakt **79 Dateien, 276 Token-Vorkommen und die 7 bekannten Anker-Zeilen**; die Anker-Prüfung meldete danach alle 7 Anker auf `20261122-battle1`, und die Gesamtsuite lief auf der neuen Welle erneut **1.260/1.260** (Exit 0).
-- **Git / PR / Release:** Der erste Commit entsteht auf `arena/c1f67000-0815games-github-io`; PR-Nummer, CI, Merge und Pages-Auslieferung sind noch nicht erfolgt und werden erst nach dem tatsächlichen Ereignis mit Kennung nachgetragen. Keine Geräteabnahme bisher; die Sichtprüfung des Betreibers lautet auf `BUILD 20261122-battle1` und einen unveränderten Kampf (Klang, Kamera, XP-Anzeige).
-- **Offen / nächster Schritt:** PR öffnen, Wellen-Commit nachschieben, CI abwarten, erst nach belegtem Merge/Pages-Stand als ausgeliefert bezeichnen. Danach `ui/` und `core/` je eigenem PR. Der Bauplatz-Auswahlring aus PR `#336` (ohne Hover-Vorschau) bleibt geparkt, bis die Struktur steht. Die Sichtprüfungen zu `net1` (Party-Beitritt), `workshop1` (Werkstatt) und den Deutsch-Texten stehen ebenfalls noch aus.
-
-### Ereignis-Nachtrag zu IPL-0098
-
-- **Commits / PR:** Umzug `e52074d5` und Cache-Welle `aa09f3c4` auf `arena/c1f67000-0815games-github-io`; Pull-Request `#354` („Phase 2 (battle): Kampf-Module ziehen nach IronPath/battle“).
-- **CI:** `gh pr checks 354` endete im ersten Lauf mit **13 von 13 bestandenen Checks, 0 fehlgeschlagen, 0 ausstehend** — zum ersten Mal in Phase 2 ohne nachgezogene Browser- oder Emulator-Fahrt; die zwei bekannten Fallen (Seiten-Importe der Smoke-Fahrten, pfad-patchender Emulator-Test) waren diesmal vorab mitgezogen.
-- **Merge:** `gh pr view 354 --json state,mergedAt,mergeCommit` ergab `state=MERGED`, `mergedAt=2026-11-22T07:46:29Z`, Merge-Commit `a282f1a1bea95c80b7794862c324867390d99046` in `main`.
-- **Pages:** `pages/builds` meldete danach `status=built`, Dauer 52.106 ms, Commit `a282f1a1`.
-- **Auslieferung auf `main` belegt:** `IronPath/battle/battle-sound.mjs` ist per Contents-API vorhanden (HTTP 200), die alte Adresse `IronPath/battle-sound.mjs` liefert **404**, und `release-version.json` auf `main` trägt `"build": "20261122-battle1"`.
-- **Ehrliche Grenzen:** Die Live-URL wurde nicht abgerufen; belegt sind Inhalt auf `main` und der fertige Pages-Build. **Keine Geräteabnahme:** Stempel `BUILD 20261122-battle1` und ein unverändertes Gefecht (Klang, Kamera, XP-Anzeige) sind Sache der Betreiber-Sichtprüfung; auch die Sichtprüfungen zu `net1` (Party-Beitritt), `workshop1` (Werkstatt) und den Deutsch-Texten stehen noch aus.
-- **Herkunft dieses Nachtrags:** Er steht als eigener Commit auf demselben Arbeitszweig nach dem Merge von `#354`; seine eigene Commit- und PR-Kennung steht deshalb nicht hier, sondern in Git und im PR-Text.
 
 ## IPL-0099 – Phase 2, Scheibe 5: Die 25 Oberflächen-Module ziehen nach `ui/` (eigene Cache-Welle folgt im selben PR)
 
@@ -449,3 +419,18 @@ jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderl
 - **Prüfungen:** `sector-modifiers` 4/4; Balance-Gegenprobe `balance-suite` + `coop-balance` + `endless` + `combat` 20/20 (die neuen Formationen kippen keine gesetzte Marke). `patch.mjs check --fast`: 0 Fehler. Gesamtsuite 1314 Tests, 1313 bestanden + 1 bekannter Flachklon-Skip (`release-pages-site` nach Unshallow 6/6) – effektiv 1314/1314.
 - **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet`. Commit, Push, PR `#379`, CI, Merge und Pages-Auslieferung werden als Ereignis nachgetragen.
 - **Offen / nächster Schritt:** Punkt 4 der Reihenfolge: Scrap-Senke fürs Spätspiel und Kampagnen-NG+ über das vorhandene Druck-System.
+
+## IPL-0118 – Scrap-Senke „Kriegsanstrengung" + Kampagnen-NG+ „Prestige" (Welle `20261123-prestige1`, PR `#380`)
+- **Zeit / Quelle:** 2026-11-23 UTC; Betreiber: „Weiter" – Punkt 4 der Reihenfolge in `AUSBAU-PLAN.md` (4a + 4b in einem Paket, weil beide dieselbe Regel-Veröffentlichung teilen).
+- **Block / Ziel:** Langzeit-Fortschritt. (4a) Veteranen-Scrap wuchs nach 6×3 Armory-Rängen und vier Werkstatt-Rezepten nutzlos weiter; (4b) die Kampagne war nach dem Durchspielen nur noch unveränderte Wiederholung. Jetzt: Scrap als gespeichertes Spenden-Ziel mit Logistik-Belohnung, und abgeschlossene Missionen als Prestige-Wiederholung auf dem vorhandenen Bedrohungs-/Druck-System — ohne neue Währung.
+- **Branch / Basis:** `arena/e1a82046-0815games-github-io` ab `1e35ad86cc08c32a71ba5441f4feba77d12989ae` (`main`, Merge PR `#379`).
+- **Änderungen / Dateien:**
+  - `IronPath/core/war-effort.mjs` (neu): `warEffort` auf dem Profil — Spenden à 250 Scrap (Transaktions-Reducer `donateWarEffort`, Obergrenze 1.000/Schreibung), Ziel 5.000 = 10 Stufen à 500, abgeleitete Belohnung +3 Startvorräte je Stufe (`warEffortBonus`, Vokabular wie Relikte). `solo-deployment.mjs` zahlt den Bonus auf beiden Solo-Pfaden (Legacy + Werkstatt); Mehrspieler bleibt unberührt.
+  - `IronPath/core/campaign-pressure.mjs`: `prestigeScale(tier)` — Stufe 1–10: Gegner-Leben +15 %/Stufe, Bunkerschaden +10 %/Stufe, Ansturm +1/Stufe (max. 4), Wellenvertrag und Bunker unverändert. `solo-deployment.mjs` stapelt die Stufe auf den Missionsvertrag (`prestige`/`surgeBonus` im Vertrag; `match.mjs` wertet den Bonus nur an Ansturm-Wellen aus); Trainingsvertrag trägt nie Prestige.
+  - `IronPath/core/campaign-prestige.mjs` (neu): Profil-Leiter `campaignPrestige` — `recordPrestigeClear` zählt nur die nächste Sprosse und zahlt 150–600 Bonus-Scrap in den Armory-Bestand.
+  - Client: `account.js` — Armory-Karte „War Effort" (Stufe, Fundstand, Spenden-Button mit Bestätigung, Sandbox-fähig) plus zwei eigene Transaktionen (`saveWarEffortDonation`, `recordPrestigeRecord` nach dem `endlessLastRun`-Muster: eigene Schreibung, schaltet sich bei Regel-Ablehnung für die Sitzung ab, blockiert nie andere Speicherungen). `game.js` + `index.html`: Druck-Auswahl im Missions-Briefing (nur abgeschlossene Missionen, bis Leiter+1), Aufklärungs-Zeile im Schnellstatus, Prestige-Vermerk beim Sieg. DE-Texte in `localization-armory-de.mjs`/`localization-battle-de.mjs` vollständig.
+  - Regeln (additiv, Betreiber veröffentlicht): `firebase/prestige-effort-candidate.mjs` erzeugt `PRESTIGE-EFFORT-TO-PUBLISH.json` aus dem live Stand `PROGRESSION-DELTA-CAPS-TO-PUBLISH.json` — Diff exakt zwei neue Profilfelder (`campaignPrestige`: monoton, +1/Schreibung, ≤10; `warEffort`: monoton, +1.000/Schreibung, ≤50.000), byte-genau reproduzierbar, Drift-Abbruch. Dazu `PRESTIGE-EFFORT-ROLLOUT.md`, Pin-Test, Emulator-Beweis (`rules-test/prestige-effort-rules.test.mjs`, `firebase-prestige.emulator.json`, npm-Skript `test:prestige-effort`, CI-Schritt in `database-rules`). `WORKSHOP-RULES-TO-PUBLISH.json` unberührt. Trockenlauf `rules-publish-dry-run.mjs`: 0 Blocker, exakt 2 neue Pfade.
+  - Cache-Welle `20261123-prestige1` (81 Dateien), Feldnotizen `prestige1` in `patch-notes.mjs`; Log-Rotation `IPL-0098` ins Archiv (Haupt `IPL-0099…IPL-0118`, Archiv bis `IPL-0098`); `AUSBAU-PLAN.md`: Punkt 3 abgehakt, 4a/4b auf `[~]` (Publish offen).
+- **Prüfungen:** `war-effort` 4/4, `campaign-prestige` 5/5, `prestige-effort-rules` 3/3 (Kern- und Pin-Tests; Emulator-Beweis läuft als CI-Schritt `test:prestige-effort`). Die 13 UI-Harnische bekamen die zwei neuen Modulpfade in ihre Umschreibe-Listen; der Cache-Token-Test verlangte für `armory.mjs` den etablierten `tagless1`-Token auch in den neuen Modulen. `patch.mjs check --fast`: 0 Fehler. Gesamtsuite 1326 Tests, 1325 bestanden + 1 bekannter Flachklon-Skip (`release-pages-site` nach Unshallow 6/6) – effektiv 1326/1326; darin die unveränderte Balance-Suite als Gegenprobe (Prestige/War-Effort steht bei Profilen ohne die Felder auf null).
+- **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet`. Commit, Push, PR `#380`, CI, Merge und Pages-Auslieferung werden als Ereignis nachgetragen. Die Persistenz wird erst mit der Regel-Veröffentlichung durch den Betreiber live (Anleitung `PRESTIGE-EFFORT-ROLLOUT.md`, Rückfall = `PROGRESSION-DELTA-CAPS-TO-PUBLISH.json`).
+- **Offen / nächster Schritt:** Betreiber veröffentlicht die Regeln; danach Punkt 5: 6-stellige Party-Codes.

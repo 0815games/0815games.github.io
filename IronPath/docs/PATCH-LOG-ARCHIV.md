@@ -1,6 +1,6 @@
 # Iron Path – Patch-Log: Archiv
 
-Ältere Einträge IPL-0001 bis IPL-0097. Die neuesten 20 stehen in
+Ältere Einträge IPL-0001 bis IPL-0098. Die neuesten 20 stehen in
 [PATCH-LOG.md](PATCH-LOG.md); die Regeln für beide Dateien dort und in
 [`../../AGENTS.md`](../../AGENTS.md). Beim Verschieben wandert ein Eintrag immer
 vollständig einschließlich seiner Ereignis-Nachträge.
@@ -4296,3 +4296,33 @@ sie geprüft wurde.
 - **Auslieferung auf `main` belegt:** `IronPath/net/firebase-party-game.mjs` ist per Contents-API vorhanden (HTTP 200), die alte Adresse `IronPath/firebase-party-game.mjs` liefert **404**, und `release-version.json` auf `main` trägt `"build": "20261122-net1"`.
 - **Ehrliche Grenzen:** Die Live-URL wurde nicht abgerufen; belegt sind Inhalt auf `main` und der fertige Pages-Build. **Keine Geräteabnahme:** Stempel `BUILD 20261122-net1` und eine Party erstellen/beitreten (Kampf startet wie bisher) sind Sache der Betreiber-Sichtprüfung; auch die `workshop1`- und Deutsch-Sichtprüfungen der vorigen Scheiben stehen noch aus.
 - **Herkunft dieses Nachtrags:** Er steht als eigener Commit auf demselben Arbeitszweig nach dem Merge von `#352`; seine eigene Commit- und PR-Kennung steht deshalb nicht hier, sondern in Git und im PR-Text.
+
+## IPL-0098 – Phase 2, Scheibe 4: Die 6 Kampf-Module ziehen nach `battle/` (eigene Cache-Welle folgt im selben PR)
+
+- **Zeit / Quelle:** Betreiber: „und weiter“ — Fortsetzung der Phase 2 nach der `net/`-Scheibe (`IPL-0097`). Grundlage bleiben die vier Entscheidungen aus `IPL-0094`.
+- **Block / Ziel:** Kein Spiel-Block. Alle 6 `battle-*.mjs` der Spielwurzel (Kampf-Klang und -Musik, Kamera-Viewport, XP-HUD) liegen künftig in `IronPath/battle/`. Spielverhalten bleibt unverändert; nur die Modul-Adressen ändern sich, deshalb trägt derselbe PR wieder eine eigene Cache-Welle (zweiter Commit, sobald die PR-Nummer existiert).
+- **Branch / Basis:** `arena/c1f67000-0815games-github-io` ab `dbdcdb8577b97852b8d5d489090a3c9b65905ef3` (`main`, Merge von PR `#353`).
+- **Änderungen / Dateien:**
+  - 6 Dateien per `git mv` nach `IronPath/battle/` verschoben. 4 davon sind inhaltlich bytegleich; `battle-sound.mjs` und `battle-xp-hud.mjs` zeigen mit je einem Import (`../story-map-art.mjs`, `../progression.mjs`) eine Ebene hoch; Geschwister-Importe innerhalb von `battle/` bleiben `./`.
+  - Wurzel-Importeur: `IronPath/game.js` (4 Importe auf `./battle/…` umgestellt). `settings.mjs` nennt `battle-sound.mjs` nur in einem erklärenden Kommentar; `patch-notes.mjs` nennt die Module nur in alten Feldnotizen-Texten — beides unverändert.
+  - Mitgezogen: 19 Testdateien (`../battle/battle-…`), davon der echte Lesezugriff `battle/battle-viewport-controller.mjs` in `tests/multiplayer-build-stamp.test.mjs`; die zwei absoluten Importe (`/IronPath/battle/battle-sound.mjs`, `/IronPath/battle/battle-music.mjs`) und die fünf Namen der aktuellen Erwartungsliste in `IronPath/browser-tests/cache-wave.cjs` — die historischen Wellenlisten derselben Datei bleiben unangetastet; die Seiten-Importe in `browser-tests/multiplayer-field.cjs` (4×), `browser-tests/multiplayer-fullscreen.cjs` (2×) und `firebase/rules-test/multiplayer-browser.cjs` (1×) zeigen jetzt auf `./battle/battle-viewport.mjs`.
+  - **Bewusst nicht angefasst:** Der instrumentierte Ersatz in `multiplayer-fullscreen.cjs` importiert `./battle-viewport-controller.mjs?instrumented=1` relativ zur Adresse der ersetzten Datei selbst; diese Adresse liegt jetzt in `battle/`, also bleibt das `./` dort korrekt (Gegenstück zum `net/`-Mock-Fund aus `IPL-0097`: gleiche Regel, umgekehrtes Ergebnis).
+  - **Korrektur am eigenen Test-Umbau:** Der Stempel-Test `multiplayer-build-stamp` prüft seine 90er-Fixture über **Basisnamen** (der Scan-Regex kennt keine Ordner); mein Codemod hatte die fünf `battle/`-Namen zunächst mit Ordner in diese Liste geschrieben (Fixture-Assertion rot) und beim Zurückdrehen versehentlich auch den echten Lesezugriff auf Basisname gesetzt (ENOENT rot). Endstand: Fixture bleibt bei Basisnamen — wie die `firebase-…`- und `localization-…`-Einträge dort auch — und nur der Lesezugriff trägt `battle/`. Beide Rot-Funde kamen aus der lokalen gezielten Testrunde, nicht aus der CI.
+  - `IronPath/docs/PATCH-LOG.md` und `IronPath/docs/PATCH-LOG-ARCHIV.md`: `IPL-0078` vollständig ins Archiv, Grenzen auf `IPL-0001` bis `IPL-0078` nachgezogen; das Log führt die neuesten 20 (`IPL-0079` bis `IPL-0098`).
+- **Prüfungen:**
+  - Betroffene Tests gezielt: 45 Vertrags-, Struktur- und Kampf-Tests in 8 Dateien — nach den zwei oben benannten Korrekturen **alle bestanden**.
+  - Staging-Vergleich gegen den `main`-Stand (Baseline per `git worktree` auf `dbdcdb85`, gleiche Build-ID `20990101-baseline1`): **712 gestagte Dateien vorher und nachher**; 6 neue `battle/`-Adressen, 4 Module mit identischem SHA-256, `game.js` als einzige Datei mit gleicher Adresse und neuem Inhalt; das `release-manifest.json` unterscheidet sich nur durch die neuen Adressen.
+  - Gesamtsuite im vollständigen Klon: `node --test IronPath/tests/*.test.mjs` = **1.260 Tests, 1.260 bestanden, 0 fehlgeschlagen, 0 übersprungen, Exit 0**. `patch-check` vor dem Log-Eintrag: **0 Fehler** (1 Hinweis).
+  - Cache-Welle als zweiter Commit desselben PR: Feldnotizen-Eintrag `battle1` (DE+EN, `pr: 354`) in `patch-notes.mjs` angelegt, danach `patch-bump 20261122-battle1 --apply` — Trockenlauf nannte vorab exakt **79 Dateien, 276 Token-Vorkommen und die 7 bekannten Anker-Zeilen**; die Anker-Prüfung meldete danach alle 7 Anker auf `20261122-battle1`, und die Gesamtsuite lief auf der neuen Welle erneut **1.260/1.260** (Exit 0).
+- **Git / PR / Release:** Der erste Commit entsteht auf `arena/c1f67000-0815games-github-io`; PR-Nummer, CI, Merge und Pages-Auslieferung sind noch nicht erfolgt und werden erst nach dem tatsächlichen Ereignis mit Kennung nachgetragen. Keine Geräteabnahme bisher; die Sichtprüfung des Betreibers lautet auf `BUILD 20261122-battle1` und einen unveränderten Kampf (Klang, Kamera, XP-Anzeige).
+- **Offen / nächster Schritt:** PR öffnen, Wellen-Commit nachschieben, CI abwarten, erst nach belegtem Merge/Pages-Stand als ausgeliefert bezeichnen. Danach `ui/` und `core/` je eigenem PR. Der Bauplatz-Auswahlring aus PR `#336` (ohne Hover-Vorschau) bleibt geparkt, bis die Struktur steht. Die Sichtprüfungen zu `net1` (Party-Beitritt), `workshop1` (Werkstatt) und den Deutsch-Texten stehen ebenfalls noch aus.
+
+### Ereignis-Nachtrag zu IPL-0098
+
+- **Commits / PR:** Umzug `e52074d5` und Cache-Welle `aa09f3c4` auf `arena/c1f67000-0815games-github-io`; Pull-Request `#354` („Phase 2 (battle): Kampf-Module ziehen nach IronPath/battle“).
+- **CI:** `gh pr checks 354` endete im ersten Lauf mit **13 von 13 bestandenen Checks, 0 fehlgeschlagen, 0 ausstehend** — zum ersten Mal in Phase 2 ohne nachgezogene Browser- oder Emulator-Fahrt; die zwei bekannten Fallen (Seiten-Importe der Smoke-Fahrten, pfad-patchender Emulator-Test) waren diesmal vorab mitgezogen.
+- **Merge:** `gh pr view 354 --json state,mergedAt,mergeCommit` ergab `state=MERGED`, `mergedAt=2026-11-22T07:46:29Z`, Merge-Commit `a282f1a1bea95c80b7794862c324867390d99046` in `main`.
+- **Pages:** `pages/builds` meldete danach `status=built`, Dauer 52.106 ms, Commit `a282f1a1`.
+- **Auslieferung auf `main` belegt:** `IronPath/battle/battle-sound.mjs` ist per Contents-API vorhanden (HTTP 200), die alte Adresse `IronPath/battle-sound.mjs` liefert **404**, und `release-version.json` auf `main` trägt `"build": "20261122-battle1"`.
+- **Ehrliche Grenzen:** Die Live-URL wurde nicht abgerufen; belegt sind Inhalt auf `main` und der fertige Pages-Build. **Keine Geräteabnahme:** Stempel `BUILD 20261122-battle1` und ein unverändertes Gefecht (Klang, Kamera, XP-Anzeige) sind Sache der Betreiber-Sichtprüfung; auch die Sichtprüfungen zu `net1` (Party-Beitritt), `workshop1` (Werkstatt) und den Deutsch-Texten stehen noch aus.
+- **Herkunft dieses Nachtrags:** Er steht als eigener Commit auf demselben Arbeitszweig nach dem Merge von `#354`; seine eigene Commit- und PR-Kennung steht deshalb nicht hier, sondern in Git und im PR-Text.

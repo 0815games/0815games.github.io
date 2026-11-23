@@ -1,56 +1,58 @@
-import {createSoloDeployment} from './core/solo-deployment.mjs?v=20261123-sector1';
+import {createSoloDeployment} from './core/solo-deployment.mjs?v=20261123-prestige1';
 import {newRunReceiptId} from './workshop/workshop-run-receipt.mjs?v=20261031-finale1';
 import {canvasResolution} from './core/canvas-resolution.mjs?v=20261105-sharp1';
 import {createMapZoom} from './core/map-zoom.mjs?v=20261105-sharp1';
 import {featureEnabled} from './core/features.mjs?v=20261112-endless1';
-import {localizeGameMessage} from './core/game-localization.mjs?v=20261123-sector1';
+import {localizeGameMessage} from './core/game-localization.mjs?v=20261123-prestige1';
 import {translateStoryDetail} from './core/story-localization.mjs?v=20261110-storyde1';
-import {translateText as tr,getLanguage} from './language.mjs?v=20261123-sector1';
+import {translateText as tr,getLanguage} from './language.mjs?v=20261123-prestige1';
 import {createSoldierMotion} from './core/soldier-motion.mjs?v=20261104-movement1';
 import {bindDialogBackdrop} from './ui/dialog-dismiss.mjs?v=20261104-dismiss1';
 import {createFocusPause} from './core/focus-pause.mjs?v=20261104-hostpause1';
 import {cinematicFrames,cinematicScene,relicHandover} from './core/story-cinematics.mjs?v=20261031-finale2';
 import {CAMPAIGN,campaignProgress,campaignMission,campaignAvailable,campaignDifficulty,campaignWaveContract,ACTS,actOf,actEndIndex,actComplete} from './core/campaign.mjs?v=20261112-pressure1';
 import {RELICS,earnedRelicIds} from './core/relics.mjs?v=20261112-tagless1';
+import {prestigeTierOf,prestigeScrapBonus,PRESTIGE_MAX_TIER} from './core/campaign-prestige.mjs?v=20261123-prestige1';
+import {prestigeScale} from './core/campaign-pressure.mjs?v=20261112-pressure1';
 import {createStoryMission,storyStatus,stepStory,resolveStoryDecision,drainStoryNotifications} from './core/story-mission.mjs?v=20261111-events1';
 import {STAGE_CAPTIONS,EVENT_TEMPLATES} from './core/story-events.mjs?v=20261206-acttwo1';
-import {TRAINING_MISSION_ID,TRAINING_MAP,TRAINING_WAVES,TRAINING_BOSS_EVERY,FIRST_RUN_DEFEAT_XP,trainingContract,trainingStatus,trainingWon,trainingXP,trainingBonusXP,trainingSeen,markTrainingSeen,forgetTrainingSeen,trainingWaveRadioCue} from './core/training-run.mjs?v=20261123-sector1';
-import {projectFourGameView} from './core/four-game-view.mjs?v=20261123-sector1';
-import {createBattleViewportController} from './battle/battle-viewport-controller.mjs?v=20261123-sector1';
-import {drawInBattleViewport} from './battle/battle-viewport.mjs?v=20261123-sector1';
-import {waveRewardSummary,nextSteps} from './core/run-results.mjs?v=20261123-sector1';
+import {TRAINING_MISSION_ID,TRAINING_MAP,TRAINING_WAVES,TRAINING_BOSS_EVERY,FIRST_RUN_DEFEAT_XP,trainingContract,trainingStatus,trainingWon,trainingXP,trainingBonusXP,trainingSeen,markTrainingSeen,forgetTrainingSeen,trainingWaveRadioCue} from './core/training-run.mjs?v=20261123-prestige1';
+import {projectFourGameView} from './core/four-game-view.mjs?v=20261123-prestige1';
+import {createBattleViewportController} from './battle/battle-viewport-controller.mjs?v=20261123-prestige1';
+import {drawInBattleViewport} from './battle/battle-viewport.mjs?v=20261123-prestige1';
+import {waveRewardSummary,nextSteps} from './core/run-results.mjs?v=20261123-prestige1';
 import {reportRank} from './core/report-promotion.mjs?v=20261117-rank1';
 // The rank mark is painted by the kit that owns ranks; the report only asks which one.
-import {renderRankInsignia} from './core/rank-insignia.mjs?v=20261123-sector1';
-import {createGroundTracks} from './core/ground-tracks.mjs?v=20261123-sector1';
-import {projectCoopMotion} from './core/coop-motion.mjs?v=20261123-sector1';
+import {renderRankInsignia} from './core/rank-insignia.mjs?v=20261123-prestige1';
+import {createGroundTracks} from './core/ground-tracks.mjs?v=20261123-prestige1';
+import {projectCoopMotion} from './core/coop-motion.mjs?v=20261123-prestige1';
 import {bossPhaseLabel,bossTelegraph} from './core/boss-mechanics.mjs?v=20261031-finale1';
-import {createBattleSound} from './battle/battle-sound.mjs?v=20261123-sector1';
+import {createBattleSound} from './battle/battle-sound.mjs?v=20261123-prestige1';
 import {RUN_PERKS,perkOffers} from './core/run-perks.mjs?v=20261102-terrain4';
 import {TERRAIN_BRIEFINGS,ZONE_BRIEFINGS,terrainFor} from './core/terrain.mjs?v=20261124-zones1';
-import {getMap,createRandomMapId,sectorOf} from './core/maps.mjs?v=20261123-sector1';
-import {createCombatEffects} from './core/combat-fx.mjs?v=20261123-sector1';
-import {hitFeedbackForEvent,createHitAnnouncer} from './core/hit-feedback.mjs?v=20261123-sector1';
-import {drawCartoonBattle} from './core/cartoon-art.mjs?v=20261123-sector1';
-import {abilityName,SKILL_PATH_MAP} from './core/skills.mjs?v=20261123-sector1';
-import {classUpgradeState,classPathConfig,classPathInvested} from './core/tower-class-paths.mjs?v=20261123-sector1';
-import {towerClassIcon} from './ui/development-ui.mjs?v=20261123-sector1';
+import {getMap,createRandomMapId,sectorOf} from './core/maps.mjs?v=20261123-prestige1';
+import {createCombatEffects} from './core/combat-fx.mjs?v=20261123-prestige1';
+import {hitFeedbackForEvent,createHitAnnouncer} from './core/hit-feedback.mjs?v=20261123-prestige1';
+import {drawCartoonBattle} from './core/cartoon-art.mjs?v=20261123-prestige1';
+import {abilityName,SKILL_PATH_MAP} from './core/skills.mjs?v=20261123-prestige1';
+import {classUpgradeState,classPathConfig,classPathInvested} from './core/tower-class-paths.mjs?v=20261123-prestige1';
+import {towerClassIcon} from './ui/development-ui.mjs?v=20261123-prestige1';
 import { COOP_SERVER_URL } from './core/coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './core/coop-client.mjs?v=20261031-coopui1';
-import { createCoopInput } from './core/coop-input.mjs?v=20261123-sector1';
-import { createTutorial } from './core/tutorial.mjs?v=20261123-sector1';
-import { createCoach, coachSeen, markCoachSeen } from './ui/first-run-coach.mjs?v=20261123-sector1';
-import { abilityHud, abilityHudSvg } from './ui/ability-hud.mjs?v=20261123-sector1';
-import { stepMatch, getTowerRange, STEP } from './core/simulation.mjs?v=20261123-sector1';
-import { createPlayer, applyCommand, towerRefund, repairOffer, getSupplies, TOWER_COSTS, trainingBuildLocked } from './core/match.mjs?v=20261123-sector1';
-import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats,sectorModifier } from './core/combat.mjs?v=20261123-sector1';
+import { createCoopInput } from './core/coop-input.mjs?v=20261123-prestige1';
+import { createTutorial } from './core/tutorial.mjs?v=20261123-prestige1';
+import { createCoach, coachSeen, markCoachSeen } from './ui/first-run-coach.mjs?v=20261123-prestige1';
+import { abilityHud, abilityHudSvg } from './ui/ability-hud.mjs?v=20261123-prestige1';
+import { stepMatch, getTowerRange, STEP } from './core/simulation.mjs?v=20261123-prestige1';
+import { createPlayer, applyCommand, towerRefund, repairOffer, getSupplies, TOWER_COSTS, trainingBuildLocked } from './core/match.mjs?v=20261123-prestige1';
+import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats,sectorModifier } from './core/combat.mjs?v=20261123-prestige1';
 import { MAX_TOWER_LEVEL, upgradeCost, towerDisplay, characterProgress, towerUpgradeInvestment } from './core/progression.mjs?v=20261105-prestige1';
 import { createBattleXpHud } from './battle/battle-xp-hud.mjs?v=20261117-hudxp1';
-import { towerUpgradeCues } from './core/tower-upgrade-cue.mjs?v=20261123-sector1';
+import { towerUpgradeCues } from './core/tower-upgrade-cue.mjs?v=20261123-prestige1';
 import { createFieldNotice } from './ui/field-notice.mjs?v=20261117-fieldnotice1';
 import { createMapIntro } from './ui/map-intro.mjs?v=20261117-mapintro1';
-import { createBossBanner } from './ui/boss-banner.mjs?v=20261123-sector1';
-import { specializationRank, upgradeCostFor, branchUnlockLevel } from './core/tower-specialization.mjs?v=20261123-sector1';
+import { createBossBanner } from './ui/boss-banner.mjs?v=20261123-prestige1';
+import { specializationRank, upgradeCostFor, branchUnlockLevel } from './core/tower-specialization.mjs?v=20261123-prestige1';
 export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=createCoopClient, confirmAction=async()=>false, leaveParty=null, onForceCloseParty=null, nextMapId=createRandomMapId, experimentalFourViewport=false,experimentalWorkshop=false,deferTutorial=false,reducedGraphics=false,initialSettings=null,onReturnToCommand=()=>{},onResumeBattle=()=>{},onTrainingComplete=null,onRunFinished=()=>{},promptCenter=null,generalRadio=null}={}) {
   // One-way release teardown; the guarded caller still has to replace the
   // whole document, because the rest of this UI is not a reusable SPA.
@@ -146,7 +148,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   ];
   for(const variants of branches){variants.push({name:'Veteran Kit',damage:1.4,interval:.85,range:1.15,description:'Upgrader must be level 5 · 40% more damage, 15% faster fire and 15% more range',rank2:'Commanded crew: fires 10% faster while your soldier stands near',rank3:'This tower\'s upgrades cost 15% less'});variants.push({name:'Boss Hunter',damage:1,interval:1.25,range:1,description:'Upgrader must be level 10 · fires 20% slower but deals 50% more damage to bosses.',rank2:'Trophy gun: 25% more damage while a boss shield is up',rank3:'A boss finished by this gun pays +25 supplies'});}
   const keys = new Set();
-  let state, selectedMap=nextMapId(), activeMission=null, activeStory=null, activeTraining=false, trainingDone=false, trainingBonusPaid=false, trainingRewards=true, trainingWaveFloor=0, accumulator=0, menuPad=null, coop=null, coopInput=null, coopReady=false, lastDirection='0,0', needStop=false,seenCoopWaves=0,seenCoopCaches=0,coopHasBaseline=false,bossSignal=null,hostFocusPaused=false,rosterGeneration=0,focusGeneration=0,promptEpoch=0;
+  let state, selectedMap=nextMapId(), activeMission=null, activePrestige=0, activeStory=null, activeTraining=false, trainingDone=false, trainingBonusPaid=false, trainingRewards=true, trainingWaveFloor=0, accumulator=0, menuPad=null, coop=null, coopInput=null, coopReady=false, lastDirection='0,0', needStop=false,seenCoopWaves=0,seenCoopCaches=0,coopHasBaseline=false,bossSignal=null,hostFocusPaused=false,rosterGeneration=0,focusGeneration=0,promptEpoch=0;
   // Online UI normally repaints on snapshots, not animation frames. The
   // fallback controls must reappear immediately when a card is put aside.
   const stopPromptWatch=promptCenter?.onChange?.(()=>{if(state&&!releaseStopped)updateUI();});
@@ -457,6 +459,23 @@ function renderResults(target){
         if(prog)prog.textContent=tr('{done} / {total} MISSIONS',{done,total:list.length});
       }}
     $('campaignBoard').hidden=!mission||!missionBoardOpen;$('campaignShowBoard').hidden=!mission||missionBoardOpen;$('campaignShowBoard').disabled=blocked;$('campaignCloseBoard').hidden=!activeMission;$('campaignPanel').dataset.boardOpen=String(missionBoardOpen);$('campaignOverall').textContent=progress===CAMPAIGN.length?tr('The valley is safe. Revisit any completed mission.'):progress?tr('Your next mission awaits. {done} of {total} missions completed.',{done:progress,total:CAMPAIGN.length}):tr('A lost signal is only the beginning.');$('campaignProgressText').textContent=tr('{done} / {total} COMPLETED',{done:progress,total:CAMPAIGN.length});$('campaignProgressBar').max=CAMPAIGN.length;$('campaignProgressBar').value=progress;$('campaignContinue').disabled=blocked;$('campaignContinue').textContent=tr(progress===CAMPAIGN.length?'REPLAY FINAL MISSION →':progress?'CONTINUE STORY →':'BEGIN STORY →');$('campaignSelectedAct').textContent=tr(mission?.act||'');$('campaignSelectedTitle').textContent=tr(mission?.title||'Select a mission');$('campaignQuickLoad').disabled=blocked||!!mission&&!campaignAvailable(profile,mission.id);$('campaignQuickStatus').textContent=tr(blocked?'Leave your party before changing solo operations.':mission?'Select a mission on the board or load this selection.':'Free play: random map and endless waves.');
+    // NG+ (AUSBAU-PLAN 4b): a completed mission can be loaded again under
+    // prestige pressure, one rung above the stored ladder at most. The
+    // select only exists for finished operations; everything else runs its
+    // standard contract.
+    const prestigeWrap=$('campaignPrestigeWrap'),prestigeSelect=$('campaignPrestige');
+    if(prestigeWrap&&prestigeSelect){
+      const complete=!!mission&&CAMPAIGN.indexOf(mission)<progress,maxTier=complete?Math.min(PRESTIGE_MAX_TIER,prestigeTierOf(profile)+1):0;
+      prestigeWrap.hidden=!complete;
+      if(complete){
+        const wanted=Math.max(0,Number(prestigeSelect.value||0)||0);
+        prestigeSelect.innerHTML=Array.from({length:maxTier+1},(_,t)=>`<option value="${t}">${t?tr('PRESTIGE {tier}',{tier:t}):tr('STANDARD')}</option>`).join('');
+        prestigeSelect.value=String(Math.min(wanted,maxTier));
+        $('campaignPrestigeLabel').textContent=tr('PRESSURE');
+        const chosen=Number(prestigeSelect.value||0);
+        if(!blocked&&chosen>0){const scale=prestigeScale(chosen);$('campaignQuickStatus').textContent=tr('Prestige {tier}: enemy health +{unit}%, bunker damage +{damage}%, wider surge waves. Clear it to raise your campaign prestige and earn bonus scrap.',{tier:chosen,unit:Math.round((scale.unit-1)*100),damage:Math.round((scale.damage-1)*100)});}
+      }
+    }
     const strip=$('relicStrip');
     if(strip){
       strip.innerHTML=ACTS.map(act=>{
@@ -564,6 +583,7 @@ function renderResults(target){
   function setMissionBoard(open){missionBoardOpen=!!open;if(open)showActOverview();keys.clear();sendDirection();accumulator=0;renderCampaign();syncAudioScene();if(state)updateUI();}
   buildMissionBoard();
   $('campaignSelect').onchange=()=>setMissionBoard(!!campaignMission($('campaignSelect').value));
+  if($('campaignPrestige'))$('campaignPrestige').onchange=()=>renderCampaign();
   $('campaignShowBoard').onclick=()=>setMissionBoard(true);$('campaignCloseBoard').onclick=()=>setMissionBoard(false);
   $('campaignContinue').onclick=async()=>{if(coop||(typeof account.canChooseSolo==='function'&&!account.canChooseSolo()))return;const progress=campaignProgress(account.getProfile()),mission=CAMPAIGN[Math.min(progress,CAMPAIGN.length-1)];$('campaignSelect').value=mission.id;renderCampaign();await $('campaignLoad').onclick();};
   $('campaignQuickLoad').onclick=()=>$('campaignLoad').onclick();
@@ -578,9 +598,9 @@ function renderResults(target){
     if(!state.ended&&(state.wave>0||state.towers.length)&&!await confirmAction({title:'Change operation?',text:'This ends your current solo run. Completed-wave rewards remain saved.',accept:'CHANGE OPERATION'}))return false;
     if(coop||state!==currentState||account.getUserId()!==currentUser||account.getSessionVersion?.()!==currentSession||!account.isReady()||(typeof account.canChooseSolo==='function'&&!account.canChooseSolo())||(mission&&!campaignAvailable(account.getProfile(),id)))return false;
     // Only replace the old run after the version check and confirmation succeed.
-    soloDeployed=true;activeTraining=false;activeMission=mission;selectedMap=mission?mission.mapId:drawFreeMapId(selectedMap);missionBoardOpen=false;reset();notice(()=>tr(mission?mission.stages[0].dialogue:'Free play ready.'));if(mission)showCinematic(mission,'intro');return true;
+    soloDeployed=true;activeTraining=false;activeMission=mission;activePrestige=mission&&CAMPAIGN.indexOf(mission)<campaignProgress(account.getProfile())?Math.max(0,Math.min(PRESTIGE_MAX_TIER,Number($('campaignPrestige')?.value||0)||0)):0;selectedMap=mission?mission.mapId:drawFreeMapId(selectedMap);missionBoardOpen=false;reset();notice(()=>tr(mission?mission.stages[0].dialogue:'Free play ready.'));if(mission)showCinematic(mission,'intro');return true;
   };
-  function reset(freshMap=false,{preserveResults=false}={}){fieldNotice.clear();wasAbilityReady=false;abilityReadyNotified=false;mapIntro.clear();announcedMap=null;closeCinematic(false);radioTime=0;$('storyRadio').hidden=true;hideDecisionPanel();$('soloBonus').hidden=true;if(!preserveResults&&$('runResults').open)$('runResults').close();report=newReport();report.soloMission=activeMission;report.training=activeTraining;report.accountId=account.getUserId();report.receiptId=activeMission||!experimentalWorkshop?null:newRunReceiptId();activeStory=activeMission?createStoryMission(activeMission):null;setLogicalHeight(540);if(freshMap&&!activeMission)selectedMap=drawFreeMapId(selectedMap);combatFx.clear();sound.resetCombat?.();soldierMotion.reset();rivalMotion.reset();groundTracks.reset();rivalGroundTracks.reset();lastSnapshotAt=0;bossSignal=null;bossBanner.reset();const deploymentProfile=account.getProfile();state=createSoloDeployment({player:createPlayer('local',{...deploymentProfile,level:account.getLevel()}),mapId:selectedMap,profile:deploymentProfile,workshopEnabled:experimentalWorkshop,campaign:activeTraining?trainingContract():activeMission&&{id:activeMission.id,threat:activeMission.threat,spawn:{x:activeMission.stages[0]?.x,y:activeMission.stages[0]?.y}}});Object.assign(state,{speed:1,selectedPad:null});accumulator=0;keys.clear();closeMenu();updateUI();}
+  function reset(freshMap=false,{preserveResults=false}={}){fieldNotice.clear();wasAbilityReady=false;abilityReadyNotified=false;mapIntro.clear();announcedMap=null;closeCinematic(false);radioTime=0;$('storyRadio').hidden=true;hideDecisionPanel();$('soloBonus').hidden=true;if(!preserveResults&&$('runResults').open)$('runResults').close();report=newReport();report.soloMission=activeMission;report.training=activeTraining;report.accountId=account.getUserId();report.receiptId=activeMission||!experimentalWorkshop?null:newRunReceiptId();activeStory=activeMission?createStoryMission(activeMission):null;setLogicalHeight(540);if(freshMap&&!activeMission)selectedMap=drawFreeMapId(selectedMap);combatFx.clear();sound.resetCombat?.();soldierMotion.reset();rivalMotion.reset();groundTracks.reset();rivalGroundTracks.reset();lastSnapshotAt=0;bossSignal=null;bossBanner.reset();const deploymentProfile=account.getProfile();state=createSoloDeployment({player:createPlayer('local',{...deploymentProfile,level:account.getLevel()}),mapId:selectedMap,profile:deploymentProfile,workshopEnabled:experimentalWorkshop,campaign:activeTraining?trainingContract():activeMission&&{id:activeMission.id,threat:activeMission.threat,prestige:activePrestige||undefined,spawn:{x:activeMission.stages[0]?.x,y:activeMission.stages[0]?.y}}});Object.assign(state,{speed:1,selectedPad:null});accumulator=0;keys.clear();closeMenu();updateUI();}
   const voteCommands=new Set(['startWave','approveWave','declineWave','cancelWave','requestSpeed','approveSpeed','declineSpeed','cancelSpeed','slowSpeed']);
   function dispatch(command,done){
     if(!coop){done(applyCommand(state,'local',command));return;}
@@ -1358,7 +1378,7 @@ function renderResults(target){
         else if(entry.type==='reinforce')storyRadio(entry.text?entry.text:tr(EVENT_TEMPLATES.reinforcements,{count:entry.count}),false,null,entry.speaker);
         else if(entry.type==='side')storyRadio(entry.outcome==='complete'?tr(EVENT_TEMPLATES.bonusComplete,{label:tr(entry.label),reward:entry.reward}):tr(EVENT_TEMPLATES.bonusMissed,{label:tr(entry.label)}));
        }
-       if(outcome){notice(()=>translateStoryDetail(outcome.message,tr));if(outcome.type==='stage'){storyStageCard();if(activeStory?.stage>0)playMissionVoice(activeMission.id,'stage',activeStory.stage);}if(outcome.type==='victory'){sound.play('victory');const target=report;target.storyMessage=outcome.message;target.campaign=activeMission;target.campaignSaved=null;target.pending++;finishReport(target,state,me(),false);showCinematic(activeMission,'ending',()=>{if(lastReport===target&&state===target.snapshot&&target.accountId===account.getUserId()){renderResults(target);if(!$('runResults').open)$('runResults').showModal();}});Promise.resolve(account.saveCampaign(activeMission.id)).then(result=>{target.pending--;target.campaignSaved=!!result?.committed&&campaignProgress(result.profile)>=CAMPAIGN.indexOf(target.campaign)+1;target.campaignReason=result?.reason||null;if(result?.profile){target.profile=result.profile;target.storyConfirmed=campaignProgress(result.profile);const finishedAct=actOf(target.campaign);if(finishedAct&&campaignProgress(result.profile)===actEndIndex(finishedAct)+1&&RELICS[finishedAct.relic])notice(tr('RELIC EARNED: {name}',{name:tr(RELICS[finishedAct.relic].name)}));}if(lastReport===target&&$('runResults').open)renderResults(target);renderCampaign();}).catch(()=>{target.pending--;target.campaignSaved=false;if(lastReport===target&&$('runResults').open)renderResults(target);});}else if(outcome.type==='failure'){report.storyMessage=outcome.message;sound.play('defeat');}}}
+       if(outcome){notice(()=>translateStoryDetail(outcome.message,tr));if(outcome.type==='stage'){storyStageCard();if(activeStory?.stage>0)playMissionVoice(activeMission.id,'stage',activeStory.stage);}if(outcome.type==='victory'){sound.play('victory');const target=report;target.storyMessage=outcome.message;target.campaign=activeMission;target.campaignSaved=null;target.pending++;finishReport(target,state,me(),false);showCinematic(activeMission,'ending',()=>{if(lastReport===target&&state===target.snapshot&&target.accountId===account.getUserId()){renderResults(target);if(!$('runResults').open)$('runResults').showModal();}});Promise.resolve(account.saveCampaign(activeMission.id)).then(result=>{target.pending--;target.campaignSaved=!!result?.committed&&campaignProgress(result.profile)>=CAMPAIGN.indexOf(target.campaign)+1;target.campaignReason=result?.reason||null;if(result?.profile){target.profile=result.profile;target.storyConfirmed=campaignProgress(result.profile);const finishedAct=actOf(target.campaign);if(finishedAct&&campaignProgress(result.profile)===actEndIndex(finishedAct)+1&&RELICS[finishedAct.relic])notice(tr('RELIC EARNED: {name}',{name:tr(RELICS[finishedAct.relic].name)}));}if(lastReport===target&&$('runResults').open)renderResults(target);renderCampaign();}).catch(()=>{target.pending--;target.campaignSaved=false;if(lastReport===target&&$('runResults').open)renderResults(target);});if(activePrestige>0&&typeof account.recordPrestige==='function'){const clearedTier=activePrestige;Promise.resolve(account.recordPrestige(clearedTier)).then(result=>{if(result?.committed)notice(tr('PRESTIGE {tier} CLEARED · +{bonus} SCRAP',{tier:clearedTier,bonus:prestigeScrapBonus(clearedTier)}));renderCampaign();}).catch(()=>{});}}else if(outcome.type==='failure'){report.storyMessage=outcome.message;sound.play('defeat');}}}
       if(state.ended){accumulator=0;updateUI();break;}
     }
     if(stepped&&!state.ended){const activeMap=getMap(state.mapId);sound.observeCombat?.(state,{pads:activeMap.pads,mapWidth:activeMap.width});}
@@ -1523,7 +1543,7 @@ function renderResults(target){
     }catch{if(coop===client)void leaveCoop();notice('Co-op could not be started.');return false;}
   }
   $('coopToggle').onclick=async()=>{if(coop){void leaveCoop();notice('Returned to solo.');return;}if(await confirmParty()&&account.isReady()&&!coop)beginCoop(callbacks=>clientFactory({url:coopUrl,getToken:()=>account.getToken(),...callbacks}));};
-  account.onSessionChange(()=>{soloDeployed=false;activeTraining=false;trainingDone=false;trainingBonusPaid=false;closeCinematic(false);missionBoardOpen=false;lastReport=null;coopReports.clear();$('viewResults').hidden=true;if($('runResults').open)$('runResults').close();leaveCoop();if($('towerDetails').open)$('towerDetails').close();closeMenu();tutorial.stop();coach?.stop();if(coachRecall)coachRecall.hidden=true;keys.clear();if(account.isReady()){activeMission=null;$('campaignSelect').value='free';// The first-run tutorial is started by the account once a soldier exists.
+  account.onSessionChange(()=>{soloDeployed=false;activeTraining=false;trainingDone=false;trainingBonusPaid=false;closeCinematic(false);missionBoardOpen=false;lastReport=null;coopReports.clear();$('viewResults').hidden=true;if($('runResults').open)$('runResults').close();leaveCoop();if($('towerDetails').open)$('towerDetails').close();closeMenu();tutorial.stop();coach?.stop();if(coachRecall)coachRecall.hidden=true;keys.clear();if(account.isReady()){activeMission=null;activePrestige=0;$('campaignSelect').value='free';// The first-run tutorial is started by the account once a soldier exists.
   reset();if(!deferTutorial)tutorial.startIfNeeded(account.getUserId());}});
   // The first-run tutorial is started by the account once a soldier exists.
   reset();if(!deferTutorial&&featureEnabled('tutorial'))tutorial.startIfNeeded(account.getUserId());
