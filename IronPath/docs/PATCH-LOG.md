@@ -6,7 +6,7 @@ aber ersetzt weder Git noch die GitHub-PR-Historie. Die dazugehörige
 [Arbeitsanweisung](../../AGENTS.md) verlangt, dieses Log vor der Arbeit zu lesen
 und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
 
-Die Einträge IPL-0001 bis IPL-0101 stehen im
+Die Einträge IPL-0001 bis IPL-0102 stehen im
 [Archiv](PATCH-LOG-ARCHIV.md); hier stehen die neuesten 20. Beide Dateien
 zusammen sind lückenlos und doppelfrei - `../scripts/patch.mjs` (Unterbefehl `check`) und
 `../tests/patch-log-archive.test.mjs` prüfen das.
@@ -52,35 +52,6 @@ jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderl
 
 
 
-## IPL-0102 – Referenz-Wächter für die Harness-Ordner und ein npm-Einstieg an der Wurzel (keine Cache-Welle)
-
-- **Zeit / Quelle:** Nach Abschluss des Strukturprogramms zeigte die Übersicht der offen gebliebenen Verbesserungspunkte vier Kandidaten; der Betreiber gab mit „Go“ die empfohlene Klein-Scheibe frei (Punkt 1 Referenz-Wächter, Punkt 2 npm-Einstieg). Die Punkte 3 (gemeinsamer Harness-Helfer für 15 Testdateien) und 4 (gemeinsamer Test-Server für 11 Browser-/Emulator-Fahrten) bleiben dokumentierte Kandidaten für spätere Scheiben.
-- **Block / Ziel:** Kein Spiel-Block, kein ausgelieferter Spielcode. Der Build-Stempel bleibt `20261122-core1`; `tests/`, `scripts/` und die neue Wurzel-`package.json` fahren nicht ins gestagte Spiel (Staging-Beweis unten: 712 = 712, null Unterschiede).
-- **Branch / Basis:** `arena/aae695cf-0815games-github-io` ab `275ea1de0ed45d85fe8df929472903c4d637c73a` (`main`, Merge von PR `#361`).
-- **Änderungen / Dateien:**
-  - `IronPath/tests/reference-resolution.test.mjs` (neu): statischer Wächter, der in den Node-ausgeführten Harness-Ordnern (`browser-tests/`, `firebase/`, `server/`, `stress-tests/`) drei Verweis-Formen auflöst: relative Import-/Require-Literale (eine wie zwei Ebenen), dynamische Importe über `path.join(root,'…')` und `/IronPath/…`-Pfade, die Test-Server abfangen. Browser-seitige Modul-Texte werden unter `/IronPath/` bedient, deshalb gilt ein `./`-Verweis als aufgelöst, wenn er neben der Harness-Datei **oder** gegen die IronPath-Wurzel aufgeht — beides sind in diesen Dateien reale Auflösungs-Kontexte, und ein Umbenennen bricht beide. Synthetische Routen und zur Laufzeit kopierte SDK-Module (sieben Stellen) stehen mit Begründung in einer offenen Ausnahmeliste, statt den Scan zu verwässern; ein Biss-Test mit Fixture beweist, dass der Wächter alle drei Formen findet.
-  - `IronPath/scripts/patch.mjs`: `reference-resolution` ist achte Vertragsdatei in `CONTRACT_TESTS` — der Wächter läuft damit im Schnelltor (`check --fast`, CI-Schritt 4 von `game-regressions`) wie lokal mit.
-  - `package.json` an der Repo-Wurzel (neu, ohne Abhängigkeiten und ohne `type`-Feld, damit sich an der Modul-Deutung des Baums nichts ändert): `schnelltor`, `pruefung`, `test:suite`, `test:stress`, `test:server`, `test:release`, `setup` (npm-ci der zwei Unterpakete) und `ci-lokal` als Spiegel der `game-regressions`-Schritte. Emulator- und Browser-Fahrten bleiben bewusst draußen (Java/Chromium) und CI-Sache.
-  - `IronPath/docs/PATCH-ABLAUF.md`: Die Kurzformen sind in §1 dokumentiert.
-  - `IronPath/docs/PATCH-LOG.md` und `IronPath/docs/PATCH-LOG-ARCHIV.md`: `IPL-0082` vollständig ins Archiv, Grenzen auf `IPL-0001` bis `IPL-0082`; das Log führt die neuesten 20 (`IPL-0083` bis `IPL-0102`).
-- **Prüfungen:**
-  - `reference-resolution.test.mjs`: **2/2** — echter Baum ohne einen Fund, Biss-Fixture findet genau die drei absichtlich gebrochenen Formen (vor der Ausnahmelisten-Schärfung meldete der Scan nur die zwei Query-String-Schlüssel falsch; auf die bereinigte Form normalisiert).
-  - `npm run schnelltor` (neuer Einstieg, echter Baum): **0 Fehler** — 8 Vertragsdateien, 32 Tests grün (vorher 7 Dateien/30 Tests); die zwei Hinweise betreffen den uncommitteten Baum und den anfangs flachen Klon.
-  - Gesamtsuite im vollständigen Klon (nach `git fetch --unshallow origin`): `node --test IronPath/tests/*.test.mjs` = **1.263 Tests, 1.263 bestanden, 0 fehlgeschlagen, 0 übersprungen, Exit 0** (vorher 1.261; +2 Wächter-Tests). Im flachen Anfangszustand meldete dieselbe Suite 1 übersprungenen Test — wieder der bekannte Klon-Effekt, kein Befund.
-  - Staging gegen Basis `275ea1de` (gleiche Build-ID `20990101-baseline1`): **712 = 712 Dateien, `diff -rq` ohne eine Zeile**.
-  - Keine Geräteabnahme vorgesehen oder nötig: Es wurde keine Datei geändert, die der Browser lädt.
-- **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags uncommittet auf `arena/aae695cf-0815games-github-io`. Commit, Push, PR, CI, Merge und Pages-Auslieferung sind noch nicht erfolgt und werden erst nach dem tatsächlichen Ereignis mit Kennung nachgetragen. Zu beobachten im CI-Lauf: die zwei Vercel-Checks an der neuen Wurzel-`package.json` (bewusst ohne Abhängigkeiten und Build-Skript angelegt).
-- **Offen / nächster Schritt:** PR öffnen, CI abwarten, erst nach belegtem Merge/Pages-Stand als ausgeliefert bezeichnen; Ereignis-Nachtrag danach als eigener PR. Kandidaten Punkt 3 und 4 (Harness-Helfer, Test-Server) bleiben zurückgestellt; als nächstes größeres Stück steht der Bauplatz-Auswahlring aus PR `#336` (ohne Hover-Vorschau). Die Betreiber-Sichtprüfungen (`BUILD 20261122-core1`, Anmeldung, Solo-/Mehrspieler-Gefecht, `ui1`- bis `workshop1`-Punkte, Deutsch-Texte) stehen weiterhin aus.
-
-### Ereignis-Nachtrag zu IPL-0102
-
-- **Commit / PR:** Arbeitscommit `ed8cf0e6` auf `arena/aae695cf-0815games-github-io`; Pull-Request `#362` („Referenz-Wächter für Harness-Ordner und npm-Einstieg an der Wurzel“).
-- **CI:** `gh pr checks 362` endete im ersten Lauf mit **13 von 13 bestandenen Checks, 0 fehlgeschlagen, 0 ausstehend** — darunter beide Vercel-Checks an der neuen Wurzel-`package.json`. Im `game-regressions`-Job des Runs `45068026435` lief der Schritt `Fast patch gate (stamp, log, secrets, contracts)` belegt erfolgreich; der Referenz-Wächter fuhr darin als achte Vertragsdatei erstmals in CI mit.
-- **Merge:** `gh pr view 362 --json state,mergedAt,mergeCommit` ergab `state=MERGED`, `mergedAt=2026-11-22T20:57:24Z`, Merge-Commit `12a4ab359a542c9859729e82813bd13deec23e7d` in `main`.
-- **Pages:** `pages/builds` meldete danach `status=built`, Dauer 45.896 ms, Commit `12a4ab35`.
-- **Auslieferung auf `main` belegt:** `package.json` an der Repo-Wurzel und `IronPath/tests/reference-resolution.test.mjs` sind per Contents-API vorhanden (HTTP 200); `release-version.json` auf `main` trägt unverändert `"build": "20261122-core1"` — keine neue Welle, weil weder Tests noch `scripts/`-Listen noch die Wurzel-`package.json` ins gestagte Spiel fahren (Staging-Beweis im Haupteintrag: 712 = 712 Dateien, null Unterschiede).
-- **Ehrliche Grenzen:** Die Live-URL wurde nicht abgerufen; belegt sind Inhalt auf `main` und der fertige Pages-Build. Keine Geräteabnahme, weil keine browsergeladene Datei geändert wurde. Die Betreiber-Sichtprüfungen (`BUILD 20261122-core1`, Anmeldung, Solo-/Mehrspieler-Gefecht, `ui1`- bis `workshop1`-Punkte, Deutsch-Texte) stehen weiterhin aus.
-- **Herkunft dieses Nachtrags:** Er steht als eigener PR auf einem neuen Arbeitszweig nach dem Merge von `#362`; seine eigene Commit- und PR-Kennung steht deshalb nicht hier, sondern in Git und im PR-Text. Zurückgestellt bleiben die Kandidaten 3 und 4 der Vorschlagsliste aus `IPL-0102` (gemeinsamer Harness-Helfer, gemeinsamer Test-Server); als nächstes größeres Stück steht der Bauplatz-Auswahlring aus PR `#336` (ohne Hover-Vorschau).
 
 ## IPL-0103 – Bauplatz-Auswahlringe: dicker und pulsierend, ohne Hover-Vorschau (eigene Cache-Welle folgt im selben PR)
 
@@ -372,3 +343,18 @@ jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderl
 - **Prüfungen:** Schnelltor: „Kein Fehler, 3 Hinweis(e)“; `patch-log-archive` 5/5 (lückenlos/doppelfrei nach der Rotation). Gesamtsuite folgt auf dem Commit-Stand (nur Doku berührt).
 - **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet`. Commit, Push, PR `#383`, CI, Merge und Pages-Auslieferung (nur Doku — die Live-Seite ändert sich für Spieler nicht) werden als Ereignis nachgetragen.
 - **Offen / nächster Schritt:** Die beschlossene Reihe (Punkte 1–7) ist damit vollständig. Neue Punkte beschließt der Betreiber.
+
+## IPL-0122 – Lebendiges Feld, Scheibe 1: Drehender MG-Turmkopf (geschichtet), Schadens-Rauch, Soldaten-Leben (Cache-Welle folgt im selben PR)
+
+- **Zeit / Quelle:** 2026-11-23 UTC; Betreiber: „Ich hätte gern, dass das ganze Spiel ein wenig lebendiger wirkt. Türme sollen sich in Richtung der Gegner drehen …“ Auf Rückfrage wählte der Betreiber Bauart **B (geschichtet)**: gemalter Grundkörper bleibt, ein neuer, im Code gezeichneter Oberbau dreht sich frei 360° — Prototyp zuerst am MG-Turm, die anderen drei Typen nach seiner Sichtung. Gegner und Soldaten sollten im selben Paket mit lebendiger werden.
+- **Block / Ziel:** Kein Spiel-Block; reine Darstellung. Keine Simulations-, Snapshot-, Protokoll- oder Regeländerung: Drehung ist Optik, keine Spielmechanik (Drehgeschwindigkeit begrenzt nur das Bild). Mehrspieler sieht aus demselben Snapshot dasselbe Bild.
+- **Branch / Basis:** `arena/fd8d6466-0815games-github-io` ab `0dbada0209297fe873724bea654e6590cab7b1cb` (`main`, Merge PR `#383`).
+- **Änderungen / Dateien:**
+  - `IronPath/core/tower-aim.mjs` (neu): Renderer-seitiger Ziel-Tracker nach dem Muster von `soldier-motion.mjs`. Zielwahl spiegelt die Simulation (am weitesten vorgedrungener lebender Gegner in `getTowerRange`), Schwenk mit begrenzter Drehgeschwindigkeit (3,4 rad/s, kürzester Bogen), Rückstoß aus den Schuss-Folge-IDs (`state.shots`), erste Sichtung rastet ein, Pause/Lücken frieren ein, reduzierte Bewegung rastet ohne Rückstoß, ausgefallene/reparierende Türme halten die letzte Richtung.
+  - `IronPath/core/cartoon-art.mjs`: `pad()` bekommt den Zielwinkel; für das MG (Typ 0) zeichnet `mgTurret()` Sandsackring (statisch) + drehenden Waffen-Kopf (Dreibein, Gehäuse, Lauf, Gurtkasten) in Tusche/Oliv auf der gemalten Stellung — die übrigen drei Typen behalten ihre Gemälde. Gegner: Fahrzeuge/Bosse unter 35 % Leben rauchen dunkel (Muster wie der Bunker), Infanterie wirbelt Schritt-Staub auf. `drawCartoonBattle` reicht `towerAims` durch.
+  - `IronPath/core/soldier-motion.mjs`: stehende Soldaten atmen (langsames Bob), drehen sich nach dem Setzen zum nächsten Gegner, Rückstoß beim eigenen Schuss und Zucken bei Treffer (erkannt an Schuss-IDs bzw. Lebensabfall) — alles in die bestehende Pose (facing/bob/lean) gefaltet.
+  - `IronPath/game.js`: zwei Tracker (eigenes + Rivalen-Feld), Verdrahtung in beiden `drawCartoonBattle`-Aufrufen, Resets an beiden Reset-Stellen.
+  - 13 Test-Harnische führen `core/tower-aim.mjs` in ihren Import-Umschreibelisten (Erfahrung aus `IPL-0118`).
+- **Prüfungen:** `tower-aim` 7/7 und `soldier-motion` 3/3 neu bzw. erweitert (Zielwahl, Drehbegrenzung, Rückstoß-Fenster, Reduzierte-Bewegung/Pause, Atmung, Bedrohungs-Facing); Schnelltor „Kein Fehler, 3 Hinweis(e)“; Gesamtsuite **1343 Tests, 1342 bestanden, 0 Fehler, 1 übersprungen**.
+- **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet`. Commit, Push, PR `#384`, danach Cache-Welle `20261123-aim1` mit Feldnotizen `aim1` als zweiter Commit (Muster `IPL-0104`), CI, Merge und Pages-Auslieferung werden als Ereignis nachgetragen. **Betreiber-Sichtung auf `20261123-aim1`:** MG-Turm muss Gegner sichtbar nachführen und beim Feuern zurückstoßen; danach Folgepaket für Kanone/Flak/Sniper entscheiden.
+- **Offen / nächster Schritt:** Nach Betreiber-Sichtung: drehende Köpfe für Kanone, Flak und Scharfschütze (eigener Eintrag), ggf. Feinschliff an Drehgeschwindigkeit/Rückstoß über zwei Konstanten in `tower-aim.mjs`/`cartoon-art.mjs`.

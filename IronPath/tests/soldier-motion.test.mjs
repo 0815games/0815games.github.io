@@ -16,3 +16,30 @@ test('single soldier sprite changes pose without mutating state and reduced moti
  const ctx=new Proxy({canvas:{ownerDocument:doc}},{get(o,k){if(k in o)return o[k];return (...args)=>log.push([k,...args]);},set(o,k,v){o[k]=v;return true;}}),options={path:map.path,pads:map.pads,types:[{},{},{},{}],me:'a',getTowerRange};
  drawCartoonBattle(ctx,state,{...options,soldierPoses:{a:{moving:true,facing:-1,bob:-1,lean:.05,step:.5}}});const img=images.find(image=>log.some(call=>call[0]==='drawImage'&&call[1]===image&&call.length===6&&call[4]===22&&call[5]===33));assert.ok(img,'the painted single-figure hero sprite is drawn whole, no legacy crop');assert.ok(log.some(call=>call[0]==='scale'&&call[1]===-1));assert.ok(log.some(call=>call[0]==='rotate'&&call[1]===.05));assert.deepEqual(state,before);
 });
+test('standing soldiers breathe, face threats and kick with their own shots and hits',()=>{
+ const motion=createSoldierMotion(),players={a:{x:100,y:100,hp:50}};
+ // First sight: no kick, no turn - the tracker only arms itself.
+ let pose=motion.sample(players,0,{shots:[{x:100,y:100,kind:'hero',id:3}]}).a;
+ assert.equal(pose.lean,0);assert.equal(pose.facing,1);
+ // Breathing: idle bob sways gently and never appears with reduced motion.
+ const b1=motion.sample(players,1).a.bob,b2=motion.sample(players,1.6).a.bob;
+ assert.ok(Math.abs(b1)<=.55&&Math.abs(b2)<=.55&&b1!==b2,'idle breathing is a small sway');
+ assert.equal(motion.sample(players,1.6,{reducedMotion:true}).a.bob,0,'reduced motion stands still');
+ // Threat facing: settled soldiers turn toward the nearest living enemy.
+ pose=motion.sample(players,2,{threats:[{x:40,y:100,hp:5},{x:400,y:100,hp:5}]}).a;
+ assert.equal(pose.facing,-1,'faces the nearer threat on the left');
+ pose=motion.sample(players,2.2,{threats:[{x:40,y:100,hp:0}]}).a;
+ assert.equal(pose.facing,-1,'a dead threat turns nobody');
+ // Recoil: a newer hero shot from his position kicks the stance back.
+ motion.sample(players,3,{shots:[{x:100,y:100,kind:'hero',id:4}]});
+ pose=motion.sample(players,3.05,{shots:[{x:100,y:100,kind:'hero',id:5}]}).a;
+ assert.ok(pose.lean>0,'the rifle kick leans him back against his facing');
+ assert.equal(motion.sample(players,3.4).a.lean,0,'the kick is gone after its window');
+ // Flinch: a life drop dips the stance once.
+ players.a.hp=41;pose=motion.sample(players,4).a;
+ assert.ok(pose.bob>0&&pose.lean>0,'a hit dips and rocks the stance');
+ assert.equal(motion.sample(players,4.4).a.lean,0,'and settles again');
+ // Walking still wins over threat facing.
+ players.a.x+=6;pose=motion.sample(players,4.5,{threats:[{x:0,y:100,hp:5}]}).a;
+ assert.equal(pose.facing,1,'mid-stride he faces where he walks');
+});

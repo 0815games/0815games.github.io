@@ -34,3 +34,10 @@ Umsetzungshistorie im [PATCH-LOG.md](PATCH-LOG.md).
   Betreiber veröffentlicht Firebase-Regeln selbst.
 - Alles wird immer auf Account/Charakter gespeichert (Profil zuerst,
   Geräte-Kopie nur als Spiegel), nie gerätelokal als Sollzustand.
+
+## Nach der Reihe (Betreiber-Wünsche ab 2026-11-23)
+
+| # | Paket | Inhalt (Kurzform) | Status |
+| --- | --- | --- | --- |
+| 8 | **Lebendiges Feld, Scheibe 1** | Drehender MG-Turmkopf (geschichtet: gemalte Stellung + gezeichneter Oberbau, Prototyp), Schadens-Rauch an Fahrzeugen/Bossen, Soldaten-Atmung/-Zielen/-Zucken. Nur Darstellung. | [~] gebaut (`IPL-0122`, PR `#384`), Betreiber-Sichtung steht aus |
+| 9 | **Lebendiges Feld, Scheibe 2** | Drehende Köpfe auch für Kanone, Flak und Scharfschütze; Feinschliff nach Sichtung von Scheibe 1. | [ ] nach Betreiber-Sichtung |
