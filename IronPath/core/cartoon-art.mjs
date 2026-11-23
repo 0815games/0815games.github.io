@@ -1,11 +1,11 @@
-import {translateText as tr,getLanguage} from '../language.mjs?v=20261123-skill1';
+import {translateText as tr,getLanguage} from '../language.mjs?v=20261123-blocke1';
 import {towerDisplay} from './progression.mjs?v=20261105-prestige1';
-import {specializationRank} from './tower-specialization.mjs?v=20261123-skill1';
-import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261123-skill1';
-import {ENEMY_INTEL} from './combat.mjs?v=20261123-skill1';
+import {specializationRank} from './tower-specialization.mjs?v=20261123-blocke1';
+import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261123-blocke1';
+import {ENEMY_INTEL,SOLDIER_MAX_HP} from './combat.mjs?v=20261123-blocke1';
 import {bossPhase} from './boss-mechanics.mjs?v=20261031-finale1';
 import {shotTrace,shotsToDraw} from './shot-tracers.mjs?v=20261117-shots1';
-import {buildRoadPath} from './road-geometry.mjs?v=20261123-skill1';
+import {buildRoadPath} from './road-geometry.mjs?v=20261123-blocke1';
 // Drawing only: the simulation, coordinates and hit areas stay unchanged.
 const ink='#1d3028',paper='#f1e7c4';
 function line(ctx,points,color=ink,width=3){ctx.beginPath();points.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();}
@@ -984,6 +984,15 @@ function drawTerrain(ctx,path,theme,{paths=[path],width=960,height=540,storyMiss
   if(!cached||cached.revision!==revision){const canvas=doc.createElement('canvas');canvas.width=Math.round(width*resolution);canvas.height=Math.round(height*resolution);const off=canvas.getContext('2d');if(!off){paint(ctx);return;}off.scale(resolution,resolution);off.lineCap='round';off.lineJoin='round';paint(off);cached={canvas,revision};variants.set(key,cached);}
   ctx.drawImage(cached.canvas,0,0,width,height);
 }
+// Block E field state, painted read-only: a slim life bar in field colours -
+// green while holding, amber when worn, red when critical.
+function lifeBar(ctx,x,y,width,fraction){
+  const f=Math.max(0,Math.min(1,fraction));
+  ctx.save();
+  ctx.fillStyle='rgba(16,26,21,.72)';ctx.fillRect(x-width/2-1,y-1,width+2,6);
+  ctx.fillStyle=f>.5?'#9bd69a':f>.25?'#e9c46a':'#ef7d5c';ctx.fillRect(x-width/2,y,width*f,4);
+  ctx.restore();
+}
 export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,theme='road',shotAge=0,effects=[],reducedMotion=false,weatherEffects=true,combatTracers=true,soldierPoses={},groundTracks=[],paths=[path],width=960,height=540,bunkerPosition={x:900,y:400},storyMission=null,storyStage=null,storyTime=0,renderScale=1,artVersion=0,deco=[],zones=[],torches=[],onSpritesReady=null,groundSeed=0}){
   ctx.save();ctx.lineCap='round';ctx.lineJoin='round';const storyArt=storyMission?prepareStoryArt(ctx.canvas?.ownerDocument):null;drawTerrain(ctx,path,theme,{paths,width,height,storyMission,pads,storyArt,renderScale,artVersion,deco,zones,notify:onSpritesReady,groundSeed});drawZoneStates(ctx,zones,state);fieldZone(ctx,path,state,theme);brokenIce(ctx,path,state,theme);drawGroundTracks(ctx,groundTracks,theme);if(storyMission){if(weatherEffects)drawStoryAtmosphere(ctx,storyMission,storyTime,reducedMotion,width,height,path,pads);drawStoryObjective(ctx,storyMission,storyStage,storyTime,reducedMotion,storyArt);}else if(!reducedMotion&&weatherEffects)ambient(ctx,theme,storyTime,width,height);const approach=path.length>1?Math.atan2(bunkerPosition.y-path[path.length-2].y,bunkerPosition.x-path[path.length-2].x):0;
   // The bunker flinches when it takes a hit - the impact effect carries the
@@ -1012,12 +1021,15 @@ export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,th
   if(!reducedMotion)for(const tower of state.towers){const owner=state.players[tower.ownerId],p=pads[tower.pad];if(p&&owner?.active!==false&&owner?.overdrive>0){ctx.beginPath();ctx.ellipse(p.x,p.y,31,27,0,0,Math.PI*2);ctx.strokeStyle='#fff1a3';ctx.lineWidth=3;ctx.setLineDash([5,5]);ctx.stroke();ctx.setLineDash([]);}}
   const selectionPulse=reducedMotion?1:.85+.15*Math.sin(storyTime/.3);
   pads.forEach((p,i)=>pad(ctx,p,state.towers.find(t=>t.pad===i),state.selectedPad===i,types,onSpritesReady,selectionPulse));
+  // Block E: a damaged tower carries its life above the pad; at zero it sits
+  // dark on its pad until repaired, and a running repair shows its mark.
+  for(const tower of state.towers){const p=pads[tower.pad],maxHp=tower.maxHp;if(!p||!maxHp)continue;const hp=tower.hp??maxHp;if(hp<=0){ctx.save();ctx.globalAlpha=.45;ctx.beginPath();ctx.ellipse(p.x,p.y,26,22,0,0,Math.PI*2);ctx.fillStyle='#101a15';ctx.fill();ctx.restore();}if(hp<maxHp)lifeBar(ctx,p.x,p.y-34,36,hp/maxHp);if(tower.repairing>0)oval(ctx,p.x+15,p.y-31,4,4,'#ffe3a8','#192b23',1);}
   // The soldier is drawn from the first frame, not from wave one. He used to appear
   // only while `state.wave>0`, and since the movement order itself was accepted
   // before the first deploy (the simulation walks him there), the hero moved
   // invisibly: the newest player tapped the ground, got "Hero moving to position",
   // and watched nothing happen. A hero you cannot see is a hero you cannot command.
-  for(const p of Object.values(state.players))if(p.active!==false){if(state.wave>0&&p.mobileSupply?.remaining>0){ctx.save();ctx.beginPath();ctx.arc(p.x,p.y,22,0,Math.PI*2);ctx.strokeStyle='#89d9ed';ctx.lineWidth=3;ctx.stroke();ctx.restore();}soldier(ctx,p,p.id===me,soldierPoses[p.id],undefined,onSpritesReady);}
+  for(const p of Object.values(state.players))if(p.active!==false){if(state.wave>0&&p.mobileSupply?.remaining>0){ctx.save();ctx.beginPath();ctx.arc(p.x,p.y,22,0,Math.PI*2);ctx.strokeStyle='#89d9ed';ctx.lineWidth=3;ctx.stroke();ctx.restore();}soldier(ctx,p,p.id===me,soldierPoses[p.id],undefined,onSpritesReady);if(Number.isFinite(p.hp)&&p.hp<SOLDIER_MAX_HP)lifeBar(ctx,p.x,p.y-30,30,p.hp/SOLDIER_MAX_HP);if(p.downed>0){ctx.save();ctx.fillStyle='#ffd9c2';ctx.font='bold 11px Georgia';ctx.textAlign='center';ctx.fillText(String(Math.ceil(p.downed)),p.x,p.y-36);ctx.restore();}}
   if(theme==='scrub'&&path.length===10)for(const cloud of state.dustClouds||[]){
     ctx.save();ctx.beginPath();ctx.arc(cloud.x,cloud.y,75,0,Math.PI*2);ctx.fillStyle='rgba(210,168,119,.12)';ctx.fill();ctx.strokeStyle='rgba(133,88,57,.45)';ctx.lineWidth=2;ctx.setLineDash(reducedMotion?[]:[4,9]);ctx.stroke();ctx.restore();
   }
@@ -1026,6 +1038,9 @@ export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,th
   }
   if(state.running&&Object.values(state.players).some(p=>p.active!==false&&p.healingField?.remaining>0)){ctx.save();ctx.beginPath();ctx.arc(bunkerPosition.x,bunkerPosition.y,58,0,Math.PI*2);ctx.fillStyle='rgba(139,218,148,.16)';ctx.fill();ctx.strokeStyle='#9bd69a';ctx.lineWidth=3;ctx.stroke();ctx.restore();}
   for(const e of state.enemies){
+    // Block E telegraph: the winding enemy and its target carry the warning
+    // ring, so a player can still step out or brace before the strike.
+    if(e.windup){const targetPoint=e.windup.kind==='tower'?pads[e.windup.pad]:state.players[e.windup.id];ctx.save();ctx.strokeStyle='#ef9d60';ctx.lineWidth=2.4;ctx.setLineDash(reducedMotion?[]:[5,4]);ctx.beginPath();ctx.arc(e.x,e.y,16,0,Math.PI*2);ctx.stroke();if(targetPoint){ctx.beginPath();ctx.arc(targetPoint.x,targetPoint.y,e.windup.kind==='tower'?30:20,0,Math.PI*2);ctx.stroke();}ctx.restore();}
     if(e.siegeMarks?.some(m=>m.time>0)){ctx.save();ctx.beginPath();ctx.arc(e.x,e.y,20,0,Math.PI*2);ctx.strokeStyle='#f3a45c';ctx.lineWidth=3;ctx.stroke();ctx.restore();}
     if(e.boss==='bossBomber'&&bossPhase(e)==='bomb-warning'){
       ctx.save();ctx.strokeStyle='#f2aa78';ctx.lineWidth=3;ctx.setLineDash(reducedMotion?[]:[7,6]);ctx.beginPath();ctx.arc(bunkerPosition.x,bunkerPosition.y,36,0,Math.PI*2);ctx.stroke();ctx.restore();

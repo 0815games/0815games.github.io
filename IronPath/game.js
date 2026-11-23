@@ -1,11 +1,11 @@
-import {createSoloDeployment} from './core/solo-deployment.mjs?v=20261123-skill1';
+import {createSoloDeployment} from './core/solo-deployment.mjs?v=20261123-blocke1';
 import {newRunReceiptId} from './workshop/workshop-run-receipt.mjs?v=20261031-finale1';
 import {canvasResolution} from './core/canvas-resolution.mjs?v=20261105-sharp1';
 import {createMapZoom} from './core/map-zoom.mjs?v=20261105-sharp1';
 import {featureEnabled} from './core/features.mjs?v=20261112-endless1';
-import {localizeGameMessage} from './core/game-localization.mjs?v=20261123-skill1';
+import {localizeGameMessage} from './core/game-localization.mjs?v=20261123-blocke1';
 import {translateStoryDetail} from './core/story-localization.mjs?v=20261110-storyde1';
-import {translateText as tr,getLanguage} from './language.mjs?v=20261123-skill1';
+import {translateText as tr,getLanguage} from './language.mjs?v=20261123-blocke1';
 import {createSoldierMotion} from './core/soldier-motion.mjs?v=20261104-movement1';
 import {bindDialogBackdrop} from './ui/dialog-dismiss.mjs?v=20261104-dismiss1';
 import {createFocusPause} from './core/focus-pause.mjs?v=20261104-hostpause1';
@@ -14,42 +14,42 @@ import {CAMPAIGN,campaignProgress,campaignMission,campaignAvailable,campaignDiff
 import {RELICS,earnedRelicIds} from './core/relics.mjs?v=20261112-tagless1';
 import {createStoryMission,storyStatus,stepStory,resolveStoryDecision,drainStoryNotifications} from './core/story-mission.mjs?v=20261111-events1';
 import {STAGE_CAPTIONS,EVENT_TEMPLATES} from './core/story-events.mjs?v=20261206-acttwo1';
-import {TRAINING_MISSION_ID,TRAINING_MAP,TRAINING_WAVES,TRAINING_BOSS_EVERY,FIRST_RUN_DEFEAT_XP,trainingContract,trainingStatus,trainingWon,trainingXP,trainingBonusXP,trainingSeen,markTrainingSeen,forgetTrainingSeen,trainingWaveRadioCue} from './core/training-run.mjs?v=20261123-skill1';
-import {projectFourGameView} from './core/four-game-view.mjs?v=20261123-skill1';
-import {createBattleViewportController} from './battle/battle-viewport-controller.mjs?v=20261123-skill1';
-import {drawInBattleViewport} from './battle/battle-viewport.mjs?v=20261123-skill1';
-import {waveRewardSummary,nextSteps} from './core/run-results.mjs?v=20261123-skill1';
+import {TRAINING_MISSION_ID,TRAINING_MAP,TRAINING_WAVES,TRAINING_BOSS_EVERY,FIRST_RUN_DEFEAT_XP,trainingContract,trainingStatus,trainingWon,trainingXP,trainingBonusXP,trainingSeen,markTrainingSeen,forgetTrainingSeen,trainingWaveRadioCue} from './core/training-run.mjs?v=20261123-blocke1';
+import {projectFourGameView} from './core/four-game-view.mjs?v=20261123-blocke1';
+import {createBattleViewportController} from './battle/battle-viewport-controller.mjs?v=20261123-blocke1';
+import {drawInBattleViewport} from './battle/battle-viewport.mjs?v=20261123-blocke1';
+import {waveRewardSummary,nextSteps} from './core/run-results.mjs?v=20261123-blocke1';
 import {reportRank} from './core/report-promotion.mjs?v=20261117-rank1';
 // The rank mark is painted by the kit that owns ranks; the report only asks which one.
-import {renderRankInsignia} from './core/rank-insignia.mjs?v=20261123-skill1';
-import {createGroundTracks} from './core/ground-tracks.mjs?v=20261123-skill1';
-import {projectCoopMotion} from './core/coop-motion.mjs?v=20261123-skill1';
+import {renderRankInsignia} from './core/rank-insignia.mjs?v=20261123-blocke1';
+import {createGroundTracks} from './core/ground-tracks.mjs?v=20261123-blocke1';
+import {projectCoopMotion} from './core/coop-motion.mjs?v=20261123-blocke1';
 import {bossPhaseLabel,bossTelegraph} from './core/boss-mechanics.mjs?v=20261031-finale1';
-import {createBattleSound} from './battle/battle-sound.mjs?v=20261123-skill1';
+import {createBattleSound} from './battle/battle-sound.mjs?v=20261123-blocke1';
 import {RUN_PERKS,perkOffers} from './core/run-perks.mjs?v=20261102-terrain4';
 import {TERRAIN_BRIEFINGS,ZONE_BRIEFINGS,terrainFor} from './core/terrain.mjs?v=20261124-zones1';
-import {getMap,createRandomMapId,sectorOf} from './core/maps.mjs?v=20261123-skill1';
-import {createCombatEffects} from './core/combat-fx.mjs?v=20261123-skill1';
-import {drawCartoonBattle} from './core/cartoon-art.mjs?v=20261123-skill1';
-import {abilityName,SKILL_PATH_MAP} from './core/skills.mjs?v=20261123-skill1';
-import {classUpgradeState,classPathConfig,classPathInvested} from './core/tower-class-paths.mjs?v=20261123-skill1';
-import {towerClassIcon} from './ui/development-ui.mjs?v=20261123-skill1';
+import {getMap,createRandomMapId,sectorOf} from './core/maps.mjs?v=20261123-blocke1';
+import {createCombatEffects} from './core/combat-fx.mjs?v=20261123-blocke1';
+import {drawCartoonBattle} from './core/cartoon-art.mjs?v=20261123-blocke1';
+import {abilityName,SKILL_PATH_MAP} from './core/skills.mjs?v=20261123-blocke1';
+import {classUpgradeState,classPathConfig,classPathInvested} from './core/tower-class-paths.mjs?v=20261123-blocke1';
+import {towerClassIcon} from './ui/development-ui.mjs?v=20261123-blocke1';
 import { COOP_SERVER_URL } from './core/coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './core/coop-client.mjs?v=20261031-coopui1';
-import { createCoopInput } from './core/coop-input.mjs?v=20261123-skill1';
-import { createTutorial } from './core/tutorial.mjs?v=20261123-skill1';
-import { createCoach, coachSeen, markCoachSeen } from './ui/first-run-coach.mjs?v=20261123-skill1';
-import { abilityHud, abilityHudSvg } from './ui/ability-hud.mjs?v=20261123-skill1';
-import { stepMatch, getTowerRange, STEP } from './core/simulation.mjs?v=20261123-skill1';
-import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS, trainingBuildLocked } from './core/match.mjs?v=20261123-skill1';
-import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats } from './core/combat.mjs?v=20261123-skill1';
+import { createCoopInput } from './core/coop-input.mjs?v=20261123-blocke1';
+import { createTutorial } from './core/tutorial.mjs?v=20261123-blocke1';
+import { createCoach, coachSeen, markCoachSeen } from './ui/first-run-coach.mjs?v=20261123-blocke1';
+import { abilityHud, abilityHudSvg } from './ui/ability-hud.mjs?v=20261123-blocke1';
+import { stepMatch, getTowerRange, STEP } from './core/simulation.mjs?v=20261123-blocke1';
+import { createPlayer, applyCommand, towerRefund, repairOffer, getSupplies, TOWER_COSTS, trainingBuildLocked } from './core/match.mjs?v=20261123-blocke1';
+import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats } from './core/combat.mjs?v=20261123-blocke1';
 import { MAX_TOWER_LEVEL, upgradeCost, towerDisplay, characterProgress, towerUpgradeInvestment } from './core/progression.mjs?v=20261105-prestige1';
 import { createBattleXpHud } from './battle/battle-xp-hud.mjs?v=20261117-hudxp1';
-import { towerUpgradeCues } from './core/tower-upgrade-cue.mjs?v=20261123-skill1';
+import { towerUpgradeCues } from './core/tower-upgrade-cue.mjs?v=20261123-blocke1';
 import { createFieldNotice } from './ui/field-notice.mjs?v=20261117-fieldnotice1';
 import { createMapIntro } from './ui/map-intro.mjs?v=20261117-mapintro1';
-import { createBossBanner } from './ui/boss-banner.mjs?v=20261123-skill1';
-import { specializationRank, upgradeCostFor, branchUnlockLevel } from './core/tower-specialization.mjs?v=20261123-skill1';
+import { createBossBanner } from './ui/boss-banner.mjs?v=20261123-blocke1';
+import { specializationRank, upgradeCostFor, branchUnlockLevel } from './core/tower-specialization.mjs?v=20261123-blocke1';
 export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=createCoopClient, confirmAction=async()=>false, leaveParty=null, onForceCloseParty=null, nextMapId=createRandomMapId, experimentalFourViewport=false,experimentalWorkshop=false,deferTutorial=false,reducedGraphics=false,initialSettings=null,onReturnToCommand=()=>{},onResumeBattle=()=>{},onTrainingComplete=null,onRunFinished=()=>{},promptCenter=null,generalRadio=null}={}) {
   // One-way release teardown; the guarded caller still has to replace the
   // whole document, because the rest of this UI is not a reusable SPA.
@@ -1085,6 +1085,11 @@ function renderResults(target){
       actions.push({icon:'upgrade',price:max?null:cost,unaffordable:!max&&supplies()<cost,label:max?tr('Upgrade unavailable'):tr(tower.level===2?'Choose specialization · {cost}':prestiging?'Prestige · {cost}':'Confirm upgrade · {cost}',{cost}),summary:max?tr('This tower cannot be upgraded further.'):tower.level===2?tr('Choose a permanent specialization.'):(prestiging?tr('Prestige {prestige}: level resets to 1; power and specialization stay, and damage increases.',{prestige:display.prestige+1}):tr('Confirm purchase: +0.3 damage multiplier.')+(tower.branch!=null&&tower.level>=3&&tower.level<5?' '+tr('Then RANK {rank}: {mechanic}',{rank:tower.level+1===4?2:3,mechanic:tr(branches[tower.type][tower.branch]['rank'+(tower.level+1===4?2:3)])}):''))+sharedUpgrade,disabled:max,unaffordable:!max&&supplies()<cost,description:max?tr('Upgrade unavailable'):tr('Upgrade to level {level}, prestige {prestige}, {cost} supplies',{level:towerDisplay(tower.level+1).level,prestige:towerDisplay(tower.level+1).prestige,cost})+(supplies()<cost?tr('. Not enough supplies.'):''),run:()=>{if(tower.level===2)showMenu(pad,'branches');else if(supplies()>=cost)upgrade(0);else warn('Not enough supplies to upgrade.');}});
       const mine=!state.individualSupplies||tower.ownerId===me(),ownerName=state.players[tower.ownerId]?.name||tr('the owner'),refund=towerRefund(tower);
       actions.push({icon:'sell',price:mine?`+${refund}`:null,label:tr('Sell tower'),summary:mine?tr('Recover half of build and upgrade costs.'):tr('Half the costs go to {name}.',{name:ownerName}),description:mine?tr('Sell tower for {amount} supplies',{amount:refund}):tr('Sell tower; refund goes to {name}',{name:ownerName}), run:()=>showMenu(pad,'confirmSell')});
+      // Block E: the repair is offered with its quoted price before anyone
+      // confirms; the confirming player pays, whoever owns the tower.
+      const repair=repairOffer(tower);
+      if(tower.repairing>0)actions.push({icon:'repair',label:tr('Repair running…'),summary:tr('Restores life when it lands; the tower does not fire meanwhile.'),description:tr('Repair already running'),disabled:true,run:()=>{}});
+      else if(repair)actions.push({icon:'repair',price:repair.cost,unaffordable:supplies()<repair.cost,label:tr('Repair tower · {cost}',{cost:repair.cost}),summary:tr('Restores {heal} life (now {hp} of {max}).',{heal:repair.heal,hp:repair.hp,max:repair.maxHp}),description:tr('Repair tower for {cost} supplies: restores {heal} life',{cost:repair.cost,heal:repair.heal}),run:()=>{showDetails(()=>tr('Repair tower'),()=>tr('This tower has {hp} of {max} life. The repair restores {heal} life over a few seconds; the tower does not fire meanwhile. Selling before it lands returns the repair price.',{hp:repair.hp,max:repair.maxHp,heal:repair.heal}),repair.cost,'REPAIR',()=>{dispatch({type:'repairTower',pad,...(coop?{expectedTowerId:tower.id}:{})},result=>{if(!result.ok){if($('towerDetails').open)$('towerDetailsCost').textContent=localizeGameMessage(result.reason,tr);else warn(result.reason);return;}notice(()=>tr('Repair started. Back to {hp} life in a few seconds.',{hp:repair.hp+repair.heal}));if($('towerDetails').open)$('towerDetails').close();closeMenu();updateUI();});});}});
       const cls=classUpgradeState(state.players[me()],tower);
       const clsCfg=classPathConfig(cls.classId),clsClassName=SKILL_PATH_MAP[cls.classId]?.name||cls.classId||'';
       const clsReady=cls.reason==='ready',clsMaxed=cls.reason==='maxed',clsLocked=!clsReady&&!clsMaxed;

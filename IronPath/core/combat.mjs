@@ -103,6 +103,35 @@ export function missionFormation(wave,contract){
  return [...formation.filter(kind=>!BOSS_CATALOG.find(b=>b.kind===kind)),contract.bossFinal];
 }
 
+// Block E: shared life, attack and repair rules for soldiers and towers.
+// Every number here is a prototype start value from the block plan, to be
+// balanced by play tests - never a permanent loss to the saved profile.
+export const SOLDIER_MAX_HP=100;
+export const SOLDIER_RETURN_SECONDS=8;
+export const SOLDIER_PROTECT_SECONDS=3;
+export const TOWER_BASE_HP=160;
+export const TOWER_HP_PER_LEVEL=45;
+export function towerMaxHp(level){return TOWER_BASE_HP+TOWER_HP_PER_LEVEL*(Math.max(1,level||1)-1);}
+export function repairQuote(tower){
+  if(!tower)return null;
+  const maxHp=tower.maxHp||towerMaxHp(tower.level),hp=tower.hp??maxHp;
+  if(hp>=maxHp)return null;
+  const heal=Math.min(maxHp-hp,Math.ceil(maxHp*.5));
+  return {hp,maxHp,heal};
+}
+// Infantry threatens soldiers in reach, tanks threaten nearby towers.
+// Scouts keep running for the bunker; aircraft and bosses gain no new
+// attacks. Attacks only begin once the opening waves are over, and the
+// warning does not slow the advance: a telegraphed enemy keeps rolling
+// while it charges its strike, so it never turns into a bullet sponge
+// shielding whatever follows it.
+export const ENEMY_ATTACK_FIRST_WAVE=3;
+export const MAX_ATTACKERS_PER_TARGET=2;
+export const ENEMY_ATTACKS=Object.freeze({
+  infantry:{target:'soldier',range:60,damage:3,windup:.6,cooldown:3.5},
+  tank:{target:'tower',range:90,damage:4,windup:.9,cooldown:5}
+});
+
 // Readable field-manual roles, matching the existing damage multipliers.
 export const ENEMY_INTEL=Object.freeze({
  infantry:{symbol:'I',role:'Infantry',counter:'MG / Sniper'},

@@ -1,12 +1,12 @@
-import {createSpeedControl} from './multiplayer-speed.mjs?v=20261123-skill1';
+import {createSpeedControl} from './multiplayer-speed.mjs?v=20261123-blocke1';
 import {releaseBuildReservations} from './build-reservations.mjs?v=20261104-buildreservation1';
-import {applyFourCommand,stepFour,setFourPresence} from './four-modes.mjs?v=20261123-skill1';
-import {applyVersus,stepVersus,versusView} from './versus.mjs?v=20261123-skill1';
+import {applyFourCommand,stepFour,setFourPresence} from './four-modes.mjs?v=20261123-blocke1';
+import {applyVersus,stepVersus,versusView} from './versus.mjs?v=20261123-blocke1';
 // Server-side protocol core, independent of transport and Firebase. The adapter
 // MUST authenticate the connection and pass its trusted player ID to these APIs.
 // Neither clients nor this in-memory module can be considered authoritative.
-import { applyCommand } from './match.mjs?v=20261123-skill1';
-import { stepMatch } from './simulation.mjs?v=20261123-skill1';
+import { applyCommand } from './match.mjs?v=20261123-blocke1';
+import { stepMatch } from './simulation.mjs?v=20261123-blocke1';
 export const PROTOCOL_VERSION=1;
 // Snapshots carry only the newest receipts. A client may have exactly ONE
 // command in flight (it sends sequence nextSeq and stays locked until that
@@ -28,7 +28,7 @@ const waveCommands=new Set(['startWave','approveWave','declineWave','cancelWave'
 // Both kinds of vote depend on the same locked roster. A late speed request or
 // slow-down can otherwise revive or cancel a vote after someone reconnects.
 export const isRosterVoteCommand=type=>waveCommands.has(type)||speedCommands.has(type);
-const commandFields={requestSpeed:['expectedRequestId'],approveSpeed:['requestId'],declineSpeed:['requestId'],cancelSpeed:['requestId'],slowSpeed:['expectedRequestId'],endRun:[],leaveRun:[],finishParty:[],acknowledgePartyEnd:['endTick'],startWave:['expectedRequestId'],approveWave:['requestId'],declineWave:['requestId'],cancelWave:['requestId'],choosePerk:['index'],airstrike:[],direction:['x','y'],move:['x','y'],reserveBuild:['pad'],releaseBuild:['pad'],build:['pad','towerType'],upgrade:['pad','branch','expectedTowerId','expectedLevel'],classUpgrade:['pad','expectedTowerId','expectedLevel'],sell:['pad','expectedTowerId','expectedLevel']};
+const commandFields={requestSpeed:['expectedRequestId'],approveSpeed:['requestId'],declineSpeed:['requestId'],cancelSpeed:['requestId'],slowSpeed:['expectedRequestId'],endRun:[],leaveRun:[],finishParty:[],acknowledgePartyEnd:['endTick'],startWave:['expectedRequestId'],approveWave:['requestId'],declineWave:['requestId'],cancelWave:['requestId'],choosePerk:['index'],airstrike:[],direction:['x','y'],move:['x','y'],reserveBuild:['pad'],releaseBuild:['pad'],build:['pad','towerType'],upgrade:['pad','branch','expectedTowerId','expectedLevel'],classUpgrade:['pad','expectedTowerId','expectedLevel'],sell:['pad','expectedTowerId','expectedLevel'],repairTower:['pad','expectedTowerId']};
 export function normalizeCommand(command){
   if(!command||typeof command!=='object'||Array.isArray(command)||typeof command.type!=='string'||!Object.hasOwn(commandFields,command.type))return null;
   const fields=commandFields[command.type];

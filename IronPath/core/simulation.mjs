@@ -1,16 +1,16 @@
 import {equipmentForPlayer} from '../workshop/workshop-combat.mjs?v=20261112-tagless1';
 import {legacyEquipmentEffects} from './equipment-effects.mjs?v=20261107-balance1';
 import {advanceBuildReservations} from './build-reservations.mjs?v=20261104-buildreservation1';
-import {comboTier,comboCue} from './skill-combos.mjs?v=20261123-skill1';
-import {webBonuses,specialistUnlocked,hasCapstone} from './skills.mjs?v=20261123-skill1';
-import {classTowerRangeFactor,classTowerIntervalFactor,classTowerIgnoresClouds,classTowerDamageFactor,applyClassTowerHitEffects} from './tower-class-paths.mjs?v=20261123-skill1';
+import {comboTier,comboCue} from './skill-combos.mjs?v=20261123-blocke1';
+import {webBonuses,specialistUnlocked,hasCapstone} from './skills.mjs?v=20261123-blocke1';
+import {classTowerRangeFactor,classTowerIntervalFactor,classTowerIgnoresClouds,classTowerDamageFactor,applyClassTowerHitEffects} from './tower-class-paths.mjs?v=20261123-blocke1';
 import {bossPhase,bossWeaponFactor,crossedCycle} from './boss-mechanics.mjs?v=20261031-finale1';
 import {terrainFor,soldierSpeedFactor,enemySpeedFactor,iceDamage,targetingRange,weaponDamageFactor} from './terrain.mjs?v=20261124-zones1';
-import {getMap,isMapId,DEFAULT_MAP,sectorOf,zoneAt,mapPlayerCap} from './maps.mjs?v=20261123-skill1';
-import { WAVE_COUNT,waveFormation,missionFormation,makeEnemy,towerDamage } from './combat.mjs?v=20261123-skill1';
+import {getMap,isMapId,DEFAULT_MAP,sectorOf,zoneAt,mapPlayerCap} from './maps.mjs?v=20261123-blocke1';
+import { WAVE_COUNT,waveFormation,missionFormation,makeEnemy,towerDamage,SOLDIER_MAX_HP,SOLDIER_RETURN_SECONDS,SOLDIER_PROTECT_SECONDS,ENEMY_ATTACKS,ENEMY_ATTACK_FIRST_WAVE,MAX_ATTACKERS_PER_TARGET,towerMaxHp } from './combat.mjs?v=20261123-blocke1';
 import { waveXP } from './progression.mjs?v=20261105-prestige1';
-import {addSupplies} from './match.mjs?v=20261123-skill1';
-import {towerIntervalFactor,towerRangeFactor,towerIgnoresClouds,towerDamageBonus,applyHitEffects} from './tower-specialization.mjs?v=20261123-skill1';
+import {addSupplies} from './match.mjs?v=20261123-blocke1';
+import {towerIntervalFactor,towerRangeFactor,towerIgnoresClouds,towerDamageBonus,applyHitEffects} from './tower-specialization.mjs?v=20261123-blocke1';
 export const STEP = 1/30;
 export const PATH=getMap(DEFAULT_MAP).path, PADS=getMap(DEFAULT_MAP).pads;
 const towerStats=[{range:125,interval:.55,color:'#d9d884'},{range:145,interval:1.4,color:'#e49b67'},{range:155,interval:.8,color:'#8cc0a6'},{range:210,interval:1.8,color:'#a9a4d4'}];
@@ -67,9 +67,11 @@ export function stepMatch(state){
   state.shots=state.shots.filter(s=>(s.life-=dt)>0);if(state.combatPops)state.combatPops=state.combatPops.filter(p=>(p.life-=dt)>0);
   const jamField=state.enemies.some(e=>e.boss==='bossRiegel'&&e.hp>0&&bossPhase(e)==='jam');
   for(const id of Object.keys(state.players).sort()){
-    const p=state.players[id];if(p.active===false)continue;const speed=(150+10*(p.skills?.recon||0)+bonuses[id].movement+(p.mobileSupply?.remaining>0?p.mobileSupply.bonus:0)+equipmentForPlayer(state,p).movement)*soldierSpeedFactor(theme,p,PATH);p.overdrive=Math.max(0,(p.overdrive||0)-dt);if(p.mobileSupply)p.mobileSupply.remaining=Math.max(0,p.mobileSupply.remaining-dt);if(p.healingField?.remaining>0&&state.running){const elapsed=Math.min(dt,p.healingField.remaining);p.healingField.remaining=Math.max(0,p.healingField.remaining-elapsed);state.hp=Math.min(state.maxHp,state.hp+p.healingField.rate*elapsed);}let {x:dx,y:dy}=p.direction;
+    const p=state.players[id];if(p.active===false)continue;p.protect=Math.max(0,(p.protect||0)-dt);
+    if(p.downed>0){p.downed=Math.max(0,p.downed-dt);if(p.downed<=0){p.hp=p.maxHp||SOLDIER_MAX_HP;p.x=Math.max(90,bunker.x-90);p.y=Math.min((map.height||540)-60,bunker.y+60);p.target=null;p.direction={x:0,y:0};p.protect=SOLDIER_PROTECT_SECONDS;events.push({type:'soldierReturn',playerId:id});}}
+    const speed=(150+10*(p.skills?.recon||0)+bonuses[id].movement+(p.mobileSupply?.remaining>0?p.mobileSupply.bonus:0)+equipmentForPlayer(state,p).movement)*soldierSpeedFactor(theme,p,PATH);p.overdrive=Math.max(0,(p.overdrive||0)-dt);if(p.mobileSupply)p.mobileSupply.remaining=Math.max(0,p.mobileSupply.remaining-dt);if(p.healingField?.remaining>0&&state.running){const elapsed=Math.min(dt,p.healingField.remaining);p.healingField.remaining=Math.max(0,p.healingField.remaining-elapsed);state.hp=Math.min(state.maxHp,state.hp+p.healingField.rate*elapsed);}let {x:dx,y:dy}=p.downed>0?{x:0,y:0}:p.direction;
     if(dx||dy){const len=Math.hypot(dx,dy);p.x+=dx/len*speed*dt;p.y+=dy/len*speed*dt;}
-    else if(p.target){dx=p.target.x-p.x;dy=p.target.y-p.y;const len=Math.hypot(dx,dy),step=Math.min(len,speed*dt);if(len>0){p.x+=dx/len*step;p.y+=dy/len*step;}if(len<=step)p.target=null;}
+    else if(p.target&&!(p.downed>0)){dx=p.target.x-p.x;dy=p.target.y-p.y;const len=Math.hypot(dx,dy),step=Math.min(len,speed*dt);if(len>0){p.x+=dx/len*step;p.y+=dy/len*step;}if(len<=step)p.target=null;}
     p.x=Math.max(12,Math.min((map.width||960)-12,p.x));p.y=Math.max(12,Math.min((map.height||540)-12,p.y));
     if(!jamField&&state.running)p.cooldown=Math.max(0,p.cooldown-dt);
   }
@@ -134,6 +136,46 @@ export function stepMatch(state){
   }
   const commander=state.enemies.find(e=>e.boss==='bossCommander'&&e.hp>0),rally=commander&&bossPhase(commander)==='rally';
   const kolt=state.enemies.find(e=>e.boss==='bossKolt'&&e.hp>0),flood=kolt&&bossPhase(kolt)==='flood';
+  // Block E: infantry threatens soldiers in reach, tanks threaten nearby
+  // towers. Every attack is telegraphed in the enemy's windup first; a
+  // target that leaves reach (or falls) in time is not hit, and at most a
+  // capped number of attackers may wind up on the same target.
+  if(state.running&&state.wave>=ENEMY_ATTACK_FIRST_WAVE){
+    const attackersOn=key=>state.enemies.reduce((n,e)=>n+(e.windup?.key===key?1:0),0);
+    for(const e of state.enemies){
+      if(e.hp<=0||e.boss)continue;
+      const cfg=ENEMY_ATTACKS[e.kind];if(!cfg)continue;
+      e.attackTimer=Math.max(0,(e.attackTimer||0)-dt);
+      if(e.windup){
+        e.windup.time-=dt;
+        if(e.windup.time>0)continue;
+        const windup=e.windup;e.windup=null;e.attackTimer=cfg.cooldown;
+        if(windup.kind==='soldier'){
+          const target=state.players[windup.id];
+          if(target&&target.active!==false&&!(target.downed>0)&&(target.hp??target.maxHp??SOLDIER_MAX_HP)>0&&Math.hypot(e.x-target.x,e.y-target.y)<=cfg.range*1.3){
+            const damage=target.protect>0?0:cfg.damage;
+            if(damage>0){target.hp=Math.max(0,(target.hp??target.maxHp??SOLDIER_MAX_HP)-damage);events.push({type:'enemyAttack',target:'soldier',playerId:windup.id,damage});if(target.hp<=0){target.downed=SOLDIER_RETURN_SECONDS;target.direction={x:0,y:0};target.target=null;events.push({type:'soldierDown',playerId:windup.id});}}
+          }
+        }else{
+          const tower=state.towers.find(t=>t.pad===windup.pad),padPoint=PADS[windup.pad];
+          if(tower&&padPoint&&(tower.hp??tower.maxHp??towerMaxHp(tower.level))>0&&Math.hypot(e.x-padPoint.x,e.y-padPoint.y)<=cfg.range*1.3){
+            const maxHp=tower.maxHp||towerMaxHp(tower.level);tower.maxHp=maxHp;tower.hp=Math.max(0,(tower.hp??maxHp)-cfg.damage);events.push({type:'enemyAttack',target:'tower',pad:windup.pad,damage:cfg.damage});if(tower.hp<=0)events.push({type:'towerDisabled',pad:windup.pad});
+          }
+        }
+        continue;
+      }
+      if(e.attackTimer>0||e.pinned>0||!onRoad(e))continue;
+      if(cfg.target==='soldier'){
+        let best=null,bestDist=cfg.range;
+        for(const pid of Object.keys(state.players).sort()){const p=state.players[pid];if(p.active===false||p.downed>0||(p.hp??p.maxHp??SOLDIER_MAX_HP)<=0)continue;const d=Math.hypot(e.x-p.x,e.y-p.y);if(d<=bestDist){best=pid;bestDist=d;}}
+        if(best&&attackersOn('s:'+best)<MAX_ATTACKERS_PER_TARGET)e.windup={key:'s:'+best,kind:'soldier',id:best,time:cfg.windup};
+      }else{
+        let best=null,bestDist=cfg.range;
+        for(const tower of state.towers){if((tower.hp??tower.maxHp??towerMaxHp(tower.level))<=0)continue;const padPoint=PADS[tower.pad];if(!padPoint)continue;const d=Math.hypot(e.x-padPoint.x,e.y-padPoint.y);if(d<=bestDist){best=tower.pad;bestDist=d;}}
+        if(best!==null&&attackersOn('t:'+best)<MAX_ATTACKERS_PER_TARGET)e.windup={key:'t:'+best,kind:'tower',pad:best,time:cfg.windup};
+      }
+    }
+  }
   if(zones)for(const zone of zones){
     if(zone.kind!=='ice'||state.zoneBroken?.[zone.id])continue;
     const tanks=state.enemies.filter(e=>e.hp>0&&e.kind==='tank'&&Math.hypot(e.x-zone.x,e.y-zone.y)<=zone.r).length;
@@ -151,7 +193,10 @@ export function stepMatch(state){
     state.gunTimer=Math.max(0,(state.gunTimer||0)-dt);
     if(state.gunTimer<=0){const target=state.enemies.find(e=>e.hp>0&&onRoad(e)&&Math.hypot(e.x-bunker.x,e.y-bunker.y)<=170);if(target){target.hp-=5*state.gun;state.gunTimer=3;state.shots.push({x:bunker.x,y:bunker.y,tx:target.x,ty:target.y,life:shotDuration,duration:shotDuration,kind:'hero',color:'#fff',id:(state._shotSeq=(state._shotSeq||0)+1),fx:'bunker'});}}
   }
-  for(const tower of state.towers){tower.timer-=dt;const type=towerStats[tower.type],p=PADS[tower.pad],branch=tower.level>=3?branchStats[tower.type][tower.branch]:null;if(tower.timer<=0){const owner=state.players[tower.ownerId];const flakNet=specialistUnlocked(owner?.skills,'airDefense',1);const target=state.enemies.filter(e=>e.hp>0&&onRoad(e)&&Math.hypot(e.x-p.x,e.y-p.y)<=targetingRange(theme,getTowerRange(tower)*towerRangeFactor(tower,e)*(flakNet&&(e.kind==='plane'||e.baseKind==='plane')?1.15:1),e,state.enemies,{sniper:tower.type===3,clouds:(towerIgnoresClouds(tower)||classTowerIgnoresClouds(tower))?[]:(state.dustClouds||[])})).sort((a,b)=>b.segment-a.segment)[0];if(target){const perks=state.runPerks||{};tower.shotCount=(tower.shotCount||0)+1;
+  for(const tower of state.towers){tower.timer-=dt;
+    if(tower.repairing>0){tower.repairing=Math.max(0,tower.repairing-dt);if(tower.repairing<=0){const maxHp=tower.maxHp||towerMaxHp(tower.level);tower.maxHp=maxHp;tower.hp=Math.min(maxHp,(tower.hp??maxHp)+(tower.repairHeal||0));tower.repairHeal=0;tower.repairCost=0;tower.repairPaidBy=null;events.push({type:'towerRepaired',pad:tower.pad});}continue;}
+    if((tower.hp??1)<=0)continue;
+    const type=towerStats[tower.type],p=PADS[tower.pad],branch=tower.level>=3?branchStats[tower.type][tower.branch]:null;if(tower.timer<=0){const owner=state.players[tower.ownerId];const flakNet=specialistUnlocked(owner?.skills,'airDefense',1);const target=state.enemies.filter(e=>e.hp>0&&onRoad(e)&&Math.hypot(e.x-p.x,e.y-p.y)<=targetingRange(theme,getTowerRange(tower)*towerRangeFactor(tower,e)*(flakNet&&(e.kind==='plane'||e.baseKind==='plane')?1.15:1),e,state.enemies,{sniper:tower.type===3,clouds:(towerIgnoresClouds(tower)||classTowerIgnoresClouds(tower))?[]:(state.dustClouds||[])})).sort((a,b)=>b.segment-a.segment)[0];if(target){const perks=state.runPerks||{};tower.shotCount=(tower.shotCount||0)+1;
       const engineerSuppressed=owner?.skills?.classId==='engineer'&&state.suppression>0?.08*comboTier(owner?.skills,'engineer'):0;
       const dealt=towerDamage(tower.type,tower.level,tower.level>=3?tower.branch:null,target.kind)*(target.boss==='bossIronclad'?.8:1)*bossWeaponFactor(target)*(1+.1*(perks.damage||0))*(target.kind==='tank'&&(tower.type===1||tower.type===3)?1+.2*(perks.tankhunter||0):1)*(tower.type===3&&tower.shotCount%4===0?1+.75*(perks.critical||0):1)*weaponDamageFactor(theme,target,Math.hypot(target.x-p.x,target.y-p.y),{recon:(owner?.skills?.recon||0)>0,rubbleCleared:state.rubbleCleared,zoneInfo:zoneInfoOf(target)})*(1+.1*(owner?.skills?.engineer||0)+.01*(bonuses[tower.ownerId]?.tower||0)+engineerSuppressed)*(target.kind==='tank'?equipmentForPlayer(state,owner).tankTowerMultiplier:1)*(tower.branch===3&&target.boss?1.5:1)*(owner?.active!==false&&owner?.overdrive>0?(owner.overdriveFactor||1.5):1)*towerDamageBonus(state,tower,target)*classTowerDamageFactor(tower,target)*airDefenseDamageMultiplier(owner?.skills,bonuses[tower.ownerId],target);
       hitRubble(target,dealt);if(owner){const stats=owner.towerDamage||(owner.towerDamage=[0,0,0,0]);stats[tower.type]+=Math.min(Math.max(0,target.hp),dealt);}target.hp-=dealt;
@@ -166,7 +211,7 @@ export function stepMatch(state){
       const shotFx=(tower.type===3&&((tower.level>=4&&tower.branch===0&&tower.shotCount%3===0)||(tower.shotCount%4===0&&(perks.critical||0)>0)))?'crit':(tower.type===1&&tower.level>=5&&tower.branch===0&&tower.shotCount%6===0)?'splash':null;
       tower.timer=type.interval*Math.max(.5,1-(bonuses[tower.ownerId]?.towerSpeed||0)/100)*(branch?branch.interval:1)*engSpeed*flakSpeed*Math.pow(.92,state.runPerks?.speed||0)*towerIntervalFactor(state,tower,p)*classTowerIntervalFactor(tower);state.shots.push({x:p.x,y:p.y,tx:target.x,ty:target.y,life:shotDuration,duration:shotDuration,kind:tower.type,color:type.color,id:(state._shotSeq=(state._shotSeq||0)+1),...(shotFx?{fx:shotFx}:{})});}}}
   for(const id of Object.keys(state.players).sort()){
-    const p=state.players[id];if(p.active===false)continue;p.shotTimer-=dt;if(state.wave>0&&p.shotTimer<=0){const rangeBonus=(specialistUnlocked(p.skills,'assault',1)?25:0)+(specialistUnlocked(p.skills,'recon',0)?25:0);const target=state.enemies.find(e=>e.hp>0&&onRoad(e)&&Math.hypot(e.x-p.x,e.y-p.y)<targetingRange(theme,150+bonuses[id].heroRange+rangeBonus+equipmentForPlayer(state,p).range,e,state.enemies,{clouds:state.dustClouds||[]}));if(target){const dealt=(10+Math.min(p.level-1,20)+assaultRankDamage(state.wave)*(p.skills?.assault||0)+bonuses[id].damage+equipmentForPlayer(state,p).damage)*(target.boss==='bossIronclad'?.8:1)*bossWeaponFactor(target)*(1+.15*(state.runPerks?.hero||0))*weaponDamageFactor(theme,target,Math.hypot(target.x-p.x,target.y-p.y),{recon:(p.skills?.recon||0)>0,rubbleCleared:state.rubbleCleared,zoneInfo:zoneInfoOf(target)})*airDefenseDamageMultiplier(p.skills,bonuses[id],target);hitRubble(target,dealt);target.hp-=dealt;p.heroShotCount=(p.heroShotCount||0)+1;
+    const p=state.players[id];if(p.active===false)continue;p.shotTimer-=dt;if(state.wave>0&&p.shotTimer<=0&&!(p.downed>0)){const rangeBonus=(specialistUnlocked(p.skills,'assault',1)?25:0)+(specialistUnlocked(p.skills,'recon',0)?25:0);const target=state.enemies.find(e=>e.hp>0&&onRoad(e)&&Math.hypot(e.x-p.x,e.y-p.y)<targetingRange(theme,150+bonuses[id].heroRange+rangeBonus+equipmentForPlayer(state,p).range,e,state.enemies,{clouds:state.dustClouds||[]}));if(target){const dealt=(10+Math.min(p.level-1,20)+assaultRankDamage(state.wave)*(p.skills?.assault||0)+bonuses[id].damage+equipmentForPlayer(state,p).damage)*(target.boss==='bossIronclad'?.8:1)*bossWeaponFactor(target)*(1+.15*(state.runPerks?.hero||0))*weaponDamageFactor(theme,target,Math.hypot(target.x-p.x,target.y-p.y),{recon:(p.skills?.recon||0)>0,rubbleCleared:state.rubbleCleared,zoneInfo:zoneInfoOf(target)})*airDefenseDamageMultiplier(p.skills,bonuses[id],target);hitRubble(target,dealt);target.hp-=dealt;p.heroShotCount=(p.heroShotCount||0)+1;
       if(p.skills?.classId==='assault'&&hasCapstone(p.skills)&&p.heroShotCount%4===0){const other=state.enemies.find(e=>e!==target&&e.hp>0&&Math.hypot(e.x-target.x,e.y-target.y)<=120);if(other){other.hp-=24;state.shots.push({x:target.x,y:target.y,tx:other.x,ty:other.y,life:shotDuration,duration:shotDuration,kind:2,color:'#f8a466',id:(state._shotSeq=(state._shotSeq||0)+1),fx:'chain'});comboCue(p,'War Hero',other.x,other.y);events.push({type:'skillCombo',name:'War Hero',x:other.x,y:other.y});}}
       if(p.skills?.classId==='recon'&&hasCapstone(p.skills)&&p.heroShotCount%4===0&&target.hp>0){target.pinned=Math.max(target.pinned||0,3);comboCue(p,'Ghost Operative',target.x,target.y);events.push({type:'skillCombo',name:'Ghost Operative',x:target.x,y:target.y});}
       if(p.skills?.classId==='airDefense'&&hasCapstone(p.skills)&&p.heroShotCount%5===0&&target.hp>0){target.marked=Math.max(target.marked||0,3);target.markedByAirDefense=true;comboCue(p,'Sky Sovereign',target.x,target.y);events.push({type:'skillCombo',name:'Sky Sovereign',x:target.x,y:target.y});}
@@ -186,6 +231,9 @@ export function stepMatch(state){
     const perkEvery=state.campaignContract?.bossEvery||5;
     if(state.wave%perkEvery===0&&state.wave!==state.campaignContract?.waves)state.pendingPerk=state.wave;
     if(state.wave%10===0&&sector>0&&!state.individualSupplies&&!state.hostId&&!state.campaignContract){state.pendingSector=state.wave+1;events.push({type:'sectorClear',wave:state.wave,sector});}
+    // Block E: after a survived wave every damaged tower gets a quarter of
+    // its life back for free - a tower at zero rejoins the line this way.
+    for(const tower of state.towers){const maxHp=tower.maxHp||towerMaxHp(tower.level),towerHp=tower.hp??maxHp;if(towerHp<maxHp){tower.maxHp=maxHp;tower.hp=Math.min(maxHp,towerHp+Math.ceil(maxHp*.25));}}
     events.push({type:'waveCleared',wave:state.wave,xp:waveXP(state.wave),victory:false});
   }
   return events;
