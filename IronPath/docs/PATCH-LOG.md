@@ -6,7 +6,7 @@ aber ersetzt weder Git noch die GitHub-PR-Historie. Die dazugehörige
 [Arbeitsanweisung](../../AGENTS.md) verlangt, dieses Log vor der Arbeit zu lesen
 und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
 
-Die Einträge IPL-0001 bis IPL-0100 stehen im
+Die Einträge IPL-0001 bis IPL-0101 stehen im
 [Archiv](PATCH-LOG-ARCHIV.md); hier stehen die neuesten 20. Beide Dateien
 zusammen sind lückenlos und doppelfrei - `../scripts/patch.mjs` (Unterbefehl `check`) und
 `../tests/patch-log-archive.test.mjs` prüfen das.
@@ -51,37 +51,6 @@ jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderl
 
 
 
-## IPL-0101 – Phase 3: Ein Patch-Befehl `patch.mjs`, ein Schnelltor für `game-regressions` (keine Cache-Welle)
-
-- **Zeit / Quelle:** Abschluss des in `IPL-0094` beschlossenen Strukturprogramms: Nach den sechs Fach-Ordnern (Phase 2, `IPL-0095` bis `IPL-0100`) führt Phase 3 die drei Patch-Skripte zu einem Befehl zusammen. Die zwei Ausgestaltungsfragen (Bedeutung von `--fast`, Umgang mit den alten Einstiegspunkten) stellte der Betreiber zurück („nimm das, was am meisten Sinn macht“); die getroffenen Entscheidungen stehen unten begründet.
-- **Block / Ziel:** Kein Spiel-Block und kein ausgelieferter Code: Geändert werden nur Entwickler-Werkzeug, Tests, CI und Doku. Der Build-Stempel bleibt `20261122-core1`; eine Cache-Welle ist nicht nötig, weil `scripts/` nicht ins Spiel gestagt wird (Staging-Beweis unten: 712 = 712 Dateien, null Unterschiede).
-- **Branch / Basis:** `arena/524d2b6c-0815games-github-io` ab `37ac8200ea418aeb132ec6c718e003a118607ab2` (`main`, Merge von PR `#359`).
-- **Entscheidungen:**
-  - **Sauberer Schnitt statt Weiterleitungs-Stubs:** `patch-lib.mjs`, `patch-check.mjs` und `patch-bump.mjs` sind gelöscht; `scripts/patch.mjs` ist die einzige Implementierung. Stubs wären drei weitere Dateien, die bei jeder Verhaltensänderung ehrlich mitgepflegt werden müssten; wer den alten Befehl aufruft, scheitert sichtbar, statt still einen Umweg zu laufen.
-  - **`--fast` als Schnelltor, nicht als schwächeres Gatter:** `patch.mjs check --fast` fährt Stempel, Wellen, Struktur, Log, Git-Vergleich, Geheimnis-Scan und die sieben Vertragsdateien – ausdrücklich ohne die volle Suite. Der `game-regressions`-Job führt ihn als ersten Schritt aus (davor `git fetch origin main`, damit Basisvergleich und Geheimnis-Scan in CI einen Maßstab haben), damit Stempel-/Log-Disziplin erstmals maschinell statt nur lokal geprüft wird. Alle bisherigen Schritte (volle Suite, Stress, Server, Release-Tools) bleiben unverändert; ein manueller Schnell-Modus per `workflow_dispatch` wurde verworfen, weil dieselbe Workflow-Datei 13 Checks beherbergt und ein Dispatch sie alle auslösen würde.
-- **Änderungen / Dateien:**
-  - `IronPath/scripts/patch.mjs` (neu, 616 Zeilen): die drei bisherigen Dateien mechanisch zusammengeführt – gemeinsame Definitionen (Token, Anker, Baumlauf), `bump` (planen, schreiben, verifizieren) und `check` (neun Prüfschritte inkl. Online-Bericht) als Unterbefehle `patch.mjs check` / `patch.mjs bump`; alle bisherigen Exporte bleiben unter einem Dach, der Import des Moduls startet weiterhin keinen CLI-Lauf. Neu ist nur die Dispatch-Schicht plus `--fast` (Widerspruch `--fast` + `--suite` endet mit Exit 2 statt stiller Deutung).
-  - `IronPath/tests/patch-tooling.test.mjs`: Importe auf `patch.mjs` umgehängt, Fixture-Datei mitgezogen, dazu ein neuer CLI-Test, der den Dispatcher als Unterprozess fährt (kein Unterbefehl und Unbekanntes = Exit 2 mit Gebrauchsanweisung; `check --fast` auf der Fixture = Exit 0; `bump`-Trockenlauf schreibt nichts). `IronPath/tests/patch-log-archive.test.mjs` importiert `patchLogState` jetzt aus `patch.mjs`.
-  - Doku: `docs/PATCH-ABLAUF.md` (19 Stellen: Werkzeugliste, Befehle in §1/§4/§7, Verantwortung in §8/§9, Checkliste; neuer Absatz zum Schnelltor in §6), `README.md` und `docs/patch-log-vorlage.md` zeigen auf `patch.mjs`; der Kopf von `docs/PATCH-LOG.md` ebenfalls. Historische Einträge in Log, Archiv und `PATCH-BLOECKE.md` bleiben als Geschichtsquelle unverändert.
-  - `.github/workflows/ironpath-firebase-rules.yml`: `game-regressions` beginnt mit dem Schritt „Fast patch gate (stamp, log, secrets, contracts)“; kein bestehender Schritt wurde entfernt oder entschärft.
-  - `IronPath/docs/PATCH-LOG.md` und `IronPath/docs/PATCH-LOG-ARCHIV.md`: `IPL-0081` vollständig ins Archiv, Grenzen auf `IPL-0001` bis `IPL-0081` nachgezogen; das Log führt die neuesten 20 (`IPL-0082` bis `IPL-0101`).
-- **Prüfungen:**
-  - `patch-tooling.test.mjs` + `patch-log-archive.test.mjs`: **17 Tests, 17 bestanden** (12 Werkzeug-Vertragstests inkl. neuem CLI-Test, 5 Archiv-Tests). `patch.mjs check --fast` am echten Baum: **0 Fehler** — 7 Anker auf `20261122-core1`, Log `IPL-0001…IPL-0100` lückenlos, 7 Vertragsdateien mit 30 Tests grün; die zwei Hinweise betreffen den uncommitteten Baum und den anfangs flachen Klon dieser Sitzung.
-  - Staging gegen Basis `37ac8200` (Baseline per `git worktree`, gleiche Build-ID `20990101-baseline1`): **712 = 712 Dateien, `diff -rq` ohne eine Zeile** — das ausgelieferte Spiel ist bytegleich, `scripts/` fährt nicht mit.
-  - Gesamtsuite im vollständigen Klon (nach `git fetch --unshallow origin`): `node --test IronPath/tests/*.test.mjs` = **1.261 Tests, 1.261 bestanden, 0 fehlgeschlagen, 0 übersprungen, Exit 0** (vorher 1.260; +1 CLI-Test).
-  - Keine Geräteabnahme vorgesehen und keine nötig: Es wurde keine Datei geändert, die der Browser lädt. Der Build-Stempel bleibt `20261122-core1`.
-- **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags uncommittet auf `arena/524d2b6c-0815games-github-io`. Commit, Push, PR, CI, Merge und Pages-Auslieferung sind noch nicht erfolgt und werden erst nach dem tatsächlichen Ereignis mit Kennung nachgetragen. Der neue `game-regressions`-Schritt beweist sich erst im CI-Lauf dieses PR selbst.
-- **Offen / nächster Schritt:** PR öffnen, CI abwarten (beweist das Schnelltor), erst nach belegtem Merge/Pages-Stand als ausgeliefert bezeichnen; Ereignis-Nachtrag danach als eigener PR. Damit ist das Strukturprogramm aus `IPL-0094` (Phasen 1–3) vollständig. Als nächstes größeres Stück bleibt der Bauplatz-Auswahlring aus PR `#336` (ohne Hover-Vorschau) als eigener Spiel-PR. Die Betreiber-Sichtprüfungen (`BUILD 20261122-core1`, Anmeldung, Solo-/Mehrspieler-Gefecht, dazu `ui1`- bis `workshop1`-Punkte und Deutsch-Texte) stehen weiterhin aus.
-
-### Ereignis-Nachtrag zu IPL-0101
-
-- **Commit / PR:** Arbeitscommit `1e340893` auf `arena/524d2b6c-0815games-github-io`; Pull-Request `#360` („Phase 3: Patch-CLI patch.mjs und Schnelltor für game-regressions“).
-- **CI:** `gh pr checks 360` endete im ersten Lauf mit **13 von 13 bestandenen Checks, 0 fehlgeschlagen, 0 ausstehend**. Das neue Schnelltor lief dabei belegt als Schritt 4 des `game-regressions`-Jobs (`Fast patch gate (stamp, log, secrets, contracts)` -> success), der Job insgesamt 2 min 52 s.
-- **Merge:** `gh pr view 360 --json state,mergedAt,mergeCommit` ergab `state=MERGED`, `mergedAt=2026-11-22T20:03:32Z`, Merge-Commit `24be5a823c36bcd0bb96fd121cf47392f716b16f` in `main`.
-- **Pages:** `pages/builds` meldete danach `status=built`, Dauer 39.266 ms, Commit `24be5a82`.
-- **Auslieferung auf `main` belegt:** `IronPath/scripts/patch.mjs` ist per Contents-API vorhanden (HTTP 200); die drei alten Dateien `patch-check.mjs`, `patch-bump.mjs` und `patch-lib.mjs` liefern **404**. `release-version.json` auf `main` trägt unverändert `"build": "20261122-core1"` — keine neue Welle, weil `scripts/` nicht ins Spiel gestagt wird (Staging-Beweis im Haupteintrag: 712 = 712 Dateien, null Unterschiede).
-- **Ehrliche Grenzen:** Die Live-URL wurde nicht abgerufen; belegt sind Inhalt auf `main` und der fertige Pages-Build. Keine Geräteabnahme, weil keine browsergeladene Datei geändert wurde. Die Betreiber-Sichtprüfungen (`BUILD 20261122-core1`, Anmeldung, Solo-/Mehrspieler-Gefecht, `ui1`- bis `workshop1`-Punkte, Deutsch-Texte) stehen weiterhin aus.
-- **Herkunft dieses Nachtrags:** Er steht als eigener PR auf einem neuen Arbeitszweig nach dem Merge von `#360`; seine eigene Commit- und PR-Kennung steht deshalb nicht hier, sondern in Git und im PR-Text. Mit `IPL-0101` samt Nachtrag ist das Strukturprogramm aus `IPL-0094` (Phasen 1–3) vollständig abgeschlossen.
 
 ## IPL-0102 – Referenz-Wächter für die Harness-Ordner und ein npm-Einstieg an der Wurzel (keine Cache-Welle)
 
@@ -390,3 +359,16 @@ jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderl
 - **Prüfungen:** `startup-measurement` 2/2; Messlauf selbst reproduzierbar per Skript. Schnelltor und Gesamtsuite folgen auf dem Commit-Stand.
 - **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet`. Commit, Push, PR `#382`, CI, Merge und Pages-Auslieferung (nur Doku/Werkzeug — die Live-Seite ändert sich für Spieler nicht) werden als Ereignis nachgetragen.
 - **Offen / nächster Schritt:** Punkt 7: Block-Übersicht in `PATCH-BLOECKE.md` auf den echten Stand ziehen. Die Reihe ist danach vollständig; neue Punkte beschließt der Betreiber.
+
+## IPL-0121 – Punkt 7: Block-Übersicht in `PATCH-BLOECKE.md` auf den echten Stand gezogen (keine Cache-Welle, kein Browser-Code)
+
+- **Zeit / Quelle:** 2026-11-23 UTC; Punkt 7 der Reihenfolge in `AUSBAU-PLAN.md` (dort als Quick-Win geführt: die Übersicht zeigte Block E veraltet; bei jedem Block-Paket mitpflegen). Schließt die beschlossene Reihe ab.
+- **Block / Ziel:** Kein Spiel-Block. Die ausführliche Block-Dokumentation `PATCH-BLOECKE.md` behauptete an mehreren Stellen einen alten Stand: Prozentwerte aus der Bauzeit, PR `#324`/`#325` als „offen“, Block 6 als „Abnahme ausstehend“, Block 7/E als „offen / ~70 %“ und Rückbau-Reste aus `#337`–`#339` als offene Punkte, obwohl der Betreiber sie bis auf die Boss-Ankündigung ausdrücklich fallen gelassen hatte.
+- **Branch / Basis:** `arena/2c6e1584-0815games-github-io` ab `c40fd6df3bf7a2f4d1ad482c98e73b3ecaa4efc2` (`main`, Merge PR `#382`).
+- **Änderungen / Dateien:**
+  - `IronPath/docs/PATCH-BLOECKE.md`: Kopf (Reihe abgearbeitet; Geräteabnahmen sind Betreiber-Sache und keine offenen Punkte), Schnellübersicht (alle Blöcke „ausgeliefert“, Block 7/E „ausgeliefert (Scheibe 1 + 2)“, einzig technisch offene Punkte: Screenreader-Prüfung Block 2, Emulator-Transportfälle E5, D1-Datenmenge bewusst zurückgestellt), Reihenfolge-Tabelle (alle Zeilen auf ausgeliefert/merged), Abschnitts-Überschriften 6 und 7 plus Sprungmarken, Block-9f abgehakt (PR `#325` gemergt), Rückbau-Reste `#337`/`#339`/Mündungsblitz als per Betreiber-Entscheid fallengelassen markiert, Boss-Ankündigung als neu gelandet (`IPL-0104`) vermerkt, `game-regressions`-Pflicht-Check als Betreiber-Repo-Einstellung gekennzeichnet (keine Code-Aufgabe). Die ausführlichen Block-Kriterien und historischen Vermerke in den Abschnitten bleiben als Historie stehen.
+  - `IronPath/docs/AUSBAU-PLAN.md`: Punkt 7 `[x]` mit Verweis auf diesen Eintrag.
+  - `IronPath/docs/PATCH-LOG.md` + `PATCH-LOG-ARCHIV.md`: dieser Eintrag; Rotation `IPL-0101` ins Archiv (Haupt `IPL-0102…IPL-0121`, Archiv bis `IPL-0101`).
+- **Prüfungen:** Schnelltor: „Kein Fehler, 3 Hinweis(e)“; `patch-log-archive` 5/5 (lückenlos/doppelfrei nach der Rotation). Gesamtsuite folgt auf dem Commit-Stand (nur Doku berührt).
+- **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet`. Commit, Push, PR `#383`, CI, Merge und Pages-Auslieferung (nur Doku — die Live-Seite ändert sich für Spieler nicht) werden als Ereignis nachgetragen.
+- **Offen / nächster Schritt:** Die beschlossene Reihe (Punkte 1–7) ist damit vollständig. Neue Punkte beschließt der Betreiber.

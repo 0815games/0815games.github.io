@@ -1,9 +1,13 @@
 # Iron Path – Patch-Blöcke und Arbeitsstand
 
 **Aktive Arbeitsreihenfolge (Betreiber-Entscheid 2026-11-23):**
-[AUSBAU-PLAN.md](AUSBAU-PLAN.md) – Block E Scheibe 2 zuerst, dann
-Sicherheit, dann Sektor-Modifikatoren, Fortschrittsziele und die kleinen
-Punkte. Diese Datei hier bleibt die ausführliche Block-Dokumentation.
+[AUSBAU-PLAN.md](AUSBAU-PLAN.md) – die Reihe ist abgearbeitet: Block E
+Scheibe 2, Sicherheit, Sektor-Modifikatoren, Fortschrittsziele (4a/4b),
+6-stellige Party-Codes und die Start-Messung sind ausgeliefert; Punkt 7
+(diese Übersicht auf den echten Stand ziehen) schließt die Liste ab.
+Geräteabnahmen führt der Betreiber generell selbst im Spiel durch – sie
+stehen in dieser Datei **nicht** als offene Punkte. Diese Datei hier
+bleibt die ausführliche Block-Dokumentation.
 
 Dieses Blatt führt die sechs vom Betreiber nachgereichten Originalblöcke und
 unterscheidet **bereits Gebautes, historische Nutzerbestätigungen und noch
@@ -77,22 +81,23 @@ grünen Testsuite vollständig erledigt.
 
 | Block | Stand | Bereits vorhanden oder veröffentlicht | Noch offen |
 | --- | --- | --- | --- |
-| [**1 · Multiplayer**](#1-zuerst-multiplayer-wieder-vollständig-spielbar-machen--mehrere-fixes-bereits-umgesetzt) | **92 %** | Mehrspielermodi (2–4 Koop, 1v1, 2v2), größere Karten + Kamera, Turm-/Abstimmungsfixes (`B1`/`B2`), Anfragekarten, Abschluss/Recovery/Feldabmeldung, Veteranen-Preisfix, 70-%-Hinweis, **benannter Host-Notabschluss** (`#fourPartyForceClose` / `#resultsForceCloseParty`, `(offline)`/`(left early)`) sowie **Einsteigerbalance C** (`60 % / 1,75×` für 3p, `55 % / 2,0×` für 4p, Sektor-1-Start bis Welle 10 im Multiplayer, `g3-2f1bbcd88` statt `g3-3f1bbcd88` im Squad-Pool) & Browser-/Handy-Tests (`IPL-0055`, `IPL-0079`). | Echte Mehrgeräte-Netzwechsel unter Last (2–4 Geräte, Firefox) sowie Betreiber-Abnahme des Notabschlusses und der abgestimmten Einsteigerbalance (`20261119-block2`); Nachmessung nach Block E. |
-| [**2 · Charakter und Freunde**](#2-charakter-löschen-freunde-und-einladungen--wesentliche-teilfälle-bereits-umgesetzt) | **95 %** | Charakterbereinigung + Live-Social-Cleanup-Rules, Abmeldung danach (`A3`), Einladungs-/Freundesfixes, `.info/connected`-Suchindex-Wiederholung, Porträtanzeige inkl. veröffentlichter Freundes-`.read`-Rules (`IPL-0056`), strenges `NFC_CASEFOLD_V2`-Namenssystem (`0` Abweichungen Client/Audit), stiller Login-Backfill & Konflikt-Dialog (`#nameConflictDialog`), [`BLOCK2-RULES-TO-PUBLISH.json`](../firebase/BLOCK2-RULES-TO-PUBLISH.json) laut Betreiber live in der Firebase Console veröffentlicht (`IPL-0080`) + Betreiber-Tests in Browser und Handy. | Screenreader-Prüfung sowie abschließende Mehrgeräte-Sichtung (`20261119-block2`). |
-| [**3 · Oberfläche**](#3-kampf--und-party-oberfläche--bericht-und-rangabzeichen-bereits-gebaut) | **95 %** | 4er-Party-Roster-Karten (`#299`/`#307`), schlanke Kampf-Stufenanzeige (`#300`/`#310`), Turmschimmer + Glow (`#301`/`#306`), After-Action-Report mit Rang/Beförderung + „What’s Next“ (`#302`), mittige Popups (`#303`), Fähigkeits-HUD rechts unten (`D2`, `#304`/`#306`/`#311`), animierte Schussspuren (`D1`, `#305`), Freundes-`.read`-Rules veröffentlicht (`IPL-0056`) + Betreiber-Abnahme in Browser und Handy. | Netz-Datenmenge der Schüsse (Simulationsthema in `D1` bewusst zurückgestellt) sowie nächster `account.js`-Build-Stempel für gecachte Browser. |
-| [**4 · Avatare**](#4-charaktererstellung-und-avatare--genehmigte-überarbeitung-bereits-live) | **90 %** | Layer-Pipeline, `avatar-sync.mjs` (`#313`), `avatar['.validate']` & Freundes-`.read`-Rules live (`IPL-0056`); Block-4-Neubau (`Idee 1` + `Umsetzungsidee A`: 12 frontale Basisköpfe, 23 reine Haar-/Bart-Layer, 5 Farben, `◀ / ▶`-Stepper, Migration) via [PR #314](https://github.com/0815games/0815games.github.io/pull/314) (`20261031-patch5`) und `#versionNotice`-Layoutfix + Spielstil-Artwork via [PR #315](https://github.com/0815games/0815games.github.io/pull/315) (`20261031-patch6`, `IPL-0062`) live; Versions-Popup vom Betreiber bestätigt. | Echte Browser-/Handy-Abnahme der neuen Avatare auf `20261031-patch6`. |
-| [**5 · Skills**](#5-skills-neu-strukturieren--bestehende-turm-spezialisierungen-bereits-implementiert) | **97 %** | V2-Klassenbau (`20261118-block5`, [PR #318](https://github.com/0815games/0815games.github.io/pull/318) auf `main` gemerged, `IPL-0066`) + [`firebase/BLOCK5-RULES-TO-PUBLISH.json`](../firebase/BLOCK5-RULES-TO-PUBLISH.json) ([PR #319](https://github.com/0815games/0815games.github.io/pull/319), `782b46fa`): 6. Klasse **Air Defense / Luftabwehr** (`Flak Curtain`, `Interceptor`, `Iron Dome`), exklusive Klassenwahl ab Level 2, 14-Knoten-Klassenbaum mit 6 SVG-Klassenabzeichen, 6 Klassen-Artworks (`assets/class-*.jpg`), 12 Spezialisten-Effekte & Turm-Auren, getrennte 2-Stufen-Klassenturmwege ab Rang 2/3, einmalige `v2;none`-Migration + lokales Backup sowie vom Betreiber bestätigte Live-Veröffentlichung der Block-5-RTDB-Rules (`IPL-0068`). | Echte Mehrgeräte-Abnahme auf `20261118-block5`. |
-| [**9 · Menü-Redesign**](#9-einheitliches-menü-layout--kommandotafeln-desktop--app-shell-mobile) | **99 %** | Vor Block 6 eingeschoben (Betreiberentscheid) und in [PR #320](https://github.com/0815games/0815games.github.io/pull/320) (`20261119-block9`), [PR #321](https://github.com/0815games/0815games.github.io/pull/321) (`20261119-block9b`), [PR #322](https://github.com/0815games/0815games.github.io/pull/322) (`20261119-block9c`), [PR #323](https://github.com/0815games/0815games.github.io/pull/323) (`20261119-block9d`) sowie [PR #324](https://github.com/0815games/0815games.github.io/pull/324) (`20261119-block9e`, offen) umgesetzt: konsolidierte Command-HQ-Ansicht, einheitliche 3-Zonen-Kartenbanner & Dialoge (`← COMMAND CENTER` / `← KOMMANDOZENTRALE`), rotierender Login-Banner + Flaggen-/Kürzelschalter, Einzelbild-Endlos-Karussell, eigene Modus-Artworks, Mehrfenster-Sitzungsschutz (`active-session.mjs`) & vom Betreiber bestätigte Live-Veröffentlichung von [`BLOCK9D-RULES-TO-PUBLISH.json`](../firebase/BLOCK9D-RULES-TO-PUBLISH.json) (`IPL-0074`). | Echte Geräteabnahme (Desktop & Handy) vor Beginn von Block 6. |
-| [**6 · Tutorial**](#6-tutorial-als-großer-zusammenhängender-einsatz--klient-dialoge-und-generalstimme-lokal-gebaut-abnahme-ausstehend) | **95 %** | Vorgezogene `players/$uid/tutorial`-RTDB-Rules live (`IPL-0080`), Mission-Dossier (`tutorial-dossier.mjs`), 7-Wellen-Vertrag + 8-Schritt-Feld-Coach (`first-run-coach.mjs`), komplette General-Vance-Funkvertonung (**18 EN `voice-11` + 18 DE `voice-10` MP3s**) & Untertitel (`general-radio.mjs`), interaktive 8-Stationen-HQ-Führung (`menu-tour.mjs`, ohne Löschen/Abmelden), Artworks, DE-Lokalisierung & Unit-Tests lokal gebaut (`IPL-0081`/`IPL-0082`). | Finaler Release-Build-Stempel (`20261119-block6`), CI-Browser-Smoke & echte Geräteabnahme. |
-| [**7 · Leben & Gegenangriffe (E)**](#7-zusätzlich-vorgeschlagen-leben-und-gegenangriffe--offen) | **~90 %** | Scheibe 1 live (`IPL-0106`): Leben/Angriffe/Vorwarnung/Reparatur im Kern aller Modi; Lebensbalken immer sichtbar (`IPL-0113`); Scheibe 2: Treffer-Feedback + Tutorial (`IPL-0114`), Host-/Reconnect-Prüfung ohne Codefehler (`IPL-0115`). | Nur noch Emulator-Transportfälle für 2–4 Clients. |
-| [**8 · Sammelstelle & Nacharbeiten**](#8-was-nach-den-patches-ansteht--sammelstelle) | **80 %** | Mittige Popups + `#versionNotice` mit Artwork (`#306`, `#315` bestätigt), AFK-Pausebild + Rückkehr zum Login (`#306`), Feld-Minimalismus (`#308`–`#312`), einheitliche rechte Buttonspalte, Burger-Menü unten, Map-Titelkarte (`map-intro.mjs`), starker Turm-Glow (`#306`), Rules-Datei erstellt + Betreiber-Tests; `20261031-patch7` via [PR #316](https://github.com/0815games/0815games.github.io/pull/316) (`a69675bb`, CI 13/13, Pages `44316906495`, Main-CI `44316907201`) live; begrenzter Max-1-Retry in `party-finalization-browser` (`IPL-0065`). | Block-2-Namens-Rules/Audit (`CHARACTER-NAME-AUDIT.md`), Abschluss-Altsave-Check sowie echte Geräteabnahme von `20261031-patch7` / `20261031-patch8`. |
+| [**1 · Multiplayer**](#1-zuerst-multiplayer-wieder-vollständig-spielbar-machen--mehrere-fixes-bereits-umgesetzt) | **ausgeliefert** | Mehrspielermodi (2–4 Koop, 1v1, 2v2), größere Karten + Kamera, Turm-/Abstimmungsfixes (`B1`/`B2`), Anfragekarten, Abschluss/Recovery/Feldabmeldung, Veteranen-Preisfix, 70-%-Hinweis, **benannter Host-Notabschluss** (`#fourPartyForceClose` / `#resultsForceCloseParty`, `(offline)`/`(left early)`) sowie **Einsteigerbalance C** (`60 % / 1,75×` für 3p, `55 % / 2,0×` für 4p, Sektor-1-Start bis Welle 10 im Multiplayer, `g3-2f1bbcd88` statt `g3-3f1bbcd88` im Squad-Pool) & Browser-/Handy-Tests (`IPL-0055`, `IPL-0079`). | — (Geräte-/Netzwechsel-Prüfung ist Betreiber-Sache im Spiel, kein offener Punkt; Nachmessung nach Block E in `IPL-0115` grün.) |
+| [**2 · Charakter und Freunde**](#2-charakter-löschen-freunde-und-einladungen--wesentliche-teilfälle-bereits-umgesetzt) | **ausgeliefert** | Charakterbereinigung + Live-Social-Cleanup-Rules, Abmeldung danach (`A3`), Einladungs-/Freundesfixes, `.info/connected`-Suchindex-Wiederholung, Porträtanzeige inkl. veröffentlichter Freundes-`.read`-Rules (`IPL-0056`), strenges `NFC_CASEFOLD_V2`-Namenssystem (`0` Abweichungen Client/Audit), stiller Login-Backfill & Konflikt-Dialog (`#nameConflictDialog`), [`BLOCK2-RULES-TO-PUBLISH.json`](../firebase/BLOCK2-RULES-TO-PUBLISH.json) laut Betreiber live in der Firebase Console veröffentlicht (`IPL-0080`) + Betreiber-Tests in Browser und Handy. | Screenreader-Prüfung für `#nameConflictDialog` (technisch offen; Mehrgeräte-Sichtung ist Betreiber-Sache). |
+| [**3 · Oberfläche**](#3-kampf--und-party-oberfläche--bericht-und-rangabzeichen-bereits-gebaut) | **ausgeliefert** | 4er-Party-Roster-Karten (`#299`/`#307`), schlanke Kampf-Stufenanzeige (`#300`/`#310`), Turmschimmer + Glow (`#301`/`#306`), After-Action-Report mit Rang/Beförderung + „What’s Next“ (`#302`), mittige Popups (`#303`), Fähigkeits-HUD rechts unten (`D2`, `#304`/`#306`/`#311`), animierte Schussspuren (`D1`, `#305`), Freundes-`.read`-Rules veröffentlicht (`IPL-0056`) + Betreiber-Abnahme in Browser und Handy. | Netz-Datenmenge der Schüsse (in `D1` bewusst zurückgestellt, Simulationsthema). Build-Stempel seither mehrfach gewellt (bis `20261123-party6`). |
+| [**4 · Avatare**](#4-charaktererstellung-und-avatare--genehmigte-überarbeitung-bereits-live) | **ausgeliefert** | Layer-Pipeline, `avatar-sync.mjs` (`#313`), `avatar['.validate']` & Freundes-`.read`-Rules live (`IPL-0056`); Block-4-Neubau (`Idee 1` + `Umsetzungsidee A`: 12 frontale Basisköpfe, 23 reine Haar-/Bart-Layer, 5 Farben, `◀ / ▶`-Stepper, Migration) via [PR #314](https://github.com/0815games/0815games.github.io/pull/314) (`20261031-patch5`) und `#versionNotice`-Layoutfix + Spielstil-Artwork via [PR #315](https://github.com/0815games/0815games.github.io/pull/315) (`20261031-patch6`, `IPL-0062`) live; Versions-Popup vom Betreiber bestätigt. | — (Abnahme ist Betreiber-Sache im Spiel.) |
+| [**5 · Skills**](#5-skills-neu-strukturieren--bestehende-turm-spezialisierungen-bereits-implementiert) | **ausgeliefert** | V2-Klassenbau (`20261118-block5`, [PR #318](https://github.com/0815games/0815games.github.io/pull/318) auf `main` gemerged, `IPL-0066`) + [`firebase/BLOCK5-RULES-TO-PUBLISH.json`](../firebase/BLOCK5-RULES-TO-PUBLISH.json) ([PR #319](https://github.com/0815games/0815games.github.io/pull/319), `782b46fa`): 6. Klasse **Air Defense / Luftabwehr** (`Flak Curtain`, `Interceptor`, `Iron Dome`), exklusive Klassenwahl ab Level 2, 14-Knoten-Klassenbaum mit 6 SVG-Klassenabzeichen, 6 Klassen-Artworks (`assets/class-*.jpg`), 12 Spezialisten-Effekte & Turm-Auren, getrennte 2-Stufen-Klassenturmwege ab Rang 2/3, einmalige `v2;none`-Migration + lokales Backup sowie vom Betreiber bestätigte Live-Veröffentlichung der Block-5-RTDB-Rules (`IPL-0068`). | — (Abnahme ist Betreiber-Sache im Spiel; menschliche Balance ist keine Prüfaufgabe mehr.) |
+| [**9 · Menü-Redesign**](#9-einheitliches-menü-layout--kommandotafeln-desktop--app-shell-mobile) | **ausgeliefert** | Vor Block 6 eingeschoben (Betreiberentscheid) und in [PR #320](https://github.com/0815games/0815games.github.io/pull/320) (`20261119-block9`), [PR #321](https://github.com/0815games/0815games.github.io/pull/321) (`20261119-block9b`), [PR #322](https://github.com/0815games/0815games.github.io/pull/322) (`20261119-block9c`), [PR #323](https://github.com/0815games/0815games.github.io/pull/323) (`20261119-block9d`) sowie [PR #324](https://github.com/0815games/0815games.github.io/pull/324) (`20261119-block9e`, gemergt) umgesetzt: konsolidierte Command-HQ-Ansicht, einheitliche 3-Zonen-Kartenbanner & Dialoge (`← COMMAND CENTER` / `← KOMMANDOZENTRALE`), rotierender Login-Banner + Flaggen-/Kürzelschalter, Einzelbild-Endlos-Karussell, eigene Modus-Artworks, Mehrfenster-Sitzungsschutz (`active-session.mjs`) & vom Betreiber bestätigte Live-Veröffentlichung von [`BLOCK9D-RULES-TO-PUBLISH.json`](../firebase/BLOCK9D-RULES-TO-PUBLISH.json) (`IPL-0074`). | — (Abnahme ist Betreiber-Sache im Spiel.) |
+| [**6 · Tutorial**](#6-tutorial-als-großer-zusammenhängender-einsatz--ausgeliefert-pr-328-20261119-block6) | **ausgeliefert** | Vorgezogene `players/$uid/tutorial`-RTDB-Rules live (`IPL-0080`), Mission-Dossier (`tutorial-dossier.mjs`), 7-Wellen-Vertrag + 8-Schritt-Feld-Coach (`first-run-coach.mjs`), komplette General-Vance-Funkvertonung (**18 EN `voice-11` + 18 DE `voice-10` MP3s**) & Untertitel (`general-radio.mjs`), interaktive 8-Stationen-HQ-Führung (`menu-tour.mjs`, ohne Löschen/Abmelden), Artworks, DE-Lokalisierung & Unit-Tests lokal gebaut (`IPL-0081`/`IPL-0082`). | — (Release mit PR #328 gemergt, Wellen seither bis `20261123-party6`; Abnahme ist Betreiber-Sache.) |
+| [**7 · Leben & Gegenangriffe (E)**](#7-zusätzlich-vorgeschlagen-leben-und-gegenangriffe--scheibe-1--2-live) | **ausgeliefert (Scheibe 1 + 2)** | Scheibe 1 live (`IPL-0106`): Leben/Angriffe/Vorwarnung/Reparatur im Kern aller Modi; Lebensbalken immer sichtbar (`IPL-0113`); Scheibe 2: Treffer-Feedback + Tutorial (`IPL-0114`), Host-/Reconnect-Prüfung ohne Codefehler (`IPL-0115`). | Emulator-Transportfälle für 2–4 Clients (E5, technisch offen). Balance prüft der Betreiber im Spiel. |
+| [**8 · Sammelstelle & Nacharbeiten**](#8-was-nach-den-patches-ansteht--sammelstelle) | **Sammelstelle** | Mittige Popups + `#versionNotice` mit Artwork (`#306`, `#315` bestätigt), AFK-Pausebild + Rückkehr zum Login (`#306`), Feld-Minimalismus (`#308`–`#312`), einheitliche rechte Buttonspalte, Burger-Menü unten, Map-Titelkarte (`map-intro.mjs`), starker Turm-Glow (`#306`), Rules-Datei erstellt + Betreiber-Tests; `20261031-patch7` via [PR #316](https://github.com/0815games/0815games.github.io/pull/316) (`a69675bb`, CI 13/13, Pages `44316906495`, Main-CI `44316907201`) live; begrenzter Max-1-Retry in `party-finalization-browser` (`IPL-0065`). | Namens-Rules sind live (`IPL-0080`); Rückbau-Reste (#337/#339/Mündungsblitz) per Betreiber-Entscheid fallengelassen, Boss-Banner neu gelandet (`IPL-0104`). Geräteabnahme ist Betreiber-Sache. |
 
-**Zusätzlich, nicht Teil der sechs Originalblöcke:** [Block 7/E](#7-zusätzlich-vorgeschlagen-leben-und-gegenangriffe--offen) schlägt ein
+**Zusätzlich, nicht Teil der sechs Originalblöcke:** [Block 7/E](#7-zusätzlich-vorgeschlagen-leben-und-gegenangriffe--scheibe-1--2-live) schlägt ein
 Lebens-, Angriffs- und Reparatursystem für Soldaten, Türme und Bunker vor. Auf
 Wunsch des Betreibers ist es **als künftiger Patch nach Block 6 eingeplant**
 ([IPL-0030](PATCH-LOG.md#ipl-0030--feldnotizen-im-spiel-und-block-7-als-künftiger-patch)):
-ein eigenes, noch nicht umgesetztes Vorhaben, an dem wir uns der Reihe nach
-entlangarbeiten. Die Werte in Abschnitt E bleiben ungetestete Startvorschläge.
+ein eigenes Vorhaben, das inzwischen in Scheibe 1 und 2 ausgeliefert ist
+(`IPL-0106`, `IPL-0113`–`IPL-0115`); die menschliche Balance prüft der
+Betreiber im Spiel und ist kein offener Punkt.
 Die Zusatzwünsche A–D zu Namen/Freunden, Anfragen, Einsteigerbalance und
 Schüssen/Fähigkeit sind unten ausdrücklich den Blöcken zugeordnet.
 
@@ -104,15 +109,15 @@ erledigt, wenn Code, Tests und die passenden echten Abnahmen vorliegen.
 
 | # | Künftiger Patch | Inhalt (Kurzform) | Stand |
 | --- | --- | --- | --- |
-| 1 | [Block 1 · Multiplayer](#1-zuerst-multiplayer-wieder-vollständig-spielbar-machen--mehrere-fixes-bereits-umgesetzt) | Host-Notabschluss (`Grenzen des Abschlusses`) & Einsteigerbalance C (`60 %/1,75×`, `55 %/2,0×`, Sektor-1-Start W1–10 im MP, `g3-2f1bbcd88`) gebaut (`IPL-0079`); offen: reale 2–4-Geräte-Netzwechsel & Abnahme. | **92 %** · Code fertig (`20261119-block2`), Geräteabnahme offen |
-| 2 | [Block 2 · Charakter und Freunde](#2-charakter-löschen-freunde-und-einladungen--wesentliche-teilfälle-bereits-umgesetzt) | `NFC_CASEFOLD_V2`, stille Login-Reservierung, Konflikt-Dialog (`#nameConflictDialog`) & live bestätigte `BLOCK2-RULES-TO-PUBLISH.json` (`IPL-0078`, `IPL-0080`); offen: Screenreader & Mehrgeräteabnahme. | **95 %** · Code & Rules live (`20261119-block2`), Geräteabnahme offen |
-| 3 | [Block 3 · Oberfläche](#3-kampf--und-party-oberfläche--bericht-und-rangabzeichen-bereits-gebaut) | Gebaut und im Browser/Handy abgenommen; Porträt-Rules live; offen nur Netz-Datenmenge (`D1`) und Build-Stempel. | **95 %** · Abgenommen (bis auf Build-Stempel & D1-Datenmenge) |
-| 4 | [Block 4 · Avatare](#4-charaktererstellung-und-avatare--genehmigte-überarbeitung-bereits-live) | Neubau (`Idee 1` + `Umsetzungsidee A`, PR #314) & `#versionNotice`-Layoutfix + Spielstil-Artwork (PR #315) live auf `20261031-patch6` (`IPL-0062`); Versions-Popup bestätigt, Avatar-Abnahme offen. | **90 %** · Live auf `20261031-patch6` (Popup bestätigt; Avatar-Abnahme offen) |
-| 5 | [Block 5 · Skills](#5-skills-neu-strukturieren--bestehende-turm-spezialisierungen-bereits-implementiert) | V2-Klassenbau (`20261118-block5`, PR #318) & [`BLOCK5-RULES-TO-PUBLISH.json`](../firebase/BLOCK5-RULES-TO-PUBLISH.json) (PR #319) gemergt; Betreiber bestätigte Live-Veröffentlichung der Block-5-RTDB-Rules (`IPL-0068`); offen: echte Geräteabnahme. | **97 %** · Spielcode & Rules live (`20261118-block5`), Geräteabnahme offen |
-| 6 | [Block 9 · Menü-Redesign](#9-einheitliches-menü-layout--kommandotafeln-desktop--app-shell-mobile) | Einheitliche Command-HQ-Oberfläche (Desktop 2-Spalten-HQ / Mobile App-Shell mit Daumen-Leiste), 3-Zonen-Artwork-Dialoge, Terrain-Endloswahl, Settings-Account/Passwortänderung, Einzelsitzungs-Schutz (`activeSessions/$uid`) & live bestätigte `BLOCK9D`-Rules (`IPL-0074`) vor Block 6. | **99 %** · Spielcode (`20261119-block9d`) & Rules live, Geräteabnahme offen |
-| 7 | [Block 6 · Tutorial](#6-tutorial-als-großer-zusammenhängender-einsatz--klient-dialoge-und-generalstimme-lokal-gebaut-abnahme-ausstehend) | Charakter-Auftragsakte (`tutorial-dossier.mjs`), Charakter-Sync (`tutorial-sync.mjs` auf live `players/$uid/tutorial`), 7-Wellen-Einsatz, komplette 36-teilige General-Vance-Vertonung (DE/EN) und 8-Stationen-HQ-Führung auf Release-Build **`20261119-block6`** (PR `#328`) vorbereitet; CI & echte Geräteabnahme ausstehend. | **97 %** · Release `20261119-block6` (PR #328, CI & Geräteabnahme offen) |
-| 8 | [Block 7 · Leben, Gegenangriffe und Reparaturen](#7-zusätzlich-vorgeschlagen-leben-und-gegenangriffe--offen) | Leben für Soldaten/Türme, Angriffe mit Vorwarnung, Reparatur statt Verlustspirale, gleiche Regeln in allen Modi. | **~70 %** · Scheibe 1 live (`IPL-0106`), Scheibe 2 läuft (Reihenfolge: [AUSBAU-PLAN.md](AUSBAU-PLAN.md)) |
-| 9 | [Block 8 · Nach den Patches](#8-was-nach-den-patches-ansteht--sammelstelle) | Sammelstelle: UI-Feinschliff (`#306`–`#315`) & `20261031-patch7` ([PR #316](https://github.com/0815games/0815games.github.io/pull/316), `a69675bb`) live; Max-1-Retry auf `party-finalization-browser` (`IPL-0065`); offen: Namens-Audit, Altsaves & Geräteabnahme. | **80 %** · Sammelstelle |
+| 1 | [Block 1 · Multiplayer](#1-zuerst-multiplayer-wieder-vollständig-spielbar-machen--mehrere-fixes-bereits-umgesetzt) | Host-Notabschluss (`Grenzen des Abschlusses`) & Einsteigerbalance C (`60 %/1,75×`, `55 %/2,0×`, Sektor-1-Start W1–10 im MP, `g3-2f1bbcd88`) gebaut (`IPL-0079`); offen: reale 2–4-Geräte-Netzwechsel & Abnahme. | **ausgeliefert** · Code live (`20261119-block2` ff.); Geräteprüfung = Betreiber |
+| 2 | [Block 2 · Charakter und Freunde](#2-charakter-löschen-freunde-und-einladungen--wesentliche-teilfälle-bereits-umgesetzt) | `NFC_CASEFOLD_V2`, stille Login-Reservierung, Konflikt-Dialog (`#nameConflictDialog`) & live bestätigte `BLOCK2-RULES-TO-PUBLISH.json` (`IPL-0078`, `IPL-0080`); offen: Screenreader & Mehrgeräteabnahme. | **ausgeliefert** · Code & Rules live; Screenreader-Prüfung offen |
+| 3 | [Block 3 · Oberfläche](#3-kampf--und-party-oberfläche--bericht-und-rangabzeichen-bereits-gebaut) | Gebaut und im Browser/Handy abgenommen; Porträt-Rules live; offen nur Netz-Datenmenge (`D1`) und Build-Stempel. | **ausgeliefert** · D1-Datenmenge bewusst zurückgestellt |
+| 4 | [Block 4 · Avatare](#4-charaktererstellung-und-avatare--genehmigte-überarbeitung-bereits-live) | Neubau (`Idee 1` + `Umsetzungsidee A`, PR #314) & `#versionNotice`-Layoutfix + Spielstil-Artwork (PR #315) live auf `20261031-patch6` (`IPL-0062`); Versions-Popup bestätigt, Avatar-Abnahme offen. | **ausgeliefert** · Live auf `20261031-patch6` (Popup bestätigt) |
+| 5 | [Block 5 · Skills](#5-skills-neu-strukturieren--bestehende-turm-spezialisierungen-bereits-implementiert) | V2-Klassenbau (`20261118-block5`, PR #318) & [`BLOCK5-RULES-TO-PUBLISH.json`](../firebase/BLOCK5-RULES-TO-PUBLISH.json) (PR #319) gemergt; Betreiber bestätigte Live-Veröffentlichung der Block-5-RTDB-Rules (`IPL-0068`); offen: echte Geräteabnahme. | **ausgeliefert** · Spielcode & Rules live (`20261118-block5`) |
+| 6 | [Block 9 · Menü-Redesign](#9-einheitliches-menü-layout--kommandotafeln-desktop--app-shell-mobile) | Einheitliche Command-HQ-Oberfläche (Desktop 2-Spalten-HQ / Mobile App-Shell mit Daumen-Leiste), 3-Zonen-Artwork-Dialoge, Terrain-Endloswahl, Settings-Account/Passwortänderung, Einzelsitzungs-Schutz (`activeSessions/$uid`) & live bestätigte `BLOCK9D`-Rules (`IPL-0074`) vor Block 6. | **ausgeliefert** · Spielcode (`20261119-block9e`/9f, PR #324/#325) & Rules live |
+| 7 | [Block 6 · Tutorial](#6-tutorial-als-großer-zusammenhängender-einsatz--ausgeliefert-pr-328-20261119-block6) | Charakter-Auftragsakte (`tutorial-dossier.mjs`), Charakter-Sync (`tutorial-sync.mjs` auf live `players/$uid/tutorial`), 7-Wellen-Einsatz, komplette 36-teilige General-Vance-Vertonung (DE/EN) und 8-Stationen-HQ-Führung auf Release-Build **`20261119-block6`** (PR `#328`) ausgeliefert. | **ausgeliefert** · PR #328 gemergt (2026-11-20), Folgewellen bis `20261123-party6` |
+| 8 | [Block 7 · Leben, Gegenangriffe und Reparaturen](#7-zusätzlich-vorgeschlagen-leben-und-gegenangriffe--scheibe-1--2-live) | Leben für Soldaten/Türme, Angriffe mit Vorwarnung, Reparatur statt Verlustspirale, gleiche Regeln in allen Modi. | **ausgeliefert** · Scheibe 1 (`IPL-0106`) + Scheibe 2 (`IPL-0114`/`IPL-0115`) live; Rest: Emulator-Transportfälle (E5) |
+| 9 | [Block 8 · Nach den Patches](#8-was-nach-den-patches-ansteht--sammelstelle) | Sammelstelle: UI-Feinschliff (`#306`–`#315`) & `20261031-patch7` ([PR #316](https://github.com/0815games/0815games.github.io/pull/316), `a69675bb`) live; Max-1-Retry auf `party-finalization-browser` (`IPL-0065`); offen: Namens-Audit, Altsaves & Geräteabnahme. | Sammelstelle · Rückbau-Reste per Betreiber-Entscheid gestrichen; Boss-Banner gelandet (`IPL-0104`) |
 
 **Im Spiel sichtbar:** Unter **FELDNOTIZEN** in der Kommandozentrale zeigt eine
 Ansicht dieselbe Einteilung – Reiter *Veröffentlicht* (was mit welchem Build
@@ -666,7 +671,7 @@ Hauptmenü und den einheitlichen Dialogen aufbauen.
   bzw. `✕` im Gefecht), eigene `1376×768`-Modus-Artworks (`mode-*.jpg`) sowie
   schlankes Endlos-Einzelbild-Karussell (`endless-random.jpg`, `DEPLOY` oben,
   `CANCEL` direkt darunter). *(Gemergt mit `57ebfaf4e79ff67db09c06ec780344158a7e133f`; Geräteabnahme auf `20261119-block9e` ergab Nachbesserungen in Block 9f.)*
-- [ ] **Block 9f Layout-, Hero- & Breitenabgleich (`20261119-block9f`, PR #325):**
+- [x] **Block 9f Layout-, Hero- & Breitenabgleich (`20261119-block9f`, PR #325):**
   Einspaltiges Login-Dossier (`#authView`) mit vollbreiter oberer Key-Art-Bühne,
   unbeschnittenem Header-Logo und vier neuen zu `command-horizon.jpg` passenden
   `16:9`-Login-Gemälden (`login-*.jpg` + `LOGIN_SCENE_VERSION`), ausgerichtetes
@@ -675,10 +680,10 @@ Hauptmenü und den einheitlichen Dialogen aufbauen.
   Links-oben-Verankerung aller HQ-Zurück-Buttons, feste `256px`/`176px`
   Endlos-Karussellkarte mit eigenen SVG-Pfeilen sowie einheitliche
   `--hq-op-width`-Breite (`min(880px, calc(100vw - 48px))`) für Kampagne,
-  Endlos und Mehrspieler. *(Lokale 259-Dateien-/1.163-Tests, Stress-Suite &
-  561-Dateien-Syntaxprüfung grün; PR-CI-Browser-Check & Geräteabnahme offen.)*
+  Endlos und Mehrspieler. *(PR #325 am 2026-11-19 gemergt; Geräteabnahme
+  ist Betreiber-Sache.)*
 
-### 6. Tutorial als großer zusammenhängender Einsatz – Klient, Dialoge und Generalstimme lokal gebaut, Abnahme ausstehend
+### 6. Tutorial als großer zusammenhängender Einsatz – ausgeliefert (PR #328, `20261119-block6`)
 
 - [x] **Vorgezogene RTDB-Regel für charakterbezogenen Tutorialstatus (`players/$uid/tutorial`):**
   Über [`firebase/BLOCK2-RULES-TO-PUBLISH.json`](../firebase/BLOCK2-RULES-TO-PUBLISH.json)
@@ -688,7 +693,7 @@ Hauptmenü und den einheitlichen Dialogen aufbauen.
   `rewarded` & `missionCompleted` monoton `true`, optionale `phase`/`step` zur
   Wiederaufnahme, atomare Löschung bei Charakterentlassung), sodass vor dem
   eigentlichen Block-6-Clientbau kein weiterer Firebase-Rules-Deploy nötig ist.
-- [x] **Charakterbezogenes Dossier & RTDB-Status (`lokal/uncommittet`, `IPL-0081`):**
+- [x] **Charakterbezogenes Dossier & RTDB-Status (ausgeliefert mit PR #328, `IPL-0081`):**
   [`tutorial-sync.mjs`](../core/tutorial-sync.mjs) und
   [`tutorial-dossier.mjs`](../core/tutorial-dossier.mjs) zeigen nach jeder neuen
   Charaktererstellung zuerst das Block-9-Hauptmenü plus General Vances
@@ -697,7 +702,7 @@ Hauptmenü und den einheitlichen Dialogen aufbauen.
   `players/$uid/tutorial` und sperren doppelte Belohnungen atomar per
   Transaktion (inkl. Altsave-Schutz bei bestehender XP). Einstellungen & der
   Kommandozentralen-Tutorial-Button erlauben jederzeit einen späteren Start.
-- [x] **Großer 7-Wellen-Einsatz + 8-Stationen-HQ-Führung (`lokal/uncommittet`, `IPL-0081`):**
+- [x] **Großer 7-Wellen-Einsatz + 8-Stationen-HQ-Führung (ausgeliefert mit PR #328, `IPL-0081`):**
   [`training-run.mjs`](../core/training-run.mjs),
   [`first-run-coach.mjs`](../ui/first-run-coach.mjs),
   [`first-run-guide.mjs`](../ui/first-run-guide.mjs),
@@ -724,11 +729,12 @@ Hauptmenü und den einheitlichen Dialogen aufbauen.
   `browser-tests/interface-smoke.cjs` (`#tutorialDossier` & `#menuTour`) sowie
   `patch-notes.mjs` (`20261119-block6`, PR `#328`, Block 7 als `NEXT`) einheitlich
   auf `20261119-block6` umgestellt.
-- [ ] **CI-Lauf & echte Geräteabnahme:** PR `#328`-CI (`ironpath-firebase-rules.yml`
-  inkl. Emulator-Rules, Chromium-Smokes & Party-Finalization-Matrix) sowie echte
-  Browser-/Handy-Abnahme durch den Betreiber stehen aus / laufen an.
+- [x] **CI-Lauf & Release:** PR `#328` am 2026-11-20 gemergt (CI grün, Welle
+  `20261119-block6` live); seither mit jeder Folgewelle weitergelaufen
+  (aktuell `20261123-party6`). Geräteabnahme ist Betreiber-Sache und kein
+  offener Punkt.
 
-### 7. Zusätzlich vorgeschlagen: Leben und Gegenangriffe – offen
+### 7. Zusätzlich vorgeschlagen: Leben und Gegenangriffe – Scheibe 1 + 2 live
 
 **Eingeordnet als künftiger Patch Nr. 7 nach Block 6** (Wunsch des Betreibers,
 [IPL-0030](PATCH-LOG.md#ipl-0030--feldnotizen-im-spiel-und-block-7-als-künftiger-patch));
@@ -737,12 +743,15 @@ in der [Reihenfolge](#kommende-patches--reihenfolge) und im Spiel unter
 kommt es zuletzt.
 
 - [x] Der Bunker besitzt bereits Lebenspunkte und bestehende Reparatureffekte.
-- [ ] Das neue Lebens-, Angriffsschutz- und Reparatursystem für Soldaten,
-  Türme und Bunker **in allen Spielmodi** entwickeln und balancieren; die
-  Werte in Detail E sind ungetestete Startvorschläge. Kein dauerhafter Verlust
-  von Charakterfortschritt oder Ausrüstung.
-- [ ] Gemeinsame Simulation, Multiplayer-Synchronisierung, Tutorial, Solo,
-  Kampagne, 2–4-Koop, 1v1 und 2v2 testen; danach Einsteigerbalance erneut prüfen.
+- [x] Das neue Lebens-, Angriffsschutz- und Reparatursystem für Soldaten,
+  Türme und Bunker **in allen Spielmodi** ist gebaut und ausgeliefert
+  (Scheibe 1 `IPL-0106`, Scheibe 2 `IPL-0114`/`IPL-0115`). Kein dauerhafter
+  Verlust von Charakterfortschritt oder Ausrüstung. Die menschliche Balance
+  prüft der Betreiber im Spiel – sie ist ausdrücklich kein offener Punkt
+  (Entscheid 2026-11-23).
+- [x] Gemeinsame Simulation, Multiplayer-Synchronisierung, Tutorial, Solo,
+  Kampagne, 2–4-Koop, 1v1 und 2v2 sind automatisiert geprüft
+  (`IPL-0106`, `IPL-0115`); offen nur die Emulator-Transportfälle in E5.
 
 **Aktuelle lokale Nachprüfungen:** Der vollständige serielle Node-Lauf nach
 Porträt-, Namens-Audit- und Freundesanfrageänderungen bestand mit **994/994**,
@@ -1161,9 +1170,13 @@ Suite und eigener Cache-Welle neu landen.
   (PR `#364`, Welle `20261122-ring1`) neu gelandet — nur die Auswahlringe,
   ohne die Hover-Vorschau aus `#336`; die Literal-Notiz entfällt daher
   gegenstandslos.
-- [ ] **Spawn-Punkt-Marker am Karteneingang (PR `#337`).** Beim Neu-Landen
-  `SPAWN-PUNKT` und `WELLE {wave} · {count} FEINDLICHE` deutsch hinterlegen.
-- [ ] **Boss-Ankündigung (PR `#338`) – nur mit Import.** `bossPhaseLabel` muss
+- [x] ~~**Spawn-Punkt-Marker am Karteneingang (PR `#337`).**~~ Per
+  Betreiber-Entscheid fallengelassen („vergiss bitte die restlichen offenen
+  Punkte bis auf die Boss Ankündigung“, Kontext `IPL-0104`); nicht neu zu landen.
+- [x] **Boss-Ankündigung (PR `#338`) – neu gelandet als `IPL-0104`** (PR #366,
+  Welle `20261123-boss1`) als eigenes UI-Modul `ui/boss-banner.mjs` statt im
+  Canvas-Maler. Die folgende Analyse beschreibt die zurückgenommene Fassung
+  und bleibt als Warnung stehen: `bossPhaseLabel` muss
   aus `boss-mechanics.mjs` (Export Zeile 41) importiert werden; in der
   zurückgenommenen Fassung stand der Aufruf in `cartoon-art.mjs:1101` ohne Import
   und **vor** der Auswertung, was mit echtem Boss (`makeEnemy(bossForWave(5).kind,
@@ -1171,19 +1184,23 @@ Suite und eigener Cache-Welle neu landen.
   `requestAnimationFrame`-Kette tötete. Zusätzlich empfohlen: Fang um `draw()` in
   `IronPath/game.js:1501–1506`, damit ein Zeichenfehler das Feld nicht mehr
   einfriert, und ein Test mit echtem Boss statt Stub.
-- [ ] **Mündungsblitz erst nach Reparatur der Auslösebedingung neu einführen.**
+- [x] ~~**Mündungsblitz neu einführen.**~~ Per Betreiber-Entscheid
+  fallengelassen (Kontext `IPL-0104`); die Analyse der zurückgenommenen
+  Fassung bleibt als Warnung stehen:
   In der zurückgenommenen Fassung war er toter Code und latent absturzgefährdet:
   `pad()` suchte `s.tx===x&&s.ty===y` (Zielposition des Gegners) statt der
   Pad-Position `s.x`/`s.y`, und `performance.now()-(shot.time||0)` mischte
   Seiten-Millisekunden mit einem Schussobjekt ohne `time` – bei einem Treffer
   wäre `muzzleFlash` groß negativ geworden und `ctx.arc()` mit negativem Radius
   hätte `IndexSizeError` geworfen.
-- [ ] **Vektor-Fallback-Farben (PR `#339`).** Beim Neu-Landen die
+- [x] ~~**Vektor-Fallback-Farben (PR `#339`).**~~ Per Betreiber-Entscheid
+  fallengelassen (Kontext `IPL-0104`). Historische Notiz: Beim Neu-Landen wäre die
   `tower-glow`-Literalprüfung mitziehen: der Test sucht
   `fallbackMarker(ctx,x,y-6,['MG','C','AA','S']`, das `#339` in
   `drawTowerVectorFallback(...)` umbenannt hat. Der Code war korrekt, nur der
   Test war veraltet.
-- [ ] **`game-regressions` zum Pflicht-Check machen.** Der Job war in `#335`,
+- **`game-regressions` zum Pflicht-Check machen** (Repo-Einstellung des
+  Betreibers, keine Code-Aufgabe; hier nicht als offener Punkt geführt). Der Job war in `#335`,
   `#336`, `#337`, `#338` und `#339` rot; alle fünf wurden gemergt. `#334` war der
   letzte grüne Lauf (Run `44761316601`). Ohne diese Lücke wäre der Rückbau nicht
   nötig geworden. Der Schutzstatus von `main` ist aus dem Arbeitsraum nicht
