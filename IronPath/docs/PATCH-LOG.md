@@ -6,7 +6,7 @@ aber ersetzt weder Git noch die GitHub-PR-Historie. Die dazugehörige
 [Arbeitsanweisung](../../AGENTS.md) verlangt, dieses Log vor der Arbeit zu lesen
 und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
 
-Die Einträge IPL-0001 bis IPL-0088 stehen im
+Die Einträge IPL-0001 bis IPL-0089 stehen im
 [Archiv](PATCH-LOG-ARCHIV.md); hier stehen die neuesten 20. Beide Dateien
 zusammen sind lückenlos und doppelfrei - `../scripts/patch.mjs` (Unterbefehl `check`) und
 `../tests/patch-log-archive.test.mjs` prüfen das.
@@ -45,19 +45,6 @@ jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderl
 
 
 
-
-## IPL-0089 – Endlos-Sektorrückzug: Vollbild-Gefechtsfeld im Hochformat & Zoom-Übergang (`20261120-endlessview1`, Ziel-PR `#334`)
-- **Zeit / Quelle:** 2026-10-31 UTC (Nutzerrückmeldung: auf dem Handy füllen Wellen 1–10 den gesamten Hochformat-Bildschirm beim Zoomen; ab Welle 10 / neuem Sektor schrumpft das Feld auf rund ein Drittel der Bildschirmhöhe und verweigert Vollbild-Zoom); Arbeitsbranch `arena/6782c8ab-0815games-github-io` ab `a8df4534e360f1f78358df2570cbe6fc9b14c807` (`main`, PR `#333`). Status aktuell: `lokal/uncommittet`.
-- **Ursachenanalyse (`IronPath/game.js:783–786` & `IronPath/field-command.css:238`):**
-  1. Wellen 1–10 nutzen in Sektor 1 (`960×540`) `touchZoom` (`createMapZoom`), das die CSS-Breite hochskaliert und damit im Hochformat vertikal den Bildschirm nutzt. Ab Welle 10 wechselt `advanceSector` auf Sektor 2 (`1320×720`, später `1680×960` / `2040×1140`), wodurch `wantsBattleViewport` auf `createBattleViewportController` umschaltet.
-  2. In `updateUI()` war `fullBattle` jedoch auf `!!coop && screen==='online'` beschränkt. Dadurch blieb `canvas.dataset.fullBattle='false'`, `logicalHeight` blieb hart bei `540` und `<canvas>` schrumpfte im `390×844`-Hochformat auf eine `390×219 px`-Horizontalzeile (`~1/3` Höhe), weil `battleViewport` innerhalb des starren `540`-Rahmens zoomte statt `100% × 100%` des Viewports zu nutzen.
-  3. Zusätzlich blieben `#mapQuickZoom`-Beschriftung beim Erstaufbau, `ResizeObserver`-Neurahmungen bei Größenwechsel/Drehung sowie `selectedMap` nach `#sectorAdvance` teils unaktualisiert, und `setMissionBoard` aktualisierte `updateUI()` noch nicht beim Öffnen des Missionsboards.
-- **Änderungen / Dateien:**
-  - `IronPath/game.js`: `fullBattle` gilt nun für aktive Solo-Gefechte (`endless`, `training`, `campaign` mit `boardOpen !== 'true'`) sobald `wantsBattleViewport(map, versus, false)` greift und `#mapViewport` sichtbare Maße besitzt; `wantsBattleViewport` und `fullBattle` koerzieren strikt auf `Boolean` (so bleibt `canvas.dataset.fullBattle` bei klassischen Karten ohne `fourPlayer` wie `'road'` auch mit `experimentalFourViewport` sauber `'false'` statt `'undefined'`); `ResizeObserver` und `setMissionBoard` synchronisieren `updateUI()`; `syncBattleViewport` resetted `scrollTop`, nutzt `Math.max(fillScale, 1)` für Solo-Einzelkarten (`fillScale` im Co-op/4P), behält Füllhöhe bei Drehung (`wasFilled`) und restauriert `touchZoom` bei Rückkehr auf `960×540`; `renderViewportLabels` synchronisiert `#mapQuickZoom`; `$('sectorAdvance').onclick` übernimmt `selectedMap = state.mapId`.
-  - `IronPath/battle-music.mjs`: `makeWeatherNoise` glättet die Schleifennaht des 4-s-Wetterrauschens über eine 16-Sample-Brücke zwischen Pufferende und -anfang (`data[0] === data[length - 1]`), sodass kein ungefilterter Weißrausch-Sprung am Loop-Übergang entsteht (behob zugleich die sporadische ~5-%-Abweichung in `battle-sound.test.mjs:541` bei CI-Run `44752320532`).
-  - **Tests & Cache-Welle `20261120-endlessview1`:** Neue Node-Testsuite `IronPath/tests/endless-retreat-viewport.test.mjs` (echter Welle-1..10-Durchlauf + `#sectorAdvance`-Klick auf `390×844` Hochformat, Schwenk-und-Tap-Absicherung für beliebige Sektor-2-Karten, Querformat-Drehung, Sektor 3, Neustart auf Sektor 1, striktes `'false'` auf `'road'` trotz `experimentalFourViewport: true`, Desktop `1280×800`, versteckter Workspace & Kampagnenboard); erweiterte Assertions in `IronPath/browser-tests/retreat-viewport.cjs` und `IronPath/browser-tests/multiplayer-field.cjs` (`four-front` behält im Solo-Fallback `fullBattle='true'`, klassisches `'road'` setzt wieder `fullBattle='false'`); `IronPath/browser-tests/cache-wave.cjs`, `IronPath/release-version.json`, `IronPath/patch-notes.mjs` (`RELEASED_PATCHES[0]` `endlessview1` / PR `#334`) sowie Cache-Stempel `20261120-endlessview1`.
-- **Verlauf / Prüfungen:** PR `#334` eröffnet (`1f5ea6d`); CI-Run `44751131383` zeigte `multiplayer-field.cjs:191` (`dataset.fullBattle === 'undefined'` nach Rückkehr auf `'road'`), behoben in `f623037` (CI-Run `44752320532`: 12/13 grün inkl. `interface-browser-smoke`, `database-rules` und aller 8 Emulator-Suites; `game-regressions` traf den ~5-%-Zufallstreffer in `battle-sound.test.mjs:541`). Lokal nach Fix: `battle-sound.test.mjs` `50/50`, `endless-retreat-viewport.test.mjs` `10/10`, gesamte Node-Testsuite unter `--test-concurrency=8` (`0` Fehler) und `stress-tests/run.mjs` bestanden.
-- **Offen:** Finaler CI-Durchlauf auf PR `#334` sowie echte Geräteprüfung auf Handy Safari/Chrome nach Merge.
 
 
 ## IPL-0090 – Rückbau auf PR `#334`: spielbarer Stand wiederhergestellt, Cache-Welle `20261121-rollback1`
@@ -958,3 +945,15 @@ sie geprüft wurde.
 - **Prüfungen:** `node --test IronPath/tests/menu-redesign.test.mjs IronPath/tests/endless-launcher.test.mjs`: 18/18. `patch.mjs check --fast`: 0 Fehler (2 Hinweise vor der Welle). Sichtprüfung über lokale Live-Vorschau durch den Betreiber möglich; Browser-Fahrten laufen mangels lokalem Chromium in der CI. Gesamtsuite folgt auf der Cache-Welle.
 - **Git / PR / Release:** Wird mit Welle und PR-Nummer fortgeschrieben.
 - **Offen / nächster Schritt:** Cache-Welle `20261123-endless2` inkl. Feldnotizen, PR, CI, Merge, Pages-Nachweis. Block E Scheibe 2 bleibt eigenes Paket.
+
+## IPL-0109 – Endless-Bühne: Standard-Pfeile in Militär-Optik zurück, DEPLOY nur schriftbreit
+- **Zeit / Quelle:** 2026-11-23 UTC; Betreiber-Rückmeldung zu `IPL-0108`: „Die Pfeilge fallen mit optisch gar nicht. Wir gehen wieder zu standart Pfeilen in Militär optik über.“ und „Deploy button soweit sogut. Aber wieso über die gesamte breite? Reicht doch fix in der mitte so breit wie die schrift selbst.“
+- **Block / Ziel:** Feinschliff am Endless-Startdialog, kein Block-Thema.
+- **Branch / Basis:** `arena/1b685ae1-0815games-github-io` ab `483dbd74cd81c6bfa644c707e5bb1a978d7a1335` (`main`, Merge PR `#370`). Status: lokal umgesetzt, Commit/PR folgen.
+- **Änderungen / Dateien:**
+  - `IronPath/index.html`: Pfeil-SVGs zurück auf die klassischen schlanken Linien-Chevrons (`viewBox 0 0 28 48`, Doppelstrich mit Tragstrich) statt der gefüllten 48er-Doppel-Chevrons aus `IPL-0108`.
+  - `IronPath/menu-redesign.css`: Pfeil-Buttons zurück auf das schlanke Standardmaß (46×76 px, mobil 40×62 px) mit dunklem Oliv-Verlauf, Messing-Rand und Messing-Chevron – also Standard-Pfeile in Militär-Optik; die genietete Panzerplatte aus `IPL-0108` ist entfernt. `#endlessDeploy` verliert seine Mindestbreite (220 px Desktop / 180 px mobil) und ist jetzt nur so breit wie die Stencil-Schrift plus Innenabstand, weiterhin mittig unten auf dem Bild mit Glow-Rahmen.
+  - Tests: `IronPath/tests/menu-redesign.test.mjs` (Anker: 28er-Standard-Chevrons; DEPLOY ohne `min-width`).
+- **Prüfungen:** `node --test IronPath/tests/menu-redesign.test.mjs IronPath/tests/endless-launcher.test.mjs`: 18/18. `patch.mjs check --fast`: 0 Fehler (2 Hinweise vor der Welle). Browser-Geometrie (Pfeil-/DEPLOY-Lage im Bild) ist durch die unveränderten Anker in `interface-smoke.cjs` weiter gedeckt und läuft in der CI; Sichtprüfung über die lokale Live-Vorschau.
+- **Git / PR / Release:** Wird mit Welle und PR-Nummer fortgeschrieben.
+- **Offen / nächster Schritt:** Cache-Welle `20261123-endless3` inkl. Feldnotizen, PR, CI, Merge, Pages-Nachweis. Block E Scheibe 2 bleibt eigenes Paket.

@@ -2673,7 +2673,7 @@ dialog#tutorialDossier::backdrop {
    the picture, the map name holds the TOP edge (DEPLOY owns the bottom),
    and a click anywhere on the artwork deploys. DEPLOY is a stencil-plate
    with a glowing brass frame so it reads on every artwork; the arrows are
-   riveted armour plates with filled military double chevrons. */
+   the classic slim line chevrons in a military olive-and-brass finish. */
 #endlessLaunch .endless-stage {
   position: relative;
   height: 352px;
@@ -2762,23 +2762,18 @@ dialog#tutorialDossier::backdrop {
   z-index: 2;
   display: grid;
   place-items: center;
-  width: 50px;
-  min-width: 50px;
-  height: 64px;
+  width: 46px;
+  min-width: 46px;
+  height: 76px;
   margin: 0;
   padding: 0;
-  border: 1px solid rgba(228, 202, 137, 0.8);
-  border-radius: 6px;
-  background:
-    radial-gradient(circle at 9px 9px, rgba(243, 223, 176, 0.95) 1.7px, rgba(0, 0, 0, 0.35) 2.4px, transparent 3px),
-    radial-gradient(circle at calc(100% - 9px) 9px, rgba(243, 223, 176, 0.95) 1.7px, rgba(0, 0, 0, 0.35) 2.4px, transparent 3px),
-    radial-gradient(circle at 9px calc(100% - 9px), rgba(243, 223, 176, 0.95) 1.7px, rgba(0, 0, 0, 0.35) 2.4px, transparent 3px),
-    radial-gradient(circle at calc(100% - 9px) calc(100% - 9px), rgba(243, 223, 176, 0.95) 1.7px, rgba(0, 0, 0, 0.35) 2.4px, transparent 3px),
-    linear-gradient(160deg, rgba(47, 68, 50, 0.94) 0%, rgba(12, 21, 15, 0.92) 100%);
-  color: #f0d48a;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(243, 223, 176, 0.35), inset 0 0 12px rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(228, 202, 137, 0.55);
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(13, 23, 18, 0.72) 0%, rgba(13, 23, 18, 0.52) 100%);
+  color: var(--hq-gold);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(228, 202, 137, 0.22);
   cursor: pointer;
-  transition: border-color 140ms ease, color 140ms ease, box-shadow 140ms ease;
+  transition: border-color 140ms ease, background-color 140ms ease, color 140ms ease, box-shadow 140ms ease;
 }
 
 #endlessLaunch .endless-arrow-prev {
@@ -2791,16 +2786,16 @@ dialog#tutorialDossier::backdrop {
 
 #endlessLaunch .endless-arrow .endless-arrow-icon {
   display: block;
-  width: 30px;
-  height: 30px;
-  filter: drop-shadow(0 0 5px rgba(240, 212, 138, 0.45));
+  width: 24px;
+  height: 42px;
   transition: transform 140ms ease;
 }
 
 #endlessLaunch .endless-arrow:hover {
-  border-color: #ffe9a8;
-  color: #ffeeb8;
-  box-shadow: 0 0 0 1px rgba(228, 202, 137, 0.3), 0 0 16px rgba(232, 201, 124, 0.4), 0 8px 20px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(243, 223, 176, 0.4);
+  border-color: var(--hq-gold);
+  background: linear-gradient(180deg, rgba(42, 68, 55, 0.88) 0%, rgba(24, 42, 34, 0.82) 100%);
+  color: #f8e6b4;
+  box-shadow: 0 0 0 1px rgba(228, 202, 137, 0.24), 0 8px 20px rgba(0, 0, 0, 0.5);
 }
 
 #endlessLaunch .endless-arrow-prev:hover .endless-arrow-icon {
@@ -2822,10 +2817,9 @@ dialog#tutorialDossier::backdrop {
   bottom: 16px;
   transform: translateX(-50%);
   z-index: 2;
-  min-width: 220px;
   min-height: 54px;
   margin: 0;
-  padding: 13px 32px;
+  padding: 13px 28px;
   border: 2px solid #e8c97c;
   border-radius: 6px;
   background: linear-gradient(180deg, rgba(43, 62, 45, 0.94) 0%, rgba(9, 16, 11, 0.96) 100%);
@@ -2900,15 +2894,14 @@ dialog#tutorialDossier::backdrop {
   }
 
   #endlessLaunch .endless-arrow .endless-arrow-icon {
-    width: 24px;
-    height: 24px;
+    width: 19px;
+    height: 33px;
   }
 
   #endlessLaunch #endlessDeploy {
-    min-width: 180px;
     min-height: 48px;
     bottom: 12px;
-    padding: 11px 24px;
+    padding: 11px 22px;
     font-size: 14px;
     letter-spacing: 0.18em;
     text-indent: 0.18em;
