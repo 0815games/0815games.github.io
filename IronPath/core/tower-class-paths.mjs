@@ -1,4 +1,4 @@
-import {SKILL_PATH_MAP} from './skills.mjs?v=20261123-endless3';
+import {SKILL_PATH_MAP} from './skills.mjs?v=20261123-endless4';
 
 // Exclusive class upgrade paths on basic towers, separated completely from the
 // 10 universal level-3 tower kits (tower-specialization.mjs).

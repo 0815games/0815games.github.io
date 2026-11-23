@@ -9,14 +9,14 @@
 //
 // A campaign mission is a contract, not a sandbox: it carries a threat level that
 // decides its wave count, enemy scale and bunker health (see campaign-pressure).
-import {createMatch} from './simulation.mjs?v=20261123-endless3';
-import {createWorkshopSoloMatch} from '../workshop/workshop-solo.mjs?v=20261123-endless3';
+import {createMatch} from './simulation.mjs?v=20261123-endless4';
+import {createWorkshopSoloMatch} from '../workshop/workshop-solo.mjs?v=20261123-endless4';
 import {decodeWorkshop} from '../workshop/workshop-wire.mjs?v=20261112-tagless1';
 import {threatFor,campaignUnitScale,campaignBunker,campaignWaves,campaignSurge,campaignPressure} from './campaign-pressure.mjs?v=20261112-pressure1';
-import {TRAINING_WAVES,TRAINING_UNIT,TRAINING_BUNKER,TRAINING_BOSS_UNIT,TRAINING_BOSS_EVERY,TRAINING_SUPPLIES} from './training-run.mjs?v=20261123-endless3';
+import {TRAINING_WAVES,TRAINING_UNIT,TRAINING_BUNKER,TRAINING_BOSS_UNIT,TRAINING_BOSS_EVERY,TRAINING_SUPPLIES} from './training-run.mjs?v=20261123-endless4';
 import {relicBonus} from './relics.mjs?v=20261112-tagless1';
-import {storyBossKind} from './combat.mjs?v=20261123-endless3';
-import {getMap} from './maps.mjs?v=20261123-endless3';
+import {storyBossKind} from './combat.mjs?v=20261123-endless4';
+import {getMap} from './maps.mjs?v=20261123-endless4';
 
 // Where a soldier stands when a run begins. A story mission starts at its first
 // stage marker ("Soldier starts every time at the bunker!" was the report that
