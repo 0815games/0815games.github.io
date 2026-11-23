@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see docs/PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261123-endless1';
+import {getLanguage} from './language.mjs?v=20261123-endless2';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,20 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'endless2',build:'20261123-endless2',pr:370,
+    title:{en:'Endless Stage Polish · Stencil DEPLOY with a Glowing Frame',de:'Endless-Bühne Feinschliff · Stencil-DEPLOY mit Glow-Rahmen'},
+    shipped:[
+      {en:'The battlefield name moved to the top of the picture, so DEPLOY now owns the bottom edge alone - nothing covers your chosen ground any more.',de:'Der Name des Schlachtfelds sitzt jetzt oben auf dem Bild - DEPLOY besitzt die Unterkante allein, nichts verdeckt mehr das gewählte Gelände.'},
+      {en:'DEPLOY is a military stencil plate now: dark olive steel, a glowing brass frame with targeting corners and stencil letters that shine on every artwork, bright or dark.',de:'DEPLOY ist jetzt eine Militär-Stencil-Platte: dunkler Oliv-Stahl, leuchtender Messing-Rahmen mit Ziel-Ecken und Stencil-Buchstaben, die auf jedem Artwork leuchten - hell oder dunkel.'},
+      {en:'The arrows are riveted olive armour plates with solid brass double chevrons, matching the rest of the command gear.',de:'Die Pfeile sind genietete olivgrüne Panzerplatten mit vollen Messing-Doppel-Chevrons - passend zum übrigen Kommando-Gerät.'},
+      {en:'The random battlefield artwork was repainted: its rusty question mark now sits dead centre of the picture and stays centred at every stage size, never cropped again.',de:'Das Zufalls-Artwork wurde neu gemalt: Sein rostiges Fragezeichen sitzt jetzt exakt in der Bildmitte und bleibt bei jeder Bühnengröße zentriert - nie wieder angeschnitten.'},
+      {en:'Raised the cache wave to 20261123-endless2, because the endless stage changed: no device should keep showing the old stage out of cache.',de:'Die Cache-Welle auf 20261123-endless2 erhöht, weil sich die Endless-Bühne geändert hat: Kein Gerät soll die alte Bühne aus dem Zwischenspeicher zeigen.'},
+    ],
+    open:[
+      {en:'Block E continues in the next slice: hit feedback and a tutorial introduction, detailed host and reconnect checks, and play-tested balance.',de:'Block E geht in der nächsten Scheibe weiter: Treffer-Feedback und eine Tutorial-Einführung, Host- und Reconnect-Prüfung im Detail sowie spielgetestete Balance.'},
+    ]
+  },
   {
     id:'endless1',build:'20261123-endless1',pr:369,
     title:{en:'Endless Launch · One Big Battlefield Picture',de:'Endless-Start · Ein großes Schlachtfeldbild'},
