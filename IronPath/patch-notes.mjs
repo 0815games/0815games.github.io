@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see docs/PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261123-boss1';
+import {getLanguage} from './language.mjs?v=20261123-skill1';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,18 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'skill1',build:'20261123-skill1',pr:367,
+    title:{en:'Ability Recharge Waits for the Next Wave',de:'Fähigkeits-Aufladung wartet auf die nächste Welle'},
+    shipped:[
+      {en:'The recharge of your action skill now only counts down while a wave is actually running. Once a wave is cleared, the timer waits - you can plan and build in peace, and the skill is exactly as far charged when the next wave starts as it was when the last one ended.',de:'Die Aufladung der Aktionsfähigkeit zählt jetzt nur noch herunter, solange eine Welle wirklich läuft. Ist eine Welle geschafft, wartet der Timer - in Ruhe planen und bauen, und beim Start der nächsten Welle ist die Fähigkeit genau so weit geladen wie am Ende der letzten.'},
+      {en:'Moving your soldier and building between waves works as before; only the recharge was ticking when it should not have.',de:'Soldaten bewegen und zwischen den Wellen bauen geht wie bisher; nur die Aufladung ist weitergelaufen, obwohl sie es nicht sollte.'},
+      {en:'Raised the cache wave to 20261123-skill1, because the battle core changed: no device should keep fighting under the old sky out of cache.',de:'Die Cache-Welle auf 20261123-skill1 erhöht, weil sich der Gefechtskern geändert hat: Kein Gerät soll mit dem alten Stand aus dem Zwischenspeicher weiterkämpfen.'},
+    ],
+    open:[
+      {en:'Next work package: Block E, the shared life, attack and repair system for soldiers and towers across all modes.',de:'Nächstes Arbeitspaket: Block E, das gemeinsame Lebens-, Angriffs- und Reparatursystem für Soldaten und Türme in allen Modi.'},
+    ]
+  },
   {
     id:'boss1',build:'20261123-boss1',pr:366,
     title:{en:'Boss Banner · The Boss Is Announced in the Middle of the Field',de:'Boss-Banner · Der Boss wird mittig im Feld angekündigt'},
