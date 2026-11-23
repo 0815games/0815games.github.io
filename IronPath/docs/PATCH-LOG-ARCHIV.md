@@ -1,6 +1,6 @@
 # Iron Path – Patch-Log: Archiv
 
-Ältere Einträge IPL-0001 bis IPL-0096. Die neuesten 20 stehen in
+Ältere Einträge IPL-0001 bis IPL-0097. Die neuesten 20 stehen in
 [PATCH-LOG.md](PATCH-LOG.md); die Regeln für beide Dateien dort und in
 [`../../AGENTS.md`](../../AGENTS.md). Beim Verschieben wandert ein Eintrag immer
 vollständig einschließlich seiner Ereignis-Nachträge.
@@ -4266,3 +4266,33 @@ sie geprüft wurde.
 - **Auslieferung auf `main` belegt:** `IronPath/workshop/workshop-wire.mjs` und `IronPath/workshop/workshop-view.mjs` sind per Contents-API vorhanden (HTTP 200), die alte Adresse `IronPath/workshop-wire.mjs` liefert **404**, und `release-version.json` auf `main` trägt `"build": "20261122-workshop1"`.
 - **Ehrliche Grenzen:** Die Live-URL wurde nicht abgerufen; belegt sind Inhalt auf `main` und der fertige Pages-Build. **Keine Geräteabnahme:** Stempel `BUILD 20261122-workshop1` und die unverändert öffnende Werkstatt (Gegenstände, Schrott, ausgerüstete Teile) sind Sache der Betreiber-Sichtprüfung.
 - **Herkunft dieses Nachtrags:** Er steht als eigener Commit auf demselben Arbeitszweig nach dem Merge von `#350`; seine eigene Commit- und PR-Kennung steht deshalb nicht hier, sondern in Git und im PR-Text.
+
+## IPL-0097 – Phase 2, Scheibe 3: Die 15 Firebase-Clientmodule ziehen nach `net/` (eigene Cache-Welle folgt im selben PR)
+
+- **Zeit / Quelle:** Betreiber: „top, ging und weiter“ — Freigabe und Fortsetzung nach der `workshop/`-Scheibe (`IPL-0096`). Grundlage bleiben die vier Entscheidungen aus `IPL-0094`.
+- **Block / Ziel:** Kein Spiel-Block. Alle 15 `firebase-*.mjs` der Spielwurzel (Party-Kanal und -Sitzungen, Four-Lobby, Durable-/Recovery-Sitzungen) liegen künftig in `IronPath/net/`. Spielverhalten, Mehrspieler-Protokoll, Speicherstände und die Firebase-Regeln im Ordner `firebase/` bleiben unverändert; nur die Modul-Adressen ändern sich, deshalb trägt derselbe PR wieder eine eigene Cache-Welle (zweiter Commit, sobald die PR-Nummer existiert).
+- **Branch / Basis:** `arena/c1f67000-0815games-github-io` ab `af8241a4fb566bed112fa95bc403960163dc4adf` (`main`, Merge von PR `#351`).
+- **Änderungen / Dateien:**
+  - 15 Dateien per `git mv` nach `IronPath/net/` verschoben. 6 davon sind inhaltlich bytegleich; in 9 Dateien zeigen Importe auf Wurzel-Module jetzt eine Ebene hoch; Geschwister-Importe innerhalb von `net/` bleiben `./`.
+  - Einziger Wurzel-Importeur ist `IronPath/account.js` (7 Importe auf `./net/firebase-…` umgestellt).
+  - Mitgezogen: 22 Testdateien (`../net/firebase-…`), 13 Dateien in `IronPath/firebase/rules-test/` (`../../net/firebase-…`), der Lesepfad `net/firebase-party-game.mjs` in `language.test` und fünf Abhängigkeits-Schlüssel in `multiplayer-build-stamp` (`net/firebase-…`, weil diese Karte die Dateien unter ihrem Pfad liest).
+  - `IronPath/browser-tests/cache-wave.cjs`: Die zwei absoluten Importe zeigen auf `/IronPath/net/firebase-party-game.mjs` bzw. `net/firebase-recoverable-game.mjs`, und die Erwartungsliste führt die drei Netz-Module mit `net/`-Präfix. Der Test-Server kannte den Ordner bereits aus dem Wegbereiter (`IPL-0094`).
+  - **Korrektur am eigenen Codemod, vom Struktur-Wächter gefunden:** Zwei bereits umgezogene Querverweise (`./workshop/workshop-multiplayer-game.mjs` und `./workshop/workshop-match-validation.mjs` in `firebase-party-game` und `firebase-recoverable-game`) zeigten nach dem Umzug auf `net/workshop/…` ins Leere — der erste Codemod-Lauf erkannte nur einfache Dateinamen, keine Ordnerpfade. Der Wächter meldete beide Module als verwaist; die vier Importe zeigen jetzt auf `../workshop/…`. Merksatz für die restlichen Scheiben: Importe, die bereits in einen Fach-Ordner zeigen, brauchen beim Umzug des Importeurs ebenfalls ein `../` davor.
+  - `IronPath/docs/PATCH-LOG.md` und `IronPath/docs/PATCH-LOG-ARCHIV.md`: `IPL-0077` vollständig ins Archiv, Grenzen auf `IPL-0001` bis `IPL-0077` nachgezogen; das Log führt die neuesten 20 (`IPL-0078` bis `IPL-0097`).
+- **Prüfungen:**
+  - Betroffene Tests gezielt: 44 Vertrags-/Strukturtests (ein Fund: die oben genannten verwaisten Querverweise) und **263 Netz-Tests** (`durable-*`, `firebase-*`, `four-*`, `party-*`, `coop-*`, `friends*`, `social-*`, `multiplayer-*`, Konto-Suiten) — alle bestanden.
+  - Staging-Vergleich gegen den `main`-Stand (Baseline per `git worktree` auf `af8241a4`): **711 gestagte Dateien vorher und nachher**; 15 neue `net/`-Adressen, 6 Module mit identischem SHA-256, `account.js` als einzige Datei mit gleicher Adresse und neuem Inhalt.
+  - Gesamtsuite im vollständigen Klon: `node --test IronPath/tests/*.test.mjs` = **1.260 Tests, 1.260 bestanden, 0 fehlgeschlagen, 0 übersprungen, Exit 0**. `patch-check` vor dem Log-Eintrag: **0 Fehler**.
+  - Cache-Welle als zweiter Commit desselben PR: Feldnotizen-Eintrag `net1` (DE+EN, `pr: 352`) in `patch-notes.mjs` angelegt, danach `patch-bump 20261122-net1 --apply` — Trockenlauf nannte vorab exakt **79 Dateien, 276 Token-Vorkommen und die 7 bekannten Anker-Zeilen**; die Anker-Prüfung meldete danach alle 7 Anker auf `20261122-net1`.
+- **Git / PR / Release:** Erster Commit `30e9161c` auf `arena/c1f67000-0815games-github-io`, Pull-Request `#352` („Phase 2 (net): Firebase-Clientmodule ziehen nach IronPath/net“) damit eröffnet. Der Wellen-Commit folgt in demselben PR; CI, Merge und Pages-Auslieferung sind noch nicht erfolgt und werden erst nach dem tatsächlichen Ereignis mit Kennung nachgetragen. Keine Geräteabnahme bisher; die Sichtprüfung lautet auf `BUILD 20261122-net1` und einen unveränderten Party-Beitritt.
+- **Offen / nächster Schritt:** PR öffnen, Wellen-Commit nachschieben, CI abwarten, erst nach belegtem Merge/Pages-Stand als ausgeliefert bezeichnen. Danach `battle/`, `ui/`, `core/` je eigenem PR. Der Bauplatz-Auswahlring aus PR `#336` (ohne Hover-Vorschau) bleibt geparkt, bis die Struktur steht.
+
+### Ereignis-Nachtrag zu IPL-0097
+
+- **Commits / PR:** Umzug `30e9161c`, Cache-Welle `6c15eefc`, zwei Pfad-Fixe am Emulator-Test (`02a05354`, `7c0b5e05`), Log-Präzisierung `fef167b6` und Mock-Fix `7b4c3aa3` auf `arena/c1f67000-0815games-github-io`; Pull-Request `#352` („Phase 2 (net): Firebase-Clientmodule ziehen nach IronPath/net“).
+- **CI-Verlauf:** Lauf 1 rot an `party-finalization-browser (test:party-natural-browser)` (gestagter Pfad im Emulator-Test), Lauf 2 rot an `interface-browser-smoke` (Mock-Tiefe im Handoff-Test), Lauf 3 mit **13 von 13 bestandenen Checks, 0 fehlgeschlagen, 0 ausstehend** (Actions-Run `44994855244`, `interface-browser-smoke` Job `137123578756`). Die Ursachen und Merksätze stehen in den Korrektur-Punkten oben.
+- **Merge:** `gh pr view 352 --json state,mergedAt,mergeCommit` ergab `state=MERGED`, `mergedAt=2026-11-22T06:54:33Z`, Merge-Commit `9f4bb8143ea81244150629efd68a44baa0e0c4f9` in `main`.
+- **Pages:** `pages/builds` meldete danach `status=built`, Dauer 47.330 ms, Commit `9f4bb814`.
+- **Auslieferung auf `main` belegt:** `IronPath/net/firebase-party-game.mjs` ist per Contents-API vorhanden (HTTP 200), die alte Adresse `IronPath/firebase-party-game.mjs` liefert **404**, und `release-version.json` auf `main` trägt `"build": "20261122-net1"`.
+- **Ehrliche Grenzen:** Die Live-URL wurde nicht abgerufen; belegt sind Inhalt auf `main` und der fertige Pages-Build. **Keine Geräteabnahme:** Stempel `BUILD 20261122-net1` und eine Party erstellen/beitreten (Kampf startet wie bisher) sind Sache der Betreiber-Sichtprüfung; auch die `workshop1`- und Deutsch-Sichtprüfungen der vorigen Scheiben stehen noch aus.
+- **Herkunft dieses Nachtrags:** Er steht als eigener Commit auf demselben Arbeitszweig nach dem Merge von `#352`; seine eigene Commit- und PR-Kennung steht deshalb nicht hier, sondern in Git und im PR-Text.

@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see docs/PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261123-blocke2';
+import {getLanguage} from './language.mjs?v=20261123-sector1';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,19 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'sector1',build:'20261123-sector1',pr:379,
+    title:{en:'Endless Sectors With a Temper · Armor, Air, Iron Storm',de:'Endlos-Sektoren mit Charakter · Panzer, Luft, Eisensturm'},
+    shipped:[
+      {en:'Good news from HQ: the database growth caps are live, so progress can no longer be jumped to the limit in a single write.',de:'Gute Nachricht vom HQ: Die Zuwachs-Deckel in der Datenbank sind live — Fortschritt kann nicht mehr in einer einzigen Schreibung ans Limit springen.'},
+      {en:'Retreat sectors have a temper now: sector 2 rolls an Armor Column (expect tanks, bring cannons), sector 3 claims Air Superiority (keep Flak ready), and sector 4 is the Iron Storm with armor and air together. Sector 1 stays the standard fight.',de:'Die Rückzugs-Sektoren haben jetzt Charakter: Sektor 2 rollt eine Panzerkolonne (Panzer erwarten, Kanonen mitbringen), Sektor 3 beansprucht Luftherrschaft (Flak bereithalten), und Sektor 4 ist der Eisensturm mit Panzer und Luftwaffe zusammen. Sektor 1 bleibt der Standardkampf.'},
+      {en:'The fall-back transmission now carries the intel with it: when you clear a sector, the radio names the next sector and what to build against it.',de:'Die Rückzugs-Übertragung bringt die Aufklärung gleich mit: Wenn du einen Sektor räumst, nennt der Funk den nächsten Sektor und, was du dagegen bauen solltest.'},
+      {en:'Raised the cache wave to 20261123-sector1, because the endless waves changed shape: no device should keep fighting under the old sky out of cache.',de:'Die Cache-Welle auf 20261123-sector1 erhöht, weil die Endlos-Wellen ihre Form geändert haben: Kein Gerät soll mit dem alten Stand aus dem Zwischenspeicher weiterkämpfen.'},
+    ],
+    open:[
+      {en:'Next on the plan: a scrap outlet for the late game and a campaign rematch at rising pressure.',de:'Als Nächstes auf dem Plan: eine Scrap-Verwendung fürs Spätspiel und ein Kampagnen-Rückkampf mit steigendem Druck.'},
+    ]
+  },
   {
     id:'blocke2',build:'20261123-blocke2',pr:376,
     title:{en:'Block E · Hits You Can Read, Damage Taught in Training',de:'Block E · Lesbare Treffer, Schaden im Training erklärt'},

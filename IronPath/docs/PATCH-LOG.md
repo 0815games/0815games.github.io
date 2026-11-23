@@ -6,7 +6,7 @@ aber ersetzt weder Git noch die GitHub-PR-Historie. Die dazugehörige
 [Arbeitsanweisung](../../AGENTS.md) verlangt, dieses Log vor der Arbeit zu lesen
 und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
 
-Die Einträge IPL-0001 bis IPL-0096 stehen im
+Die Einträge IPL-0001 bis IPL-0097 stehen im
 [Archiv](PATCH-LOG-ARCHIV.md); hier stehen die neuesten 20. Beide Dateien
 zusammen sind lückenlos und doppelfrei - `../scripts/patch.mjs` (Unterbefehl `check`) und
 `../tests/patch-log-archive.test.mjs` prüfen das.
@@ -50,36 +50,6 @@ jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderl
 
 
 
-
-## IPL-0097 – Phase 2, Scheibe 3: Die 15 Firebase-Clientmodule ziehen nach `net/` (eigene Cache-Welle folgt im selben PR)
-
-- **Zeit / Quelle:** Betreiber: „top, ging und weiter“ — Freigabe und Fortsetzung nach der `workshop/`-Scheibe (`IPL-0096`). Grundlage bleiben die vier Entscheidungen aus `IPL-0094`.
-- **Block / Ziel:** Kein Spiel-Block. Alle 15 `firebase-*.mjs` der Spielwurzel (Party-Kanal und -Sitzungen, Four-Lobby, Durable-/Recovery-Sitzungen) liegen künftig in `IronPath/net/`. Spielverhalten, Mehrspieler-Protokoll, Speicherstände und die Firebase-Regeln im Ordner `firebase/` bleiben unverändert; nur die Modul-Adressen ändern sich, deshalb trägt derselbe PR wieder eine eigene Cache-Welle (zweiter Commit, sobald die PR-Nummer existiert).
-- **Branch / Basis:** `arena/c1f67000-0815games-github-io` ab `af8241a4fb566bed112fa95bc403960163dc4adf` (`main`, Merge von PR `#351`).
-- **Änderungen / Dateien:**
-  - 15 Dateien per `git mv` nach `IronPath/net/` verschoben. 6 davon sind inhaltlich bytegleich; in 9 Dateien zeigen Importe auf Wurzel-Module jetzt eine Ebene hoch; Geschwister-Importe innerhalb von `net/` bleiben `./`.
-  - Einziger Wurzel-Importeur ist `IronPath/account.js` (7 Importe auf `./net/firebase-…` umgestellt).
-  - Mitgezogen: 22 Testdateien (`../net/firebase-…`), 13 Dateien in `IronPath/firebase/rules-test/` (`../../net/firebase-…`), der Lesepfad `net/firebase-party-game.mjs` in `language.test` und fünf Abhängigkeits-Schlüssel in `multiplayer-build-stamp` (`net/firebase-…`, weil diese Karte die Dateien unter ihrem Pfad liest).
-  - `IronPath/browser-tests/cache-wave.cjs`: Die zwei absoluten Importe zeigen auf `/IronPath/net/firebase-party-game.mjs` bzw. `net/firebase-recoverable-game.mjs`, und die Erwartungsliste führt die drei Netz-Module mit `net/`-Präfix. Der Test-Server kannte den Ordner bereits aus dem Wegbereiter (`IPL-0094`).
-  - **Korrektur am eigenen Codemod, vom Struktur-Wächter gefunden:** Zwei bereits umgezogene Querverweise (`./workshop/workshop-multiplayer-game.mjs` und `./workshop/workshop-match-validation.mjs` in `firebase-party-game` und `firebase-recoverable-game`) zeigten nach dem Umzug auf `net/workshop/…` ins Leere — der erste Codemod-Lauf erkannte nur einfache Dateinamen, keine Ordnerpfade. Der Wächter meldete beide Module als verwaist; die vier Importe zeigen jetzt auf `../workshop/…`. Merksatz für die restlichen Scheiben: Importe, die bereits in einen Fach-Ordner zeigen, brauchen beim Umzug des Importeurs ebenfalls ein `../` davor.
-  - `IronPath/docs/PATCH-LOG.md` und `IronPath/docs/PATCH-LOG-ARCHIV.md`: `IPL-0077` vollständig ins Archiv, Grenzen auf `IPL-0001` bis `IPL-0077` nachgezogen; das Log führt die neuesten 20 (`IPL-0078` bis `IPL-0097`).
-- **Prüfungen:**
-  - Betroffene Tests gezielt: 44 Vertrags-/Strukturtests (ein Fund: die oben genannten verwaisten Querverweise) und **263 Netz-Tests** (`durable-*`, `firebase-*`, `four-*`, `party-*`, `coop-*`, `friends*`, `social-*`, `multiplayer-*`, Konto-Suiten) — alle bestanden.
-  - Staging-Vergleich gegen den `main`-Stand (Baseline per `git worktree` auf `af8241a4`): **711 gestagte Dateien vorher und nachher**; 15 neue `net/`-Adressen, 6 Module mit identischem SHA-256, `account.js` als einzige Datei mit gleicher Adresse und neuem Inhalt.
-  - Gesamtsuite im vollständigen Klon: `node --test IronPath/tests/*.test.mjs` = **1.260 Tests, 1.260 bestanden, 0 fehlgeschlagen, 0 übersprungen, Exit 0**. `patch-check` vor dem Log-Eintrag: **0 Fehler**.
-  - Cache-Welle als zweiter Commit desselben PR: Feldnotizen-Eintrag `net1` (DE+EN, `pr: 352`) in `patch-notes.mjs` angelegt, danach `patch-bump 20261122-net1 --apply` — Trockenlauf nannte vorab exakt **79 Dateien, 276 Token-Vorkommen und die 7 bekannten Anker-Zeilen**; die Anker-Prüfung meldete danach alle 7 Anker auf `20261122-net1`.
-- **Git / PR / Release:** Erster Commit `30e9161c` auf `arena/c1f67000-0815games-github-io`, Pull-Request `#352` („Phase 2 (net): Firebase-Clientmodule ziehen nach IronPath/net“) damit eröffnet. Der Wellen-Commit folgt in demselben PR; CI, Merge und Pages-Auslieferung sind noch nicht erfolgt und werden erst nach dem tatsächlichen Ereignis mit Kennung nachgetragen. Keine Geräteabnahme bisher; die Sichtprüfung lautet auf `BUILD 20261122-net1` und einen unveränderten Party-Beitritt.
-- **Offen / nächster Schritt:** PR öffnen, Wellen-Commit nachschieben, CI abwarten, erst nach belegtem Merge/Pages-Stand als ausgeliefert bezeichnen. Danach `battle/`, `ui/`, `core/` je eigenem PR. Der Bauplatz-Auswahlring aus PR `#336` (ohne Hover-Vorschau) bleibt geparkt, bis die Struktur steht.
-
-### Ereignis-Nachtrag zu IPL-0097
-
-- **Commits / PR:** Umzug `30e9161c`, Cache-Welle `6c15eefc`, zwei Pfad-Fixe am Emulator-Test (`02a05354`, `7c0b5e05`), Log-Präzisierung `fef167b6` und Mock-Fix `7b4c3aa3` auf `arena/c1f67000-0815games-github-io`; Pull-Request `#352` („Phase 2 (net): Firebase-Clientmodule ziehen nach IronPath/net“).
-- **CI-Verlauf:** Lauf 1 rot an `party-finalization-browser (test:party-natural-browser)` (gestagter Pfad im Emulator-Test), Lauf 2 rot an `interface-browser-smoke` (Mock-Tiefe im Handoff-Test), Lauf 3 mit **13 von 13 bestandenen Checks, 0 fehlgeschlagen, 0 ausstehend** (Actions-Run `44994855244`, `interface-browser-smoke` Job `137123578756`). Die Ursachen und Merksätze stehen in den Korrektur-Punkten oben.
-- **Merge:** `gh pr view 352 --json state,mergedAt,mergeCommit` ergab `state=MERGED`, `mergedAt=2026-11-22T06:54:33Z`, Merge-Commit `9f4bb8143ea81244150629efd68a44baa0e0c4f9` in `main`.
-- **Pages:** `pages/builds` meldete danach `status=built`, Dauer 47.330 ms, Commit `9f4bb814`.
-- **Auslieferung auf `main` belegt:** `IronPath/net/firebase-party-game.mjs` ist per Contents-API vorhanden (HTTP 200), die alte Adresse `IronPath/firebase-party-game.mjs` liefert **404**, und `release-version.json` auf `main` trägt `"build": "20261122-net1"`.
-- **Ehrliche Grenzen:** Die Live-URL wurde nicht abgerufen; belegt sind Inhalt auf `main` und der fertige Pages-Build. **Keine Geräteabnahme:** Stempel `BUILD 20261122-net1` und eine Party erstellen/beitreten (Kampf startet wie bisher) sind Sache der Betreiber-Sichtprüfung; auch die `workshop1`- und Deutsch-Sichtprüfungen der vorigen Scheiben stehen noch aus.
-- **Herkunft dieses Nachtrags:** Er steht als eigener Commit auf demselben Arbeitszweig nach dem Merge von `#352`; seine eigene Commit- und PR-Kennung steht deshalb nicht hier, sondern in Git und im PR-Text.
 
 ## IPL-0098 – Phase 2, Scheibe 4: Die 6 Kampf-Module ziehen nach `battle/` (eigene Cache-Welle folgt im selben PR)
 
@@ -465,3 +435,17 @@ jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderl
 - **Prüfungen:** Pin-Test 3/3; `rules-publish-dry-run.mjs` gegen den Live-Stand mit Kandidat: 0 Blocker, exakt 7 Prüfpunkte (die sieben beabsichtigten Zeilen). Emulator-Beweis läuft in der CI (`database-rules`), lokal kein Java/Emulator. `patch.mjs check --fast`: 0 Fehler. Gesamtsuite 1310 Tests, 1309 bestanden + 1 bekannter Flachklon-Skip (`release-pages-site` nach Unshallow gezielt 6/6) – effektiv 1310/1310.
 - **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet`. Commit, Push, PR, CI und Merge werden nach tatsächlichem Ereignis nachgetragen. **Die Regeln selbst veröffentlicht der Betreiber** (Datei + Anleitung oben); erst seine Meldung macht den Schutz live.
 - **Offen / nächster Schritt:** Betreiber-Publish der Delta-Datei. Danach Punkt 3: Sektor-Modifikatoren für Endlos-Identität.
+
+## IPL-0117 – Sektor-Modifikatoren: Panzerkolonne, Luftherrschaft, Eisensturm (Welle `20261123-sector1`, PR `#379`)
+- **Zeit / Quelle:** 2026-11-23 UTC; Betreiber: „Regeln published, weiter geht's" – die Zuwachs-Deckel aus `IPL-0116` sind damit live (in `AUSBAU-PLAN.md` abgehakt), danach Punkt 3 der Reihenfolge.
+- **Block / Ziel:** Endlos-Identität. Rückzugs-Sektoren unterschieden sich bisher nur über Kartengröße und Zahlen-Skalierung (+12 % Leben/+5 % Tempo je Stufe); jetzt hat jede Stufe einen erkennbaren Gegner-Schwerpunkt, auf den man sich beim Wiederaufbau einstellt.
+- **Branch / Basis:** `arena/8b777781-0815games-github-io` ab `e627363b7949807ed28e47faa4509caae1b09552` (`main`, Merge PR `#378`).
+- **Änderungen / Dateien:**
+  - `IronPath/core/combat.mjs`: `SECTOR_MODIFIERS` (Sektor 2 `armor` „Armor Column", Sektor 3 `air` „Air Superiority", Sektor 4 `storm` „Iron Storm", jeweils mit Aufklärungs-Satz) und `sectorFormation(formation, sector)`: reine Ableitung aus der Sektorstufe – jede dritte leichte Einheit (Infanterie/Scout) wird zum Panzer (S2), jede dritte Bodeneinheit zum Flugzeug (S3), im Eisensturm abwechselnd Panzer/Flugzeug (S4). Bosse werden nie umgewandelt, Wellenlänge bleibt, Sektor 1 und alle Nicht-Sektor-Felder unverändert.
+  - `IronPath/core/simulation.mjs`: Die Spawn-Formation läuft durch `sectorFormation`, aber nur im Solo-Feld (bei `individualSupplies`/`hostId` gilt Sektor 0) – Koop-/Versus-Balance bleibt unangetastet, die Sektor-Kette des Solo-Endlos trägt die Identität.
+  - `IronPath/game.js` + `i18n/localization-battle-de.mjs`: Die Funk-Übertragung beim Sektor-Rückzug nennt jetzt den nächsten Sektor und die Gegenmaßnahme („Intel on the next sector: …"), DE vollständig.
+  - `IronPath/tests/sector-modifiers.test.mjs` (neu, 4 Tests): Modifikator-Tabelle, Umwandlungsregeln (Boss/Länge unverändert), echte Spawn-Probe Sektor 1 vs. 2 (gleiche Wellengröße, mehr Panzer), Funk-Anker in `game.js`.
+  - Cache-Welle `20261123-sector1` (79 Dateien), Feldnotizen `sector1` in `patch-notes.mjs`; Log-Rotation `IPL-0097` ins Archiv (Haupt `IPL-0098…IPL-0117`, Archiv bis `IPL-0097`).
+- **Prüfungen:** `sector-modifiers` 4/4; Balance-Gegenprobe `balance-suite` + `coop-balance` + `endless` + `combat` 20/20 (die neuen Formationen kippen keine gesetzte Marke). `patch.mjs check --fast`: 0 Fehler. Gesamtsuite 1314 Tests, 1313 bestanden + 1 bekannter Flachklon-Skip (`release-pages-site` nach Unshallow 6/6) – effektiv 1314/1314.
+- **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet`. Commit, Push, PR `#379`, CI, Merge und Pages-Auslieferung werden als Ereignis nachgetragen.
+- **Offen / nächster Schritt:** Punkt 4 der Reihenfolge: Scrap-Senke fürs Spätspiel und Kampagnen-NG+ über das vorhandene Druck-System.

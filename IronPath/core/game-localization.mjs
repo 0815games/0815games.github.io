@@ -1,4 +1,4 @@
-import {SKILL_PATHS} from './skills.mjs?v=20261123-blocke2';
+import {SKILL_PATHS} from './skills.mjs?v=20261123-sector1';
 // These patterns are restricted to known engine-generated messages and names.
 // Unknown messages and all player-supplied text pass through untouched.
 export function localizeGameMessage(text,tr){
