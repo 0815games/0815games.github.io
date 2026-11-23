@@ -6,7 +6,7 @@ aber ersetzt weder Git noch die GitHub-PR-Historie. Die dazugehörige
 [Arbeitsanweisung](../../AGENTS.md) verlangt, dieses Log vor der Arbeit zu lesen
 und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
 
-Die Einträge IPL-0001 bis IPL-0084 stehen im
+Die Einträge IPL-0001 bis IPL-0085 stehen im
 [Archiv](PATCH-LOG-ARCHIV.md); hier stehen die neuesten 20. Beide Dateien
 zusammen sind lückenlos und doppelfrei - `../scripts/patch.mjs` (Unterbefehl `check`) und
 `../tests/patch-log-archive.test.mjs` prüfen das.
@@ -42,16 +42,6 @@ zusammen sind lückenlos und doppelfrei - `../scripts/patch.mjs` (Unterbefehl `c
 Die Vorlage steht als einzige Quelle in
 [patch-log-vorlage.md](patch-log-vorlage.md), zusammen mit der Erklärung, was in
 jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderlaufen.
-
-## IPL-0085 – Audio-Überarbeitung Paket 1–4 (`20261120-audio1`, PR `#330`): Taktische Web-Audio-Engine, Bau-, Fähigkeits-, Boss- & HQ-Feedback
-- **Zeit / Quelle:** 2026-10-31 UTC (Sitzungsvorgabe); Arbeitsbranch `arena/ca11d4b2-0815games-github-io` ab `08bc4ad2f106be05c8341b545d11c0d24b131883` (`main`, PR `#329`), Ziel-PR `#330`.
-- **Block / Ziel:** Pakete 1–4 der IronPath-Audio-Überarbeitung sauber auf `main` ausliefern, bevor Paket 5 (Musik & Wetter-Ambience) und Paket 6 (Einstellungen & Feinschliff) folgen.
-- **Änderungen / Dateien:**
-  - `IronPath/battle-sound.mjs` & `IronPath/battle-sound-recipes.mjs`: Multi-Bus-Web-Audio-Engine (`sfx`, `explosion`, `ui`, `music`, Master-Limiter), 7-Bucket-Stereo-Panning (`panForX`), Pro-Waffe-Polyphonie-/Dichte-Drosselung, Voice-Ducking synchron mit `IronPath/general-radio.mjs` (`musicDuck = 0.32`, `combatDuck = 0.78`, `ui` ungeduckt) sowie trocken-realistische Waffensynthese (5 Turmtypen, Lv3-Spezialisierungen inkl. `Twin Flak II`-`'chain'`-FX, Klassenpfade, Soldaten-Gewehr/Bunkergeschütz, Todessounds, Bau/Upgrade/Zweig/Prestige/Verkauf/Beute/Perk/Sektor/Gefahr/Bunker/Fähigkeit/Kombo/Boss/Wave/UI).
-  - `IronPath/simulation.mjs`, `IronPath/tower-specialization.mjs`, `IronPath/general-radio.mjs`, `IronPath/game.js`, `IronPath/account.js`: Monotone Schuss-/Tod-IDs & `pop.kind`, `observeCombat`-Schleife über Solo- & Co-op-Snapshots (ohne Rivalenspur in `1v1`), Co-op-Event-Diffing (`build`, `upgrade`, `branch`, `prestige`, `sell`, `loot`, `perk`, `sector`, `rubble`, `boss`, `bossAbility`, `abilityReady`), `gameControl.playCue` sowie Workshop-/Armory-/Skills-UI-Signale.
-  - `IronPath/tests/{battle-sound,general-radio,multiplayer-build-stamp,party-end-force-close}.test.mjs`, `IronPath/browser-tests/{cache-wave,interface-smoke,avatar-handover}.cjs`, `IronPath/release-version.json`, `IronPath/patch-notes.mjs` (`RELEASED_PATCHES[0]` `audio1` / PR `#330`) & **78** Version-Stamps auf `20261120-audio1`.
-- **Prüfungen:** Syntaxprüfung, vollständige Node-Testsuite (`1.191` Tests) & PR-`#330`-CI vor Merge auf `main`.
-- **Offen:** Paket 5 (Option C: prozedurale adaptive Web-Audio-Musik & Wetter-Ambience mit Raum-Hall-Bus) & Paket 6 (Audio-Mixer in `#settingsDialog` & Mobil-Unlock-Feinschliff) direkt im Anschluss auf diesem Arbeitsbranch.
 
 ## IPL-0086 – Audio-Überarbeitung Paket 5–6 & Mobile Guide/HQ-Feinschliff (`20261120-audio2`, PR `#331`)
 - **Zeit / Quelle:** 2026-10-31 UTC; Arbeitsbranch `arena/c1cd5359-0815games-github-io` ab `c3dbb9e9d60f6335b7052e3d05b8243204fbb69b` (`main`, PR `#330`), Ziel-PR `#331`.
@@ -938,3 +928,18 @@ sie geprüft wurde.
   - Cache-Welle als dritter Commit desselben PR: Feldnotizen-Eintrag `boss1` (DE+EN, `pr: 366`) in `patch-notes.mjs` angelegt, danach `patch.mjs bump 20261123-boss1 --apply` (79 Dateien, 277 Token-Vorkommen, alle 7 Anker tragen `20261123-boss1`). Die erste Gesamtsuite auf der Welle zeigte 22 rote Tests in 13 Harness-Dateien: Ihre handgeführten Ersetzungslisten für `game.js`-Importe kannten `./ui/boss-banner.mjs?v=…` noch nicht (`Failed to resolve module specifier` aus dem `data:`-Import). Alle 13 Listen führen jetzt `ui/boss-banner.mjs` neben `ui/map-intro.mjs`; die 13 Dateien laufen danach 40/40 grün, die Gesamtsuite auf der Welle danach **1.270/1.270, Exit 0, 0 ausgelassen** (nach `git fetch --unshallow origin`). Browser-Fahrten laufen in CI, lokal ist kein Chromium verfügbar. Die Betreiber-Sichtprüfung lautet auf `BUILD 20261123-boss1`: Boss-Welle (Welle 5) starten — das Banner muss mittig mit Boss-Namen erscheinen, ~4 s stehen und ausblenden; die kleine Boss-Plakette oben bleibt wie bisher.
 - **Git / PR / Release:** Feature-Commit `487365e` und dieser Log-Commit liegen auf `arena/68cb4000-0815games-github-io`; PR-Nummer, Cache-Welle, CI, Merge und Pages-Auslieferung sind noch nicht erfolgt und werden erst nach dem tatsächlichen Ereignis mit Kennung nachgetragen. Der `PATCH-BLOECKE`-Punkt zur Boss-Ankündigung (`#338`-Reparatur) ist mit dieser Scheibe inhaltlich erledigt; die übrigen Rückbau-Punkte bleiben auf Betreiber-Weisung liegen.
 - **Offen / nächster Schritt:** PR öffnen, Wellen-Commit nachschieben, Gesamtsuite auf `boss1`, CI abwarten, erst nach belegtem Merge/Pages-Stand als ausgeliefert bezeichnen; Ereignis-Nachtrag danach als eigener PR. Auf Betreiber-Auftrag folgt im selben Arbeitsgang eine Bestandsaufnahme aller je aufgeführten offenen Patch-Punkte über alle Dateien; ihr Ergebnis steht im PR-Gespräch und wird hier nicht vorweggenommen. Die Betreiber-Sichtprüfungen (`BUILD 20261122-ring1`, `core1` und ältere Punkte) stehen weiterhin aus.
+
+## IPL-0105 – Fähigkeits-Abklingzeit pausiert zwischen den Wellen (eigene Cache-Welle folgt im selben PR)
+
+- **Zeit / Quelle:** Betreiber-Befund und -Weisung vom 2026-11-23: „Die Action Skills Zeit läuft auch zwischen den Wellen weiter, also wenn die Welle beendet ist und bis zu dem Zeitpunkt, wo man die neue Welle startet, läuft aktuell der Timer vom Skill runter. Das sollte nicht sein. Die Zeiten sollte nur ablaufen während dem auch aktiv gespielt wird.“ Zugleich: Alle übrigen je aufgeführten offenen Punkte außer Block E sind zu vergessen; Geräteabnahmen erfolgen generell durch den Betreiber und werden nicht mehr als offene Punkte aufgeführt. Nach dieser Scheibe folgt Block E.
+- **Block / Ziel:** Gefechtskern. Die gemeinsame Simulation (`core/simulation.mjs`, `stepMatch`) läuft zwischen den Wellen weiter, damit Soldaten sich bewegen und gebaut werden kann — dabei lief bisher auch die Fähigkeits-Abklingzeit (`p.cooldown`) herunter. Sie tickt jetzt nur noch, solange eine Welle aktiv läuft (`state.running`). Spielregeln, Fähigkeitswerte und Wirkungsdauern (z. B. Overdrive) ändern sich nicht. Weil sich das Verhalten einer browsergeladenen Kerndatei ändert, trägt derselbe PR eine eigene Cache-Welle (`20261123-skill1`, dritter Commit mit Feldnotizen DE+EN, sobald die PR-Nummer existiert).
+- **Branch / Basis:** `arena/fb0b581a-0815games-github-io` ab `680c69b46cb9a91ac14c9623f0b0fe8c7fd6785b` (`main`, Merge von PR `#366`).
+- **Änderungen / Dateien:**
+  - `IronPath/core/simulation.mjs`: eine Zeile — `if(!jamField&&state.running)p.cooldown=Math.max(0,p.cooldown-dt);`. Das Störfeld des Bosses Riegel friert die Aufladung wie bisher zusätzlich ein; die Soldatenbewegung in der Bauphase bleibt unverändert möglich.
+  - `IronPath/tests/ability-cooldown-wave-pause.test.mjs` (neu, 4 Tests: keine Aufladung in der Bauphase, Bewegung zwischen den Wellen bleibt möglich, Aufladung nur während laufender Welle und erneutes Einfrieren am Wellenende, nie unter null).
+  - `IronPath/docs/PATCH-LOG.md` und `IronPath/docs/PATCH-LOG-ARCHIV.md`: `IPL-0085` vollständig ins Archiv, Grenzen auf `IPL-0001` bis `IPL-0085`; das Log führt die neuesten 20 (`IPL-0086` bis `IPL-0105`).
+- **Prüfungen:**
+  - Neuer Test 4/4; `boss-personality.test.mjs` (Störfeld friert die Aufladung ein — dort läuft die Welle), `ability-hud.test.mjs` und `ability-hud-ui.test.mjs` („Let the 30s cooldown finish inside the running wave“) grün.
+  - Cache-Welle als dritter Commit desselben PR: Feldnotizen-Eintrag `skill1` (DE+EN) in `patch-notes.mjs`, danach `patch.mjs bump 20261123-skill1 --apply`; Gesamtsuite auf der neuen Welle und Browser-Fahrten in CI, lokal ist kein Chromium verfügbar.
+- **Git / PR / Release:** Feature- und dieser Log-Commit liegen auf `arena/fb0b581a-0815games-github-io`; PR-Nummer, Cache-Welle, CI, Merge und Pages-Auslieferung sind noch nicht erfolgt und werden erst nach dem tatsächlichen Ereignis mit Kennung nachgetragen.
+- **Offen / nächster Schritt:** PR öffnen, Wellen-Commit nachschieben, Gesamtsuite auf `skill1`, CI abwarten, erst nach belegtem Merge/Pages-Stand als ausgeliefert bezeichnen. Danach Block E als nächstes Arbeitspaket.
