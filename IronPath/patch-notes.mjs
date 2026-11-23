@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see docs/PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261123-blocke1';
+import {getLanguage} from './language.mjs?v=20261123-endless1';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,20 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'endless1',build:'20261123-endless1',pr:369,
+    title:{en:'Endless Launch · One Big Battlefield Picture',de:'Endless-Start · Ein großes Schlachtfeldbild'},
+    shipped:[
+      {en:'The endless launch is one big battlefield picture now. The separate deploy strip above it and the cancel row below it are gone - the back button at the top closes the dialog, everything else happens on the picture itself.',de:'Der Endless-Start ist jetzt ein einziges großes Schlachtfeldbild. Das eigene Deploy-Feld darüber und die Cancel-Zeile darunter sind verschwunden - der Zurück-Button oben schließt den Dialog, alles andere passiert auf dem Bild selbst.'},
+      {en:'The arrows sit inside the picture at its left and right edges, DEPLOY rests centred at its bottom edge, and the battlefield name holds the lower edge of the artwork.',de:'Die Pfeile sitzen im Bild an seiner linken und rechten Kante, DEPLOY liegt mittig an seiner Unterkante, und der Name des Schlachtfelds hält den unteren Bildrand.'},
+      {en:'Clicking anywhere on the picture deploys, exactly like the button - choose your ground and go. Keyboard soldiers can step through the battlefields with the arrow keys and launch with Enter.',de:'Ein Klick irgendwo auf das Bild startet den Einsatz, genau wie der Button - Gelände wählen und los. Am Keyboard blättern die Pfeiltasten durch die Schlachtfelder, Enter startet.'},
+      {en:'Your endless record is a medal board now: framed panel, brass heading, one tile per number and your best wave struck in gold.',de:'Die Endless-Bilanz ist jetzt eine Medaillentafel: gerahmtes Feld, Messing-Überschrift, eine Kachel je Zahl und die beste Welle in Gold geprägt.'},
+      {en:'Raised the cache wave to 20261123-endless1, because the endless launch changed: no device should keep showing the old dialog out of cache.',de:'Die Cache-Welle auf 20261123-endless1 erhöht, weil sich der Endless-Start geändert hat: Kein Gerät soll den alten Dialog aus dem Zwischenspeicher zeigen.'},
+    ],
+    open:[
+      {en:'Block E continues in the next slice: hit feedback and a tutorial introduction, detailed host and reconnect checks, and play-tested balance.',de:'Block E geht in der nächsten Scheibe weiter: Treffer-Feedback und eine Tutorial-Einführung, Host- und Reconnect-Prüfung im Detail sowie spielgetestete Balance.'},
+    ]
+  },
   {
     id:'blocke1',build:'20261123-blocke1',pr:368,
     title:{en:'Block E, Slice 1 · Enemies Now Threaten Soldiers and Towers',de:'Block E, Scheibe 1 · Gegner bedrohen jetzt Soldaten und Türme'},
