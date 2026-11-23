@@ -1,6 +1,6 @@
 # Iron Path – Patch-Log: Archiv
 
-Ältere Einträge IPL-0001 bis IPL-0082. Die neuesten 20 stehen in
+Ältere Einträge IPL-0001 bis IPL-0083. Die neuesten 20 stehen in
 [PATCH-LOG.md](PATCH-LOG.md); die Regeln für beide Dateien dort und in
 [`../../AGENTS.md`](../../AGENTS.md). Beim Verschieben wandert ein Eintrag immer
 vollständig einschließlich seiner Ereignis-Nachträge.
@@ -3591,3 +3591,15 @@ Grenzen / Offen:
   - Schwerpunktlauf über 20 relevante Testsuiten (`general-radio`, `tutorial-sync`, `tutorial-dossier`, `menu-tour`, `command-center`, `tutorial`, `first-run-*`, `training-run`, `patch-notes`, `menu-redesign`, `version-check`, `multiplayer-build-stamp`, `translation-coverage`, `language`, `settings`): **139 bestanden, 0 fehlgeschlagen** (nach vollständigem 265-Dateien-/1.185-Tests-Gesamtlauf sowie `node --check` über **576** Dateien & `stress-tests/run.mjs`).
 - **Git / PR / Release:** `lokal/uncommittet` auf `arena/0b12995a-0815games-github-io`.
 - **Offen:** Finaler Release-Build-Stempel (`20261119-block6` in `release-version.json`, `index.html`, `patch-notes.mjs` & Modul-Importen), Commit/Push/PR-CI-Durchlauf (inkl. Chromium `interface-smoke` & `command-center`) sowie echte Browser-/Handy-Abnahme durch den Betreiber.
+
+## IPL-0083 – Block 6 (`Release 20261119-block6`, PR `#328`): Cache-Welle, Feldnotizen & Chromium-Smoke vorbereitet
+- **Zeit / Quelle:** 2026-10-31 UTC (Sitzungsvorgabe); Arbeitsbranch `arena/0b12995a-0815games-github-io` ab `61de91d3` (`main`), Ziel-PR `#328`.
+- **Block / Ziel:** Alle Laufzeit-, Test-, Feldnotizen-, CSS- und Browser-Cache-Bestandteile von Block 6 einheitlich auf den Release-Build **`20261119-block6`** heben, damit `0815games.github.io/IronPath/` nach Merge sauber ausgeliefert werden kann.
+- **Änderungen / Dateien:**
+  - `IronPath/release-version.json` (`20261119-block6`), `IronPath/index.html` (`<meta name="ironpath-build">`, beide `BUILD`-Stempel, Stylesheets/Skripte/Assets auf `?v=20261119-block6`), sowie alle **77** Cache-Wellen-Dateien inkl. `training-run.mjs?v=20261119-block6` in `game.js`, `solo-deployment.mjs` & `tutorial-dossier.mjs`.
+  - `IronPath/tests/multiplayer-build-stamp.test.mjs` (`general-radio.mjs`, `menu-tour.mjs`, `training-run.mjs`, `tutorial-dossier.mjs`, `tutorial-sync.mjs` in die gemeinsame Cache-Wave-Prüfung aufgenommen).
+  - `IronPath/browser-tests/cache-wave.cjs` (`20261119-block2` & `training-run.mjs?v=20261112-tagless1` als synthetische Altcache-URLs ergänzt; Import-Prüfung aller neuen Block-6-Module bei `?v=20261119-block6`).
+  - `IronPath/menu-redesign.css` (`box-sizing: border-box` auf `dialog#tutorialDossier[open]` & `#menuTour.menu-tour`), `IronPath/browser-tests/interface-smoke.cjs` (Sicht-, Überlauf- & Bildprüfungen für `#tutorialDossier` + `#menuTour`).
+  - `IronPath/patch-notes.mjs` & `IronPath/tests/patch-notes.test.mjs` (`block6` / `20261119-block6` / PR `#328` an die Spitze von `RELEASED_PATCHES` gesetzt; Block 7 in `PLANNED_PATCHES` auf `next`), `IronPath/PATCH-BLOECKE.md`, `IronPath/DATENBLATT.md`, `IronPath/PATCH-LOG.md`.
+- **Prüfungen:** Vollständige lokale Verifikation (Syntaxcheck, alle 265 Node-Testsuiten, Stresstest, Rules-Dry-Run & Release-Staging) sowie GitHub-Actions-CI auf PR `#328` und isolierte Testbereitstellung.
+- **Offen:** Echte Geräteabnahme der General-Vance-Vertonung, 7-Wellen-Ausbildung & 8-Stationen-HQ-Führung nach Veröffentlichung auf `main`.

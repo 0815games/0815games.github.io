@@ -6,7 +6,7 @@ aber ersetzt weder Git noch die GitHub-PR-Historie. Die dazugehörige
 [Arbeitsanweisung](../../AGENTS.md) verlangt, dieses Log vor der Arbeit zu lesen
 und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
 
-Die Einträge IPL-0001 bis IPL-0082 stehen im
+Die Einträge IPL-0001 bis IPL-0083 stehen im
 [Archiv](PATCH-LOG-ARCHIV.md); hier stehen die neuesten 20. Beide Dateien
 zusammen sind lückenlos und doppelfrei - `../scripts/patch.mjs` (Unterbefehl `check`) und
 `../tests/patch-log-archive.test.mjs` prüfen das.
@@ -42,18 +42,6 @@ zusammen sind lückenlos und doppelfrei - `../scripts/patch.mjs` (Unterbefehl `c
 Die Vorlage steht als einzige Quelle in
 [patch-log-vorlage.md](patch-log-vorlage.md), zusammen mit der Erklärung, was in
 jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderlaufen.
-
-## IPL-0083 – Block 6 (`Release 20261119-block6`, PR `#328`): Cache-Welle, Feldnotizen & Chromium-Smoke vorbereitet
-- **Zeit / Quelle:** 2026-10-31 UTC (Sitzungsvorgabe); Arbeitsbranch `arena/0b12995a-0815games-github-io` ab `61de91d3` (`main`), Ziel-PR `#328`.
-- **Block / Ziel:** Alle Laufzeit-, Test-, Feldnotizen-, CSS- und Browser-Cache-Bestandteile von Block 6 einheitlich auf den Release-Build **`20261119-block6`** heben, damit `0815games.github.io/IronPath/` nach Merge sauber ausgeliefert werden kann.
-- **Änderungen / Dateien:**
-  - `IronPath/release-version.json` (`20261119-block6`), `IronPath/index.html` (`<meta name="ironpath-build">`, beide `BUILD`-Stempel, Stylesheets/Skripte/Assets auf `?v=20261119-block6`), sowie alle **77** Cache-Wellen-Dateien inkl. `training-run.mjs?v=20261119-block6` in `game.js`, `solo-deployment.mjs` & `tutorial-dossier.mjs`.
-  - `IronPath/tests/multiplayer-build-stamp.test.mjs` (`general-radio.mjs`, `menu-tour.mjs`, `training-run.mjs`, `tutorial-dossier.mjs`, `tutorial-sync.mjs` in die gemeinsame Cache-Wave-Prüfung aufgenommen).
-  - `IronPath/browser-tests/cache-wave.cjs` (`20261119-block2` & `training-run.mjs?v=20261112-tagless1` als synthetische Altcache-URLs ergänzt; Import-Prüfung aller neuen Block-6-Module bei `?v=20261119-block6`).
-  - `IronPath/menu-redesign.css` (`box-sizing: border-box` auf `dialog#tutorialDossier[open]` & `#menuTour.menu-tour`), `IronPath/browser-tests/interface-smoke.cjs` (Sicht-, Überlauf- & Bildprüfungen für `#tutorialDossier` + `#menuTour`).
-  - `IronPath/patch-notes.mjs` & `IronPath/tests/patch-notes.test.mjs` (`block6` / `20261119-block6` / PR `#328` an die Spitze von `RELEASED_PATCHES` gesetzt; Block 7 in `PLANNED_PATCHES` auf `next`), `IronPath/PATCH-BLOECKE.md`, `IronPath/DATENBLATT.md`, `IronPath/PATCH-LOG.md`.
-- **Prüfungen:** Vollständige lokale Verifikation (Syntaxcheck, alle 265 Node-Testsuiten, Stresstest, Rules-Dry-Run & Release-Staging) sowie GitHub-Actions-CI auf PR `#328` und isolierte Testbereitstellung.
-- **Offen:** Echte Geräteabnahme der General-Vance-Vertonung, 7-Wellen-Ausbildung & 8-Stationen-HQ-Führung nach Veröffentlichung auf `main`.
 
 ## IPL-0084 – Block 6b (`20261119-block6b`): Tutorial-Dossier, HQ-Tour, Nachgefechtshilfe & Funkleisten-Feinschliff
 - **Zeit / Quelle:** 2026-10-31 UTC (Sitzungsvorgabe); Arbeitsbranch `arena/18035b51-0815games-github-io` ab `03867e999cd545c4ca52c39e71b29eefb9b83ca5` (`main`, PR `#328`), Ziel-PR `#329`.
@@ -914,3 +902,20 @@ sie geprüft wurde.
 - **Auslieferung auf `main` belegt:** `package.json` an der Repo-Wurzel und `IronPath/tests/reference-resolution.test.mjs` sind per Contents-API vorhanden (HTTP 200); `release-version.json` auf `main` trägt unverändert `"build": "20261122-core1"` — keine neue Welle, weil weder Tests noch `scripts/`-Listen noch die Wurzel-`package.json` ins gestagte Spiel fahren (Staging-Beweis im Haupteintrag: 712 = 712 Dateien, null Unterschiede).
 - **Ehrliche Grenzen:** Die Live-URL wurde nicht abgerufen; belegt sind Inhalt auf `main` und der fertige Pages-Build. Keine Geräteabnahme, weil keine browsergeladene Datei geändert wurde. Die Betreiber-Sichtprüfungen (`BUILD 20261122-core1`, Anmeldung, Solo-/Mehrspieler-Gefecht, `ui1`- bis `workshop1`-Punkte, Deutsch-Texte) stehen weiterhin aus.
 - **Herkunft dieses Nachtrags:** Er steht als eigener PR auf einem neuen Arbeitszweig nach dem Merge von `#362`; seine eigene Commit- und PR-Kennung steht deshalb nicht hier, sondern in Git und im PR-Text. Zurückgestellt bleiben die Kandidaten 3 und 4 der Vorschlagsliste aus `IPL-0102` (gemeinsamer Harness-Helfer, gemeinsamer Test-Server); als nächstes größeres Stück steht der Bauplatz-Auswahlring aus PR `#336` (ohne Hover-Vorschau).
+
+## IPL-0103 – Bauplatz-Auswahlringe: dicker und pulsierend, ohne Hover-Vorschau (eigene Cache-Welle folgt im selben PR)
+
+- **Zeit / Quelle:** Der Bauplatz-Ring aus PR `#336` lag seit dem Rückbau auf `#334` geparkt; der Betreiber gab ihn jetzt mit ausdrücklicher Eingrenzung frei: „Nur Bauplatz Ring, kein hover over oder sonst was.“ Die Hover-Wellen-Vorschau, die `#336` in `game.js` gebracht hatte (`mousemove`, `hoveredPadIndex`, Literale `WELLE {wave}` / `NÄCHSTE: {count} ENEMIES`), wird **nicht** neu gelandet.
+- **Block / Ziel:** Auswahl-Feedback auf dem Gefechtsfeld (`core/cartoon-art.mjs`). Spielregeln, Simulation und Protokoll ändern sich nicht; nur die zwei Auswahlringe werden stärker und atmen. Weil eine browsergeladene Datei ihr Zeichenverhalten ändert, trägt derselbe PR eine eigene Cache-Welle (`20261122-ring1`, dritter Commit mit Feldnotizen DE+EN, sobald die PR-Nummer existiert).
+- **Branch / Basis:** `arena/112aa9ab-0815games-github-io` ab `0074f202cfff13f622aabdcbaa963838e4f6f95e` (`main`, Merge von PR `#363`). Erster Commit `18fe6e6` (2 Dateien).
+- **Änderungen / Dateien:**
+  - `IronPath/core/cartoon-art.mjs`: Pad-Ring auf leerem Bauplatz — Ellipse 34×24 statt 33×23, `lineWidth` 3.2 statt 2.5, Farbe `#d4eee0`, Dash `[8,5]`, Puls über `globalAlpha` (`.85+.15·sin(storyTime/.3)`). Reichweiten-Ring des Turms auf dem gewählten Pad — `lineWidth` 2.2 statt 1.5, `#c2dfd2`, Dash `[6,5]`, Füllung `.14`, Puls `.88+.12·sin(storyTime/.42)` nur auf dem Strich, in `save/restore` gekapselt. `pad()` erhält die Puls-Alpha als Parameter (voreingestellt 1), damit die Zeichenfunktion rein aus ihren Argumenten bestimmbar bleibt.
+  - Bewusste Abweichungen zur zurückgenommenen `#336`-Fassung: Der Puls folgt der `storyTime`-Konvention der Datei (Sekunden, von beiden Aufrufstellen in `game.js` jeden Frame geliefert) statt `performance.now()`, und `reducedMotion` stellt **beide** Ringe ruhig (`#336` tat das nur für den Reichweiten-Ring). Keine neuen Text-Literale — die Übersetzungs-Abdeckung bleibt unberührt, die `PATCH-BLOECKE`-Warnung zu `#336` betraf nur die Hover-Texte.
+  - `IronPath/tests/cartoon-art.test.mjs`: Neuer Block zeichnet mit aufzeichnendem Canvas bei festen `storyTime`-Werten: Pad-Ring 34×24 mit Stärke 3.2 und Alpha `.85` bei Zeit 0, steigend mit der Zeit, fest `1` bei reduzierter Bewegung; Reichweiten-Ring mit Stärke 2.2 und Alpha `.88` bei Zeit 0, sonst gleich; ohne Auswahl (`selectedPad=null`) entsteht keiner der beiden Ringe.
+  - `IronPath/docs/PATCH-LOG.md` und `IronPath/docs/PATCH-LOG-ARCHIV.md`: `IPL-0083` vollständig ins Archiv, Grenzen auf `IPL-0001` bis `IPL-0083`; das Log führt die neuesten 20 (`IPL-0084` bis `IPL-0103`).
+- **Korrekturen an der eigenen Arbeit:** Zwei parallele Dateibearbeitungen an `cartoon-art.mjs` überschrieben sich gegenseitig (Signatur und Aufrufstelle fielen zweimal dem jeweils anderen Edit zum Opfer, `ReferenceError: pulse is not defined` bzw. fehlender Puls am Aufruf); nacheinander wiederholt und per Test belegt. Keine weiteren Dateien betroffen.
+- **Prüfungen:**
+  - `cartoon-art.test.mjs` (mit neuem Ring-Block): **bestanden**; der Block meldet „Selection rings: thicker, pulsing with storyTime, still under reduced motion.“ Gezielte Prüfung vor der Cache-Welle; die Gesamtsuite folgt auf der neuen Welle im Wellen-Commit.
+  - Kein Geräte- oder Browser-Beweis lokal möglich (kein Chromium hier): Die Browser-Fahrten laufen in CI; die Betreiber-Sichtprüfung lautet auf `BUILD 20261122-ring1` und einen gewählten Bauplatz (leer wie mit Turm) im Gefecht.
+- **Git / PR / Release:** Feature-Commit `18fe6e6` und dieser Log-Commit liegen auf `arena/112aa9ab-0815games-github-io`; PR-Nummer, Cache-Welle, CI, Merge und Pages-Auslieferung sind noch nicht erfolgt und werden erst nach dem tatsächlichen Ereignis mit Kennung nachgetragen. Der offene `PATCH-BLOECKE`-Punkt „Pad-Selektion: dickere Ringe und Puls (PR #336)“ ist mit dieser Scheibe inhaltlich erledigt; seine Hover-Literal-Notiz entfällt, weil kein Hover landet.
+- **Offen / nächster Schritt:** PR öffnen, Wellen-Commit nachschieben, Gesamtsuite auf `ring1`, CI abwarten, erst nach belegtem Merge/Pages-Stand als ausgeliefert bezeichnen; Ereignis-Nachtrag danach als eigener PR. Die Kandidaten 3 und 4 aus `IPL-0102` bleiben zurückgestellt; die Betreiber-Sichtprüfungen (`BUILD 20261122-core1` und ältere Punkte, künftig `ring1`) stehen weiterhin aus.
