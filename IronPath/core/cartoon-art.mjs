@@ -985,7 +985,8 @@ function drawTerrain(ctx,path,theme,{paths=[path],width=960,height=540,storyMiss
   ctx.drawImage(cached.canvas,0,0,width,height);
 }
 // Block E field state, painted read-only: a slim life bar in field colours -
-// green while holding, amber when worn, red when critical.
+// green while holding, amber when worn, red when critical. Always painted
+// (full bars included), so every soldier and tower carries its state openly.
 function lifeBar(ctx,x,y,width,fraction){
   const f=Math.max(0,Math.min(1,fraction));
   ctx.save();
@@ -1023,13 +1024,13 @@ export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,th
   pads.forEach((p,i)=>pad(ctx,p,state.towers.find(t=>t.pad===i),state.selectedPad===i,types,onSpritesReady,selectionPulse));
   // Block E: a damaged tower carries its life above the pad; at zero it sits
   // dark on its pad until repaired, and a running repair shows its mark.
-  for(const tower of state.towers){const p=pads[tower.pad],maxHp=tower.maxHp;if(!p||!maxHp)continue;const hp=tower.hp??maxHp;if(hp<=0){ctx.save();ctx.globalAlpha=.45;ctx.beginPath();ctx.ellipse(p.x,p.y,26,22,0,0,Math.PI*2);ctx.fillStyle='#101a15';ctx.fill();ctx.restore();}if(hp<maxHp)lifeBar(ctx,p.x,p.y-34,36,hp/maxHp);if(tower.repairing>0)oval(ctx,p.x+15,p.y-31,4,4,'#ffe3a8','#192b23',1);}
+  for(const tower of state.towers){const p=pads[tower.pad],maxHp=tower.maxHp;if(!p||!maxHp)continue;const hp=tower.hp??maxHp;if(hp<=0){ctx.save();ctx.globalAlpha=.45;ctx.beginPath();ctx.ellipse(p.x,p.y,26,22,0,0,Math.PI*2);ctx.fillStyle='#101a15';ctx.fill();ctx.restore();}if(hp>0)lifeBar(ctx,p.x,p.y-34,36,hp/maxHp);if(tower.repairing>0)oval(ctx,p.x+15,p.y-31,4,4,'#ffe3a8','#192b23',1);}
   // The soldier is drawn from the first frame, not from wave one. He used to appear
   // only while `state.wave>0`, and since the movement order itself was accepted
   // before the first deploy (the simulation walks him there), the hero moved
   // invisibly: the newest player tapped the ground, got "Hero moving to position",
   // and watched nothing happen. A hero you cannot see is a hero you cannot command.
-  for(const p of Object.values(state.players))if(p.active!==false){if(state.wave>0&&p.mobileSupply?.remaining>0){ctx.save();ctx.beginPath();ctx.arc(p.x,p.y,22,0,Math.PI*2);ctx.strokeStyle='#89d9ed';ctx.lineWidth=3;ctx.stroke();ctx.restore();}soldier(ctx,p,p.id===me,soldierPoses[p.id],undefined,onSpritesReady);if(Number.isFinite(p.hp)&&p.hp<SOLDIER_MAX_HP)lifeBar(ctx,p.x,p.y-30,30,p.hp/SOLDIER_MAX_HP);if(p.downed>0){ctx.save();ctx.fillStyle='#ffd9c2';ctx.font='bold 11px Georgia';ctx.textAlign='center';ctx.fillText(String(Math.ceil(p.downed)),p.x,p.y-36);ctx.restore();}}
+  for(const p of Object.values(state.players))if(p.active!==false){if(state.wave>0&&p.mobileSupply?.remaining>0){ctx.save();ctx.beginPath();ctx.arc(p.x,p.y,22,0,Math.PI*2);ctx.strokeStyle='#89d9ed';ctx.lineWidth=3;ctx.stroke();ctx.restore();}soldier(ctx,p,p.id===me,soldierPoses[p.id],undefined,onSpritesReady);if(Number.isFinite(p.hp))lifeBar(ctx,p.x,p.y-30,30,p.hp/SOLDIER_MAX_HP);if(p.downed>0){ctx.save();ctx.fillStyle='#ffd9c2';ctx.font='bold 11px Georgia';ctx.textAlign='center';ctx.fillText(String(Math.ceil(p.downed)),p.x,p.y-36);ctx.restore();}}
   if(theme==='scrub'&&path.length===10)for(const cloud of state.dustClouds||[]){
     ctx.save();ctx.beginPath();ctx.arc(cloud.x,cloud.y,75,0,Math.PI*2);ctx.fillStyle='rgba(210,168,119,.12)';ctx.fill();ctx.strokeStyle='rgba(133,88,57,.45)';ctx.lineWidth=2;ctx.setLineDash(reducedMotion?[]:[4,9]);ctx.stroke();ctx.restore();
   }

@@ -822,7 +822,7 @@ function renderResults(target){
       $('sectorPanel').hidden=!waiting;
       if(waiting){
         $('sectorTitle').textContent=tr('SECTOR {number} CLEARED',{number:sectorOf(state.mapId)});
-        $('sectorText').textContent=tr('Fall back now. Your towers are lost in the retreat; you carry over a {refund} supply demolition refund.',{refund:state.towers.reduce((sum,tower)=>sum+Math.floor(.6*(TOWER_COSTS[tower.type]+(towerUpgradeInvestment(tower.level)??0)+classPathInvested(tower))),0)});
+        $('sectorText').textContent=tr('HQ orders the fall back: your towers are lost in the retreat, and you carry over a {refund} supply demolition refund. New sector, longer road, meaner enemy — good hunting, soldier.',{refund:state.towers.reduce((sum,tower)=>sum+Math.floor(.6*(TOWER_COSTS[tower.type]+(towerUpgradeInvestment(tower.level)??0)+classPathInvested(tower))),0)});
       }
     }
     {
