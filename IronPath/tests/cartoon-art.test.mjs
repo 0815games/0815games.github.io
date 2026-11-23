@@ -71,3 +71,57 @@ console.log('Ground variety: per-seed details are deterministic and distinct.');
   }
   console.log('Block 5 specialist VFX (all 12 variants) and class-path tower markers passed.');
 }
+
+// Selection rings (re-landing of the #336 pad rings, without its hover
+// preview): the empty-pad ring and the selected tower's range ring are
+// thicker than the old 2.5/1.5 dashes and breathe via globalAlpha, driven
+// by storyTime. Reduced motion pins both alphas to 1. Without a selection
+// neither ring exists - this drawing path has no hover state at all.
+{
+  const events=[];
+  const recordCtx=new Proxy({},{get(t,k){if(k in t)return t[k];return (...a)=>{events.push(['call',k,...a]);};},set(t,k,v){events.push(['set',k,v]);t[k]=v;return true;}});
+  const drawRing=(ringState,extra={})=>{events.length=0;drawCartoonBattle(recordCtx,ringState,{...opts,...extra});};
+  const ringSets=(shape,...shapeArgs)=>{
+    const at=events.findIndex(e=>e[0]==='call'&&e[1]===shape&&shapeArgs.every((v,i)=>e[2+i]===v));
+    assert.ok(at>=0,`${shape} des Auswahlrings wird gezeichnet`);
+    let from=at;while(from>0&&!(events[from][0]==='call'&&events[from][1]==='save'))from--;
+    let to=at;while(to<events.length&&!(events[to][0]==='call'&&events[to][1]==='restore'))to++;
+    const sets={};for(let i=from;i<=to;i++)if(events[i][0]==='set')sets[events[i][1]]=events[i][2];
+    return sets;
+  };
+
+  // Empty pad selected: ellipse 34x24, lineWidth 3.2, alpha pulses with time.
+  const empty=createMatch([p]);empty.selectedPad=1;
+  drawRing(empty,{storyTime:0});
+  let sets=ringSets('ellipse',PADS[1].x,PADS[1].y,34,24);
+  assert.equal(sets.strokeStyle,'#d4eee0');assert.equal(sets.lineWidth,3.2);
+  assert.equal(sets.globalAlpha,.85,'bei storyTime 0 steht der Puls auf dem unteren Wert');
+  drawRing(empty,{storyTime:Math.PI*.15});
+  const pulsed=ringSets('ellipse',PADS[1].x,PADS[1].y,34,24).globalAlpha;
+  assert.ok(pulsed>.85&&pulsed<=1,`der Ring atmet mit der Zeit (${pulsed})`);
+  drawRing(empty,{storyTime:Math.PI*.15,reducedMotion:true});
+  assert.equal(ringSets('ellipse',PADS[1].x,PADS[1].y,34,24).globalAlpha,1,
+    'bei reduzierter Bewegung bleibt der Pad-Ring ruhig');
+
+  // Tower on the selected pad: the range ring pulses the same way.
+  const manned=createMatch([p]);manned.towers=[{type:0,pad:2,level:1,ownerId:'a'}];manned.selectedPad=2;
+  drawRing(manned,{storyTime:0});
+  sets=ringSets('arc',PADS[2].x,PADS[2].y,getTowerRange(manned.towers[0]));
+  assert.equal(sets.strokeStyle,'#c2dfd2');assert.equal(sets.lineWidth,2.2);
+  assert.equal(sets.globalAlpha,.88,'bei storyTime 0 steht der Reichweiten-Puls unten');
+  drawRing(manned,{storyTime:Math.PI*.21});
+  assert.ok(ringSets('arc',PADS[2].x,PADS[2].y,getTowerRange(manned.towers[0])).globalAlpha>.88,
+    'der Reichweiten-Ring atmet mit der Zeit');
+  drawRing(manned,{storyTime:Math.PI*.21,reducedMotion:true});
+  assert.equal(ringSets('arc',PADS[2].x,PADS[2].y,getTowerRange(manned.towers[0])).globalAlpha,1,
+    'bei reduzierter Bewegung bleibt der Reichweiten-Ring ruhig');
+
+  // No selection: no ring of either kind, at any time.
+  const idle=createMatch([p]);idle.towers=[{type:0,pad:2,level:1,ownerId:'a'}];idle.selectedPad=null;
+  drawRing(idle,{storyTime:Math.PI*.15});
+  assert.ok(!events.some(e=>e[0]==='call'&&e[1]==='ellipse'&&e[4]===34&&e[5]===24),
+    'ohne Auswahl kein Pad-Ring');
+  assert.ok(!events.some(e=>e[0]==='call'&&e[1]==='arc'&&e[4]===getTowerRange(idle.towers[0])),
+    'ohne Auswahl kein Reichweiten-Ring');
+  console.log('Selection rings: thicker, pulsing with storyTime, still under reduced motion.');
+}
