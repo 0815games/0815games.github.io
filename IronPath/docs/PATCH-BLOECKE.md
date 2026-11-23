@@ -1,5 +1,10 @@
 # Iron Path – Patch-Blöcke und Arbeitsstand
 
+**Aktive Arbeitsreihenfolge (Betreiber-Entscheid 2026-11-23):**
+[AUSBAU-PLAN.md](AUSBAU-PLAN.md) – Block E Scheibe 2 zuerst, dann
+Sicherheit, dann Sektor-Modifikatoren, Fortschrittsziele und die kleinen
+Punkte. Diese Datei hier bleibt die ausführliche Block-Dokumentation.
+
 Dieses Blatt führt die sechs vom Betreiber nachgereichten Originalblöcke und
 unterscheidet **bereits Gebautes, historische Nutzerbestätigungen und noch
 fehlende Anforderungen oder Nachweise**. Später genannte Wünsche werden in
@@ -106,7 +111,7 @@ erledigt, wenn Code, Tests und die passenden echten Abnahmen vorliegen.
 | 5 | [Block 5 · Skills](#5-skills-neu-strukturieren--bestehende-turm-spezialisierungen-bereits-implementiert) | V2-Klassenbau (`20261118-block5`, PR #318) & [`BLOCK5-RULES-TO-PUBLISH.json`](../firebase/BLOCK5-RULES-TO-PUBLISH.json) (PR #319) gemergt; Betreiber bestätigte Live-Veröffentlichung der Block-5-RTDB-Rules (`IPL-0068`); offen: echte Geräteabnahme. | **97 %** · Spielcode & Rules live (`20261118-block5`), Geräteabnahme offen |
 | 6 | [Block 9 · Menü-Redesign](#9-einheitliches-menü-layout--kommandotafeln-desktop--app-shell-mobile) | Einheitliche Command-HQ-Oberfläche (Desktop 2-Spalten-HQ / Mobile App-Shell mit Daumen-Leiste), 3-Zonen-Artwork-Dialoge, Terrain-Endloswahl, Settings-Account/Passwortänderung, Einzelsitzungs-Schutz (`activeSessions/$uid`) & live bestätigte `BLOCK9D`-Rules (`IPL-0074`) vor Block 6. | **99 %** · Spielcode (`20261119-block9d`) & Rules live, Geräteabnahme offen |
 | 7 | [Block 6 · Tutorial](#6-tutorial-als-großer-zusammenhängender-einsatz--klient-dialoge-und-generalstimme-lokal-gebaut-abnahme-ausstehend) | Charakter-Auftragsakte (`tutorial-dossier.mjs`), Charakter-Sync (`tutorial-sync.mjs` auf live `players/$uid/tutorial`), 7-Wellen-Einsatz, komplette 36-teilige General-Vance-Vertonung (DE/EN) und 8-Stationen-HQ-Führung auf Release-Build **`20261119-block6`** (PR `#328`) vorbereitet; CI & echte Geräteabnahme ausstehend. | **97 %** · Release `20261119-block6` (PR #328, CI & Geräteabnahme offen) |
-| 8 | [Block 7 · Leben, Gegenangriffe und Reparaturen](#7-zusätzlich-vorgeschlagen-leben-und-gegenangriffe--offen) | Leben für Soldaten/Türme, Angriffe mit Vorwarnung, Reparatur statt Verlustspirale, gleiche Regeln in allen Modi. | **5 %** · Geplant (bleibt zuletzt) |
+| 8 | [Block 7 · Leben, Gegenangriffe und Reparaturen](#7-zusätzlich-vorgeschlagen-leben-und-gegenangriffe--offen) | Leben für Soldaten/Türme, Angriffe mit Vorwarnung, Reparatur statt Verlustspirale, gleiche Regeln in allen Modi. | **~70 %** · Scheibe 1 live (`IPL-0106`), Scheibe 2 läuft (Reihenfolge: [AUSBAU-PLAN.md](AUSBAU-PLAN.md)) |
 | 9 | [Block 8 · Nach den Patches](#8-was-nach-den-patches-ansteht--sammelstelle) | Sammelstelle: UI-Feinschliff (`#306`–`#315`) & `20261031-patch7` ([PR #316](https://github.com/0815games/0815games.github.io/pull/316), `a69675bb`) live; Max-1-Retry auf `party-finalization-browser` (`IPL-0065`); offen: Namens-Audit, Altsaves & Geräteabnahme. | **80 %** · Sammelstelle |
 
 **Im Spiel sichtbar:** Unter **FELDNOTIZEN** in der Kommandozentrale zeigt eine
@@ -1071,7 +1076,7 @@ Die eigene Lebensanzeige ist im HUD sichtbar; bei Auswahl oder Beschädigung sin
 - [x] Infanterie bedroht vor allem **Soldaten in Reichweite**, Panzer vor allem **nahe Türme**; schnelle Scouts bleiben vorrangig auf dem Weg zum Bunker. Flugzeuge und bestehende Bosse zunächst nicht zusätzlich mit neuen Dauerangriffen überladen. Konkrete Reichweiten, Schaden und Häufigkeit pro Gegnertyp müssen durch Tests festgelegt werden.
 - [x] Angriffe sind begrenzt, mit sichtbarer Vorwarnung und eigenem Abklingintervall. Ein Angriff trifft nur ein noch gültiges Ziel; tote Gegner schießen nicht weiter, Soldaten können aus der Reichweite ausweichen. Eine Obergrenze gleichzeitiger Angreifer pro Ziel und ein langsamer Einstieg in den ersten Wellen schützen vor unlesbarem Fokusfeuer.
 - [x] Gegner bleiben auf ihren vorhandenen Wegen und verfolgen Spieler nicht endlos über die Karte. Kein Friendly Fire und keine Angriffe auf das gegnerische Feld im Überlebens-Wettkampf. Vorhandene Bosswarnungen, Gelände und Flug-/Bodentypen bleiben nachvollziehbar.
-- [ ] Neues Feedback erklärt, **wer** angegriffen wird und wie man reagiert. Im Tutorial wird das System sicher und verständlich eingeführt; der bestehende Fünf-Wellen-Vertrag und seine Abschluss-/Belohnungslogik dürfen nicht blockiert werden. *(Teilschritt `IPL-0113`: Lebensbalken an Soldat und Türmen jetzt immer sichtbar statt nur bei Schaden.)*
+- [x] Neues Feedback erklärt, **wer** angegriffen wird und wie man reagiert. Im Tutorial wird das System sicher und verständlich eingeführt; der bestehende Sieben-Wellen-Vertrag und seine Abschluss-/Belohnungslogik dürfen nicht blockiert werden. *(Geliefert in Scheibe 2, `IPL-0114`: Form-Trefferblitz Ring/Raute + Schadenszahl, gedrosselte Funkmeldung mit Gegenmaßnahme, Koop-Blitz aus Snapshot-Lebensdifferenz, neue Coach-Karte `under-fire` (`when: null`, blockiert nichts) und ausführliche Erst-Treffer-Erklärung im Trainingslauf. Teilschritt davor `IPL-0113`: Lebensbalken immer sichtbar.)*
 
 ### E3. Reparatur statt harter Verlustspirale
 

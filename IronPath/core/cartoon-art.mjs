@@ -1,11 +1,11 @@
-import {translateText as tr,getLanguage} from '../language.mjs?v=20261123-life1';
+import {translateText as tr,getLanguage} from '../language.mjs?v=20261123-blocke2';
 import {towerDisplay} from './progression.mjs?v=20261105-prestige1';
-import {specializationRank} from './tower-specialization.mjs?v=20261123-life1';
-import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261123-life1';
-import {ENEMY_INTEL,SOLDIER_MAX_HP} from './combat.mjs?v=20261123-life1';
+import {specializationRank} from './tower-specialization.mjs?v=20261123-blocke2';
+import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261123-blocke2';
+import {ENEMY_INTEL,SOLDIER_MAX_HP} from './combat.mjs?v=20261123-blocke2';
 import {bossPhase} from './boss-mechanics.mjs?v=20261031-finale1';
 import {shotTrace,shotsToDraw} from './shot-tracers.mjs?v=20261117-shots1';
-import {buildRoadPath} from './road-geometry.mjs?v=20261123-life1';
+import {buildRoadPath} from './road-geometry.mjs?v=20261123-blocke2';
 // Drawing only: the simulation, coordinates and hit areas stay unchanged.
 const ink='#1d3028',paper='#f1e7c4';
 function line(ctx,points,color=ink,width=3){ctx.beginPath();points.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();}
@@ -1140,6 +1140,15 @@ function drawAbility(ctx,e){
     burst(ctx,e.x,e.y,16+16*t,'#f0b47a');
     for(let i=0;i<3;i++){const rise=t*34,side=(i-1)*11;oval(ctx,e.x+side+Math.sin(t*6+i)*3,e.y-14-rise-i*7,7+4*t,5+3*t,`rgba(78,84,78,${(.4*fade).toFixed(3)})`,null);}
     ctx.fillStyle='#fff1ca';ctx.strokeStyle=ink;ctx.lineWidth=4;ctx.font='bold 16px Georgia';ctx.textAlign='center';ctx.strokeText(e.label||tr('BUNKER HIT'),e.x,e.y-45-15*t);ctx.fillText(e.label||tr('BUNKER HIT'),e.x,e.y-45-15*t);
+  }else if(e.kind==='soldierHit'||e.kind==='towerHit'){
+    // Block E hit flash: shape carries the meaning, not colour alone - a
+    // ring blooms on the struck soldier, a diamond on the struck tower -
+    // and the lost life climbs away as a number.
+    if(e.kind==='towerHit'){ctx.save();ctx.translate(e.x,e.y-12);ctx.rotate(Math.PI/4);ctx.strokeStyle='#f2a65c';ctx.lineWidth=3-2*t;ctx.strokeRect(-(11+13*t),-(11+13*t),(22+26*t),(22+26*t));ctx.restore();}
+    else{ctx.beginPath();ctx.arc(e.x,e.y-12,10+24*t,0,Math.PI*2);ctx.strokeStyle='#f2a65c';ctx.lineWidth=3-2*t;ctx.stroke();}
+    burst(ctx,e.x,e.y-12,9+11*t,'#ef9d60');
+    ctx.fillStyle='#ffe3c2';ctx.strokeStyle=ink;ctx.lineWidth=3.5;ctx.font='bold 14px Georgia';ctx.textAlign='center';
+    const label=e.label||tr('HIT');ctx.strokeText(label,e.x,e.y-34-14*t);ctx.fillText(label,e.x,e.y-34-14*t);
   }else if(e.kind==='combo'){
     // V3: the combo wears the emblem - a silver ring with the gold star at
     // its heart, the pair's own tint glowing underneath.

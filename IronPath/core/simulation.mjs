@@ -1,16 +1,16 @@
 import {equipmentForPlayer} from '../workshop/workshop-combat.mjs?v=20261112-tagless1';
 import {legacyEquipmentEffects} from './equipment-effects.mjs?v=20261107-balance1';
 import {advanceBuildReservations} from './build-reservations.mjs?v=20261104-buildreservation1';
-import {comboTier,comboCue} from './skill-combos.mjs?v=20261123-life1';
-import {webBonuses,specialistUnlocked,hasCapstone} from './skills.mjs?v=20261123-life1';
-import {classTowerRangeFactor,classTowerIntervalFactor,classTowerIgnoresClouds,classTowerDamageFactor,applyClassTowerHitEffects} from './tower-class-paths.mjs?v=20261123-life1';
+import {comboTier,comboCue} from './skill-combos.mjs?v=20261123-blocke2';
+import {webBonuses,specialistUnlocked,hasCapstone} from './skills.mjs?v=20261123-blocke2';
+import {classTowerRangeFactor,classTowerIntervalFactor,classTowerIgnoresClouds,classTowerDamageFactor,applyClassTowerHitEffects} from './tower-class-paths.mjs?v=20261123-blocke2';
 import {bossPhase,bossWeaponFactor,crossedCycle} from './boss-mechanics.mjs?v=20261031-finale1';
 import {terrainFor,soldierSpeedFactor,enemySpeedFactor,iceDamage,targetingRange,weaponDamageFactor} from './terrain.mjs?v=20261124-zones1';
-import {getMap,isMapId,DEFAULT_MAP,sectorOf,zoneAt,mapPlayerCap} from './maps.mjs?v=20261123-life1';
-import { WAVE_COUNT,waveFormation,missionFormation,makeEnemy,towerDamage,SOLDIER_MAX_HP,SOLDIER_RETURN_SECONDS,SOLDIER_PROTECT_SECONDS,ENEMY_ATTACKS,ENEMY_ATTACK_FIRST_WAVE,MAX_ATTACKERS_PER_TARGET,towerMaxHp } from './combat.mjs?v=20261123-life1';
+import {getMap,isMapId,DEFAULT_MAP,sectorOf,zoneAt,mapPlayerCap} from './maps.mjs?v=20261123-blocke2';
+import { WAVE_COUNT,waveFormation,missionFormation,makeEnemy,towerDamage,SOLDIER_MAX_HP,SOLDIER_RETURN_SECONDS,SOLDIER_PROTECT_SECONDS,ENEMY_ATTACKS,ENEMY_ATTACK_FIRST_WAVE,MAX_ATTACKERS_PER_TARGET,towerMaxHp } from './combat.mjs?v=20261123-blocke2';
 import { waveXP } from './progression.mjs?v=20261105-prestige1';
-import {addSupplies} from './match.mjs?v=20261123-life1';
-import {towerIntervalFactor,towerRangeFactor,towerIgnoresClouds,towerDamageBonus,applyHitEffects} from './tower-specialization.mjs?v=20261123-life1';
+import {addSupplies} from './match.mjs?v=20261123-blocke2';
+import {towerIntervalFactor,towerRangeFactor,towerIgnoresClouds,towerDamageBonus,applyHitEffects} from './tower-specialization.mjs?v=20261123-blocke2';
 export const STEP = 1/30;
 export const PATH=getMap(DEFAULT_MAP).path, PADS=getMap(DEFAULT_MAP).pads;
 const towerStats=[{range:125,interval:.55,color:'#d9d884'},{range:145,interval:1.4,color:'#e49b67'},{range:155,interval:.8,color:'#8cc0a6'},{range:210,interval:1.8,color:'#a9a4d4'}];
@@ -154,7 +154,7 @@ export function stepMatch(state){
           const target=state.players[windup.id];
           if(target&&target.active!==false&&!(target.downed>0)&&(target.hp??target.maxHp??SOLDIER_MAX_HP)>0&&Math.hypot(e.x-target.x,e.y-target.y)<=cfg.range*1.3){
             const damage=target.protect>0?0:cfg.damage;
-            if(damage>0){target.hp=Math.max(0,(target.hp??target.maxHp??SOLDIER_MAX_HP)-damage);events.push({type:'enemyAttack',target:'soldier',playerId:windup.id,damage});if(target.hp<=0){target.downed=SOLDIER_RETURN_SECONDS;target.direction={x:0,y:0};target.target=null;events.push({type:'soldierDown',playerId:windup.id});}}
+            if(damage>0){target.hp=Math.max(0,(target.hp??target.maxHp??SOLDIER_MAX_HP)-damage);events.push({type:'enemyAttack',target:'soldier',playerId:windup.id,damage});if(target.hp<=0){target.downed=SOLDIER_RETURN_SECONDS;target.direction={x:0,y:0};target.target=null;events.push({type:'soldierDown',playerId:windup.id,seconds:SOLDIER_RETURN_SECONDS});}}
           }
         }else{
           const tower=state.towers.find(t=>t.pad===windup.pad),padPoint=PADS[windup.pad];

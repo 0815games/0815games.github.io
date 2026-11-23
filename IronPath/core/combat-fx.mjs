@@ -1,4 +1,4 @@
-import {getMap} from './maps.mjs?v=20261123-life1';
+import {getMap} from './maps.mjs?v=20261123-blocke2';
 // Client-only effects. They never affect commands, damage, rewards or match state.
 export function createCombatEffects({clock=()=>performance.now(),reducedMotion=false}={}){
   let effects=[],cooldowns=null,comboSeqs=null,previous=null;
@@ -38,6 +38,20 @@ export function createCombatEffects({clock=()=>performance.now(),reducedMotion=f
       for(const [id,p] of Object.entries(match.players)){
         const value=Number.isFinite(p.cooldown)?p.cooldown:0;next.set(id,value);const seq=p.comboCue?.seq||0;nextCombos.set(id,seq);if(comboSeqs?.has(id)&&seq>comboSeqs.get(id)&&p.active!==false){emit('combo',{x:p.comboCue.x,y:p.comboCue.y,comboLabel:p.comboCue.name},match);changes.push('combo');}
         if(cooldowns?.has(id)&&p.active!==false&&value>cooldowns.get(id)+1){emit(p.skills?.active||'assault',{...p,id},previous||match);changes.push('ability');}
+      }
+      // Block E hit feedback for guests: a life drop between two snapshots is
+      // a landed strike, even when the host event did not reach this client.
+      // First view stays a baseline, so a rejoin never replays old damage.
+      if(previous?.players){
+        for(const [id,p] of Object.entries(match.players)){
+          const old=previous.players[id];
+          if(old&&Number.isFinite(old.hp)&&Number.isFinite(p.hp)&&p.hp<old.hp){emit('soldierHit',{x:p.x,y:p.y,comboLabel:`−${Math.round((old.hp-p.hp)*10)/10}`},match);changes.push('soldierHit');}
+        }
+      }
+      if(Array.isArray(previous?.towers)&&Array.isArray(match.towers)&&Array.isArray(pads)){
+        for(const tower of match.towers){const old=previous.towers.find(t=>t.id===tower.id&&t.pad===tower.pad),point=pads[tower.pad];
+          if(old&&point&&Number.isFinite(old.hp)&&Number.isFinite(tower.hp)&&tower.hp<old.hp){emit('towerHit',{x:point.x,y:point.y,comboLabel:`−${Math.round((old.hp-tower.hp)*10)/10}`},match);changes.push('towerHit');}
+        }
       }
       if(Array.isArray(previous?.towers)&&Array.isArray(match.towers)&&Array.isArray(pads)){
         for(const tower of match.towers){const old=previous.towers.find(t=>t.id===tower.id&&t.pad===tower.pad),point=pads[tower.pad];

@@ -4,7 +4,7 @@
 // readout, and a 5-dot hair & beard color bar. Zero bottom tile rows.
 import {defaultAvatar,randomAvatar,storeAvatar} from '../core/avatar.mjs?v=20261119-avatar3';
 import {layerOptions,composePortrait,DEFAULT_COLOR_ID} from '../core/avatar-layers.mjs?v=20261119-avatar3';
-import {translateText as tr} from '../language.mjs?v=20261123-life1';
+import {translateText as tr} from '../language.mjs?v=20261123-blocke2';
 
 function deviceRatio(){
   return Math.min(2,Math.max(1,(typeof window!=='undefined'&&window.devicePixelRatio)||1));

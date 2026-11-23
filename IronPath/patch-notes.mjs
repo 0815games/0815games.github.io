@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see docs/PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261123-life1';
+import {getLanguage} from './language.mjs?v=20261123-blocke2';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,19 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'blocke2',build:'20261123-blocke2',pr:376,
+    title:{en:'Block E · Hits You Can Read, Damage Taught in Training',de:'Block E · Lesbare Treffer, Schaden im Training erklärt'},
+    shipped:[
+      {en:'Landed hits now answer back: a ring flashes on the struck soldier, a diamond on the struck tower, the lost life climbs away as a number, and the radio names the counter-move — step out of the ring, repair the tower. Repeat hits are throttled so the radio never floods.',de:'Gelandete Treffer melden sich jetzt zurück: Ein Ring blitzt am getroffenen Soldaten, eine Raute am getroffenen Turm, das verlorene Leben steigt als Zahl auf, und der Funk nennt die Gegenmaßnahme — raus aus dem Ring, Turm reparieren. Wiederholungstreffer sind gedrosselt, damit der Funk nie flutet.'},
+      {en:'In training, a new coach card teaches the damage system before it can hurt, and the first real hit in a training run is explained in full: who shoots at whom, what the dashed ring means, and that falling costs nothing.',de:'Im Training erklärt eine neue Coach-Karte das Schadenssystem, bevor es wehtun kann, und der erste echte Treffer eines Trainingslaufs wird ausführlich erklärt: wer auf wen schießt, was der gestrichelte Ring bedeutet und dass Fallen nichts kostet.'},
+      {en:'Co-op guests see landed hits too: a life drop between two snapshots flashes on their field, even if the host message did not reach them.',de:'Auch Koop-Gäste sehen gelandete Treffer: Sinkt Leben zwischen zwei Spielständen, blitzt es auf ihrem Feld — selbst wenn die Host-Nachricht sie nicht erreicht hat.'},
+      {en:'Raised the cache wave to 20261123-blocke2, because the battle feedback changed: no device should keep fighting under the old sky out of cache.',de:'Die Cache-Welle auf 20261123-blocke2 erhöht, weil sich das Kampf-Feedback geändert hat: Kein Gerät soll mit dem alten Stand aus dem Zwischenspeicher weiterkämpfen.'},
+    ],
+    open:[
+      {en:'Block E continues: detailed host and reconnect checks, then play-tested balance with the beginner rules.',de:'Block E geht weiter: Host- und Reconnect-Prüfung im Detail, danach spielgetestete Balance mit den Einsteigerregeln.'},
+    ]
+  },
   {
     id:'life1',build:'20261123-life1',pr:375,
     title:{en:'Clearer Battle · Boss Bar Gone, Radio Fall Back, Life Bars Always On',de:'Klareres Gefecht · Boss-Leiste weg, Funk-Rückzug, Lebensbalken immer an'},
