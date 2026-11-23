@@ -2669,14 +2669,16 @@ dialog#tutorialDossier::backdrop {
    6. ENDLESS STAGE: ONE ARTWORK, INTEGRATED ARROWS & DEPLOY, RECORD PANEL
    ========================================================================== */
 
-/* The battlefield artwork is the whole stage: arrows and DEPLOY sit inside
-   the picture, the map name holds the TOP edge (DEPLOY owns the bottom),
+/* The battlefield artwork is the whole stage and grows with the screen
+   height; arrows and DEPLOY sit inside the picture, the map name holds
+   the TOP edge (DEPLOY owns the bottom),
    and a click anywhere on the artwork deploys. DEPLOY is a stencil-plate
    with a glowing brass frame so it reads on every artwork; the arrows are
    the classic slim line chevrons in a military olive-and-brass finish. */
 #endlessLaunch .endless-stage {
   position: relative;
-  height: 352px;
+  height: clamp(320px, 48vh, 520px);
+  height: clamp(320px, 48dvh, 520px);
   margin-bottom: 14px;
   border-radius: var(--hq-radius);
 }
@@ -2817,9 +2819,12 @@ dialog#tutorialDossier::backdrop {
   bottom: 16px;
   transform: translateX(-50%);
   z-index: 2;
+  width: fit-content;
+  max-width: calc(100% - 32px);
   min-height: 54px;
   margin: 0;
   padding: 13px 28px;
+  text-align: center;
   border: 2px solid #e8c97c;
   border-radius: 6px;
   background: linear-gradient(180deg, rgba(43, 62, 45, 0.94) 0%, rgba(9, 16, 11, 0.96) 100%);
@@ -2830,8 +2835,8 @@ dialog#tutorialDossier::backdrop {
   letter-spacing: 0.22em;
   text-indent: 0.22em;
   white-space: nowrap;
-  text-shadow: 0 0 10px rgba(255, 214, 120, 0.9), 0 0 24px rgba(255, 190, 80, 0.55), 0 2px 3px rgba(0, 0, 0, 0.85);
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.7), 0 0 18px rgba(232, 201, 124, 0.65), 0 0 44px rgba(232, 201, 124, 0.3), inset 0 0 16px rgba(232, 201, 124, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 12px 26px rgba(0, 0, 0, 0.55);
+  text-shadow: 0 0 6px rgba(255, 214, 120, 0.55), 0 0 14px rgba(255, 190, 80, 0.3), 0 2px 3px rgba(0, 0, 0, 0.85);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.7), 0 0 10px rgba(232, 201, 124, 0.35), 0 0 24px rgba(232, 201, 124, 0.14), inset 0 0 10px rgba(232, 201, 124, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 12px 26px rgba(0, 0, 0, 0.55);
   cursor: pointer;
   transition: box-shadow 140ms ease, color 140ms ease, border-color 140ms ease;
 }
@@ -2872,7 +2877,8 @@ dialog#tutorialDossier::backdrop {
 
 @media (max-width: 680px) {
   #endlessLaunch .endless-stage {
-    height: 248px;
+    height: clamp(230px, 36vh, 340px);
+    height: clamp(230px, 36dvh, 340px);
   }
 
   #endlessLaunch .endless-theme-card {

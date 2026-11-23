@@ -129,7 +129,7 @@ test('endless stage carries arrows and deploy inside one artwork, record at bott
   assert.match(css, /#endlessLaunch \.endless-arrow\s*\{[^}]*position:\s*absolute/, 'endless arrows are integrated into the artwork');
   assert.match(css, /#endlessLaunch #endlessDeploy\s*\{[^}]*position:\s*absolute/, 'DEPLOY sits on the artwork, not above it');
   assert.match(css, /#endlessLaunch \.endless-theme-card\s*\{[^}]*align-items:\s*flex-start/, 'the battlefield name holds the top of the artwork, DEPLOY owns the bottom');
-  assert.match(css, /#endlessLaunch #endlessDeploy\s*\{[^}]*font-family:\s*"Arial Black"[^}]*letter-spacing:\s*0\.22em[^}]*box-shadow:[^}]*0 0 18px rgba\(232, 201, 124/, 'DEPLOY is a stencil plate with a glowing brass frame, readable on every artwork');
+  assert.match(css, /#endlessLaunch #endlessDeploy\s*\{[^}]*font-family:\s*"Arial Black"[^}]*letter-spacing:\s*0\.22em/, 'DEPLOY is a stencil plate with a brass frame, readable on every artwork');
   assert.match(endless, /endless-arrow-icon" viewBox="0 0 28 48"/, 'endless arrows render as classic slim line chevrons');
   assert.doesNotMatch(css, /#endlessLaunch #endlessDeploy\s*\{[^}]*min-width/, 'DEPLOY is only as wide as its stencil lettering, never a full-width bar');
 
@@ -208,7 +208,10 @@ test('VIEW LAST RESULTS sits below mode cards, language toggles match, and HQ di
   // Paket 4: fixed card height on Endless themes + custom SVG arrows
   assert.match(html, /id="endlessPrev"[\s\S]*?<svg class="endless-arrow-icon"/, '#endlessPrev renders custom Iron Path vector arrow');
   assert.match(html, /id="endlessNext"[\s\S]*?<svg class="endless-arrow-icon"/, '#endlessNext renders custom Iron Path vector arrow');
-  assert.match(css, /#endlessLaunch\s+\.endless-stage\s*\{[^}]*height:\s*352px/, 'the endless stage keeps one uniform tall artwork height on desktop');
+  assert.match(css, /#endlessLaunch\s+\.endless-stage\s*\{[^}]*height:\s*clamp\(320px, 48vh, 520px\)/, 'the endless stage grows with the screen height on desktop');
+  assert.match(css, /#endlessLaunch #endlessDeploy\s*\{[^}]*width:\s*fit-content/, 'DEPLOY is exactly as wide as its stencil lettering, never the stage');
+  assert.match(css, /#endlessLaunch #endlessDeploy\s*\{[^}]*box-shadow:[^}]*0 0 10px rgba\(232, 201, 124, 0\.35\)/, 'DEPLOY glow stays quiet at rest');
+  assert.match(css, /#endlessLaunch #endlessDeploy:hover\s*\{[^}]*box-shadow:[^}]*0 0 26px/, 'DEPLOY glow only flares up on hover');
 
   // Command Center soldier XP footer dock & painted action cards
   const soldierStart = nav.indexOf('id="menuSoldier"');
