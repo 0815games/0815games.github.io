@@ -71,7 +71,7 @@ export function stepMatch(state){
     if(dx||dy){const len=Math.hypot(dx,dy);p.x+=dx/len*speed*dt;p.y+=dy/len*speed*dt;}
     else if(p.target){dx=p.target.x-p.x;dy=p.target.y-p.y;const len=Math.hypot(dx,dy),step=Math.min(len,speed*dt);if(len>0){p.x+=dx/len*step;p.y+=dy/len*step;}if(len<=step)p.target=null;}
     p.x=Math.max(12,Math.min((map.width||960)-12,p.x));p.y=Math.max(12,Math.min((map.height||540)-12,p.y));
-    if(!jamField)p.cooldown=Math.max(0,p.cooldown-dt);
+    if(!jamField&&state.running)p.cooldown=Math.max(0,p.cooldown-dt);
   }
   if(state.running&&state.spawnLeft>0){state.spawnTimer-=dt;if(state.spawnTimer<=0){const spawnIndex=state.spawnIndex++,formation=missionFormation(state.wave,state.campaignContract),kind=formation[spawnIndex%formation.length],enemy=makeEnemy(kind,state.wave),count=activePlayers(state).length,road=spawnIndex%paths.length,path=paths[road],effectiveSector=(state.individualSupplies||state.hostId)&&state.wave<MULTIPLAYER_SECTOR_START_WAVE?1:sector;
       if(effectiveSector>1){enemy.hp=enemy.maxHp=Math.max(1,Math.round(enemy.maxHp*(1+.12*(effectiveSector-1))));enemy.speed*=1+.05*(effectiveSector-1);}if(state.individualSupplies&&count>1){const healthMult=count>3?COOP_FOUR_ENEMY_HEALTH:count>2?COOP_THREE_ENEMY_HEALTH:COOP_ENEMY_HEALTH;enemy.hp=enemy.maxHp=Math.round(enemy.maxHp*healthMult);}
