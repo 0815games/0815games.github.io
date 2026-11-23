@@ -212,6 +212,8 @@ test('VIEW LAST RESULTS sits below mode cards, language toggles match, and HQ di
   assert.match(css, /#endlessLaunch #endlessDeploy\s*\{[^}]*width:\s*fit-content/, 'DEPLOY is exactly as wide as its stencil lettering, never the stage');
   assert.match(css, /#endlessLaunch #endlessDeploy\s*\{[^}]*box-shadow:[^}]*0 0 10px rgba\(232, 201, 124, 0\.35\)/, 'DEPLOY glow stays quiet at rest');
   assert.match(css, /#endlessLaunch #endlessDeploy:hover\s*\{[^}]*box-shadow:[^}]*0 0 26px/, 'DEPLOY glow only flares up on hover');
+  assert.doesNotMatch(css, /#endlessLaunch #endlessDeploy::before/, 'DEPLOY carries no corner brackets any more');
+  assert.match(css, /orientation:\s*portrait\)\s*\{\s*#endlessLaunch \.endless-stage\s*\{[^}]*height:\s*clamp\(340px, 52vh, 620px\)/, 'a portrait phone gives the stage about half the screen height');
 
   // Command Center soldier XP footer dock & painted action cards
   const soldierStart = nav.indexOf('id="menuSoldier"');

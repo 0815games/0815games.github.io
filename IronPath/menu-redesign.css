@@ -2671,7 +2671,7 @@ dialog#tutorialDossier::backdrop {
 
 /* The battlefield artwork is the whole stage and grows with the screen
    height; arrows and DEPLOY sit inside the picture, the map name holds
-   the TOP edge (DEPLOY owns the bottom),
+   the TOP edge (DEPLOY owns the bottom, without corner brackets),
    and a click anywhere on the artwork deploys. DEPLOY is a stencil-plate
    with a glowing brass frame so it reads on every artwork; the arrows are
    the classic slim line chevrons in a military olive-and-brass finish. */
@@ -2841,29 +2841,6 @@ dialog#tutorialDossier::backdrop {
   transition: box-shadow 140ms ease, color 140ms ease, border-color 140ms ease;
 }
 
-#endlessLaunch #endlessDeploy::before,
-#endlessLaunch #endlessDeploy::after {
-  content: "";
-  position: absolute;
-  width: 16px;
-  height: 16px;
-  filter: drop-shadow(0 0 4px rgba(255, 220, 140, 0.85));
-}
-
-#endlessLaunch #endlessDeploy::before {
-  top: -8px;
-  left: -8px;
-  border-top: 2px solid #ffe9a8;
-  border-left: 2px solid #ffe9a8;
-}
-
-#endlessLaunch #endlessDeploy::after {
-  right: -8px;
-  bottom: -8px;
-  border-right: 2px solid #ffe9a8;
-  border-bottom: 2px solid #ffe9a8;
-}
-
 #endlessLaunch #endlessDeploy:hover {
   border-color: #fff0c0;
   color: #fff6da;
@@ -2880,6 +2857,15 @@ dialog#tutorialDossier::backdrop {
     height: clamp(230px, 36vh, 340px);
     height: clamp(230px, 36dvh, 340px);
   }
+
+/* A portrait phone gives the picture the run of the screen: the stage takes
+   about half the viewport height, so the launch feels full-screen. */
+@media (max-width: 680px) and (orientation: portrait) {
+  #endlessLaunch .endless-stage {
+    height: clamp(340px, 52vh, 620px);
+    height: clamp(340px, 52dvh, 620px);
+  }
+}
 
   #endlessLaunch .endless-theme-card {
     padding: 14px 16px;

@@ -2,7 +2,7 @@
 // play - the personal record, the battlefield choice and the last run.
 // Navigation only; the run itself starts through the same
 // chooseEndless path the one-click flow used.
-import {translateText} from '../language.mjs?v=20261123-endless4';
+import {translateText} from '../language.mjs?v=20261123-endless5';
 
 // The free-play generator themes (maps.mjs draws one of five at random); the
 // launcher offers them as a choice plus true random. Labels reuse the
@@ -19,7 +19,8 @@ export const ENDLESS_THEME_KEY='ironpath:endlessTheme';
 export const ENDLESS_LAST_RUN_KEY='ironpath:endlessLastRun';
 
 export function readEndlessTheme(storage){try{const saved=storage?.getItem(ENDLESS_THEME_KEY);return ENDLESS_THEMES.some(t=>t.key===saved)?saved:null;}catch{return null;}}
-export function readLastEndlessRun(storage){try{const raw=storage?.getItem(ENDLESS_LAST_RUN_KEY);const value=raw?JSON.parse(raw):null;return value&&Number.isInteger(value.waves)&&Number.isInteger(value.bosses)&&Number.isInteger(value.sector)?value:null;}catch{return null;}}
+export function sanitizeEndlessLastRun(value){return value&&Number.isInteger(value.waves)&&Number.isInteger(value.bosses)&&Number.isInteger(value.sector)?{waves:value.waves,bosses:value.bosses,sector:value.sector}:null;}
+export function readLastEndlessRun(storage){try{const raw=storage?.getItem(ENDLESS_LAST_RUN_KEY);return sanitizeEndlessLastRun(raw?JSON.parse(raw):null);}catch{return null;}}
 export function writeLastEndlessRun(storage,summary){try{storage?.setItem(ENDLESS_LAST_RUN_KEY,JSON.stringify(summary));}catch{/* The last-run card is a convenience; losing it is fine. */}}
 
 const fmt=n=>Number.isFinite(n)&&n>0?String(n):'—';
@@ -47,7 +48,7 @@ export function createEndlessLauncher({document,getRecord=()=>({}),getBestWave=a
     const last=getLastRun();
     const lastEl=$('endlessLastRun');
     if(lastEl){
-      lastEl.textContent=last?translateText('Last run: wave {wave} · {bosses} bosses · sector {sector}',{wave:last.waves,bosses:last.bosses,sector:last.sector}):translateText('No endless run yet on this device.');
+      lastEl.textContent=last?translateText('Last run: wave {wave} · {bosses} bosses · sector {sector}',{wave:last.waves,bosses:last.bosses,sector:last.sector}):translateText('No endless run yet.');
     }
   }
   function step(delta){
