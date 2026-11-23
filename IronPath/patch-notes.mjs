@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see docs/PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261122-core1';
+import {getLanguage} from './language.mjs?v=20261122-ring1';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,20 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'ring1',build:'20261122-ring1',pr:364,
+    title:{en:'Build Pads · Thicker, Pulsing Selection Rings',de:'Bauplätze · Dickere, pulsierende Auswahlringe'},
+    shipped:[
+      {en:'The ring around a selected build pad is thicker and breathes gently, so your current selection reads at a glance - on an empty pad and around the range circle of the tower standing on it.',de:'Der Ring um einen gewählten Bauplatz ist dicker und atmet sanft, damit die aktuelle Auswahl auf einen Blick lesbar ist - auf dem leeren Platz und um den Reichweiten-Kreis des Turms darauf.'},
+      {en:'If you have reduced motion enabled, both rings stand still. Nothing else changes: no hover preview, no new texts, same game.',de:'Wer reduzierte Bewegung aktiviert hat, sieht beide Ringe ruhig stehen. Sonst ändert sich nichts: keine Hover-Vorschau, keine neuen Texte, gleiches Spiel.'},
+      {en:'Raised the cache wave to 20261122-ring1, because the battlefield drawing changed: no device should keep painting the old thin ring out of cache.',de:'Die Cache-Welle auf 20261122-ring1 erhöht, weil sich die Gefechts-Zeichnung geändert hat: Kein Gerät soll weiter den alten dünnen Ring aus dem Zwischenspeicher malen.'},
+    ],
+    open:[
+      {en:'Visual check after loading: the stamp must read BUILD 20261122-ring1. Select a build pad (empty and with a tower) - the ring must be clearly thicker than before and pulse gently; with reduced motion on, it must stand still.',de:'Sichtprüfung nach dem Laden: Der Stempel muss BUILD 20261122-ring1 zeigen. Einen Bauplatz wählen (leer und mit Turm) - der Ring muss deutlich dicker sein als vorher und sanft pulsieren; bei aktivierter reduzierter Bewegung muss er ruhig stehen.'},
+      {en:'No device acceptance yet: the rings have not been checked on an iPhone or iPad.',de:'Noch keine Geräteabnahme: Die Ringe sind nicht auf einem iPhone oder iPad geprüft.'},
+      {en:'Older visual checks are still open: BUILD 20261122-core1 (login scene, a solo battle and an online party), the workshop and the German texts.',de:'Ältere Sichtprüfungen stehen weiter aus: BUILD 20261122-core1 (Anmelde-Szene, ein Solo-Gefecht und eine Online-Party), die Werkstatt und die Deutsch-Texte.'},
+    ]
+  },
   {
     id:'core1',build:'20261122-core1',pr:358,
     title:{en:'Structure Move 6 · The Core Modules Now Live in core/ - the New Layout Is Complete',de:'Struktur-Umzug 6 · Die Kern-Module liegen jetzt in core/ - die neue Ordnung ist komplett'},
