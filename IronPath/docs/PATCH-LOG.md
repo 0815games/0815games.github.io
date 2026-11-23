@@ -644,10 +644,10 @@ sie geprüft wurde.
 - **Git / PR / Release:** Wird mit Welle und PR-Nummer fortgeschrieben.
 - **Offen / nächster Schritt:** Cache-Welle `20261123-endless4` inkl. Feldnotizen, PR, CI, Merge, Pages-Nachweis. Block E Scheibe 2 bleibt eigenes Paket.
 
-## IPL-0111 – Endless: Porträt-Bühne füllt den Schirm, DEPLOY ohne Eckwinkel, letzter Lauf aufs Profil
+## IPL-0111 – Endless: Porträt-Bühne füllt den Schirm, DEPLOY ohne Eckwinkel, letzter Lauf aufs Profil (Welle `20261123-endless5`, PR `#373`)
 - **Zeit / Quelle:** 2026-11-23 UTC; Betreiber-Screenshot (Handy-Porträt) mit drei Punkten: Bild soll im Porträt mehr Höhe füllen („das handy ‚Voll‘ aussieht, Dynamisch halt“), die Rechtecke links oben/rechts unten um DEPLOY „sehen hässlich aus“, und unten steht „No Endlessrun on this Device“ trotz voller Bilanz – mit der Frage nach der Speicherlogik („Runs werden alle immer auf den Char gespeichert - wie das Tutorial auch? … Es wird alles immer auf Acc und Char zugewiesen und gespeichert.“).
 - **Block / Ziel:** Feinschliff Endless-Start plus Speicher-Korrektur, kein Block-Thema.
-- **Branch / Basis:** `arena/2908cc77-0815games-github-io` ab `136cef440d1fe31465d138770150af682de5ab4a` (`main`, Merge PR `#372`). Status: lokal umgesetzt, Commits/PR folgen.
+- **Branch / Basis:** `arena/2908cc77-0815games-github-io` ab `136cef440d1fe31465d138770150af682de5ab4a` (`main`, Merge PR `#372`). Commits `164a4f8` (UI) und `7da5052` (Speicher-Logik) gepusht, PR `#373` eröffnet; Cache-Welle `20261123-endless5` mit Feldnotizen (`patch-notes.mjs`, `RELEASED_PATCHES[0]` = `endless5`, PR `#373`).
 - **Befund zur Speicherfrage:** Die vier Bilanz-Zähler (`endlessRuns/Waves/Bosses/BestSector`) liegen seit PR `#252` auf dem Profil (`players/$uid`), die beste Welle kommt aus der Solo-Bestenliste – nur die **letzte Runde** wurde ausschließlich gerätelokal (`localStorage`, `ironpath:endlessLastRun`) gespeichert. Fremdes Gerät, neuer Browser oder gelöschter Speicher ⇒ „No endless run yet“ neben voller Bilanz. Genau der Screenshot-Fall.
 - **Änderungen / Dateien:**
   - `IronPath/menu-redesign.css`: DEPLOY-Eckwinkel (`::before`/`::after`) entfernt; neue Porträt-Regel `@media (max-width:680px) and (orientation:portrait)`: Bühne `clamp(340px, 52vh, 620px)` (auch `dvh`) – das Bild nimmt etwa die halbe Schirmhöhe ein.

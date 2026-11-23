@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see docs/PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261123-endless4';
+import {getLanguage} from './language.mjs?v=20261123-endless5';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,21 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'endless5',build:'20261123-endless5',pr:373,
+    title:{en:'Endless · Full-Screen Portrait Stage, Last Run on Your Soldier',de:'Endless · Porträt-Bühne in voller Höhe, letzte Runde auf dem Soldaten'},
+    shipped:[
+      {en:'On portrait phones the battlefield picture now takes about half the screen height - the launch fills the phone instead of sitting in a strip.',de:'Auf Handys im Hochformat nimmt das Schlachtfeldbild jetzt etwa die halbe Bildschirmhöhe ein - der Start füllt das Handy, statt in einem Streifen zu sitzen.'},
+      {en:'The corner brackets around DEPLOY are gone; the glowing stencil frame stays.',de:'Die Eckwinkel um DEPLOY sind weg; der leuchtende Stencil-Rahmen bleibt.'},
+      {en:'Found a storage mix-up: your record counters already lived on your soldier, but the last run was kept on the device only - so another phone showed a full record over "no endless run yet". The last run is now written to your soldier profile too and read from there first.',de:'Speicher-Wirrwarr gefunden: Die Bilanz-Zähler lagen längst auf dem Soldaten, aber die letzte Runde wurde nur auf dem Gerät behalten - ein anderes Handy zeigte deshalb eine volle Bilanz über „noch keine Endlos-Runde“. Die letzte Runde wird jetzt auch aufs Soldaten-Profil geschrieben und von dort zuerst gelesen.'},
+      {en:'Until the database rules carry the new profile field, the device copy keeps working exactly as before - counters and rewards are never blocked by it.',de:'Bis die Datenbank-Regeln das neue Profilfeld kennen, arbeitet die Geräte-Kopie exakt wie bisher weiter - Zähler und Belohnungen werden davon nie blockiert.'},
+      {en:'Raised the cache wave to 20261123-endless5, because the endless stage and its memory changed: no device should keep showing the old stage out of cache.',de:'Die Cache-Welle auf 20261123-endless5 erhöht, weil sich die Endless-Bühne und ihr Gedächtnis geändert haben: Kein Gerät soll die alte Bühne aus dem Zwischenspeicher zeigen.'},
+    ],
+    open:[
+      {en:'One operator step remains: publish the prepared database rule for the new profile field (ENDLESS-LAST-RUN-ROLLOUT.md) - after that the last run syncs to every device on its own.',de:'Ein Betreiber-Schritt bleibt: die vorbereitete Datenbank-Regel für das neue Profilfeld veröffentlichen (ENDLESS-LAST-RUN-ROLLOUT.md) - danach synchronisiert sich die letzte Runde von selbst auf jedes Gerät.'},
+      {en:'Block E continues in the next slice: hit feedback and a tutorial introduction, detailed host and reconnect checks, and play-tested balance.',de:'Block E geht in der nächsten Scheibe weiter: Treffer-Feedback und eine Tutorial-Einführung, Host- und Reconnect-Prüfung im Detail sowie spielgetestete Balance.'},
+    ]
+  },
   {
     id:'endless4',build:'20261123-endless4',pr:372,
     title:{en:'Endless Stage · Compact DEPLOY, Taller Picture',de:'Endless-Bühne · Kompaktes DEPLOY, höheres Bild'},
