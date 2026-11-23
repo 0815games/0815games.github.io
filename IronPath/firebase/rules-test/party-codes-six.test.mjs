@@ -26,6 +26,9 @@ beforeEach(async () => {
       name: 'Alice', gender: 'female', xp: 900, campaign: 3,
       armory: {scrap: 100, fortify: 0, plating: 0, repair: 0, gun: 0, supply: 0, safeguard: 0, owned: 1, equipped: 1},
     });
+    // A join request must carry the requester's own profile name
+    // (requests .validate compares them), so Bob needs a profile too.
+    await set(ref(db, 'players/bob'), {name: 'Bob', gender: 'male', xp: 0});
   });
 });
 after(async () => env.cleanup());
