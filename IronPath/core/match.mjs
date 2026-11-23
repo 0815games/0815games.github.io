@@ -8,7 +8,7 @@ import {classUpgradeState,classPathConfig,classPathInvested} from './tower-class
 // Shared command rules. These functions have no DOM, Firebase or network dependency.
 // The caller must derive playerId from the authenticated session, never the payload.
 import { upgradeCost, towerUpgradeInvestment } from './progression.mjs?v=20261105-prestige1';
-import { waveFormation,missionFormation } from './combat.mjs?v=20261123-skill1';
+import { waveFormation,missionFormation,SOLDIER_MAX_HP,towerMaxHp,repairQuote } from './combat.mjs?v=20261123-skill1';
 import { upgradeCostFor, branchUnlocked } from './tower-specialization.mjs?v=20261123-skill1';
 import { RUN_PERKS,perkOffers } from './run-perks.mjs?v=20261102-terrain4';
 import {campaignSurge} from './campaign-pressure.mjs?v=20261112-pressure1';
@@ -41,9 +41,18 @@ export function trainingBuildLocked(state){
 export function createPlayer(id, profile, x=850, y=450) {
   if(typeof id!=='string'||!id||!profile||!['male','female'].includes(profile.gender)||typeof profile.name!=='string'||!Number.isFinite(x)||!Number.isFinite(y)) throw new Error('Invalid player');
   const level=Number.isInteger(profile.level)&&profile.level>0?profile.level:1;
-  return {id, name:profile.name, gender:profile.gender, x, y, target:null, direction:{x:0,y:0}, level, skills:parseBuild(profile.skills,level),loadout:parseLoadout(profile.loadout), cooldown:0, shotTimer:0,overdrive:0};
+  return {id, name:profile.name, gender:profile.gender, x, y, target:null, direction:{x:0,y:0}, level, skills:parseBuild(profile.skills,level),loadout:parseLoadout(profile.loadout), cooldown:0, shotTimer:0,overdrive:0, hp:SOLDIER_MAX_HP};
 }
 
+// Block E repair offer: up to 50 percent points back for about 20% of the
+// tower's total investment; a smaller heal costs proportionally less. The
+// price is quoted before anyone confirms, and the confirming player pays.
+export function repairOffer(tower){
+  const quote=repairQuote(tower);if(!quote)return null;
+  const investment=TOWER_COSTS[tower.type]+(towerUpgradeInvestment(tower.level)??0)+classPathInvested(tower);
+  const cost=Math.max(1,Math.round(investment*.2*(quote.heal/(quote.maxHp*.5))));
+  return {...quote,cost};
+}
 export function getSupplies(state,playerId){return state.individualSupplies?(state.players[playerId]?.money??0):state.money;}
 export function addSupplies(state,playerId,amount){if(state.individualSupplies){const player=state.players[playerId];if(!player)throw new Error('Unknown supplies owner');player.money+=amount;}else state.money+=amount;}
 function clearWaveRequest(state){state.pendingWave=0;state.waveRequest=null;}
@@ -129,7 +138,7 @@ export function applyCommand(state, playerId, command) {
       if(trainingBuildLocked(state))return {ok:false,reason:'Training contract: upgrade your first tower before building another one.'};
       const reserved=state.buildReservations?.[pad];if(reserved&&reserved.playerId!==playerId)return {ok:false,reason:'Another player is choosing a tower here.'};
       const cost=TOWER_COSTS[towerType];if(getSupplies(state,playerId)<cost)return {ok:false,reason:`Not enough supplies. This tower costs ${cost}.`};
-      addSupplies(state,playerId,-cost);state.nextTowerId=(state.nextTowerId||0)+1;state.towers.push({id:state.nextTowerId,pad,type:towerType,level:1,timer:0,ownerId:playerId});releaseBuildPad(state,playerId,pad);return {ok:true};
+      addSupplies(state,playerId,-cost);state.nextTowerId=(state.nextTowerId||0)+1;state.towers.push({id:state.nextTowerId,pad,type:towerType,level:1,timer:0,ownerId:playerId,hp:towerMaxHp(1),maxHp:towerMaxHp(1)});releaseBuildPad(state,playerId,pad);return {ok:true};
     }
     case 'upgrade': {
       if(!Number.isInteger(command.pad)||command.pad<0||command.pad>=getMap(state.mapId).pads.length)return {ok:false,reason:'Invalid pad.'};
@@ -139,8 +148,9 @@ export function applyCommand(state, playerId, command) {
       if(upgradeCost(tower.level)===null||towerUpgradeInvestment(tower.level+1)===null||!Number.isSafeInteger(TOWER_COSTS[tower.type]+towerUpgradeInvestment(tower.level+1)))return {ok:false,reason:'Tower cannot be upgraded further.'};
       if(tower.level===2&&![0,1,2,3].includes(command.branch))return {ok:false,reason:'Choose a valid specialization.'};
       if(tower.level===2&&!branchUnlocked(command.branch,player.level))return {ok:false,reason:command.branch===2?'Veteran specialization unlocks at soldier level 5.':'Boss Hunter specialization unlocks at soldier level 10.'};
+      if(tower.repairing>0)return {ok:false,reason:'Let the repair finish first.'};
       const cost=upgradeCostFor(tower,upgradeCost(tower.level));if(getSupplies(state,playerId)<cost)return {ok:false,reason:`Not enough supplies. You need ${cost}.`};
-      addSupplies(state,playerId,-cost);if(tower.level===2)tower.branch=command.branch;tower.level++;return {ok:true};
+      addSupplies(state,playerId,-cost);const oldMax=tower.maxHp||towerMaxHp(tower.level),oldHp=tower.hp??oldMax;if(tower.level===2)tower.branch=command.branch;tower.level++;tower.maxHp=towerMaxHp(tower.level);tower.hp=oldHp<=0?0:Math.max(1,Math.round(tower.maxHp*oldHp/oldMax));return {ok:true};
     }
     case 'classUpgrade': {
       if(!Number.isInteger(command.pad)||command.pad<0||command.pad>=getMap(state.mapId).pads.length)return {ok:false,reason:'Invalid pad.'};
@@ -163,9 +173,25 @@ export function applyCommand(state, playerId, command) {
       const tower=state.towers[index],refund=towerRefund(tower),refundTo=state.individualSupplies?tower.ownerId:playerId;
       if(state.individualSupplies&&!Object.hasOwn(state.players,refundTo))return {ok:false,reason:'Tower owner not found.'};
       state.towers.splice(index,1);addSupplies(state,refundTo,refund);
+      // Selling before a paid repair lands returns the reserved repair cost.
+      if(tower.repairing>0&&tower.repairCost>0){const payer=tower.repairPaidBy;if(!state.individualSupplies||Object.hasOwn(state.players,payer))addSupplies(state,payer,tower.repairCost);}
       return {ok:true,refund,...(state.individualSupplies?{refundTo}:{})};
     }
+    case 'repairTower': {
+      if(!Number.isInteger(command.pad)||command.pad<0||command.pad>=getMap(state.mapId).pads.length)return {ok:false,reason:'Invalid pad.'};
+      const tower=state.towers.find(t=>t.pad===command.pad);
+      if(!tower)return {ok:false,reason:'Tower not found.'};
+      if(command.expectedTowerId!==undefined&&tower.id!==command.expectedTowerId)return {ok:false,reason:'Tower changed. Select it again.'};
+      if(tower.repairing>0)return {ok:false,reason:'A repair is already running for this tower.'};
+      const offer=repairOffer(tower);
+      if(!offer)return {ok:false,reason:'This tower is undamaged.'};
+      if(getSupplies(state,playerId)<offer.cost)return {ok:false,reason:`Not enough supplies. You need ${offer.cost}.`};
+      addSupplies(state,playerId,-offer.cost);
+      tower.hp=offer.hp;tower.maxHp=offer.maxHp;tower.repairing=2;tower.repairHeal=offer.heal;tower.repairCost=offer.cost;tower.repairPaidBy=playerId;
+      return {ok:true,cost:offer.cost,heal:offer.heal};
+    }
     case 'airstrike': {
+      if(player.downed>0)return {ok:false,reason:'You are down and cannot use your ability yet.'};
       if(player.cooldown>0)return {ok:false,reason:`${abilityName(player.skills)} is recharging.`};
       const active=player.skills?.active,variant=player.skills?.variant||0;if(!active)return {ok:false,reason:'Choose a class in Skills first.'};
       if(active==='assault'||active==='recon'||active==='airDefense'){
