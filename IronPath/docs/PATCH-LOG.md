@@ -6,7 +6,7 @@ aber ersetzt weder Git noch die GitHub-PR-Historie. Die dazugehörige
 [Arbeitsanweisung](../../AGENTS.md) verlangt, dieses Log vor der Arbeit zu lesen
 und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
 
-Die Einträge IPL-0001 bis IPL-0087 stehen im
+Die Einträge IPL-0001 bis IPL-0088 stehen im
 [Archiv](PATCH-LOG-ARCHIV.md); hier stehen die neuesten 20. Beide Dateien
 zusammen sind lückenlos und doppelfrei - `../scripts/patch.mjs` (Unterbefehl `check`) und
 `../tests/patch-log-archive.test.mjs` prüfen das.
@@ -45,18 +45,6 @@ jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderl
 
 
 
-## IPL-0088 – Turm-Radialmenü: Optik, SVG-Symbole & Erstattungsanzeige für `Confirm sale` / `Cancel` (`20261120-sellicon1`, Ziel-PR `#333`)
-- **Zeit / Quelle:** 2026-10-31 UTC (Nutzerrückmeldung: „Confirm sale im Turm Menu hat keine Optik, bzw. kein Bild oder sonst was. Prüfen und reparieren“); Arbeitsbranch `arena/cd53c79d-0815games-github-io` ab `77831bd55f243f0c9b1cbd7a3dbb0768495b3ddc` (`main`, PR `#332`). Status aktuell: `lokal/uncommittet`.
-- **Ursachenanalyse (`IronPath/game.js:1063–1115` & `IronPath/interface-redesign.css:788–835`):**
-  1. Im Gegensatz zu `upgrade`, `sell`, `branch` und `classUpgrade` setzten die Aktionen im Modus `confirmSell` (`Confirm sale` und `Cancel`) kein `icon`-Feld. Dadurch entfernte `showMenu` `button.dataset.icon` und leerte `#menuArt*`, sodass die zentralen 34×34-px-Symbolflächen der runden Radial-Buttons komplett leer blieben.
-  2. Zusätzlich hängte `Confirm sale` den Erstattungsbetrag (`· +{amount}`) direkt an den 26 Zeichen langen deutschen Button-Text (`Verkauf bestätigen · +XX`), der in der 72–78 px breiten Rundfläche abgeschnitten wurde, während `.sheet-price` leer blieb; außerdem überschrieb die allgemeine V3-Button-Regel (`(0,4,1)`) in `interface-redesign.css` klassenbasierte `.sheet-option`-Hintergründe (`(0,3,0)`).
-- **Änderungen / Dateien:**
-  - `IronPath/assets/icon-confirm-sell.svg`, `IronPath/assets/icon-cancel.svg`: Neue 32×32-Vektorsymbole (Gold-Vorratsmünze mit grünem Bestätigungshaken bzw. Eisenring mit korallrotem Abbrechen-Kreuz).
-  - `IronPath/game.js`: `confirmSell` vergibt `icon: 'confirmSell'`, separates `price: mine ? \`+${refund}\` : null` und `label: tr('Confirm sale')` bzw. `icon: 'cancel'` auf `Cancel`; im normalen Turmmenü (`sell`) nutzt `Sell tower` ebenfalls das einheitliche goldene `.sheet-price`-Feld.
-  - `IronPath/interface-redesign.css`: `[data-icon="confirmSell"]`/`.[data-icon="cancel"]`-SVG-Mappings, zweizeiliger Textumbruch für lange deutsche Beschriftungen (Desktop & `<=600px`) sowie höher-spezifische `#radialMenu.tower-radial .sheet-option[data-icon="confirmSell"|"cancel"]`-Ringe (Messing/Gold bzw. kühles Eisen) hinter der V3-Button-Regel.
-  - **Tests & Cache-Welle `20261120-sellicon1`:** Ausgebaute Assertions in `IronPath/tests/tower-ring.test.mjs`, `IronPath/tests/solo-smoke.test.mjs` (EN & DE inkl. `data-icon` & `+60`-Erstattung), `IronPath/browser-tests/interface-smoke.cjs` (`confirm-sell-ring.png`), `IronPath/browser-tests/command-center.cjs` (echter Klickpfad `Turm -> Sell -> confirmSell -> Cancel`), `IronPath/browser-tests/cache-wave.cjs`, `IronPath/release-version.json`, `IronPath/patch-notes.mjs` sowie Cache-Wave-Stempel `20261120-sellicon1`.
-- **Status:** `gemergt` auf `main` (`a8df4534e360f1f78358df2570cbe6fc9b14c807`, PR `#333`, CI `44737997344` & Pages-Deploy `44739899987` grün).
-- **Offen:** Echte Geräteprüfung auf iPhone/Desktop nach Merge.
 
 ## IPL-0089 – Endlos-Sektorrückzug: Vollbild-Gefechtsfeld im Hochformat & Zoom-Übergang (`20261120-endlessview1`, Ziel-PR `#334`)
 - **Zeit / Quelle:** 2026-10-31 UTC (Nutzerrückmeldung: auf dem Handy füllen Wellen 1–10 den gesamten Hochformat-Bildschirm beim Zoomen; ab Welle 10 / neuem Sektor schrumpft das Feld auf rund ein Drittel der Bildschirmhöhe und verweigert Vollbild-Zoom); Arbeitsbranch `arena/6782c8ab-0815games-github-io` ab `a8df4534e360f1f78358df2570cbe6fc9b14c807` (`main`, PR `#333`). Status aktuell: `lokal/uncommittet`.
@@ -957,3 +945,16 @@ sie geprüft wurde.
 - **Prüfungen:** `node --test IronPath/tests/*.test.mjs`: tests 1287 / pass 1286 / skipped 1 / fail 0, Exit 0; der eine ausgelassene Test ist der bekannte Flachklon-Effekt in `release-pages-site.test.mjs` („Pinned ancestor commits require a full Git checkout“) – nach `git fetch --unshallow origin` läuft diese Datei 6/6, die Suite ist damit effektiv vollständig grün. `node IronPath/scripts/patch.mjs check --fast`: 0 Fehler, 2 Hinweise (Stand vor der Cache-Welle). Kein lokaler Chromium: Browser-Fahrten (`command-center`, `interface-smoke`) laufen erst in der CI.
 - **Git / PR / Release:** Ereignis-Nachtrag zu `IPL-0106`: PR `#368` am 2026-11-23 als `3983d9dc72572cff4dc3d67f5f15786cb069efdd` gemergt, Pages-Build `built`, `release-version.json` auf `main` trägt `20261123-blocke1` (Auslieferung im PR-Text belegt). Dieser Eintrag wird mit Welle und PR-Nummer fortgeschrieben.
 - **Offen / nächster Schritt:** Gesamtsuite auf der Welle, CI zu PR `#369`, Merge und Pages-Nachweis. Aus Block E bleibt Scheibe 2 (Treffer-Feedback/Tutorial, Host-/Reconnect-Prüfung im Detail, menschliche Balance mit Block C) ein eigenes späteres Paket.
+
+## IPL-0108 – Endless-Bühne Feinschliff: Name oben, Stencil-DEPLOY mit Glow-Rahmen, Militär-Pfeile, zentriertes Fragezeichen (Welle `20261123-endless2`, PR `#370`)
+- **Zeit / Quelle:** 2026-11-23 UTC; Betreiber-Rückmeldung zum ausgelieferten `IPL-0107` (DEPLOY liegt über dem Kartennamen, Fragezeichen im Zufallsbild teilweise abgeschnitten, Pfeile optisch unpassend) plus Vorgabe „Deploy als Military Schrift mit Glow rahmen … Oder erstell ein bild“ und „Lets gooooooo“.
+- **Block / Ziel:** Feinschliff am Endless-Startdialog, kein Block-Thema.
+- **Branch / Basis:** `arena/4748275f-0815games-github-io` ab `007bb594f120aeb1b4025c526a1a356dfa2f57ad` (`main`, Merge PR `#369`). Feature-Commit `b24da2b81b8998d41c7ce5fdcb2cd0caade6eb78` gepusht, PR `#370` eröffnet; Cache-Welle `20261123-endless2` mit Feldnotizen (`patch-notes.mjs`, `RELEASED_PATCHES[0]` = `endless2`, PR `#370`).
+- **Änderungen / Dateien:**
+  - `IronPath/menu-redesign.css`: Kartenname `#endlessSelectedTheme` sitzt jetzt oben am Bild (`.endless-theme-card` mit `align-items:flex-start`, Lichtkante aller 6 Themen-Verläufe nach oben gedreht) – DEPLOY besitzt die Bildunterkante allein. `#endlessDeploy` als Militär-Stencil: dunkle Oliv-Platte, 2-px-Messing-Rahmen mit Außen- und Innen-Glow (`0 0 18px`/`44px`), Schrift in „Arial Black“/Impact mit 0.22em Laufweite und eigenem Buchstaben-Glow, dazu leuchtende Ziel-Ecken oben links/unten rechts. Neue `.endless-arrow`-Platten: olivgrüne Panzerplatte mit vier Nieten (radial-gradient), gefüllte Messing-Doppel-Chevrons als SVG mit Drop-Shadow, Hover mit Glow-Rand.
+  - `IronPath/index.html`: Pfeil-SVGs durch gefüllte Doppel-Chevrons (`viewBox 0 0 48 48`) ersetzt.
+  - `IronPath/assets/endless-random.jpg`: Artwork neu erzeugt – das rostige Messing-Fragezeichen sitzt jetzt exakt im Bildzentrum; bei `background-size:cover` + `center` bleibt es damit auf jeder Bühnengröße zentriert und wird nie angeschnitten.
+  - Tests: `IronPath/tests/menu-redesign.test.mjs` (Anker: Name oben, Stencil-Glow-DEPLOY, 48er-Chevron-SVGs), `IronPath/browser-tests/interface-smoke.cjs` (Geometrie: Name in der oberen Bildhälfte und immer oberhalb von DEPLOY).
+- **Prüfungen:** `node --test IronPath/tests/menu-redesign.test.mjs IronPath/tests/endless-launcher.test.mjs`: 18/18. `patch.mjs check --fast`: 0 Fehler (2 Hinweise vor der Welle). Sichtprüfung über lokale Live-Vorschau durch den Betreiber möglich; Browser-Fahrten laufen mangels lokalem Chromium in der CI. Gesamtsuite folgt auf der Cache-Welle.
+- **Git / PR / Release:** Wird mit Welle und PR-Nummer fortgeschrieben.
+- **Offen / nächster Schritt:** Cache-Welle `20261123-endless2` inkl. Feldnotizen, PR, CI, Merge, Pages-Nachweis. Block E Scheibe 2 bleibt eigenes Paket.

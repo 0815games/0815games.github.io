@@ -1,8 +1,8 @@
-import {createMatch,stepMatch} from './simulation.mjs?v=20261123-endless1';
-import {applyCommand} from './match.mjs?v=20261123-endless1';
-import {WAVE_COUNT} from './combat.mjs?v=20261123-endless1';
-import {bunkerStart} from './solo-deployment.mjs?v=20261123-endless1';
-import {waveRosterPresent,waveFieldsReady,makeWaveRequest,replyToWaveRequest} from './wave-consensus.mjs?v=20261123-endless1';
+import {createMatch,stepMatch} from './simulation.mjs?v=20261123-endless2';
+import {applyCommand} from './match.mjs?v=20261123-endless2';
+import {WAVE_COUNT} from './combat.mjs?v=20261123-endless2';
+import {bunkerStart} from './solo-deployment.mjs?v=20261123-endless2';
+import {waveRosterPresent,waveFieldsReady,makeWaveRequest,replyToWaveRequest} from './wave-consensus.mjs?v=20261123-endless2';
 
 // Two isolated, identically generated battlefields, advanced on the host's
 // fixed clock. Only the authenticated player can command their own lane.

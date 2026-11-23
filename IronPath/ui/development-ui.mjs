@@ -1,8 +1,8 @@
-import {nodeMatches} from '../core/skill-planner.mjs?v=20261123-endless1';
+import {nodeMatches} from '../core/skill-planner.mjs?v=20261123-endless2';
 // Presentation only: all progression and transactions remain in the existing models.
-import {SKILL_PATHS,SKILL_PATH_MAP,pointsLeft,classNodes,webReady,webRequirement} from '../core/skills.mjs?v=20261123-endless1';
-import {CAPSTONES} from '../core/skill-combos.mjs?v=20261123-endless1';
-import {TOWER_CLASS_PATHS} from '../core/tower-class-paths.mjs?v=20261123-endless1';
+import {SKILL_PATHS,SKILL_PATH_MAP,pointsLeft,classNodes,webReady,webRequirement} from '../core/skills.mjs?v=20261123-endless2';
+import {CAPSTONES} from '../core/skill-combos.mjs?v=20261123-endless2';
+import {TOWER_CLASS_PATHS} from '../core/tower-class-paths.mjs?v=20261123-endless2';
 const NS='http://www.w3.org/2000/svg';
 export const CLASS_COLORS={
   assault:'#d89970',
@@ -40,7 +40,7 @@ function classArtElement(document,classId,cls='class-art-img'){
   const src=CLASS_ARTWORKS[classId];
   if(!src)return null;
   const img=document.createElement('img');
-  img.src=`${src}?v=20261123-endless1`;
+  img.src=`${src}?v=20261123-endless2`;
   img.alt='';
   img.className=cls;
   img.setAttribute('aria-hidden','true');

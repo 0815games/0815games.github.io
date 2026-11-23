@@ -129,7 +129,7 @@ const fs = require('node:fs');
       // The new-build notice carries RETRY CHECK and DISMISS, so it is an
       // interruption and belongs in the middle - it sat in the top-right corner
       // on the strength of its name alone. Measured like any other popup.
-      await page.evaluate(()=>{document.querySelector('#versionNoticeText').textContent='New version 20261123-endless1 loaded.';document.querySelector('#versionNotice').hidden=false;});
+      await page.evaluate(()=>{document.querySelector('#versionNoticeText').textContent='New version 20261123-endless2 loaded.';document.querySelector('#versionNotice').hidden=false;});
       await centredPopup('#versionNotice');await check('#versionNoticeDismiss');
       const noticeLayout=await page.evaluate(()=>{
         const box=document.querySelector('#versionNotice'),text=document.querySelector('#versionNoticeText'),
@@ -713,12 +713,14 @@ const fs = require('node:fs');
             return {card:r,deploy,prev,next,cancelPresent:!!document.getElementById('endlessCancel'),art:getComputedStyle(card).backgroundImage,heights,prevIconWidth:prevIcon?.width??0,nextIconWidth:nextIcon?.width??0,dialogWidth:document.getElementById('endlessLaunch').getBoundingClientRect().width,
               deployInside:inside(deploy,r),prevInside:inside(prev,r),nextInside:inside(next,r),
               deployCentered:Math.abs((deploy.left+deploy.right)/2-(r.left+r.right)/2)<4,
-              deployLow:deploy.top>=r.top+r.height*0.6,prevHugsLeft:prev.left<=r.left+r.width*0.25,nextHugsRight:next.right>=r.right-r.width*0.25};
+              deployLow:deploy.top>=r.top+r.height*0.6,prevHugsLeft:prev.left<=r.left+r.width*0.25,nextHugsRight:next.right>=r.right-r.width*0.25,
+              labelInside:inside(label.getBoundingClientRect(),r),labelAtTop:label.getBoundingClientRect().top<=r.top+r.height*0.4,labelAboveDeploy:label.getBoundingClientRect().bottom<=deploy.top};
           });
           assert.equal(carouselLayout.cancelPresent,false,`${name}: endless launcher has no cancel button any more`);
           assert.ok(carouselLayout.card.height>160,`${name}: endless stage shows one large battlefield artwork (${Math.round(carouselLayout.card.height)}px)`);
           assert.ok(carouselLayout.deployInside,`${name}: #endlessDeploy sits inside #endlessThemeCard`);
           assert.ok(carouselLayout.deployCentered&&carouselLayout.deployLow,`${name}: #endlessDeploy is centred on the lower part of the artwork`);
+          assert.ok(carouselLayout.labelInside&&carouselLayout.labelAtTop&&carouselLayout.labelAboveDeploy,`${name}: battlefield name holds the top of the artwork and never meets DEPLOY`);
           assert.ok(carouselLayout.prevInside&&carouselLayout.nextInside,`${name}: endless arrows sit inside the artwork`);
           assert.ok(carouselLayout.prevHugsLeft&&carouselLayout.nextHugsRight,`${name}: endless arrows hug the artwork edges`);
           assert.match(carouselLayout.art,/endless-random/,`${name}: #endlessThemeCard opens on Random artwork`);

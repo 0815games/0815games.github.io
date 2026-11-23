@@ -1,6 +1,6 @@
 # Iron Path – Patch-Log: Archiv
 
-Ältere Einträge IPL-0001 bis IPL-0087. Die neuesten 20 stehen in
+Ältere Einträge IPL-0001 bis IPL-0088. Die neuesten 20 stehen in
 [PATCH-LOG.md](PATCH-LOG.md); die Regeln für beide Dateien dort und in
 [`../../AGENTS.md`](../../AGENTS.md). Beim Verschieben wandert ein Eintrag immer
 vollständig einschließlich seiner Ereignis-Nachträge.
@@ -3648,3 +3648,16 @@ Grenzen / Offen:
   - **Tests & Cache-Welle `20261120-audio3`:** Erweiterte Musik-/DSP-/Schleifen-Checks in `IronPath/tests/battle-sound.test.mjs`, `IronPath/browser-tests/cache-wave.cjs` (`20261120-audio2` in `oldUrls`), `IronPath/release-version.json`, `IronPath/patch-notes.mjs` (`RELEASED_PATCHES[0]` `audio3` / PR `#332`) sowie alle **78** Cache-Stempel auf `20261120-audio3`.
 - **Prüfungen:** Numerischer 44,1-kHz-DSP-Check (`maxStepSlew` von `0.4651` auf `<= 0.0086`, Peak `<= 0.2589`, `0` Sawtooth-Oszillatoren), `node --check`, vollständige Node-Testsuite & `stress-tests/run.mjs`.
 - **Offen:** Echte Hörprobe auf iPhone Safari und Desktop auf `20261120-audio3` nach Merge.
+
+## IPL-0088 – Turm-Radialmenü: Optik, SVG-Symbole & Erstattungsanzeige für `Confirm sale` / `Cancel` (`20261120-sellicon1`, Ziel-PR `#333`)
+- **Zeit / Quelle:** 2026-10-31 UTC (Nutzerrückmeldung: „Confirm sale im Turm Menu hat keine Optik, bzw. kein Bild oder sonst was. Prüfen und reparieren“); Arbeitsbranch `arena/cd53c79d-0815games-github-io` ab `77831bd55f243f0c9b1cbd7a3dbb0768495b3ddc` (`main`, PR `#332`). Status aktuell: `lokal/uncommittet`.
+- **Ursachenanalyse (`IronPath/game.js:1063–1115` & `IronPath/interface-redesign.css:788–835`):**
+  1. Im Gegensatz zu `upgrade`, `sell`, `branch` und `classUpgrade` setzten die Aktionen im Modus `confirmSell` (`Confirm sale` und `Cancel`) kein `icon`-Feld. Dadurch entfernte `showMenu` `button.dataset.icon` und leerte `#menuArt*`, sodass die zentralen 34×34-px-Symbolflächen der runden Radial-Buttons komplett leer blieben.
+  2. Zusätzlich hängte `Confirm sale` den Erstattungsbetrag (`· +{amount}`) direkt an den 26 Zeichen langen deutschen Button-Text (`Verkauf bestätigen · +XX`), der in der 72–78 px breiten Rundfläche abgeschnitten wurde, während `.sheet-price` leer blieb; außerdem überschrieb die allgemeine V3-Button-Regel (`(0,4,1)`) in `interface-redesign.css` klassenbasierte `.sheet-option`-Hintergründe (`(0,3,0)`).
+- **Änderungen / Dateien:**
+  - `IronPath/assets/icon-confirm-sell.svg`, `IronPath/assets/icon-cancel.svg`: Neue 32×32-Vektorsymbole (Gold-Vorratsmünze mit grünem Bestätigungshaken bzw. Eisenring mit korallrotem Abbrechen-Kreuz).
+  - `IronPath/game.js`: `confirmSell` vergibt `icon: 'confirmSell'`, separates `price: mine ? \`+${refund}\` : null` und `label: tr('Confirm sale')` bzw. `icon: 'cancel'` auf `Cancel`; im normalen Turmmenü (`sell`) nutzt `Sell tower` ebenfalls das einheitliche goldene `.sheet-price`-Feld.
+  - `IronPath/interface-redesign.css`: `[data-icon="confirmSell"]`/`.[data-icon="cancel"]`-SVG-Mappings, zweizeiliger Textumbruch für lange deutsche Beschriftungen (Desktop & `<=600px`) sowie höher-spezifische `#radialMenu.tower-radial .sheet-option[data-icon="confirmSell"|"cancel"]`-Ringe (Messing/Gold bzw. kühles Eisen) hinter der V3-Button-Regel.
+  - **Tests & Cache-Welle `20261120-sellicon1`:** Ausgebaute Assertions in `IronPath/tests/tower-ring.test.mjs`, `IronPath/tests/solo-smoke.test.mjs` (EN & DE inkl. `data-icon` & `+60`-Erstattung), `IronPath/browser-tests/interface-smoke.cjs` (`confirm-sell-ring.png`), `IronPath/browser-tests/command-center.cjs` (echter Klickpfad `Turm -> Sell -> confirmSell -> Cancel`), `IronPath/browser-tests/cache-wave.cjs`, `IronPath/release-version.json`, `IronPath/patch-notes.mjs` sowie Cache-Wave-Stempel `20261120-sellicon1`.
+- **Status:** `gemergt` auf `main` (`a8df4534e360f1f78358df2570cbe6fc9b14c807`, PR `#333`, CI `44737997344` & Pages-Deploy `44739899987` grün).
+- **Offen:** Echte Geräteprüfung auf iPhone/Desktop nach Merge.
