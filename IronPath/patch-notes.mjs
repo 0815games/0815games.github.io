@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see docs/PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261123-aim1';
+import {getLanguage} from './language.mjs?v=20261123-aim2';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,20 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'aim2',build:'20261123-aim2',pr:385,
+    title:{en:'Living Field II · Every Gun Tracks Its Targets',de:'Lebendiges Feld II · Jede Waffe führt ihre Ziele nach'},
+    shipped:[
+      {en:'The cannon, the flak and the sniper have learned to traverse too: each wears its own drawn head on the painted pit - a concrete ring and heavy barrel for the howitzer, a shield and twin barrels for the flak, a camo mound and a scoped long rifle for the sniper.',de:'Kanone, Flak und Scharfschütze haben das Schwenken auch gelernt: Jeder trägt seinen eigenen gezeichneten Kopf auf der gemalten Stellung - Betonring und schwerer Lauf für die Haubitze, Schild und Doppellauf für die Flak, Tarn-Hügel und langes Gewehr mit Zielfernrohr für den Scharfschützen.'},
+      {en:'The heads swing onto the enemy the tower is actually engaging, at a real traverse speed, and kick back along the barrel when the gun fires - the heavier the gun, the harder the kick.',de:'Die Köpfe schwenken auf den Gegner, den der Turm tatsächlich bekämpft, mit echter Drehgeschwindigkeit, und stoßen beim Feuern entlang des Rohrs zurück - je schwerer die Waffe, desto härter der Rückstoß.'},
+      {en:'The ground under each gun never turns with it: sandbags, concrete, ammo crates and camo stay where the crew put them. Only the weapon moves.',de:'Der Boden unter jeder Waffe dreht sich nicht mit: Sandsäcke, Beton, Munitionskisten und Tarnung bleiben, wo die Mannschaft sie hingelegt hat. Nur die Waffe bewegt sich.'},
+      {en:'Honest note: this is pure stagecraft again - no damage, range or rule changed, and the multiplayer picture is identical for host and guests. The painted tower pictures remain as the fallback while the art loads.',de:'Ehrlicher Hinweis: Wieder reine Bühnenkunst - kein Schaden, keine Reichweite, keine Regel geändert, und das Mehrspieler-Bild ist für Host und Gäste identisch. Die gemalten Turmbilder bleiben als Fallback, während die Kunst lädt.'},
+      {en:'Raised the cache wave to 20261123-aim2, because every tower position changed: no device should fight with yesterday’s eyes.',de:'Die Cache-Welle auf 20261123-aim2 erhöht, weil sich jede Turmstellung geändert hat: Kein Gerät soll mit den Augen von gestern kämpfen.'},
+    ],
+    open:[
+      {en:'The living-field series is complete: all four towers traverse, soldiers breathe and aim, damaged vehicles smoke. New work is the operator’s call.',de:'Die Reihe „Lebendiges Feld“ ist vollständig: Alle vier Türme schwenken, Soldaten atmen und zielen, lädierte Fahrzeuge rauchen. Neue Arbeit bestimmt der Betreiber.'},
+    ]
+  },
   {
     id:'aim1',build:'20261123-aim1',pr:384,
     title:{en:'Living Field I · The MG Turret Tracks Its Targets',de:'Lebendiges Feld I · Der MG-Turm führt seine Ziele nach'},

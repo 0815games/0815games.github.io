@@ -6,7 +6,7 @@ aber ersetzt weder Git noch die GitHub-PR-Historie. Die dazugehörige
 [Arbeitsanweisung](../../AGENTS.md) verlangt, dieses Log vor der Arbeit zu lesen
 und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
 
-Die Einträge IPL-0001 bis IPL-0102 stehen im
+Die Einträge IPL-0001 bis IPL-0103 stehen im
 [Archiv](PATCH-LOG-ARCHIV.md); hier stehen die neuesten 20. Beide Dateien
 zusammen sind lückenlos und doppelfrei - `../scripts/patch.mjs` (Unterbefehl `check`) und
 `../tests/patch-log-archive.test.mjs` prüfen das.
@@ -53,34 +53,6 @@ jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderl
 
 
 
-## IPL-0103 – Bauplatz-Auswahlringe: dicker und pulsierend, ohne Hover-Vorschau (eigene Cache-Welle folgt im selben PR)
-
-- **Zeit / Quelle:** Der Bauplatz-Ring aus PR `#336` lag seit dem Rückbau auf `#334` geparkt; der Betreiber gab ihn jetzt mit ausdrücklicher Eingrenzung frei: „Nur Bauplatz Ring, kein hover over oder sonst was.“ Die Hover-Wellen-Vorschau, die `#336` in `game.js` gebracht hatte (`mousemove`, `hoveredPadIndex`, Literale `WELLE {wave}` / `NÄCHSTE: {count} ENEMIES`), wird **nicht** neu gelandet.
-- **Block / Ziel:** Auswahl-Feedback auf dem Gefechtsfeld (`core/cartoon-art.mjs`). Spielregeln, Simulation und Protokoll ändern sich nicht; nur die zwei Auswahlringe werden stärker und atmen. Weil eine browsergeladene Datei ihr Zeichenverhalten ändert, trägt derselbe PR eine eigene Cache-Welle (`20261122-ring1`, dritter Commit mit Feldnotizen DE+EN, sobald die PR-Nummer existiert).
-- **Branch / Basis:** `arena/112aa9ab-0815games-github-io` ab `0074f202cfff13f622aabdcbaa963838e4f6f95e` (`main`, Merge von PR `#363`). Erster Commit `18fe6e6` (2 Dateien).
-- **Änderungen / Dateien:**
-  - `IronPath/core/cartoon-art.mjs`: Pad-Ring auf leerem Bauplatz — Ellipse 34×24 statt 33×23, `lineWidth` 3.2 statt 2.5, Farbe `#d4eee0`, Dash `[8,5]`, Puls über `globalAlpha` (`.85+.15·sin(storyTime/.3)`). Reichweiten-Ring des Turms auf dem gewählten Pad — `lineWidth` 2.2 statt 1.5, `#c2dfd2`, Dash `[6,5]`, Füllung `.14`, Puls `.88+.12·sin(storyTime/.42)` nur auf dem Strich, in `save/restore` gekapselt. `pad()` erhält die Puls-Alpha als Parameter (voreingestellt 1), damit die Zeichenfunktion rein aus ihren Argumenten bestimmbar bleibt.
-  - Bewusste Abweichungen zur zurückgenommenen `#336`-Fassung: Der Puls folgt der `storyTime`-Konvention der Datei (Sekunden, von beiden Aufrufstellen in `game.js` jeden Frame geliefert) statt `performance.now()`, und `reducedMotion` stellt **beide** Ringe ruhig (`#336` tat das nur für den Reichweiten-Ring). Keine neuen Text-Literale — die Übersetzungs-Abdeckung bleibt unberührt, die `PATCH-BLOECKE`-Warnung zu `#336` betraf nur die Hover-Texte.
-  - `IronPath/tests/cartoon-art.test.mjs`: Neuer Block zeichnet mit aufzeichnendem Canvas bei festen `storyTime`-Werten: Pad-Ring 34×24 mit Stärke 3.2 und Alpha `.85` bei Zeit 0, steigend mit der Zeit, fest `1` bei reduzierter Bewegung; Reichweiten-Ring mit Stärke 2.2 und Alpha `.88` bei Zeit 0, sonst gleich; ohne Auswahl (`selectedPad=null`) entsteht keiner der beiden Ringe.
-  - `IronPath/docs/PATCH-LOG.md` und `IronPath/docs/PATCH-LOG-ARCHIV.md`: `IPL-0083` vollständig ins Archiv, Grenzen auf `IPL-0001` bis `IPL-0083`; das Log führt die neuesten 20 (`IPL-0084` bis `IPL-0103`).
-- **Korrekturen an der eigenen Arbeit:** Zwei parallele Dateibearbeitungen an `cartoon-art.mjs` überschrieben sich gegenseitig (Signatur und Aufrufstelle fielen zweimal dem jeweils anderen Edit zum Opfer, `ReferenceError: pulse is not defined` bzw. fehlender Puls am Aufruf); nacheinander wiederholt und per Test belegt. Keine weiteren Dateien betroffen.
-- **Prüfungen:**
-  - `cartoon-art.test.mjs` (mit neuem Ring-Block): **bestanden**; der Block meldet „Selection rings: thicker, pulsing with storyTime, still under reduced motion.“ Gezielte Prüfung vor der Cache-Welle; die Gesamtsuite folgt auf der neuen Welle im Wellen-Commit.
-  - Cache-Welle als dritter Commit desselben PR: Feldnotizen-Eintrag `ring1` (DE+EN, `pr: 364`) in `patch-notes.mjs` angelegt, danach `patch.mjs bump 20261122-ring1 --apply` — Trockenlauf nannte vorab exakt **79 Dateien, 276 Token-Vorkommen und die 7 bekannten Anker-Zeilen**; die Anker-Prüfung meldete danach alle 7 Anker auf `20261122-ring1`.
-  - Kein Geräte- oder Browser-Beweis lokal möglich (kein Chromium hier): Die Browser-Fahrten laufen in CI; die Betreiber-Sichtprüfung lautet auf `BUILD 20261122-ring1` und einen gewählten Bauplatz (leer wie mit Turm) im Gefecht.
-- **Git / PR / Release:** Feature-Commit `18fe6e6` und dieser Log-Commit liegen auf `arena/112aa9ab-0815games-github-io`; PR-Nummer, Cache-Welle, CI, Merge und Pages-Auslieferung sind noch nicht erfolgt und werden erst nach dem tatsächlichen Ereignis mit Kennung nachgetragen. Der offene `PATCH-BLOECKE`-Punkt „Pad-Selektion: dickere Ringe und Puls (PR #336)“ ist mit dieser Scheibe inhaltlich erledigt; seine Hover-Literal-Notiz entfällt, weil kein Hover landet.
-- **Offen / nächster Schritt:** PR öffnen, Wellen-Commit nachschieben, Gesamtsuite auf `ring1`, CI abwarten, erst nach belegtem Merge/Pages-Stand als ausgeliefert bezeichnen; Ereignis-Nachtrag danach als eigener PR. Die Kandidaten 3 und 4 aus `IPL-0102` bleiben zurückgestellt; die Betreiber-Sichtprüfungen (`BUILD 20261122-core1` und ältere Punkte, künftig `ring1`) stehen weiterhin aus.
-
-### Ereignis-Nachtrag zu IPL-0103
-
-- **Commits / PR:** Feature `18fe6e6`, Patch-Log `6f44bb1` und Cache-Welle `86de4e11` auf `arena/112aa9ab-0815games-github-io`; Pull-Request `#364` („Bauplatz-Auswahlringe: dicker und pulsierend (ohne Hover)“).
-- **CI:** `gh pr checks 364` endete im ersten Lauf mit **13 von 13 bestandenen Checks, 0 fehlgeschlagen, 0 ausstehend** — inklusive aller Browser-Fahrten über das Gefechtsfeld mit den neuen Ringen; die Gesamtsuite lief lokal auf der Welle `ring1` vorher mit **1.263 Tests, 1.263 bestanden, 0 übersprungen, Exit 0**.
-- **Merge:** `gh pr view 364 --json state,mergedAt,mergeCommit` ergab `state=MERGED`, `mergedAt=2026-11-23T03:53:31Z`, Merge-Commit `19de5f0be6c86608bc61f35bc8891b5007d2b6a2` in `main`.
-- **Pages:** `pages/builds` meldete danach `status=built`, Dauer 47.402 ms, Commit `19de5f0b`.
-- **Auslieferung auf `main` belegt:** `IronPath/core/cartoon-art.mjs` ist per Contents-API in der neuen Fassung vorhanden (HTTP 200), und `release-version.json` auf `main` trägt `"build": "20261122-ring1"`. Die Hover-Vorschau aus `#336` ist nicht Teil des ausgelieferten Stands — im Diff des PR steht keine Zeile `mousemove`/`hoveredPadIndex` und kein neues Text-Literal.
-- **Plan-Doku:** Der offene `PATCH-BLOECKE`-Punkt „Pad-Selektion: dickere Ringe und Puls (PR #336)“ ist mit dieser Auslieferung abgehakt; seine Hover-Literal-Notiz entfällt gegenstandslos.
-- **Ehrliche Grenzen:** Die Live-URL wurde nicht abgerufen; belegt sind Inhalt auf `main` und der fertige Pages-Build. **Keine Geräteabnahme:** Stempel `BUILD 20261122-ring1`, ein gewählter Bauplatz (leer wie mit Turm, Puls; bei reduzierter Bewegung Ruhe) ist Sache der Betreiber-Sichtprüfung; auch die Sichtprüfungen zu `core1` (Anmeldung, Solo-/Mehrspieler-Gefecht), `ui1`, `battle1`, `net1`, `workshop1` und den Deutsch-Texten stehen noch aus.
-- **Herkunft dieses Nachtrags:** Er steht als eigener PR auf einem neuen Arbeitszweig nach dem Merge von `#364`; seine eigene Commit- und PR-Kennung steht deshalb nicht hier, sondern in Git und im PR-Text. Zurückgestellt bleiben die Kandidaten 3 und 4 aus `IPL-0102` (gemeinsamer Harness-Helfer, gemeinsamer Test-Server).
 
 ## IPL-0104 – Boss-Banner: mittige Ankündigung im Spiel-Design (eigene Cache-Welle folgt im selben PR)
 
@@ -358,3 +330,16 @@ jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderl
 - **Prüfungen:** `tower-aim` 7/7 und `soldier-motion` 3/3 neu bzw. erweitert (Zielwahl, Drehbegrenzung, Rückstoß-Fenster, Reduzierte-Bewegung/Pause, Atmung, Bedrohungs-Facing); Schnelltor „Kein Fehler, 3 Hinweis(e)“; Gesamtsuite **1343 Tests, 1342 bestanden, 0 Fehler, 1 übersprungen**.
 - **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet`. Commit, Push, PR `#384`, danach Cache-Welle `20261123-aim1` mit Feldnotizen `aim1` als zweiter Commit (Muster `IPL-0104`), CI, Merge und Pages-Auslieferung werden als Ereignis nachgetragen. **Betreiber-Sichtung auf `20261123-aim1`:** MG-Turm muss Gegner sichtbar nachführen und beim Feuern zurückstoßen; danach Folgepaket für Kanone/Flak/Sniper entscheiden.
 - **Offen / nächster Schritt:** Nach Betreiber-Sichtung: drehende Köpfe für Kanone, Flak und Scharfschütze (eigener Eintrag), ggf. Feinschliff an Drehgeschwindigkeit/Rückstoß über zwei Konstanten in `tower-aim.mjs`/`cartoon-art.mjs`.
+
+## IPL-0123 – Lebendiges Feld, Scheibe 2: Drehende Köpfe für Kanone, Flak und Scharfschütze (Cache-Welle folgt im selben PR)
+
+- **Zeit / Quelle:** 2026-11-23 UTC; Betreiber nach Sichtung von Scheibe 1: „Stark, der Stil gefällt mir. Mach die restlichen 3.“ — die drei übrigen Turmtypen bekommen dieselben geschichteten Köpfe wie das MG aus `IPL-0122`.
+- **Block / Ziel:** Kein Spiel-Block; reine Darstellung wie Scheibe 1. Keine Simulations-, Snapshot-, Protokoll- oder Regeländerung: Die Köpfe lesen denselben Zielwinkel wie das MG (Zielwahl der Simulation, begrenzter Schwenk, Rückstoß aus den Schuss-Folge-IDs). Mehrspieler malt aus demselben Snapshot dasselbe Bild.
+- **Branch / Basis:** `arena/c606d461-0815games-github-io` ab `56ed636f510aacf6bb8b95edc157a8572e9cf33a` (`main`, Merge PR `#384`).
+- **Änderungen / Dateien:**
+  - `IronPath/core/cartoon-art.mjs`: drei neue Maler im selben Tusche/Oliv-Stil und selben Koordinatenrahmen wie `mgTurret()` — `cannonTurret()` (Betonring statt Sandsäcke, Kastenschwanz, schwerer Lauf mit Mündungsbremse, Rückstoßweg 5), `flakTurret()` (Sandsackring + Munitionskisten als Bodenschmuck, Panzer-Schild, Doppellauf, Rückstoßweg 2), `sniperTurret()` (Tarn-Hügel statt Ring, Zweibein, langer dünner Lauf, Zielfernrohr, Rückstoßweg 1,5). `pad()` wählt den Maler nach `tower.type`, wenn ein Zielwinkel vorliegt; ohne Zielwinkel bleibt das gemalte Artwork (Fallback wie bisher).
+  - `IronPath/core/tower-aim.mjs`: unverändert — der Tracker war bereits typ-agnostisch (Rückstoß über `kind === tower.type`); ein neuer Test pinnt das Typ-Keying.
+  - `IronPath/tests/tower-heads.test.mjs` (neu): Feld-Zeichentest — alle vier Typen mit Zielwinkel tragen ihren gezeichneten Kopf (kein Turm-Artwork auf dem Feld), jeder Kopf schwenkt auf seinen Winkel und stößt entlang seiner Rohrlinie zurück (Rückstoßweg je Typ gepinnt), ohne Zielwinkel landet das Gemälde wie bisher.
+- **Prüfungen:** `tower-heads` 4/4, `tower-aim` 8/8, `soldier-motion` 3/3; Schnelltor „Kein Fehler, 2 Hinweis(e)“; Gesamtsuite **1348 Tests, 1347 bestanden, 0 Fehler, 1 übersprungen**.
+- **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet`. Commit, Push, PR `#385`, danach Cache-Welle `20261123-aim2` mit Feldnotizen `aim2` als zweiter Commit (Muster `IPL-0104`), CI, Merge und Pages-Auslieferung werden als Ereignis nachgetragen. **Betreiber-Sichtung auf `20261123-aim2`:** alle vier Turmtypen auf einer Karte mit Gegnern aus mehreren Richtungen — jeder Kopf muss sichtbar nachführen und beim Feuern zurückstoßen.
+- **Offen / nächster Schritt:** Die Ausbaureihe „Lebendiges Feld“ ist damit vollständig (Scheibe 1 + 2). Neue Punkte beschließt der Betreiber.
