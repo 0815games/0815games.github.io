@@ -1,6 +1,6 @@
 // Friends are consent-based account links, separate from four-digit match codes.
 // Firebase rules are the authorization boundary; the client is not a rate limiter.
-import {characterNameKey,sameCharacterName} from './character-name.mjs?v=20261123-blocke1';
+import {characterNameKey,sameCharacterName} from './character-name.mjs?v=20261123-endless1';
 const codePattern=/^[a-f0-9]{32}$/;
 // One comparison rule for search and registration, so a name can never be
 // found under one key and reserved under another. See character-name.mjs.

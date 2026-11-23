@@ -77,14 +77,12 @@ test('open fills the record fields, zeroes as dashes',async()=>{
   assert.equal(nodes.get('endlessBosses').textContent,'8');
   assert.equal(nodes.get('endlessBestSector').textContent,'2');
   assert.equal(nodes.get('endlessScrap').textContent,'1200');
-  assert.equal(nodes.get('endlessLoadout').textContent,'Rifle');
   assert.equal(nodes.get('endlessSelectedTheme').textContent,'Random battlefield');
   assert.equal(nodes.get('endlessThemeCard').dataset.theme,'random');
   const bare=fixture({record:{runs:0,waves:0,bosses:0,bestSector:0,scrap:0}});
   bare.launcher.open();
   for(const id of ['endlessRuns','endlessWaves','endlessBosses','endlessBestSector','endlessScrap'])
     assert.equal(bare.nodes.get(id).textContent,'—',id);
-  assert.equal(bare.nodes.get('endlessLoadout').textContent,'None equipped','no loadout falls back to the none label');
 });
 
 test('the best wave arrives asynchronously and survives a rejection',async()=>{
@@ -135,16 +133,29 @@ test('the last-run line renders the summary or the empty state',()=>{
   assert.equal(empty.nodes.get('endlessLastRun').textContent,'No endless run yet on this device.');
 });
 
-test('deploy closes the dialog with the chosen theme; cancel and close never deploy',()=>{
+test('deploy closes the dialog with the chosen theme; the close button never deploys',()=>{
   const deployed=[];
   const {launcher,nodes,dialog}=fixture({deployed});
   launcher.open();
   nodes.get('endlessDeploy').onclick();
   assert.deepEqual(deployed,[null],'random is the default choice');
   assert.equal(dialog.open,false,'deploy closes the launcher');
-  nodes.get('endlessCancel').onclick();
+  assert.equal(nodes.has('endlessCancel'),false,'there is no cancel button left to wire');
   nodes.get('endlessClose').onclick();
   assert.deepEqual(deployed,[null]);
+});
+
+test('a click on the artwork itself deploys, Enter on it too',()=>{
+  const deployed=[];
+  const {launcher,nodes,dialog}=fixture({deployed});
+  launcher.open();
+  nodes.get('endlessNext').onclick();
+  nodes.get('endlessThemeCard').listeners.click();
+  assert.deepEqual(deployed,['scrub'],'the whole picture is the deploy surface');
+  assert.equal(dialog.open,false,'deploying from the picture closes the launcher');
+  launcher.open();
+  nodes.get('endlessThemeCard').listeners.keydown({key:'Enter',preventDefault(){}});
+  assert.deepEqual(deployed,['scrub',null],'Enter deploys the freshly opened random choice');
 });
 
 test('without a dialog element the launcher degrades to a no-op',()=>{

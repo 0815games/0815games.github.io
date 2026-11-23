@@ -451,8 +451,8 @@ if (!commandCenterToken) throw new Error('account.js does not import command-cen
     assert.equal(await visible('#game'),false); assert.equal(await visible('#partyToggle'),false);
     await page.locator('#backToCommand').click();
     await page.locator('#menuEndless').click(); await page.locator('#endlessLaunch').waitFor({state:'visible'});
-    // Endless launcher: single-card carousel starts on Random, DEPLOY sits above,
-    // arrows step through all 6 terrains cleanly, and CANCEL sits below.
+    // Endless launcher: one large artwork starts on Random; arrows and DEPLOY
+    // sit inside the picture, and the record panel closes the dialog.
     assert.equal(await page.locator('#endlessThemeCard').getAttribute('data-theme'),'random','endless carousel opens on random');
     assert.equal(await page.locator('#endlessSelectedTheme').innerText(),'Random battlefield');
     assert.match(await page.locator('#endlessThemeCard').evaluate(e=>getComputedStyle(e).backgroundImage),/endless-random/,'random battlefield card uses painted artwork');
@@ -463,7 +463,8 @@ if (!commandCenterToken) throw new Error('account.js does not import command-cen
     await page.locator('#endlessPrev').click();
     assert.equal(await page.locator('#endlessThemeCard').getAttribute('data-theme'),'random');
     assert.match(await page.locator('#endlessBestWave').innerText(),/./,'the record card renders');
-    assert.equal(await page.locator('#endlessLoadout').innerText(),'None equipped','endless launcher shows translated empty-loadout label');
+    assert.equal(await page.locator('#endlessCancel').count(),0,'endless launcher no longer carries a cancel button');
+    assert.equal(await page.locator('#endlessDeploy').count(),1,'DEPLOY lives inside the endless artwork');
     await page.locator('#endlessDeploy').click(); await page.locator('#gameWorkspace').waitFor({state:'visible'});
     assert.equal(await visible('#game'),true); assert.equal(await visible('#partyToggle'),false,'no multiplayer button in Endless');
     // Portrait starts fitted; direct zoom and orientation changes retain the run.
