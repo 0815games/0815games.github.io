@@ -231,3 +231,17 @@ test('VIEW LAST RESULTS sits below mode cards, language toggles match, and HQ di
     assert.match(btnHtml, /class="action-card-label"\s+data-i18n="/, `#${actionId} isolates its translated label span`);
   }
 });
+
+test('the sector fall back arrives as a radio transmission, and the old boss alert is gone', () => {
+  const html = read('index.html');
+  const css = read('style.css');
+  assert.ok(!html.includes('id="bossAlert"') && !html.includes('id="bossHealth"'), 'the old top-edge boss alert and its health bar are removed');
+  assert.ok(html.includes('id="bossAnnouncement"'), 'the screen-reader boss line survives on its own');
+  assert.ok(html.includes('id="bossBanner"'), 'the mid-field boss banner remains the only boss announcement');
+  const sector = html.slice(html.indexOf('id="sectorPanel"'), html.indexOf('</section>', html.indexOf('id="sectorPanel"')));
+  assert.ok(sector.includes('sector-signal') && sector.includes('sector-portrait'), 'the fall back panel carries a radio transmission header');
+  assert.ok(sector.includes('ACKNOWLEDGE · FALL BACK →'), 'the retreat button acknowledges the order');
+  assert.match(css, /\.sector-signal i\{[^}]*animation:/, 'the transmission signal bars are animated');
+  assert.match(css, /prefers-reduced-motion:reduce\)\{\.sector-signal i/, 'reduced motion calms the transmission animation');
+  assert.ok(!css.includes('.boss-alert{'), 'boss alert styling is removed');
+});

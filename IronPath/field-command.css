@@ -36,7 +36,7 @@
 /* `--map-hud-bottom` is the measured bottom edge of the status row, in the map
    frame's own coordinates; the fallback assumes the soldier tile shows its XP,
    which is the tallest the row gets. */
-#gameView .map-frame .boss-alert{top:calc(var(--map-hud-bottom,calc(84px + env(safe-area-inset-top,0px))) + 36px);z-index:3}
+
 #gameView .map-frame .story-radio{bottom:80px;z-index:4;max-width:min(360px,calc(100% - 24px))}
 #gameView .map-frame .story-decision{bottom:80px;z-index:5;max-width:min(360px,calc(100% - 24px))}
 /* The one message the field still shows.
@@ -98,7 +98,7 @@
  #gameView .field-ops .field-ops-label{display:none}
  #gameView .field-ops .field-ops-burger{display:flex}
  #gameView .field-ops>summary{min-width:44px;padding:5px}
- #gameView .map-frame .boss-alert{top:calc(var(--map-hud-bottom,calc(66px + env(safe-area-inset-top,0px))) + 32px)}
+ 
  #gameView .map-frame .story-radio{bottom:12px}
  #gameView .map-frame .story-decision{bottom:12px}
 }
@@ -117,7 +117,7 @@
 #gameWorkspace:not([hidden]):is([data-screen="endless"],[data-screen="online"][data-online-ready="true"],[data-screen="campaign"]:has(#campaignPanel[data-board-open="false"])) .map-viewport{height:100%;width:100%;display:flex;align-items:center;overflow:auto;overscroll-behavior:contain}
 #gameView .map-frame .dashboard{top:calc(8px + env(safe-area-inset-top,0px));left:8px;right:70px;max-width:calc(100% - 78px)}
 #gameView .map-frame .dashboard>div{padding:6px 8px}
-#gameView .map-frame .boss-alert{top:calc(var(--map-hud-bottom,calc(84px + env(safe-area-inset-top,0px))) + 36px)}
+
 #gameView .map-frame .command{position:absolute;left:50%;right:auto;bottom:calc(8px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(690px,calc(100% - 16px));z-index:4;border-radius:5px;padding:6px}
 #gameView .map-frame .story-radio{bottom:calc(150px + env(safe-area-inset-bottom,0px));}
 #gameView .map-frame .story-decision{bottom:calc(150px + env(safe-area-inset-bottom,0px));z-index:5}

@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see docs/PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261123-endless5';
+import {getLanguage} from './language.mjs?v=20261123-life1';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,20 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'life1',build:'20261123-life1',pr:375,
+    title:{en:'Clearer Battle · Boss Bar Gone, Radio Fall Back, Life Bars Always On',de:'Klareres Gefecht · Boss-Leiste weg, Funk-Rückzug, Lebensbalken immer an'},
+    shipped:[
+      {en:'The old small boss strip at the top edge of the field is gone, boss health bar included. The big banner in the middle of the field is the only boss announcement now - warning tone and screen-reader line included.',de:'Die alte kleine Boss-Leiste am oberen Feldrand ist weg, Boss-Lebensbalken inklusive. Das große Banner in der Feldmitte ist jetzt die einzige Boss-Ansage - Warnton und Screenreader-Zeile inklusive.'},
+      {en:'Falling back after wave ten arrives as an HQ radio transmission now: General Vance portrait, animated signal bars, a transfer order to read and an acknowledge button - instead of one blunt button.',de:'Der Rückzug nach Welle zehn kommt jetzt als HQ-Funkspruch: Porträt von General Vance, animierte Signalbalken, ein Versetzungsbefehl zum Lesen und ein Bestätigungs-Button - statt eines einzigen stumpfen Knopfs.'},
+      {en:'Soldiers and towers now wear their life bar at all times, full or worn. Before, the bar only appeared once damage was taken, so it looked as if there was none.',de:'Soldaten und Türme tragen ihren Lebensbalken jetzt jederzeit, voll oder abgenutzt. Vorher erschien der Balken erst bei Schaden, sodass es wirkte, als gäbe es keinen.'},
+      {en:'Good news from the database: the last endless run is stored on your soldier since the new database rule went live, so it follows you to every device.',de:'Gute Nachricht aus der Datenbank: Die letzte Endlos-Runde liegt seit der neuen Datenbank-Regel auf dem Soldaten und folgt ihm damit auf jedes Gerät.'},
+      {en:'Raised the cache wave to 20261123-life1, because the battle display changed: no device should keep fighting under the old sky out of cache.',de:'Die Cache-Welle auf 20261123-life1 erhöht, weil sich die Gefechtsanzeige geändert hat: Kein Gerät soll mit dem alten Stand aus dem Zwischenspeicher weiterkämpfen.'},
+    ],
+    open:[
+      {en:'Block E continues: hit feedback and a tutorial introduction to the damage system, detailed host and reconnect checks, and play-tested balance.',de:'Block E geht weiter: Treffer-Feedback und eine Tutorial-Einführung ins Schadenssystem, Host- und Reconnect-Prüfung im Detail sowie spielgetestete Balance.'},
+    ]
+  },
   {
     id:'endless5',build:'20261123-endless5',pr:373,
     title:{en:'Endless · Full-Screen Portrait Stage, Last Run on Your Soldier',de:'Endless · Porträt-Bühne in voller Höhe, letzte Runde auf dem Soldaten'},
