@@ -2670,8 +2670,10 @@ dialog#tutorialDossier::backdrop {
    ========================================================================== */
 
 /* The battlefield artwork is the whole stage: arrows and DEPLOY sit inside
-   the picture, the map name holds the bottom edge, and a click anywhere on
-   the artwork deploys. Nothing stands beside or below it any more. */
+   the picture, the map name holds the TOP edge (DEPLOY owns the bottom),
+   and a click anywhere on the artwork deploys. DEPLOY is a stencil-plate
+   with a glowing brass frame so it reads on every artwork; the arrows are
+   riveted armour plates with filled military double chevrons. */
 #endlessLaunch .endless-stage {
   position: relative;
   height: 352px;
@@ -2683,7 +2685,7 @@ dialog#tutorialDossier::backdrop {
   position: absolute;
   inset: 0;
   display: flex;
-  align-items: flex-end;
+  align-items: flex-start;
   padding: 18px 22px;
   box-sizing: border-box;
   border: 1px solid var(--hq-gold);
@@ -2719,37 +2721,37 @@ dialog#tutorialDossier::backdrop {
 
 #endlessLaunch .endless-theme-card[data-theme="random"] {
   background-image:
-    linear-gradient(180deg, rgba(11, 20, 16, 0.12) 0%, rgba(10, 18, 14, 0.88) 88%),
+    linear-gradient(180deg, rgba(10, 18, 14, 0.86) 0%, rgba(11, 20, 16, 0.10) 40%, rgba(10, 18, 14, 0.30) 100%),
     url("assets/endless-random.jpg");
 }
 
 #endlessLaunch .endless-theme-card[data-theme="scrub"] {
   background-image:
-    linear-gradient(180deg, rgba(11, 20, 16, 0.12) 0%, rgba(10, 18, 14, 0.88) 88%),
+    linear-gradient(180deg, rgba(10, 18, 14, 0.86) 0%, rgba(11, 20, 16, 0.10) 40%, rgba(10, 18, 14, 0.30) 100%),
     url("assets/story-outpost.jpg");
 }
 
 #endlessLaunch .endless-theme-card[data-theme="forest"] {
   background-image:
-    linear-gradient(180deg, rgba(11, 20, 16, 0.12) 0%, rgba(10, 18, 14, 0.88) 88%),
+    linear-gradient(180deg, rgba(10, 18, 14, 0.86) 0%, rgba(11, 20, 16, 0.10) 40%, rgba(10, 18, 14, 0.30) 100%),
     url("assets/story-pinewood.jpg");
 }
 
 #endlessLaunch .endless-theme-card[data-theme="urban"] {
   background-image:
-    linear-gradient(180deg, rgba(11, 20, 16, 0.12) 0%, rgba(10, 18, 14, 0.88) 88%),
+    linear-gradient(180deg, rgba(10, 18, 14, 0.86) 0%, rgba(11, 20, 16, 0.10) 40%, rgba(10, 18, 14, 0.30) 100%),
     url("assets/story-city.jpg");
 }
 
 #endlessLaunch .endless-theme-card[data-theme="arctic"] {
   background-image:
-    linear-gradient(180deg, rgba(11, 20, 16, 0.12) 0%, rgba(10, 18, 14, 0.88) 88%),
+    linear-gradient(180deg, rgba(10, 18, 14, 0.86) 0%, rgba(11, 20, 16, 0.10) 40%, rgba(10, 18, 14, 0.30) 100%),
     url("assets/story-ice.jpg");
 }
 
 #endlessLaunch .endless-theme-card[data-theme="marsh"] {
   background-image:
-    linear-gradient(180deg, rgba(11, 20, 16, 0.12) 0%, rgba(10, 18, 14, 0.88) 88%),
+    linear-gradient(180deg, rgba(10, 18, 14, 0.86) 0%, rgba(11, 20, 16, 0.10) 40%, rgba(10, 18, 14, 0.30) 100%),
     url("assets/story-marsh.jpg");
 }
 
@@ -2760,18 +2762,23 @@ dialog#tutorialDossier::backdrop {
   z-index: 2;
   display: grid;
   place-items: center;
-  width: 46px;
-  min-width: 46px;
-  height: 76px;
+  width: 50px;
+  min-width: 50px;
+  height: 64px;
   margin: 0;
   padding: 0;
-  border: 1px solid rgba(228, 202, 137, 0.55);
-  border-radius: 10px;
-  background: linear-gradient(180deg, rgba(13, 23, 18, 0.72) 0%, rgba(13, 23, 18, 0.52) 100%);
-  color: var(--hq-gold);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(228, 202, 137, 0.22);
+  border: 1px solid rgba(228, 202, 137, 0.8);
+  border-radius: 6px;
+  background:
+    radial-gradient(circle at 9px 9px, rgba(243, 223, 176, 0.95) 1.7px, rgba(0, 0, 0, 0.35) 2.4px, transparent 3px),
+    radial-gradient(circle at calc(100% - 9px) 9px, rgba(243, 223, 176, 0.95) 1.7px, rgba(0, 0, 0, 0.35) 2.4px, transparent 3px),
+    radial-gradient(circle at 9px calc(100% - 9px), rgba(243, 223, 176, 0.95) 1.7px, rgba(0, 0, 0, 0.35) 2.4px, transparent 3px),
+    radial-gradient(circle at calc(100% - 9px) calc(100% - 9px), rgba(243, 223, 176, 0.95) 1.7px, rgba(0, 0, 0, 0.35) 2.4px, transparent 3px),
+    linear-gradient(160deg, rgba(47, 68, 50, 0.94) 0%, rgba(12, 21, 15, 0.92) 100%);
+  color: #f0d48a;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(243, 223, 176, 0.35), inset 0 0 12px rgba(0, 0, 0, 0.45);
   cursor: pointer;
-  transition: border-color 140ms ease, background-color 140ms ease, color 140ms ease, box-shadow 140ms ease;
+  transition: border-color 140ms ease, color 140ms ease, box-shadow 140ms ease;
 }
 
 #endlessLaunch .endless-arrow-prev {
@@ -2784,16 +2791,16 @@ dialog#tutorialDossier::backdrop {
 
 #endlessLaunch .endless-arrow .endless-arrow-icon {
   display: block;
-  width: 24px;
-  height: 42px;
+  width: 30px;
+  height: 30px;
+  filter: drop-shadow(0 0 5px rgba(240, 212, 138, 0.45));
   transition: transform 140ms ease;
 }
 
 #endlessLaunch .endless-arrow:hover {
-  border-color: var(--hq-gold);
-  background: linear-gradient(180deg, rgba(42, 68, 55, 0.88) 0%, rgba(24, 42, 34, 0.82) 100%);
-  color: #f8e6b4;
-  box-shadow: 0 0 0 1px rgba(228, 202, 137, 0.24), 0 8px 20px rgba(0, 0, 0, 0.5);
+  border-color: #ffe9a8;
+  color: #ffeeb8;
+  box-shadow: 0 0 0 1px rgba(228, 202, 137, 0.3), 0 0 16px rgba(232, 201, 124, 0.4), 0 8px 20px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(243, 223, 176, 0.4);
 }
 
 #endlessLaunch .endless-arrow-prev:hover .endless-arrow-icon {
@@ -2815,24 +2822,53 @@ dialog#tutorialDossier::backdrop {
   bottom: 16px;
   transform: translateX(-50%);
   z-index: 2;
-  min-width: 210px;
-  min-height: 50px;
+  min-width: 220px;
+  min-height: 54px;
   margin: 0;
-  padding: 12px 30px;
-  border: 1px solid var(--hq-gold);
-  border-radius: var(--hq-radius);
-  background: var(--hq-gold);
-  color: #101914;
-  font-weight: 800;
-  font-size: 15px;
-  letter-spacing: 0.14em;
+  padding: 13px 32px;
+  border: 2px solid #e8c97c;
+  border-radius: 6px;
+  background: linear-gradient(180deg, rgba(43, 62, 45, 0.94) 0%, rgba(9, 16, 11, 0.96) 100%);
+  color: #ffe9a8;
+  font-family: "Arial Black", Impact, "Franklin Gothic Medium", sans-serif;
+  font-weight: 900;
+  font-size: 16px;
+  letter-spacing: 0.22em;
+  text-indent: 0.22em;
   white-space: nowrap;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.52), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  text-shadow: 0 0 10px rgba(255, 214, 120, 0.9), 0 0 24px rgba(255, 190, 80, 0.55), 0 2px 3px rgba(0, 0, 0, 0.85);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.7), 0 0 18px rgba(232, 201, 124, 0.65), 0 0 44px rgba(232, 201, 124, 0.3), inset 0 0 16px rgba(232, 201, 124, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 12px 26px rgba(0, 0, 0, 0.55);
+  cursor: pointer;
+  transition: box-shadow 140ms ease, color 140ms ease, border-color 140ms ease;
+}
+
+#endlessLaunch #endlessDeploy::before,
+#endlessLaunch #endlessDeploy::after {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  filter: drop-shadow(0 0 4px rgba(255, 220, 140, 0.85));
+}
+
+#endlessLaunch #endlessDeploy::before {
+  top: -8px;
+  left: -8px;
+  border-top: 2px solid #ffe9a8;
+  border-left: 2px solid #ffe9a8;
+}
+
+#endlessLaunch #endlessDeploy::after {
+  right: -8px;
+  bottom: -8px;
+  border-right: 2px solid #ffe9a8;
+  border-bottom: 2px solid #ffe9a8;
 }
 
 #endlessLaunch #endlessDeploy:hover {
-  background: #f3dfb0;
-  border-color: #f3dfb0;
+  border-color: #fff0c0;
+  color: #fff6da;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.7), 0 0 26px rgba(255, 220, 140, 0.85), 0 0 58px rgba(232, 201, 124, 0.4), inset 0 0 20px rgba(232, 201, 124, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 12px 26px rgba(0, 0, 0, 0.55);
 }
 
 #endlessLaunch #endlessDeploy:focus-visible {
@@ -2864,16 +2900,18 @@ dialog#tutorialDossier::backdrop {
   }
 
   #endlessLaunch .endless-arrow .endless-arrow-icon {
-    width: 19px;
-    height: 33px;
+    width: 24px;
+    height: 24px;
   }
 
   #endlessLaunch #endlessDeploy {
-    min-width: 168px;
-    min-height: 46px;
+    min-width: 180px;
+    min-height: 48px;
     bottom: 12px;
-    padding: 10px 22px;
+    padding: 11px 24px;
     font-size: 14px;
+    letter-spacing: 0.18em;
+    text-indent: 0.18em;
   }
 
   #endlessLaunch #endlessSelectedTheme {
