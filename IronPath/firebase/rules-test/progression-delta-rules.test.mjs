@@ -19,8 +19,9 @@ beforeEach(async () => {
   // Die Live-Regeln tragen das Wartungs-Gate (format 1 / open); ohne den
   // Stempel in der Datenbank bleibt jede Schreibung zu Recht verweigert.
   await env.withSecurityRulesDisabled(async ctx => {
-    await set(ref(ctx.database(), '_ironpathMaintenance'), {format: 1, mode: 'open', authAfterMs: 0});
-    await set(ref(ctx.database(), 'players/alice'), {
+    const db = ctx.database();
+    await set(ref(db, '_ironpathMaintenance'), {format: 1, mode: 'open', authAfterMs: 0});
+    await set(ref(db, 'players/alice'), {
       name: 'Alice', gender: 'female', xp: 900, campaign: 3,
       armory: {scrap: 100, fortify: 0, plating: 0, repair: 0, gun: 0, supply: 0, safeguard: 0, owned: 1, equipped: 1},
     });
