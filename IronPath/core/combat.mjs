@@ -103,6 +103,39 @@ export function missionFormation(wave,contract){
  return [...formation.filter(kind=>!BOSS_CATALOG.find(b=>b.kind===kind)),contract.bossFinal];
 }
 
+// Sector identity (AUSBAU-PLAN Punkt 3): a retreat sector is more than a
+// bigger map with tougher numbers - from sector 2 on, each sector leans on
+// one threat, so the player rebuilds for a different fight. The lean is a
+// pure derivation from the sector number (which the map id alone carries),
+// so every client and every snapshot reconstructs it identically; sector 1
+// and every non-sector field stay exactly the standard rhythm. Bosses are
+// never remapped, the wave keeps its length, and every fourth ground unit
+// changes sides of the triangle - MG/Sniper food becomes armor, armor
+// becomes air - never the whole wave.
+export const SECTOR_MODIFIERS=Object.freeze({
+ 2:Object.freeze({id:'armor',name:'Armor Column',description:'Armor-heavy waves: expect many tanks. Cannons earn their keep here.'}),
+ 3:Object.freeze({id:'air',name:'Air Superiority',description:'Plane-heavy skies: keep Flak ready on every bend.'}),
+ 4:Object.freeze({id:'storm',name:'Iron Storm',description:'Armor and air together at full pressure. Every tower type has a job here.'}),
+});
+export function sectorModifier(sector){return SECTOR_MODIFIERS[sector]||null;}
+export function sectorFormation(formation,sector){
+ if(!Array.isArray(formation)||!sectorModifier(sector))return formation;
+ let ground=0;
+ return formation.map(kind=>{
+  if(kind.startsWith('boss'))return kind;
+  if(sector===2){
+   if(kind!=='infantry'&&kind!=='runner')return kind;
+   return ++ground%3===0?'tank':kind;
+  }
+  if(kind==='plane')return kind;
+  if(sector===3)return ++ground%3===0?'plane':kind;
+  // Iron Storm: every third ground unit hardens - alternating armor and air.
+  ground++;
+  if(ground%3!==0)return kind;
+  return ground%6===0?'plane':'tank';
+ });
+}
+
 // Block E: shared life, attack and repair rules for soldiers and towers.
 // Every number here is a prototype start value from the block plan, to be
 // balanced by play tests - never a permanent loss to the saved profile.

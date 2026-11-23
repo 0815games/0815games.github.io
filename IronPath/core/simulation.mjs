@@ -1,16 +1,16 @@
 import {equipmentForPlayer} from '../workshop/workshop-combat.mjs?v=20261112-tagless1';
 import {legacyEquipmentEffects} from './equipment-effects.mjs?v=20261107-balance1';
 import {advanceBuildReservations} from './build-reservations.mjs?v=20261104-buildreservation1';
-import {comboTier,comboCue} from './skill-combos.mjs?v=20261123-blocke2';
-import {webBonuses,specialistUnlocked,hasCapstone} from './skills.mjs?v=20261123-blocke2';
-import {classTowerRangeFactor,classTowerIntervalFactor,classTowerIgnoresClouds,classTowerDamageFactor,applyClassTowerHitEffects} from './tower-class-paths.mjs?v=20261123-blocke2';
+import {comboTier,comboCue} from './skill-combos.mjs?v=20261123-sector1';
+import {webBonuses,specialistUnlocked,hasCapstone} from './skills.mjs?v=20261123-sector1';
+import {classTowerRangeFactor,classTowerIntervalFactor,classTowerIgnoresClouds,classTowerDamageFactor,applyClassTowerHitEffects} from './tower-class-paths.mjs?v=20261123-sector1';
 import {bossPhase,bossWeaponFactor,crossedCycle} from './boss-mechanics.mjs?v=20261031-finale1';
 import {terrainFor,soldierSpeedFactor,enemySpeedFactor,iceDamage,targetingRange,weaponDamageFactor} from './terrain.mjs?v=20261124-zones1';
-import {getMap,isMapId,DEFAULT_MAP,sectorOf,zoneAt,mapPlayerCap} from './maps.mjs?v=20261123-blocke2';
-import { WAVE_COUNT,waveFormation,missionFormation,makeEnemy,towerDamage,SOLDIER_MAX_HP,SOLDIER_RETURN_SECONDS,SOLDIER_PROTECT_SECONDS,ENEMY_ATTACKS,ENEMY_ATTACK_FIRST_WAVE,MAX_ATTACKERS_PER_TARGET,towerMaxHp } from './combat.mjs?v=20261123-blocke2';
+import {getMap,isMapId,DEFAULT_MAP,sectorOf,zoneAt,mapPlayerCap} from './maps.mjs?v=20261123-sector1';
+import { WAVE_COUNT,waveFormation,missionFormation,sectorFormation,makeEnemy,towerDamage,SOLDIER_MAX_HP,SOLDIER_RETURN_SECONDS,SOLDIER_PROTECT_SECONDS,ENEMY_ATTACKS,ENEMY_ATTACK_FIRST_WAVE,MAX_ATTACKERS_PER_TARGET,towerMaxHp } from './combat.mjs?v=20261123-sector1';
 import { waveXP } from './progression.mjs?v=20261105-prestige1';
-import {addSupplies} from './match.mjs?v=20261123-blocke2';
-import {towerIntervalFactor,towerRangeFactor,towerIgnoresClouds,towerDamageBonus,applyHitEffects} from './tower-specialization.mjs?v=20261123-blocke2';
+import {addSupplies} from './match.mjs?v=20261123-sector1';
+import {towerIntervalFactor,towerRangeFactor,towerIgnoresClouds,towerDamageBonus,applyHitEffects} from './tower-specialization.mjs?v=20261123-sector1';
 export const STEP = 1/30;
 export const PATH=getMap(DEFAULT_MAP).path, PADS=getMap(DEFAULT_MAP).pads;
 const towerStats=[{range:125,interval:.55,color:'#d9d884'},{range:145,interval:1.4,color:'#e49b67'},{range:155,interval:.8,color:'#8cc0a6'},{range:210,interval:1.8,color:'#a9a4d4'}];
@@ -75,7 +75,7 @@ export function stepMatch(state){
     p.x=Math.max(12,Math.min((map.width||960)-12,p.x));p.y=Math.max(12,Math.min((map.height||540)-12,p.y));
     if(!jamField&&state.running)p.cooldown=Math.max(0,p.cooldown-dt);
   }
-  if(state.running&&state.spawnLeft>0){state.spawnTimer-=dt;if(state.spawnTimer<=0){const spawnIndex=state.spawnIndex++,formation=missionFormation(state.wave,state.campaignContract),kind=formation[spawnIndex%formation.length],enemy=makeEnemy(kind,state.wave),count=activePlayers(state).length,road=spawnIndex%paths.length,path=paths[road],effectiveSector=(state.individualSupplies||state.hostId)&&state.wave<MULTIPLAYER_SECTOR_START_WAVE?1:sector;
+  if(state.running&&state.spawnLeft>0){state.spawnTimer-=dt;if(state.spawnTimer<=0){const spawnIndex=state.spawnIndex++,formation=sectorFormation(missionFormation(state.wave,state.campaignContract),(state.individualSupplies||state.hostId)?0:sector),kind=formation[spawnIndex%formation.length],enemy=makeEnemy(kind,state.wave),count=activePlayers(state).length,road=spawnIndex%paths.length,path=paths[road],effectiveSector=(state.individualSupplies||state.hostId)&&state.wave<MULTIPLAYER_SECTOR_START_WAVE?1:sector;
       if(effectiveSector>1){enemy.hp=enemy.maxHp=Math.max(1,Math.round(enemy.maxHp*(1+.12*(effectiveSector-1))));enemy.speed*=1+.05*(effectiveSector-1);}if(state.individualSupplies&&count>1){const healthMult=count>3?COOP_FOUR_ENEMY_HEALTH:count>2?COOP_THREE_ENEMY_HEALTH:COOP_ENEMY_HEALTH;enemy.hp=enemy.maxHp=Math.round(enemy.maxHp*healthMult);}
       if(state.campaignContract){enemy.hp=enemy.maxHp=Math.round(enemy.maxHp*state.campaignContract.unit);enemy.campaign=true;}
       if(state.campaignContract?.bossUnit&&enemy.boss)enemy.hp=enemy.maxHp=Math.max(1,Math.round(enemy.maxHp*state.campaignContract.bossUnit));

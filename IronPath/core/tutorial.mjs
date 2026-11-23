@@ -1,4 +1,4 @@
-import {translateText as tr} from '../language.mjs?v=20261123-blocke2';
+import {translateText as tr} from '../language.mjs?v=20261123-sector1';
 import {bindDialogBackdrop} from '../ui/dialog-dismiss.mjs?v=20261104-dismiss1';
 // The practice steps open the real dialogs in sandbox mode (see account.js). The
 // callbacks are injected so this module never needs the account app itself.

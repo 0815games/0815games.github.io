@@ -1,4 +1,4 @@
-import { createHost, restoreHost, isRosterVoteCommand } from './protocol.mjs?v=20261123-blocke2';
+import { createHost, restoreHost, isRosterVoteCommand } from './protocol.mjs?v=20261123-sector1';
 // Local, player-hosted match core. The Firebase adapter must bind each player
 // ID to authenticated paths. The hosting browser is not an anti-cheat authority.
 const rosterOf=match=>{const four=match?.mode==='four-coop'||match?.mode==='two-vs-two',ids=Object.keys((four?match?.members:match?.players)||{});if((four?(match.mode==='four-coop'?![3,4].includes(ids.length):ids.length!==4):ids.length!==2))throw new Error('Invalid party roster');return ids;};
