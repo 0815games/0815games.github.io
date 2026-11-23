@@ -31,15 +31,27 @@ beforeEach(async () => {
 after(async () => env.cleanup());
 
 test('a six-digit two-player code opens, takes a request, and closes', async () => {
+  // The rules bind the code to a real party: the party carries the code as
+  // its inviteCode before the code node may link to it (the client's order).
+  const partyId = 'a'.repeat(32);
+  await env.withSecurityRulesDisabled(async ctx => {
+    await set(ref(ctx.database(), `parties/${partyId}`), {hostId: 'alice'});
+  });
+  await assertSucceeds(update(ref(alice, `parties/${partyId}`), {inviteCode: '123456'}));
   await assertSucceeds(set(ref(alice, 'partyCodes/123456/hostId'), 'alice'));
-  await assertSucceeds(set(ref(alice, 'partyCodes/123456/partyId'), 'a'.repeat(32)));
+  await assertSucceeds(set(ref(alice, 'partyCodes/123456/partyId'), partyId));
   await assertSucceeds(set(ref(bob, 'partyCodes/123456/requests/bob'), {name: 'Bob'}));
   await assertSucceeds(set(ref(alice, 'partyCodes/123456'), null), 'the host clears the code node');
 });
 
 test('legacy four-digit codes still run, in-between lengths do not', async () => {
+  const legacyParty = 'd'.repeat(32);
+  await env.withSecurityRulesDisabled(async ctx => {
+    await set(ref(ctx.database(), `parties/${legacyParty}`), {hostId: 'alice'});
+  });
+  await assertSucceeds(update(ref(alice, `parties/${legacyParty}`), {inviteCode: '1234'}));
   await assertSucceeds(set(ref(alice, 'partyCodes/1234/hostId'), 'alice'), 'pre-switch parties run out');
-  await assertSucceeds(set(ref(alice, 'partyCodes/1234/partyId'), 'd'.repeat(32)));
+  await assertSucceeds(set(ref(alice, 'partyCodes/1234/partyId'), legacyParty));
   await assertSucceeds(set(ref(bob, 'partyCodes/1234/requests/bob'), {name: 'Bob'}));
   await assertFails(set(ref(alice, 'partyCodes/12345/hostId'), 'alice'), 'five digits are neither old nor new');
   await assertFails(set(ref(alice, 'partyCodes/1234567/hostId'), 'alice'));
