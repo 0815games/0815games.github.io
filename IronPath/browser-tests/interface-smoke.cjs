@@ -712,7 +712,7 @@ const fs = require('node:fs');
             const inside=(a,b)=>a.left>=b.left-1&&a.right<=b.right+1&&a.top>=b.top-1&&a.bottom<=b.bottom+1;
             return {card:r,deploy,prev,next,cancelPresent:!!document.getElementById('endlessCancel'),art:getComputedStyle(card).backgroundImage,heights,prevIconWidth:prevIcon?.width??0,nextIconWidth:nextIcon?.width??0,dialogWidth:document.getElementById('endlessLaunch').getBoundingClientRect().width,
               deployInside:inside(deploy,r),prevInside:inside(prev,r),nextInside:inside(next,r),
-              deployCentered:Math.abs((deploy.left+deploy.right)/2-(r.left+r.right)/2)<4,
+              deployCentered:Math.abs((deploy.left+deploy.right)/2-(r.left+r.right)/2)<4,deployNarrow:deploy.width<=r.width*0.7,
               deployLow:deploy.top>=r.top+r.height*0.6,prevHugsLeft:prev.left<=r.left+r.width*0.25,nextHugsRight:next.right>=r.right-r.width*0.25,
               labelInside:inside(label.getBoundingClientRect(),r),labelAtTop:label.getBoundingClientRect().top<=r.top+r.height*0.4,labelAboveDeploy:label.getBoundingClientRect().bottom<=deploy.top};
           });
@@ -720,6 +720,7 @@ const fs = require('node:fs');
           assert.ok(carouselLayout.card.height>160,`${name}: endless stage shows one large battlefield artwork (${Math.round(carouselLayout.card.height)}px)`);
           assert.ok(carouselLayout.deployInside,`${name}: #endlessDeploy sits inside #endlessThemeCard`);
           assert.ok(carouselLayout.deployCentered&&carouselLayout.deployLow,`${name}: #endlessDeploy is centred on the lower part of the artwork`);
+          assert.ok(carouselLayout.deployNarrow,`${name}: #endlessDeploy is only as wide as its lettering, not the stage`);
           assert.ok(carouselLayout.labelInside&&carouselLayout.labelAtTop&&carouselLayout.labelAboveDeploy,`${name}: battlefield name holds the top of the artwork and never meets DEPLOY`);
           assert.ok(carouselLayout.prevInside&&carouselLayout.nextInside,`${name}: endless arrows sit inside the artwork`);
           assert.ok(carouselLayout.prevHugsLeft&&carouselLayout.nextHugsRight,`${name}: endless arrows hug the artwork edges`);

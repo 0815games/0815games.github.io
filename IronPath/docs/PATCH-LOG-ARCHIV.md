@@ -1,6 +1,6 @@
 # Iron Path – Patch-Log: Archiv
 
-Ältere Einträge IPL-0001 bis IPL-0089. Die neuesten 20 stehen in
+Ältere Einträge IPL-0001 bis IPL-0090. Die neuesten 20 stehen in
 [PATCH-LOG.md](PATCH-LOG.md); die Regeln für beide Dateien dort und in
 [`../../AGENTS.md`](../../AGENTS.md). Beim Verschieben wandert ein Eintrag immer
 vollständig einschließlich seiner Ereignis-Nachträge.
@@ -3674,3 +3674,152 @@ Grenzen / Offen:
   - **Tests & Cache-Welle `20261120-endlessview1`:** Neue Node-Testsuite `IronPath/tests/endless-retreat-viewport.test.mjs` (echter Welle-1..10-Durchlauf + `#sectorAdvance`-Klick auf `390×844` Hochformat, Schwenk-und-Tap-Absicherung für beliebige Sektor-2-Karten, Querformat-Drehung, Sektor 3, Neustart auf Sektor 1, striktes `'false'` auf `'road'` trotz `experimentalFourViewport: true`, Desktop `1280×800`, versteckter Workspace & Kampagnenboard); erweiterte Assertions in `IronPath/browser-tests/retreat-viewport.cjs` und `IronPath/browser-tests/multiplayer-field.cjs` (`four-front` behält im Solo-Fallback `fullBattle='true'`, klassisches `'road'` setzt wieder `fullBattle='false'`); `IronPath/browser-tests/cache-wave.cjs`, `IronPath/release-version.json`, `IronPath/patch-notes.mjs` (`RELEASED_PATCHES[0]` `endlessview1` / PR `#334`) sowie Cache-Stempel `20261120-endlessview1`.
 - **Verlauf / Prüfungen:** PR `#334` eröffnet (`1f5ea6d`); CI-Run `44751131383` zeigte `multiplayer-field.cjs:191` (`dataset.fullBattle === 'undefined'` nach Rückkehr auf `'road'`), behoben in `f623037` (CI-Run `44752320532`: 12/13 grün inkl. `interface-browser-smoke`, `database-rules` und aller 8 Emulator-Suites; `game-regressions` traf den ~5-%-Zufallstreffer in `battle-sound.test.mjs:541`). Lokal nach Fix: `battle-sound.test.mjs` `50/50`, `endless-retreat-viewport.test.mjs` `10/10`, gesamte Node-Testsuite unter `--test-concurrency=8` (`0` Fehler) und `stress-tests/run.mjs` bestanden.
 - **Offen:** Finaler CI-Durchlauf auf PR `#334` sowie echte Geräteprüfung auf Handy Safari/Chrome nach Merge.
+
+## IPL-0090 – Rückbau auf PR `#334`: spielbarer Stand wiederhergestellt, Cache-Welle `20261121-rollback1`
+
+- **Zeit / Quelle:** 2026-11-21 UTC. Nutzerrückmeldung: Das Spiel bricht direkt ab Spielstart zusammen,
+  sobald der erste Turm gebaut oder die Welle gestartet wird. Auf Rückfrage präzisiert: **das Gefechtsfeld
+  friert ein** (Karte bleibt sichtbar, nichts bewegt sich mehr, Eingaben laufen ins Leere). Gerät
+  **iPhone/iPad Safari**, **mit Konto angemeldet**, geprüft auf `https://0815games.github.io/IronPath/`.
+  Vom Betreiber gewählter Lösungsweg: Rückbau auf den letzten Stand mit grüner Regressionssuite.
+  Arbeitsbranch `arena/d4bf56ea-0815games-github-io` ab `7c2dba6576a8acb44091dd96bd18d4f02656b0a0`
+  (`main`, PR `#339`). Status aktuell: `lokal/uncommittet`.
+- **Ausgangslage auf `main` (`7c2dba65`) — zugleich die Pages-Auslieferung:** letzter Pages-Build
+  `1390619326`, `built` 2026-11-21T18:24:36Z, aus genau diesem Commit. Die Seite war also **nicht**
+  veraltet; der Betreiber hat exakt diesen Code geprüft.
+  - `node --test-reporter=tap --test IronPath/tests/*.test.mjs` (Repo-Wurzel, CI-identisch):
+    **1198 Tests, 1172 pass, 25 fail, exit 1**.
+  - Zusammensetzung der 25: **22×** `ERR_UNSUPPORTED_RESOLVE_REQUEST` — `ground-tracks.mjs` (neu in
+    `#335`) fehlte in 13 Harness-Ersetzungslisten; **1×** `endless-retreat-viewport` =
+    `bossPhaseLabel is not defined`; **1×** `tower-glow`; **1×** `translation-coverage`.
+  - **Belegter Produktfehler (P0, aus PR `#338`):** `IronPath/cartoon-art.mjs:1101` ruft
+    `bossPhaseLabel(boss)` auf, ohne es zu importieren — Zeile 6 importiert nur `bossPhase`, der Export
+    liegt in `boss-mechanics.mjs:41`. Der Aufruf steht **vor** der Auswertung
+    `if(label&&phase!=='normal')`. Nachgestellt mit echtem Boss (`makeEnemy(bossForWave(5).kind,5)`):
+    `ReferenceError: bossPhaseLabel is not defined at drawCartoonBattle (cartoon-art.mjs:1101:19)`.
+    Da `IronPath/game.js:1501–1506` (`frame()`) keinen Fang um `draw()` hat, stirbt die
+    `requestAnimationFrame`-Kette und das Feld friert ein — **derselbe sichtbare Effekt wie die
+    Nutzermeldung**. Ehrliche Einschränkung: dieser Pfad braucht einen Boss auf dem Feld (Solo Welle
+    5/10, Trainingsvertrag Welle 7) und erklärt damit **nicht** einen Abbruch beim allerersten Turm.
+  - **`tower-glow`:** Test veraltet, Code korrekt. Der Test sucht das Literal
+    `fallbackMarker(ctx,x,y-6,['MG','C','AA','S']`, das `#339` in `drawTowerVectorFallback(...)`
+    umbenannt hat; `indexOf` liefert `-1`, die Assertion `glow<fallback` scheitert. Die Reihenfolge im
+    Code (Schein wird vor dem Turm gemalt) stimmt weiterhin.
+  - **`translation-coverage`:** 4 neue Literale ohne deutschen Eintrag (`SPAWN-PUNKT`,
+    `WELLE {wave} · {count} FEINDLICHE`, `WELLE {wave}`, `NÄCHSTE: {count} ENEMIES`) aus `#336`/`#337`.
+  - **`game-regressions` war in `#335`, `#336`, `#337`, `#338` und `#339` rot und wurde jeweils
+    trotzdem gemergt** (kein Pflicht-Check; `branches/main/protection` liefert `403`). `#334` war der
+    letzte PR mit grünem `game-regressions` (Run `44761316601`).
+- **Nicht reproduziert — Nachweisgrad ehrlich:** Der gemeldete Einfrier-Fehler ließ sich gegen `main`
+  **nicht** nachstellen, obwohl browser-treuer geprüft wurde, als die vorhandenen Tests es tun:
+  - **483.840** `drawCartoonBattle`-Aufrufe über alle 3 Karten × Wellen 1–12 (inkl. eingespritzter
+    Bosse) × 32 Einstellungskombinationen (`reducedMotion`, `weatherEffects`, `combatTracers`, Sprites
+    geladen/ausstehend, `renderScale` 1/2) → **0 Fehler**.
+  - Komplettes `game.js` über `startGame()` mit **browser-striktem** Canvas-Stub (wirft `IndexSizeError`
+    bei negativem Radius, `InvalidStateError` bei leerem Bild, `TypeError` bei nicht-finiten Werten)
+    **und** Web-Audio-Fake mit echten Wurfregeln (`NotSupportedError` bei `createBuffer` mit Länge 0,
+    `InvalidStateError` bei doppeltem `start()`, `RangeError` bei `exponentialRamp`): Turmbau, Upgrade,
+    Spezialisierung, Wellenstart, **900 Frames**, 937 Audio-Nodes → **0 Fehler**.
+  - Alle **540** Import-Spezifizierer des Produktcodes lösen auf (auf Platte **und** in `git HEAD`); die
+    einzigen 4 Lücken liegen in `release-tools/` und sind build-generiert.
+  - Geprüft und ausgeschlossen: `roundRect`, `createConicGradient` und andere neuere Canvas-APIs kommen
+    nicht vor. Die in `#335`–`#339` neu hinzugefügten Zeilen enthalten außer `performance.now()` (18×),
+    `shadowBlur` (2×) und `.filter` (1×) keine browserkritische API.
+- **Zusatzbefund, unabhängig vom Rückbau gültig** (in `#338`/`#339` eingeführt, mit dem Rückbau
+  entfernt): Der Mündungsblitz in `pad()` ist **toter Code** und latent absturzgefährdet.
+  `state.shots.find(s=>s&&s.tx===x&&s.ty===y)` vergleicht `tx/ty` (= Zielposition des Gegners laut
+  `simulation.mjs:167`) mit der **Pad**-Position; ein Treffer ist damit praktisch ausgeschlossen. Käme
+  es zu einem Treffer, folgte ein Absturz: `age=performance.now()-(shot.time||0)` mischt
+  Seiten-Millisekunden mit einem Schussobjekt, das **kein** `time` trägt. Daraus wird `muzzleFlash` groß
+  negativ und `ctx.arc(x,y+6,8+muzzleFlash*12,…)` erhielte einen **negativen Radius** → `IndexSizeError`.
+  Korrekt wäre `s.x===x&&s.y===y` sowie eine Normalisierung über `shot.life`/`shot.duration` ohne
+  `performance.now()`.
+- **Leistungsmessung** (Canvas-Operationen pro Frame, `#334` → `main`, identische Zustände): erstes
+  Frame mit Vektor-Fallback — also bevor Sprites dekodiert sind, am Handy genau der Startzeitpunkt —
+  **970 → 1911 (+97 %)**; 10 Türme vor der Welle **527 → 609 (+16 %)**; Welle 1 mit 4 Gegnern und 1
+  Schuss **623 → 708 (+14 %)**; ausgebaute Türme im Kampf **710 → 795 (+12 %)**. Operationen mit
+  `shadowBlur>0` pro Frame: **0** in jedem Szenario. Der Prestige-Schein (`shadowBlur=26`, PR `#308` /
+  `ab7e546c`, 2026-11-17) zeichnet nur für Prestige-Türme ab Stufe 13 und war damit **nicht** der
+  Kostentreiber; die messbare Verteuerung stammt aus den geschichteten Straßen-/Schienen-Ebenen von
+  `#335`. Die vom Betreiber vermutete „Tower-Glow"-Erhöhung ist somit als Ursache **widerlegt**, ein
+  Rückbau bis dorthin (30 Merges, Verlust von Audio 1–7, Blöcke 9b–9g/2+1/6/6b, `sellicon1`,
+  `endlessview1`) war nicht nötig.
+- **Änderungen / Dateien:**
+  - `IronPath/` inhaltlich vollständig auf `494ad8bb` (PR `#334`) zurückgesetzt:
+    `git checkout 494ad8bb -- IronPath/`.
+  - Danach die erst nach `#334` hinzugekommenen Dateien entfernt (`git checkout` löscht solche Dateien
+    **nicht**): `IronPath/ground-tracks.mjs`, `IronPath/assets/road3-city.jpg`, `-desert.jpg`,
+    `-forest.jpg`, `-marsh.jpg`, `-road.jpg`, `-snow.jpg` (zusammen 2,3 MB).
+  - Zurückgenommen damit: `IronPath/cartoon-art.mjs` (659 Zeilen Differenz), `IronPath/game.js` (29),
+    `IronPath/assets/endless-ground3.jpg`, `IronPath/assets/terrain3-city.jpg`,
+    `IronPath/tests/road-design.test.mjs`.
+  - **`IronPath/PATCH-LOG.md` wiederhergestellt: 3711 statt 257 Zeilen.** `#336` hatte dieses Log
+    **ersetzt** statt fortgeschrieben und die Zählung auf `IPL-0001` zurückgesetzt; dabei gingen
+    `IPL-0001`…`IPL-0089` verloren, und `#337`–`#339` wurden gar nicht protokolliert. Mit dem Rückbau
+    ist die Historie wieder da; dieser Eintrag führt die Zählung korrekt als `IPL-0090` fort.
+  - **Cache-Welle `20261120-endlessview1` → `20261121-rollback1`** in **79 Dateien / 534 `?v=`-Zeilen**.
+    Das ist zwingend, weil `#335`–`#339` den Stempel **nicht** erhöht hatten: ein iPhone behält die
+    fehlerhaften Module sonst unter unveränderter URL aus dem Cache, und der Rückbau käme nie an.
+    Geändert: `IronPath/release-version.json`, `IronPath/index.html`
+    (`<meta name="ironpath-build">` plus beide sichtbaren `build-stamp`-Ausgaben),
+    `IronPath/login-scene.mjs` (`LOGIN_SCENE_VERSION`, Cache-Buster der Login-Szenen-Bilder) sowie
+    `IronPath/browser-tests/avatar-handover.cjs` und `interface-smoke.cjs` (Fallback bzw. Fixture).
+  - **Bewusst nicht gebumpt** (historische Daten, keine Cache-Referenz): `IronPath/patch-notes.mjs` —
+    `RELEASED_PATCHES[0]` (`endlessview1`, PR `#334`) behält `build:'20261120-endlessview1'` und seine
+    Zeile zur echten Geräteabnahme auf diesem Stand. Ein globaler Ersatz hatte beide Stellen zunächst
+    verfälscht, was die Liste einen nie ausgelieferten Stand hätte behaupten lassen; das ist korrigiert.
+- **Verifikation des Rückbaus:** `git diff 494ad8bb -- IronPath` enthält **ausschließlich** die
+  Cache-Welle — 534 `?v=`-Zeilen plus 8 Zeilen für Meta-Tag, die zwei sichtbaren Stempel,
+  `LOGIN_SCENE_VERSION`, `release-version.json` und die zwei Browser-Test-Fixtures. **Keine einzige
+  Produktlogik-Zeile weicht von `#334` ab.**
+- **Prüfungen:**
+  - Stempel- und Versionsverträge einzeln (`build-stamp`, `multiplayer-build-stamp`, `version-check`,
+    `version-ui`, `patch-notes`): **29/29 pass**, darunter `the release manifest, displayed build and
+    cache-busted entry points agree` und `changed browser modules and their importers share one cache
+    wave without splitting singleton services`.
+  - Vergleichsmessung des Zielstandes in einem aus `494ad8bb` extrahierten Baum: 1198 Tests,
+    **1190 pass, 7 fail**. Alle 7 waren Artefakte des Extrakts — `.github/workflows/` fehlte (`ENOENT`)
+    und `.git` fehlte (`git rev-parse HEAD` scheitert). Nach Ergänzung beider Verzeichnisse: **0 echte
+    Fehler**. Der Zielstand ist also nachweislich grün.
+  - **Gesamtsuite nach Rückbau, CI-identisch von der Repo-Wurzel:**
+    `node --test-reporter=tap --test IronPath/tests/*.test.mjs` → **1198 Tests, 1198 pass, 0 fail,
+    0 skipped, exit 0** (324 s). Zum Vergleich: `main`/`7c2dba65` stand bei **1172 pass / 25 fail,
+    exit 1**. Ein Zwischenlauf vor dem Feldnotiz-Eintrag zeigte 1196 pass / 2 fail — beide
+    `patch-notes.test.mjs`, weil der Test den Eintrag zur laufenden Welle verlangt (siehe Punkt 3
+    unter „Offen").
+- **Git / PR / Release:** Commit `0338c5814a0001b6405c93bd79a4689a08b142af` auf
+  `arena/d4bf56ea-0815games-github-io`, gepusht auf `origin`; PR
+  [`#340`](https://github.com/0815games/0815games.github.io/pull/340) gegen `main` eröffnet.
+  **Merge, CI-Ergebnis und Pages-Build stehen aus** und werden nach dem tatsächlichen Ereignis mit
+  Kennung nachgetragen — nichts davon wird hier vorweggenommen.
+- **Offen / nächster Schritt:**
+  1. Commit → Push → PR. Merge **erst nach Freigabe des Betreibers**. Danach den Pages-Build abwarten
+     und `https://0815games.github.io/IronPath/` prüfen: der sichtbare Stempel muss
+     `BUILD 20261121-rollback1` zeigen — das trennt Cache von Code.
+  2. **Geräteabnahme fehlt:** iPhone/iPad Safari mit angemeldetem Konto, exakt der gemeldete Pfad
+     (Spielstart → erster Turm → Welle starten). Ein grüner Node-Testlauf ist keine Geräteabnahme.
+  3. **Abweichung von der ursprünglich geplanten Reihenfolge, begründet:** Der Feldnotiz-Eintrag
+     `rollback1` in `IronPath/patch-notes.mjs` konnte **nicht** bis nach dem Merge warten.
+     `IronPath/tests/patch-notes.test.mjs` verlangt `RELEASED_PATCHES[0].build === release-version.json`
+     (`the newest note is the build the site is running`) sowie genau eine als laufend markierte Karte;
+     ohne den Eintrag blieben genau 2 Tests rot. Er liegt deshalb in diesem PR, mit `pr:340`, vier
+     `shipped`- und vier `open`-Zeilen in DE **und** EN, und führt die ausstehende Geräteabnahme sowie
+     den Status „unbewiesene Abhilfe, kein belegter Fix" ausdrücklich als offenen Punkt — entsprechend
+     handelte schon `IPL-0089` für `#334`. Nach belegtem Merge und Pages-Lauf sind nur noch die
+     Git-/CI-/Release-Ereignisse im Punkt darüber nachzutragen.
+  4. `game-regressions` zum **Pflicht-Check** machen. Ohne diese Lücke wären `#335`–`#339` nicht
+     gemergt worden.
+  5. Die zurückgenommenen Arbeiten bleiben inhaltlich gewollt und müssen **einzeln** neu landen, jeweils
+     mit grüner Suite, eigenem Stempel und Harness-Eintrag für neue Module: Bodenspuren plus
+     Straßen-/Schienen-Optik (`#335`), Pad-Selektions-Puls (`#336`), Spawn-Punkt-Marker (`#337`),
+     Boss-Ankündigung (`#338`, dann **mit** `bossPhaseLabel`-Import und Fang um `draw()`),
+     Vektor-Fallback-Farben (`#339`). Beim Neu-Landen von `#335` zwingend `ground-tracks.mjs` in die 13
+     Ersetzungslisten der Test-Harnesses aufnehmen.
+  6. Unabhängig vom Rückbau offen: der tote und latent abstürzende Mündungsblitz (Zusatzbefund oben),
+     die 4 Literale ohne DE-Eintrag, die `tower-glow`-Literalprüfung sowie die **fail-closed**-Gatter —
+     `maintenance-check.mjs` beendet die Seite bei jeder Abweichung von `_ironpathMaintenance`
+     (`halt('unavailable')` → `stopAccountForRelease()` blendet `gameView` **und** `entry` aus), und
+     `version-ui.mjs:125` liefert `Promise.resolve(false)`, sobald der Koordinator nicht initialisiert
+     ist, wodurch Deploy und Turmbau **stillschweigend** nichts tun. Beide sind nur mit echtem Konto und
+     Netz sichtbar, deshalb headless nicht prüfbar, und bleiben als mögliche Ursache des gemeldeten
+     Einfrierens stehen, falls der Rückbau nicht hilft.
