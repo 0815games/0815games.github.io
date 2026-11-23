@@ -24,7 +24,7 @@ import {createCharacterNameConflictHandler} from './core/character-name-conflict
 import {createDischargeNotice,createDischargeSignOut,DISCHARGE_MESSAGE} from './ui/discharge-notice.mjs?v=20261123-endless4';
 import {createCommandCenter} from './core/command-center.mjs?v=20261123-endless4';
 import {featureEnabled} from './core/features.mjs?v=20261112-endless1';
-import {createEndlessLauncher,readLastEndlessRun,writeLastEndlessRun,ENDLESS_LAST_RUN_KEY} from './core/endless-launcher.mjs?v=20261123-endless4';
+import {createEndlessLauncher,readLastEndlessRun,sanitizeEndlessLastRun,writeLastEndlessRun,ENDLESS_LAST_RUN_KEY} from './core/endless-launcher.mjs?v=20261123-endless4';
 import {initializeWireWorkshop,applyWireWorkshopCommand} from './workshop/workshop-wire.mjs?v=20261112-tagless1';
 // Story completion writes progress and the mission's prestige trophy together.
 import {completeStoryMission,meltPrestige,decodeWorkshop as decodeWorkshopSafe} from './workshop/workshop-wire.mjs?v=20261112-tagless1';
@@ -627,8 +627,22 @@ function endlessRecord(){
   return {runs:profile?.endlessRuns,waves:profile?.endlessWaves,bosses:profile?.endlessBosses,bestSector:profile?.endlessBestSector,scrap:armory?.scrap,loadout:armory?.equipped?translateText(ITEMS[armory.equipped-1].name):null};
 }
 async function bestSoloWave(){try{const snap=await get(ref(db,`leaderboards/solo/${user?.uid}`));return snap?.val()?.wave||0;}catch{return 0;}}
+let endlessLastRunEnabled=true;
 async function recordEndlessRun(summary){
   writeLastEndlessRun(window.localStorage,summary);
+  // The last run belongs to the soldier, not the device: it is written to the
+  // profile like the tutorial progress and the record counters. This write is
+  // deliberately separate from the stats transaction below - until the live
+  // rules carry the endlessLastRun field (see
+  // firebase/ENDLESS-LAST-RUN-ROLLOUT.md) the write is refused, and that must
+  // never silence the record counters. The localStorage copy above stays as
+  // the device mirror for exactly that era.
+  if(endlessLastRunEnabled&&!inSandbox()&&user&&profile){
+    const lastRunUid=user.uid;
+    try{
+      await update(ref(db,`players/${lastRunUid}`),{endlessLastRun:{waves:Math.max(0,summary.waves|0),bosses:Math.max(0,summary.bosses|0),sector:Math.max(0,summary.sector|0),date:Date.now()}});
+    }catch{endlessLastRunEnabled=false;}
+  }
   if(!endlessStatsEnabled||inSandbox()||!user||!profile)return {committed:false};
   const currentUser=user,version=sessionVersion;
   try{
@@ -646,7 +660,7 @@ async function recordEndlessRun(summary){
   }
 }
 const endlessLauncher=featureEnabled('endlessMenu')?createEndlessLauncher({document,storage:window.localStorage,
-  getRecord:endlessRecord,getBestWave:bestSoloWave,getLastRun:()=>readLastEndlessRun(window.localStorage),
+  getRecord:endlessRecord,getBestWave:bestSoloWave,getLastRun:()=>sanitizeEndlessLastRun(profile?.endlessLastRun)??readLastEndlessRun(window.localStorage),
   onDeploy:async theme=>{
     const version=sessionVersion,uid=user?.uid,control=gameControl,center=commandCenter;if(!uid||!control||!center)return;
     center.showBattle(true,'endless');let loaded=false;try{loaded=await control.chooseEndless(theme);}catch{/* Return to the menu below. */}

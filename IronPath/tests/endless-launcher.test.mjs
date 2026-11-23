@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {ENDLESS_THEMES,ENDLESS_THEME_KEY,ENDLESS_LAST_RUN_KEY,readEndlessTheme,readLastEndlessRun,writeLastEndlessRun,createEndlessLauncher} from '../core/endless-launcher.mjs';
+import {ENDLESS_THEMES,ENDLESS_THEME_KEY,ENDLESS_LAST_RUN_KEY,readEndlessTheme,readLastEndlessRun,sanitizeEndlessLastRun,writeLastEndlessRun,createEndlessLauncher} from '../core/endless-launcher.mjs';
 
 function memory(saved={}){
   const store={...saved};
@@ -16,6 +16,14 @@ test('the theme list is random plus the five generated battlefields',()=>{
     assert.ok(theme.label.length>3,theme.label);
     assert.ok(theme.hint.length>3,theme.hint);
   }
+});
+
+test('the last-run summary is sanitized wherever it comes from',()=>{
+  assert.deepEqual(sanitizeEndlessLastRun({waves:12,bosses:2,sector:3,date:123}),{waves:12,bosses:2,sector:3},'profile summaries keep exactly the painted fields');
+  assert.equal(sanitizeEndlessLastRun({waves:1.5,bosses:0,sector:1}),null,'fractional waves are not a run summary');
+  assert.equal(sanitizeEndlessLastRun({waves:3,bosses:1}),null,'a missing sector is not a run summary');
+  assert.equal(sanitizeEndlessLastRun(null),null);
+  assert.equal(sanitizeEndlessLastRun('wave 9'),null);
 });
 
 test('a saved theme survives only when it is one of the offered keys',()=>{
@@ -130,7 +138,7 @@ test('the last-run line renders the summary or the empty state',()=>{
   assert.equal(nodes.get('endlessLastRun').textContent,'Last run: wave 12 · 2 bosses · sector 3');
   const empty=fixture({lastRun:null});
   empty.launcher.open();
-  assert.equal(empty.nodes.get('endlessLastRun').textContent,'No endless run yet on this device.');
+  assert.equal(empty.nodes.get('endlessLastRun').textContent,'No endless run yet.');
 });
 
 test('deploy closes the dialog with the chosen theme; the close button never deploys',()=>{

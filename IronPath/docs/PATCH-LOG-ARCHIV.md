@@ -1,6 +1,6 @@
 # Iron Path – Patch-Log: Archiv
 
-Ältere Einträge IPL-0001 bis IPL-0090. Die neuesten 20 stehen in
+Ältere Einträge IPL-0001 bis IPL-0091. Die neuesten 20 stehen in
 [PATCH-LOG.md](PATCH-LOG.md); die Regeln für beide Dateien dort und in
 [`../../AGENTS.md`](../../AGENTS.md). Beim Verschieben wandert ein Eintrag immer
 vollständig einschließlich seiner Ereignis-Nachträge.
@@ -3823,3 +3823,182 @@ Grenzen / Offen:
      ist, wodurch Deploy und Turmbau **stillschweigend** nichts tun. Beide sind nur mit echtem Konto und
      Netz sichtbar, deshalb headless nicht prüfbar, und bleiben als mögliche Ursache des gemeldeten
      Einfrierens stehen, falls der Rückbau nicht hilft.
+
+## IPL-0091 – Straße und Schiene auf echten Kurven neu gebaut, Bodenspuren zurück (`20261121-road1`, PR `#341`)
+
+- **Zeit / Quelle:** 2026-11-21 UTC. Auftrag des Betreibers nach dem Rückbau (`IPL-0090`), zwei Teile
+  mit von ihm festgelegter Reihenfolge: **Teil 1** `#335` neu aufsetzen, „diesmal die Kurven auch
+  sauber hinbekommen" und „eine durchgehend sauber gestaltete Straße"; **Teil 2** `#336` komplett neu
+  implementiert. Drei abgefragte Entscheidungen, bindend: Kurvenstil = **echte Rundungen (sichtbar
+  kurvig)**, Umfang = **alles aus `#335`** (Geometrie + Bodenspuren + Texturen), Lieferung = **zwei
+  getrennte PRs, `#335` zuerst**. Dieser Eintrag ist Teil 1; Teil 2 folgt als eigener PR.
+- **Block / Ziel:** Block 8, Abschnitt „Zurückgenommen und neu zu landen". Die zurückgenommene Arbeit
+  war inhaltlich gewollt, aber bloßes Wiedereinschieben des alten `#335`-Codes hätte den Auftrag nicht
+  erfüllt: die Kurven waren der Grund der Rücknahme, nicht die Lagen.
+- **Branch / Basis:** `arena/d5645359-0815games-github-io` ab
+  `394ce04ba630e459371c0a5b070a3da265044fd0` (`main`, Merge von PR `#340`).
+- **Ursachenanalyse (gemessen an den echten Kartendaten, Offset-Formeln 1:1 aus dem alten Maler):**
+  Alle drei Karten sind orthogonale Zickzack-Polygone (`road` 8 Punkte/6 Ecken, `forest` 10/8,
+  `outpost` 10/8, jede Ecke exakt 90°). Der Maler versetzte und dekorierte **jedes Segment einzeln**:
+
+  | Fehler je 90°-Ecke | Ausmaß | Ursache |
+  |---|---|---|
+  | Spurrillen reißen ab | **21,2 px** Lücke (`road` 6 Ecken = 255 px, `forest`/`outpost` 8 = 339 px) | Offset mit eigener Normalen je Segment, getrennte Teilpfade (= 15·√2) |
+  | Schienen schneiden die Ecke | **13,0 px** Eckfehler (156/208 px gesamt) | Polylinie durch `b+n₁·13` statt Gehrungspunkt `b+(n₁+n₂)·13` |
+  | Schwellen fehlen im Bogen | **13 px** Lücke | Schleife `s=9 … len-4`, Schritt 17 |
+  | Kies/Schutt fehlt im Bogen | **38 px** Lücke | Schleife `s=26 … len-12`, Schritt 44 |
+  | Straßenkörper wird zur Wurst | Viertelkreis-Bogen **Radius 43 px** | `lineWidth=86` + `lineJoin='round'` auf eckiger Polylinie |
+
+  Härtester Einzelfund: `forest` hat ein **30 px** kurzes Segment zwischen zwei Ecken – kürzer als die
+  Straße breit ist. Es verschwand vollständig in den beiden Eckbögen.
+- **Änderungen / Dateien (28 Dateien, +1738/−147 vor der Cache-Welle):**
+  - **Neu `IronPath/road-geometry.mjs`** – reines Präsentations-Geometriemodul, kennt keinen
+    Simulationszustand. Beschreibt die Straße **einmal** als tangentenstetige Folge aus Geraden und
+    Kreis-Fillets: `buildRoadPath(points,{radius})` mit `DEFAULT_CORNER_RADIUS=34`, Klemmung
+    `min(gewünscht, (kürzeres Nachbarsegment/2)/tan(δ/2))`, damit zwei Fillets auf einem kurzen
+    Segment sich tangential in seiner Mitte treffen (der `forest`-Stummel wird zu einem S-Bogen aus
+    zwei 15-px-Bögen statt zu einem Blob); `offset(d)` als Parallelkurve (Gerade → parallele Gerade,
+    Bogen → **konzentrischer** Bogen); `at(s)`/`walk(step,visit,{inset,outset})` für echte Bogenlänge
+    und echte Tangente; `emit(ctx)` legt Bögen als `arc()`-Befehle an (eine Kurve je Bogen statt vieler
+    Kurzsegmente); `cornerDeviation(r,δ)=r·(1/cos(δ/2)−1)` und `maxCentrelineDeviation(points)` als
+    geschlossene Formel für den Abstand Polygon-Ecke ↔ geglättete Mittellinie.
+  - **`IronPath/cartoon-art.mjs` (+356/−94):** `drawRoad`/`drawRail` vollständig auf dieses Modul
+    umgebaut, mit dem `#335`-Lagendesign – `ROAD_THEMES` (8 Biome: `urban`, `outpost`, `arctic`,
+    `marsh`, `scrub`, `forest`, `talwald`, `road`), Lagenstapel 94/82/76/(66 Gutter | 68 lichte
+    Schulter)/60, Textur via `createPattern` + `DOMMatrix().scale()`, Krone, Schulter-Haarlinie,
+    Spurlinie (Offset 23), Mittellinien-Dash `[16,14]`, Marsh-Planken (Schritt 11) mit zwei
+    Guardrails (Offset 25), Bordsteinkerben (Offset 35), Schneewehen, Gestein, Unterholz,
+    Panzer-Cleats, Stiefelabdrücke; dazu `drawBootStamp`, `drawTankTreadStamp`, `roadImages` +
+    `getRoadImage`, `export drawGroundTracks`. Ganze Lagen = **ein** Pfad-Stroke, parallele Lagen =
+    exakte Offsetkurve, diskrete Deko = `walk()` über Bogenlänge. `drawTerrain` holt `roadImg` und
+    gibt es weiter; `drawCartoonBattle` bekommt `groundTracks=[]` und malt sie **nach** `brokenIce`,
+    also über der gecachten Terrain-Ebene.
+  - **`IronPath/game.js` (+14/−5):** Import `createGroundTracks`, zwei Rekorder, `sample()` in beiden
+    Ansichten, Übergabe an `drawCartoonBattle`, `reset()` an **beiden** Stellen.
+  - **`IronPath/ground-tracks.mjs` (124 Zeilen) und 8 Platten** (`road3-{city,desert,forest,marsh,road,snow}.jpg`,
+    `endless-ground3.jpg`, `terrain3-city.jpg`; 2,3 MB) aus dem gemergten `#335`-Baum
+    (`a3eb453b1389ec38b8f48c1c6e45e192ca618e09`) wiederhergestellt; alle 8 JPGs auf gültige
+    SOI/EOI/SOF-Header geprüft.
+  - **13 Ersetzungslisten der Test-Harnesses** gepflegt (`ability-hud-ui`, `campaign-ui`, `coop-ui`,
+    `endless-launcher`, `four-viewport-integration`, `map-name-title`, `party-end-force-close`,
+    `party-end-ui`, `release-game-teardown`, `report-rank`, `solo-smoke`, `solo-wave-receipt-ui`,
+    `tower-shimmer`) – genau die Bedingung, die `IPL-0090` als zwingend notiert hatte.
+- **Drei Geometriefehler, die die eigenen Tests beim Schreiben des Moduls gefunden haben** (alle drei
+  waren im neuen Code, nicht im alten; jeder ist jetzt per Test gepinnt):
+  1. Tangentenlänge stand als `r/tan(δ/2)` statt **`r·tan(δ/2)`**. Beide Formeln sind **nur bei δ=90°
+     identisch** – jede ausgelieferte Karte wäre grün geblieben, während das Modul bei schrägen Ecken
+     um bis zu **31 px** danebenlag. Aufgefallen nur, weil der Test absichtlich ein nicht-orthogonales
+     Zickzack (74,1/84,8/86,6°) fährt, das auch `tests/road-design.test.mjs` verwendet.
+  2. Ein Versatz breiter als die Kurve wurde durch eine **Sehne** ersetzt und riss **1,75 px** – in
+     einem Modul, das Risse beenden soll. Jetzt die exakte, sich selbst kreuzende Kreisbahn
+     (Radius `|r−d·turn|`, Winkel um π gedreht), als `cusp` gekennzeichnet.
+  3. Ein Versatz **exakt** durch das Kurvenzentrum erzwang einen Mindestradius `0.75` und erfand einen
+     0,75-px-Sprung, wo geometrisch ein Punkt steht; der Bogen entartet jetzt und fällt weg, beide
+     Nachbarlinien treffen sich dort exakt.
+- **Zwei Verdrahtungsfehler aus `#335` korrigiert statt kopiert:**
+  1. **Ein gemeinsamer Rekorder für beide Gefechtsfelder.** `sample()` löscht Tracker von Spielern, die
+     der übergebene Zustand nicht enthält; eigene und gegnerische Ansicht wechselten sich pro Frame ab
+     und löschten einander damit **jeden Frame** die Tracker. Da ein neu angelegter Tracker nur Peilung
+     nimmt und keine Marke legt, entstand im Versus-Spiel **nie** eine Spur. Jetzt eigener Rekorder je
+     Ansicht (`groundTracks`, `rivalGroundTracks`).
+  2. **Nur eine von zwei Reset-Stellen** räumte den Rekorder auf; Spuren bluteten über eine
+     Koop-Neuverbindung in das nächste Gefecht. Jetzt beide.
+- **Prüfungen:** `node --test-reporter=tap --test IronPath/tests/*.test.mjs` (Repo-Wurzel, CI-identisch,
+  Serienlauf – `-P 4` zählt Falsch-Fails) auf Commit `e83454c`: **1235 Tests, 1234 pass, 0 fail,
+  exit 0**. Vor der Harness-Pflege derselbe Lauf: **1219 Tests, 22 fail**, alle 22
+  `ERR_UNSUPPORTED_RESOLVE_REQUEST` auf `./ground-tracks.mjs?v=…` aus den `data:`-URL-Harnesses –
+  dieselbe Zahl und dieselbe Signatur wie auf `main` vor dem Rückbau.
+  - **Neu `tests/road-geometry.test.mjs` (14):** Tangentenstetigkeit (Lücke < 1e-9) über alle drei
+    Karten **und** das Zickzack; Start/Ende bleiben exakt die Simulations-Endpunkte; Klemmung auf die
+    Hälfte des kürzeren Nachbarn; Fillet berührt **beide** Segmente und die Tangentenpunkte liegen
+    **innerhalb** ihrer Segmente (Regressionsschutz für Fehler 1); Offset-Kontinuität bei allen in der
+    Grafik verwendeten Abständen (13/15/21/23/24,5/25/35, beide Seiten); konzentrische Bögen mit
+    `r−d·turn`; exakte Offset-Bogenlänge; Sampling ohne Sprünge; Tangente dreht ≤ 0,05° je halbem
+    Pixel; Deko erreicht **jeden** Bogen; Spitze bei übersetztem Versatz stetig; Abweichung
+    Mittellinie↔Polygon geschlossen **und** gegen Messung geprüft; Radius 0 reproduziert das
+    Rohpolygon exakt; defekte Eingänge werfen nicht.
+  - **`tests/road-design.test.mjs` umgeschrieben (12)** – von einem Farb- zu einem **Geometrie**vertrag:
+    höchstens **ein** `moveTo` je Stroke (nichts wird mehr segmentweise gemalt), echte `arc`-Befehle,
+    **einer je Ecke** in jeder Lage ≥ 56 px, Lagenstapel absteigend, Spurrillen als je eine
+    Offsetkurve pro Seite, Schwellen und Planken **gemessen** durch die Bogenmittelpunkte (Abstand zum
+    Segment, nicht zu seinen Endpunkten), Schienen halten ihr 13-px-Maß ab dem ersten Meter,
+    Guardrails je Bogen, Dash wird zurückgesetzt, Textur liegt **über** der Fahrbahn, alle Karten malen
+    ohne Wurf, der `forest`-Stummel bleibt Teil der Straße, `junction` malt keine Straßenlagen.
+  - **Neu `tests/ground-tracks.test.mjs` (16):** misst die zwei Behauptungen, die das Modul bisher nur
+    im Kommentar hatte – es schreibt **nie** in den übergebenen Zustand (geprüft gegen ein
+    `Object.freeze`-tiefgefrorenes Objekt, byte-identisch danach; ausgegebene Marken sind Kopien) und
+    Marken verblassen wirklich (`alpha` 1 → 0,5 → Verfall). Dazu Schrittmaße je Einheitstyp
+    (13/13/14/9,5/12 px), Übertrag des Restwegs, Boss schwerer als Panzer, Bomber und Flieger spurlos,
+    Schiene statt Stiefel auf `junction`, Teleport ab 70 px ohne Schmier, **4** Marken Obergrenze pro
+    Sample, Klon-Zuordnung bis 45 px, Pause altert nichts, rückwärts laufende Uhr setzt zurück, Cap mit
+    Untergrenze, `reset()`, defekte Eingänge, Maler-Kontextbilanz (`save`/`restore`), Themen-Paletten
+    mit Rückfall, und ein **Verdrahtungsschutz auf `game.js`** (zwei Rekorder, beide Reset-Stellen,
+    `sample` in Sekunden mit `paused` und `theme`).
+  - **Kosten gemessen:** Pfadaufbau + 7 Offsets + 3 Deko-Durchläufe = **29 µs** auf der längsten Karte
+    (0,17 % eines 16,7-ms-Frames); `drawTerrain` cachet die gemalte Ebene je Karte
+    (`terrainCache`, feste Rasterauflösung), fällt also einmal pro Gefechtsfeld an, nicht pro Frame.
+    Die alte Messung „970 → 1911 Canvas-Operationen (+97 %)" bezog sich auf den **Erstbau** der Ebene.
+- **Cache-Welle `20261121-road1`:** Token `20261121-rollback1` → `20261121-road1` in **79 Dateien,
+  276 Token**. Geprüft: im Diff gegen die Basis bleiben genau **7 Nicht-`?v=`-Zeilen**
+  (`index.html:7` Meta, `:213` und `:326` die zwei `class="build-stamp"`, `release-version.json:3`,
+  `login-scene.mjs:5`, `browser-tests/avatar-handover.cjs:109`,
+  `browser-tests/interface-smoke.cjs:132`) – null Produktlogik. Die drei **historischen** Aussagen in
+  `patch-notes.mjs` (Zeilen 48, 55, 59 zum Stand `rollback1`) sind absichtlich **unverändert**; der
+  neue Feldnotiz-Eintrag trägt die neue Welle und wird damit automatisch zur `data-live`-Karte.
+- **Grenzen – Nachweisgrad ehrlich:**
+  - **Die Simulation läuft weiter exakt auf dem eckigen Polygon** (`PATH[e.segment]` in
+    `simulation.mjs`); geglättet wird ausschließlich die Darstellung. Bei 90° und Radius 34 weicht die
+    Polygon-Ecke um **14,08 px** von der geglätteten Mittellinie ab. Die Fahrbahn ist 60 px breit
+    (Halbbreite **30 px**), ein Gegner steht also immer auf Asphalt – dieser Abstand ist per Test
+    gepinnt (`cornerDeviation(34,90°) < 60/2`), damit ein späterer größerer Radius nicht
+    stillschweigend Einheiten von der Straße schiebt. Optisch kann ein Gegner die Kurve minimal
+    schneiden; messbar, innerhalb der Fahrbahn, und dem Betreiber vor der Entscheidung genannt.
+  - **Keine Geräteabnahme.** Kein automatisierter Lauf bestätigt die Optik auf einem iPhone/iPad;
+    dieser PR behauptet das nicht. Sichtprüfung nach dem Laden: der Stempel muss **BUILD
+    20261121-road1** zeigen – ein älterer Stempel bedeutet Cache, nicht Code.
+  - Der in `IPL-0090` gemeldete Einfrier-Fehler wird durch diesen PR **weder bestätigt noch
+    widerlegt**. Die einzige belegte Freeze-Ursache (`bossPhaseLabel` ohne Import, PR `#338`) bleibt
+    entfernt und wird hier nicht wieder eingeführt; `game.js frame()` hat weiterhin **kein** `try/catch`
+    um `draw()`.
+  - Simulation, Balance, Multiplayer-Protokoll und Speicherstände sind nicht berührt.
+- **Git / PR / Release:** Commits `dd3f01fd00a70a9ce88e09819fd9b9287512050b` (Geometriemodul +
+  14 Tests), `4bb603b68ca607de48a5a4939b332dd9269e92ba` (Maler + umgeschriebener Straßenvertrag),
+  `e83454c63143f938b25a306ea867ae518b365dfb` (Bodenspuren + 13 Harness-Listen + 16 Tests).
+  PR **`#341`** eröffnet auf `main`. Cache-Welle und Feldnotizen folgen als eigener Commit, sobald die
+  PR-Nummer belegt ist.
+- **Offen / nächster Schritt:** CI-Ergebnis auf dem Endstand, Merge, Pages-Build und Auslieferung
+  prüfen und als Ereignis nachtragen; echte Geräteabnahme durch den Betreiber. Danach **Teil 2**:
+  `#336` komplett neu implementiert (dickerer pulsierender Auswahlring auf Bauplätzen + Hover-Vorschau
+  mit Wellennummer und Anzahl nächster Gegner) **einschließlich** der fehlenden deutschen Einträge der
+  4 Literale, als eigener PR, ohne die Log-Zerstörung aus `#336` zu wiederholen.
+
+### Ereignis-Nachtrag zu IPL-0091 – Veröffentlichung belegt (nachträglich, 2026-11-21 UTC)
+
+- **CI auf dem Endstand `bde6a7e1d7d69aad378c57664a8651083093e45d`:** Run `44962270748`,
+  **alle Prüfungen `success`**, darunter `game-regressions` — derselbe Check, der in `#335`, `#336`,
+  `#337`, `#338` und `#339` jeweils rot war und trotzdem gemergt wurde. Der vorangegangene Push
+  (`e83454c`, vor der Cache-Welle) lief als Run `44962265422` ebenfalls vollständig `success`.
+  `gh pr checks 341`: **13/13 pass**.
+- **Merge:** PR `#341` `state=MERGED`, `mergedAt=2026-11-21T23:42:42Z`,
+  Merge-Commit `b056ca3c68b9ddfdb675e1b80a5e7c975d7f0f95`. `main` steht auf genau diesem Commit
+  (`gh api …/commits/main` → `b056ca3c…`).
+- **Pages:** Build aus `b056ca3c68b9ddfdb675e1b80a5e7c975d7f0f95`, `status=built`,
+  `duration=44626 ms`, kein Fehler. `build_type=legacy`, Quelle `main`/`/` — Auslieferung ist also
+  der Repo-Stand ohne Build-Schritt.
+- **Auslieferung geprüft** über `gh api …/contents/<pfad>?ref=main`: `road-geometry.mjs` 16041 Byte,
+  `ground-tracks.mjs` 5032 Byte, `assets/road3-forest.jpg` 499339 Byte, `release-version.json`
+  47 Byte; `index.html` trägt `<meta name="ironpath-build" content="20261121-road1">`.
+  **Ehrliche Grenze:** die live URL `https://0815games.github.io/IronPath/` wurde aus diesem
+  Arbeitsraum **nicht** abgerufen (kein ausgehender Zugriff auf diesen Host); der Nachweis führt über
+  den Repo-Inhalt auf `main` und den Pages-Build-Status, nicht über eine HTTP-Antwort der Seite.
+- **Weiter offen:** echte Geräteabnahme durch den Betreiber (iPhone/iPad Safari) — Optik der Kurven,
+  Lesbarkeit der Straße, Bodenspuren, und Sichtprüfung des Stempels **BUILD 20261121-road1** in
+  Ladeszene und Einstellungen. Der gemeldete Einfrier-Fehler bleibt durch diesen Stand weder
+  bestätigt noch widerlegt.
+- **Herkunft dieses Nachtrags:** Er stand bereits im Patch-Log des Vorzweigs
+  `arena/d5645359-0815games-github-io`, Commit `a4d093ef` („IronPath: record the
+  proven release events for PR #341 (IPL-0091)"), der nur auf diesem Zweig lag und
+  nie nach `main` kam. Beim Aufräumen übernommen; die Kennungen (Run-IDs,
+  Merge-Commit, Pages-Build) sind dieselben. Die Übernahme läuft als eigener
+  Commit dieses Zweigs; dessen Kennung kann ein Commit nicht selbst enthalten,
+  sie steht im Eintrag `IPL-0092`.
