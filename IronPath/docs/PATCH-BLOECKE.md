@@ -1152,9 +1152,10 @@ Suite und eigener Cache-Welle neu landen.
     ist per Test gepinnt (`cornerDeviation(34,90°) < 60/2` in
     `tests/road-design.test.mjs`), damit ein späterer größerer Radius nicht
     stillschweigend Einheiten von der Straße schiebt.
-- [ ] **Pad-Selektion: dickere Ringe und Puls (PR `#336`).** Beim Neu-Landen die
-  Literale `WELLE {wave}` und `NÄCHSTE: {count} ENEMIES` deutsch hinterlegen,
-  sonst bleibt `translation-coverage` rot.
+- [x] **Pad-Selektion: dickere Ringe und Puls (PR `#336`).** Mit `IPL-0103`
+  (PR `#364`, Welle `20261122-ring1`) neu gelandet — nur die Auswahlringe,
+  ohne die Hover-Vorschau aus `#336`; die Literal-Notiz entfällt daher
+  gegenstandslos.
 - [ ] **Spawn-Punkt-Marker am Karteneingang (PR `#337`).** Beim Neu-Landen
   `SPAWN-PUNKT` und `WELLE {wave} · {count} FEINDLICHE` deutsch hinterlegen.
 - [ ] **Boss-Ankündigung (PR `#338`) – nur mit Import.** `bossPhaseLabel` muss
