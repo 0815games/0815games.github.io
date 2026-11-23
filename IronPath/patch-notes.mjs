@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see docs/PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261123-party6';
+import {getLanguage} from './language.mjs?v=20261123-aim1';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,20 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'aim1',build:'20261123-aim1',pr:384,
+    title:{en:'Living Field I · The MG Turret Tracks Its Targets',de:'Lebendiges Feld I · Der MG-Turm führt seine Ziele nach'},
+    shipped:[
+      {en:'The machine-gun position has learned to traverse: its gun now swings onto approaching enemies and kicks back with every burst, while the sandbag pit stays exactly where the crew dug it.',de:'Die MG-Stellung hat das Schwenken gelernt: Ihre Waffe dreht sich jetzt auf anrückende Gegner und stößt bei jedem Feuerstoß zurück - der Sandsackring bleibt genau dort, wo die Mannschaft ihn geschaufelt hat.'},
+      {en:'Badly shot-up vehicles and bosses smoke darkly once they fall below a third of their life, and infantry kicks up a little dust on the march - damage you can read at a glance.',de:'Schwer angeschossene Fahrzeuge und Bosse rauchen dunkel, sobald sie unter ein Drittel Leben fallen, und die Infanterie wirbelt beim Marschieren Staub auf - Schaden, den man auf einen Blick liest.'},
+      {en:'Soldiers breathe while they wait, turn toward the nearest enemy once they settle, and flinch when their own rifle fires or a hit lands.',de:'Soldaten atmen im Warten, drehen sich nach dem Setzen zum nächsten Gegner und zucken, wenn ihr Gewehr feuert oder ein Treffer landet.'},
+      {en:'Honest note: only the MG wears the new traversing gun for now - cannon, flak and sniper keep their paintings until the look has proven itself in the field. Nothing about damage, ranges or rules changed; this is pure stagecraft.',de:'Ehrlicher Hinweis: Nur das MG trägt vorerst die neue Schwenk-Waffe - Kanone, Flak und Scharfschütze behalten ihre Gemälde, bis sich der Look im Feld bewährt hat. An Schaden, Reichweiten oder Regeln hat sich nichts geändert; das ist reine Bühnenkunst.'},
+      {en:'Raised the cache wave to 20261123-aim1, because the field rendering changed: no device should fight with yesterday’s eyes.',de:'Die Cache-Welle auf 20261123-aim1 erhöht, weil sich die Feld-Zeichnung geändert hat: Kein Gerät soll mit den Augen von gestern kämpfen.'},
+    ],
+    open:[
+      {en:'Next, if the traversing gun convinces: matching moving heads for cannon, flak and sniper.',de:'Als Nächstes, wenn die Schwenk-Waffe überzeugt: passende bewegliche Köpfe für Kanone, Flak und Scharfschütze.'},
+    ]
+  },
   {
     id:'party6',build:'20261123-party6',pr:381,
     title:{en:'Six-Digit Party Codes · A Million Doors Instead of Ten Thousand',de:'Sechsstellige Party-Codes · Eine Million Türen statt zehntausend'},

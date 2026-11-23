@@ -1,6 +1,6 @@
 # Iron Path – Patch-Log: Archiv
 
-Ältere Einträge IPL-0001 bis IPL-0101. Die neuesten 20 stehen in
+Ältere Einträge IPL-0001 bis IPL-0102. Die neuesten 20 stehen in
 [PATCH-LOG.md](PATCH-LOG.md); die Regeln für beide Dateien dort und in
 [`../../AGENTS.md`](../../AGENTS.md). Beim Verschieben wandert ein Eintrag immer
 vollständig einschließlich seiner Ereignis-Nachträge.
@@ -4430,3 +4430,33 @@ sie geprüft wurde.
 - **Auslieferung auf `main` belegt:** `IronPath/scripts/patch.mjs` ist per Contents-API vorhanden (HTTP 200); die drei alten Dateien `patch-check.mjs`, `patch-bump.mjs` und `patch-lib.mjs` liefern **404**. `release-version.json` auf `main` trägt unverändert `"build": "20261122-core1"` — keine neue Welle, weil `scripts/` nicht ins Spiel gestagt wird (Staging-Beweis im Haupteintrag: 712 = 712 Dateien, null Unterschiede).
 - **Ehrliche Grenzen:** Die Live-URL wurde nicht abgerufen; belegt sind Inhalt auf `main` und der fertige Pages-Build. Keine Geräteabnahme, weil keine browsergeladene Datei geändert wurde. Die Betreiber-Sichtprüfungen (`BUILD 20261122-core1`, Anmeldung, Solo-/Mehrspieler-Gefecht, `ui1`- bis `workshop1`-Punkte, Deutsch-Texte) stehen weiterhin aus.
 - **Herkunft dieses Nachtrags:** Er steht als eigener PR auf einem neuen Arbeitszweig nach dem Merge von `#360`; seine eigene Commit- und PR-Kennung steht deshalb nicht hier, sondern in Git und im PR-Text. Mit `IPL-0101` samt Nachtrag ist das Strukturprogramm aus `IPL-0094` (Phasen 1–3) vollständig abgeschlossen.
+
+## IPL-0102 – Referenz-Wächter für die Harness-Ordner und ein npm-Einstieg an der Wurzel (keine Cache-Welle)
+
+- **Zeit / Quelle:** Nach Abschluss des Strukturprogramms zeigte die Übersicht der offen gebliebenen Verbesserungspunkte vier Kandidaten; der Betreiber gab mit „Go“ die empfohlene Klein-Scheibe frei (Punkt 1 Referenz-Wächter, Punkt 2 npm-Einstieg). Die Punkte 3 (gemeinsamer Harness-Helfer für 15 Testdateien) und 4 (gemeinsamer Test-Server für 11 Browser-/Emulator-Fahrten) bleiben dokumentierte Kandidaten für spätere Scheiben.
+- **Block / Ziel:** Kein Spiel-Block, kein ausgelieferter Spielcode. Der Build-Stempel bleibt `20261122-core1`; `tests/`, `scripts/` und die neue Wurzel-`package.json` fahren nicht ins gestagte Spiel (Staging-Beweis unten: 712 = 712, null Unterschiede).
+- **Branch / Basis:** `arena/aae695cf-0815games-github-io` ab `275ea1de0ed45d85fe8df929472903c4d637c73a` (`main`, Merge von PR `#361`).
+- **Änderungen / Dateien:**
+  - `IronPath/tests/reference-resolution.test.mjs` (neu): statischer Wächter, der in den Node-ausgeführten Harness-Ordnern (`browser-tests/`, `firebase/`, `server/`, `stress-tests/`) drei Verweis-Formen auflöst: relative Import-/Require-Literale (eine wie zwei Ebenen), dynamische Importe über `path.join(root,'…')` und `/IronPath/…`-Pfade, die Test-Server abfangen. Browser-seitige Modul-Texte werden unter `/IronPath/` bedient, deshalb gilt ein `./`-Verweis als aufgelöst, wenn er neben der Harness-Datei **oder** gegen die IronPath-Wurzel aufgeht — beides sind in diesen Dateien reale Auflösungs-Kontexte, und ein Umbenennen bricht beide. Synthetische Routen und zur Laufzeit kopierte SDK-Module (sieben Stellen) stehen mit Begründung in einer offenen Ausnahmeliste, statt den Scan zu verwässern; ein Biss-Test mit Fixture beweist, dass der Wächter alle drei Formen findet.
+  - `IronPath/scripts/patch.mjs`: `reference-resolution` ist achte Vertragsdatei in `CONTRACT_TESTS` — der Wächter läuft damit im Schnelltor (`check --fast`, CI-Schritt 4 von `game-regressions`) wie lokal mit.
+  - `package.json` an der Repo-Wurzel (neu, ohne Abhängigkeiten und ohne `type`-Feld, damit sich an der Modul-Deutung des Baums nichts ändert): `schnelltor`, `pruefung`, `test:suite`, `test:stress`, `test:server`, `test:release`, `setup` (npm-ci der zwei Unterpakete) und `ci-lokal` als Spiegel der `game-regressions`-Schritte. Emulator- und Browser-Fahrten bleiben bewusst draußen (Java/Chromium) und CI-Sache.
+  - `IronPath/docs/PATCH-ABLAUF.md`: Die Kurzformen sind in §1 dokumentiert.
+  - `IronPath/docs/PATCH-LOG.md` und `IronPath/docs/PATCH-LOG-ARCHIV.md`: `IPL-0082` vollständig ins Archiv, Grenzen auf `IPL-0001` bis `IPL-0082`; das Log führt die neuesten 20 (`IPL-0083` bis `IPL-0102`).
+- **Prüfungen:**
+  - `reference-resolution.test.mjs`: **2/2** — echter Baum ohne einen Fund, Biss-Fixture findet genau die drei absichtlich gebrochenen Formen (vor der Ausnahmelisten-Schärfung meldete der Scan nur die zwei Query-String-Schlüssel falsch; auf die bereinigte Form normalisiert).
+  - `npm run schnelltor` (neuer Einstieg, echter Baum): **0 Fehler** — 8 Vertragsdateien, 32 Tests grün (vorher 7 Dateien/30 Tests); die zwei Hinweise betreffen den uncommitteten Baum und den anfangs flachen Klon.
+  - Gesamtsuite im vollständigen Klon (nach `git fetch --unshallow origin`): `node --test IronPath/tests/*.test.mjs` = **1.263 Tests, 1.263 bestanden, 0 fehlgeschlagen, 0 übersprungen, Exit 0** (vorher 1.261; +2 Wächter-Tests). Im flachen Anfangszustand meldete dieselbe Suite 1 übersprungenen Test — wieder der bekannte Klon-Effekt, kein Befund.
+  - Staging gegen Basis `275ea1de` (gleiche Build-ID `20990101-baseline1`): **712 = 712 Dateien, `diff -rq` ohne eine Zeile**.
+  - Keine Geräteabnahme vorgesehen oder nötig: Es wurde keine Datei geändert, die der Browser lädt.
+- **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags uncommittet auf `arena/aae695cf-0815games-github-io`. Commit, Push, PR, CI, Merge und Pages-Auslieferung sind noch nicht erfolgt und werden erst nach dem tatsächlichen Ereignis mit Kennung nachgetragen. Zu beobachten im CI-Lauf: die zwei Vercel-Checks an der neuen Wurzel-`package.json` (bewusst ohne Abhängigkeiten und Build-Skript angelegt).
+- **Offen / nächster Schritt:** PR öffnen, CI abwarten, erst nach belegtem Merge/Pages-Stand als ausgeliefert bezeichnen; Ereignis-Nachtrag danach als eigener PR. Kandidaten Punkt 3 und 4 (Harness-Helfer, Test-Server) bleiben zurückgestellt; als nächstes größeres Stück steht der Bauplatz-Auswahlring aus PR `#336` (ohne Hover-Vorschau). Die Betreiber-Sichtprüfungen (`BUILD 20261122-core1`, Anmeldung, Solo-/Mehrspieler-Gefecht, `ui1`- bis `workshop1`-Punkte, Deutsch-Texte) stehen weiterhin aus.
+
+### Ereignis-Nachtrag zu IPL-0102
+
+- **Commit / PR:** Arbeitscommit `ed8cf0e6` auf `arena/aae695cf-0815games-github-io`; Pull-Request `#362` („Referenz-Wächter für Harness-Ordner und npm-Einstieg an der Wurzel“).
+- **CI:** `gh pr checks 362` endete im ersten Lauf mit **13 von 13 bestandenen Checks, 0 fehlgeschlagen, 0 ausstehend** — darunter beide Vercel-Checks an der neuen Wurzel-`package.json`. Im `game-regressions`-Job des Runs `45068026435` lief der Schritt `Fast patch gate (stamp, log, secrets, contracts)` belegt erfolgreich; der Referenz-Wächter fuhr darin als achte Vertragsdatei erstmals in CI mit.
+- **Merge:** `gh pr view 362 --json state,mergedAt,mergeCommit` ergab `state=MERGED`, `mergedAt=2026-11-22T20:57:24Z`, Merge-Commit `12a4ab359a542c9859729e82813bd13deec23e7d` in `main`.
+- **Pages:** `pages/builds` meldete danach `status=built`, Dauer 45.896 ms, Commit `12a4ab35`.
+- **Auslieferung auf `main` belegt:** `package.json` an der Repo-Wurzel und `IronPath/tests/reference-resolution.test.mjs` sind per Contents-API vorhanden (HTTP 200); `release-version.json` auf `main` trägt unverändert `"build": "20261122-core1"` — keine neue Welle, weil weder Tests noch `scripts/`-Listen noch die Wurzel-`package.json` ins gestagte Spiel fahren (Staging-Beweis im Haupteintrag: 712 = 712 Dateien, null Unterschiede).
+- **Ehrliche Grenzen:** Die Live-URL wurde nicht abgerufen; belegt sind Inhalt auf `main` und der fertige Pages-Build. Keine Geräteabnahme, weil keine browsergeladene Datei geändert wurde. Die Betreiber-Sichtprüfungen (`BUILD 20261122-core1`, Anmeldung, Solo-/Mehrspieler-Gefecht, `ui1`- bis `workshop1`-Punkte, Deutsch-Texte) stehen weiterhin aus.
+- **Herkunft dieses Nachtrags:** Er steht als eigener PR auf einem neuen Arbeitszweig nach dem Merge von `#362`; seine eigene Commit- und PR-Kennung steht deshalb nicht hier, sondern in Git und im PR-Text. Zurückgestellt bleiben die Kandidaten 3 und 4 der Vorschlagsliste aus `IPL-0102` (gemeinsamer Harness-Helfer, gemeinsamer Test-Server); als nächstes größeres Stück steht der Bauplatz-Auswahlring aus PR `#336` (ohne Hover-Vorschau).

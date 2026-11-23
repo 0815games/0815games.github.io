@@ -1,11 +1,11 @@
-import {translateText as tr,getLanguage} from '../language.mjs?v=20261123-party6';
+import {translateText as tr,getLanguage} from '../language.mjs?v=20261123-aim1';
 import {towerDisplay} from './progression.mjs?v=20261105-prestige1';
-import {specializationRank} from './tower-specialization.mjs?v=20261123-party6';
-import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261123-party6';
-import {ENEMY_INTEL,SOLDIER_MAX_HP} from './combat.mjs?v=20261123-party6';
+import {specializationRank} from './tower-specialization.mjs?v=20261123-aim1';
+import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261123-aim1';
+import {ENEMY_INTEL,SOLDIER_MAX_HP} from './combat.mjs?v=20261123-aim1';
 import {bossPhase} from './boss-mechanics.mjs?v=20261031-finale1';
 import {shotTrace,shotsToDraw} from './shot-tracers.mjs?v=20261117-shots1';
-import {buildRoadPath} from './road-geometry.mjs?v=20261123-party6';
+import {buildRoadPath} from './road-geometry.mjs?v=20261123-aim1';
 // Drawing only: the simulation, coordinates and hit areas stay unchanged.
 const ink='#1d3028',paper='#f1e7c4';
 function line(ctx,points,color=ink,width=3){ctx.beginPath();points.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();}
@@ -423,7 +423,35 @@ function bunker(ctx,state,notify,approach=0){
   line(ctx,[[p1.x,p1.y-17],[p2.x,p2.y-17]],'#6b563c',4);
   ctx.fillStyle='#344231';ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText('BUNKER',0,-44);ctx.textAlign='start';
 }
-function pad(ctx,p,tower,selected,types,notify,pulse=1){
+// The layered MG: the painted pit stays the ground truth of the position,
+// the gun itself is drawn in ink and olive on top of it so it can traverse
+// onto its target - swing, recoil and all - without the painting having to
+// spin. Only the MG wears the drawn head for now; the other three positions
+// keep their paintings until the look has proven itself in the field.
+function mgTurret(ctx,x,y,aim){
+  // The sandbag ring is laid once around the plate and never turns with
+  // the gun - it is ground, not weapon.
+  for(let k=0;k<12;k++){const a=k/12*Math.PI*2,bx=x+Math.cos(a)*26,by=y+7+Math.sin(a)*14.5;
+    oval(ctx,bx,by,7.6,5,k%2?'#bfa87c':'#cbb384','#8f7a52',1);}
+  oval(ctx,x,y+3,13,5,'rgba(24,32,26,.28)',null);
+  const angle=Number.isFinite(aim?.angle)?aim.angle:0,recoil=Math.max(0,Math.min(1,aim?.recoil||0));
+  ctx.save();ctx.translate(x,y-3);ctx.rotate(angle);ctx.translate(-recoil*3.5,0);
+  // Tripod and mount first: the legs stay planted while the top works.
+  line(ctx,[[-1,0],[-10,10]],'#33402f',3.4);line(ctx,[[1,0],[10,10]],'#33402f',3.4);line(ctx,[[0,1],[0,11]],'#33402f',3.4);
+  shape(ctx,[[-3,-4],[3,-4],[3,5],[-3,5]],'#46523f');
+  // Receiver with top cover, rear grip and sight post.
+  shape(ctx,[[-12,-7],[5,-7],[7,-4],[7,1],[-10,2],[-12,-2]],'#55624c');
+  line(ctx,[[-11,-7],[4,-7]],'#6d7c60',2);line(ctx,[[-12,-2],[-16,1]],ink,2.6);
+  line(ctx,[[-4,-7],[-4,-10]],ink,1.8);oval(ctx,-4,-10.6,1.4,1.4,'#d9c08a',null);
+  // Barrel with perforated jacket and muzzle brake.
+  shape(ctx,[[6,-5],[27,-3.4],[27,-1.2],[6,-.8]],'#39443a');
+  for(let i=0;i<3;i++)oval(ctx,12+i*5,-3.1,1.1,1.1,'#232d24',null);
+  shape(ctx,[[27,-3.8],[30,-3.8],[30,-.8],[27,-.8]],'#2b352c');
+  // Belt box feeding the receiver from the side.
+  shape(ctx,[[-14,1],[-5,1],[-5,8],[-14,8]],'#6b7256');line(ctx,[[-9,1],[-4,-3]],'#8a8f6d',2);
+  ctx.restore();
+}
+function pad(ctx,p,tower,selected,types,notify,pulse=1,aim=null){
   const x=p.x,y=p.y;
   // V2 field art: the build plate is a painted concrete weapons emplacement -
   // part of the ground, in the same rendered look as the buildings. The
@@ -484,7 +512,8 @@ function pad(ctx,p,tower,selected,types,notify,pulse=1){
     if(!tier2)ctx.setLineDash([5,4]);ctx.stroke();ctx.setLineDash([]);
     ctx.restore();
   }
-  if(artwork){const w=58,h=w*artwork.height/artwork.width;ctx.drawImage(artwork,x-w/2,y+11-h,w,h);}
+  if(tower.type===0&&aim)mgTurret(ctx,x,y,aim);
+  else if(artwork){const w=58,h=w*artwork.height/artwork.width;ctx.drawImage(artwork,x-w/2,y+11-h,w,h);}
   else fallbackMarker(ctx,x,y-6,['MG','C','AA','S'][tower.type],types[tower.type].color,18,15);
   if(tower.classPath&&tower.classTier>=1){
     const badgeColor=({assault:'#d89970',engineer:'#d7bd71',logistics:'#b4c682',medic:'#8ac7b1',recon:'#8eafcf',airDefense:'#d9849e'})[tower.classPath]||'#d8c596';
@@ -570,6 +599,21 @@ function enemy(ctx,e,reducedMotion,notify,heading=0,bank=0,time=0,rail=false){
     // feet instead of sliding stiffly along the road.
     const sq=reducedMotion?0:.05*Math.sin((e.kind==='runner'?t0*13:t0*8.5)+(x+y)*.05);
     ctx.save();ctx.translate(x,y+10);ctx.scale(1+sq*.6,1-sq);ctx.drawImage(artwork,-10,-22,20,20);ctx.restore();
+    // Marching feet raise a little dust of their own, phased off the
+    // position so a column does not puff in lockstep.
+    if(!reducedMotion&&e.hp>0){const ph=(((t0*(e.kind==='runner'?2.4:1.6)+(x+y)*.021)%1)+1)%1;
+      ctx.save();ctx.globalAlpha=.13*(1-ph);oval(ctx,x-ph*7,y+12,3+ph*4.5,1.6+ph*1.8,'#b7a67e',null);ctx.restore();}
+  }
+  // A vehicle shot to pieces tells you so: dark smoke boils off it in a
+  // slow loop, the same visual sentence the bunker already speaks. It is
+  // read off the life fraction alone, so every viewer paints the same
+  // smoke from the same state.
+  if(!reducedMotion&&e.hp>0&&e.maxHp>0&&e.hp/e.maxHp<.35&&(drives||flies||e.boss)){
+    ctx.save();
+    for(let i=0;i<3;i++){const phase=(((t0*.5+i/3+(x+y)*.013)%1)+1)%1;
+      ctx.globalAlpha=.3*(1-phase*.65);
+      oval(ctx,x+Math.sin(t0*1.4+i*2.1)*3+phase*5,y-14-phase*24,3+phase*6.5,2.2+phase*4.5,'#3d4740',null);}
+    ctx.restore();
   }
   if(!e.boss&&ENEMY_INTEL[e.kind]){const bx=x+(e.kind==='tank'?18:15),by=y+10;oval(ctx,bx,by,7,7,'#344a3b','#f7e5b5',1);ctx.fillStyle='#fff3d2';ctx.font='bold 9px Arial';ctx.textAlign='center';ctx.fillText(ENEMY_INTEL[e.kind].symbol,bx,by+3);ctx.textAlign='start';}
   const w=e.boss?52:28;ctx.fillStyle=ink;ctx.fillRect(x-w/2,y-22,w,5);ctx.fillStyle=e.boss?'#eea35f':e.hp/e.maxHp<.3?'#ed9b74':'#dce59c';ctx.fillRect(x-w/2+1,y-21,(w-2)*Math.max(0,Math.min(1,e.hp/e.maxHp)),3);
@@ -994,7 +1038,7 @@ function lifeBar(ctx,x,y,width,fraction){
   ctx.fillStyle=f>.5?'#9bd69a':f>.25?'#e9c46a':'#ef7d5c';ctx.fillRect(x-width/2,y,width*f,4);
   ctx.restore();
 }
-export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,theme='road',shotAge=0,effects=[],reducedMotion=false,weatherEffects=true,combatTracers=true,soldierPoses={},groundTracks=[],paths=[path],width=960,height=540,bunkerPosition={x:900,y:400},storyMission=null,storyStage=null,storyTime=0,renderScale=1,artVersion=0,deco=[],zones=[],torches=[],onSpritesReady=null,groundSeed=0}){
+export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,theme='road',shotAge=0,effects=[],reducedMotion=false,weatherEffects=true,combatTracers=true,soldierPoses={},towerAims={},groundTracks=[],paths=[path],width=960,height=540,bunkerPosition={x:900,y:400},storyMission=null,storyStage=null,storyTime=0,renderScale=1,artVersion=0,deco=[],zones=[],torches=[],onSpritesReady=null,groundSeed=0}){
   ctx.save();ctx.lineCap='round';ctx.lineJoin='round';const storyArt=storyMission?prepareStoryArt(ctx.canvas?.ownerDocument):null;drawTerrain(ctx,path,theme,{paths,width,height,storyMission,pads,storyArt,renderScale,artVersion,deco,zones,notify:onSpritesReady,groundSeed});drawZoneStates(ctx,zones,state);fieldZone(ctx,path,state,theme);brokenIce(ctx,path,state,theme);drawGroundTracks(ctx,groundTracks,theme);if(storyMission){if(weatherEffects)drawStoryAtmosphere(ctx,storyMission,storyTime,reducedMotion,width,height,path,pads);drawStoryObjective(ctx,storyMission,storyStage,storyTime,reducedMotion,storyArt);}else if(!reducedMotion&&weatherEffects)ambient(ctx,theme,storyTime,width,height);const approach=path.length>1?Math.atan2(bunkerPosition.y-path[path.length-2].y,bunkerPosition.x-path[path.length-2].x):0;
   // The bunker flinches when it takes a hit - the impact effect carries the
   // timing, the shake is a decaying wobble around the flinch.
@@ -1021,7 +1065,7 @@ export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,th
   const selected=state.towers.find(t=>t.pad===state.selectedPad);if(selected&&!state.ended){const p=pads[selected.pad];ctx.save();ctx.beginPath();ctx.arc(p.x,p.y,getTowerRange(selected),0,Math.PI*2);ctx.fillStyle='rgba(139,190,173,.14)';ctx.fill();ctx.globalAlpha=reducedMotion?1:.88+.12*Math.sin(storyTime/.42);ctx.strokeStyle='#c2dfd2';ctx.lineWidth=2.2;ctx.setLineDash([6,5]);ctx.stroke();ctx.restore();}
   if(!reducedMotion)for(const tower of state.towers){const owner=state.players[tower.ownerId],p=pads[tower.pad];if(p&&owner?.active!==false&&owner?.overdrive>0){ctx.beginPath();ctx.ellipse(p.x,p.y,31,27,0,0,Math.PI*2);ctx.strokeStyle='#fff1a3';ctx.lineWidth=3;ctx.setLineDash([5,5]);ctx.stroke();ctx.setLineDash([]);}}
   const selectionPulse=reducedMotion?1:.85+.15*Math.sin(storyTime/.3);
-  pads.forEach((p,i)=>pad(ctx,p,state.towers.find(t=>t.pad===i),state.selectedPad===i,types,onSpritesReady,selectionPulse));
+  pads.forEach((p,i)=>pad(ctx,p,state.towers.find(t=>t.pad===i),state.selectedPad===i,types,onSpritesReady,selectionPulse,towerAims?towerAims[i]:null));
   // Block E: a damaged tower carries its life above the pad; at zero it sits
   // dark on its pad until repaired, and a running repair shows its mark.
   for(const tower of state.towers){const p=pads[tower.pad],maxHp=tower.maxHp;if(!p||!maxHp)continue;const hp=tower.hp??maxHp;if(hp<=0){ctx.save();ctx.globalAlpha=.45;ctx.beginPath();ctx.ellipse(p.x,p.y,26,22,0,0,Math.PI*2);ctx.fillStyle='#101a15';ctx.fill();ctx.restore();}if(hp>0)lifeBar(ctx,p.x,p.y-34,36,hp/maxHp);if(tower.repairing>0)oval(ctx,p.x+15,p.y-31,4,4,'#ffe3a8','#192b23',1);}

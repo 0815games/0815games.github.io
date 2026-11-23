@@ -1,4 +1,4 @@
-import {normalizeCommand} from '../core/protocol.mjs?v=20261123-party6';
+import {normalizeCommand} from '../core/protocol.mjs?v=20261123-aim1';
 // Session logic for live parties, independent of Firebase SDK wiring and UI.
 // Presence must come from an authenticated, rules-protected Firebase adapter.
 // The host is a player, not a trusted authority; never award validated XP here.
