@@ -3,6 +3,7 @@ import {drawCartoonBattle,drawGroundDetails} from '../core/cartoon-art.mjs';
 import {getMap} from '../core/maps.mjs';
 import {createPlayer} from '../core/match.mjs';
 import {createMatch,PATH,PADS,getTowerRange} from '../core/simulation.mjs';
+import {makeEnemy,bossForWave} from '../core/combat.mjs';
 const p=createPlayer('a',{name:'Alice',gender:'female'}),q=createPlayer('b',{name:'Bob',gender:'male'});
 const state=createMatch([p,q]);state.wave=1;state.hp=20;state.plating=3;state.selectedPad=0;
 state.towers=[0,1,2,3].map((type,pad)=>({type,pad,level:1,ownerId:'a'}));
@@ -124,4 +125,28 @@ console.log('Ground variety: per-seed details are deterministic and distinct.');
   assert.ok(!events.some(e=>e[0]==='call'&&e[1]==='arc'&&e[4]===getTowerRange(idle.towers[0])),
     'ohne Auswahl kein Reichweiten-Ring');
   console.log('Selection rings: thicker, pulsing with storyTime, still under reduced motion.');
+}
+
+// A real boss through the real painter (the #338 lesson, kept): the reverted
+// boss work called a label function the painter did not import, and only a
+// stub boss ever reached the test - with makeEnemy(bossForWave(5)) the
+// painter threw and froze the field. This block uses the real catalog boss,
+// at full and at reduced motion, so the boss drawing path cannot silently
+// break again behind a fake.
+{
+  const bossState=createMatch([p]);
+  const realBoss={...makeEnemy(bossForWave(5).kind,5),x:300,y:130,segment:2};
+  assert.ok(realBoss.boss,'die Fixture trägt einen echten Boss aus dem Katalog');
+  bossState.enemies=[realBoss];
+  const bossBefore=structuredClone(bossState);
+  calls.length=0;
+  drawCartoonBattle(ctx,bossState,{...opts});
+  assert.ok(calls.some(([name,text])=>name==='fillText'&&text==='BOSS'),
+    'der echte Boss wird gezeichnet (Fallback-Plakette oder Artwork)');
+  calls.length=0;
+  drawCartoonBattle(ctx,bossState,{...opts,reducedMotion:true});
+  assert.ok(calls.some(([name,text])=>name==='fillText'&&text==='BOSS'),
+    'der echte Boss wird auch bei reduzierter Bewegung gezeichnet');
+  assert.deepEqual(bossState,bossBefore,'der Boss verändert beim Zeichnen keinen Spielzustand');
+  console.log('Real catalog boss: drawn at full and reduced motion, state untouched.');
 }

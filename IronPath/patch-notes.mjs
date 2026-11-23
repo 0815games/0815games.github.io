@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see docs/PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261122-ring1';
+import {getLanguage} from './language.mjs?v=20261123-boss1';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,21 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'boss1',build:'20261123-boss1',pr:366,
+    title:{en:'Boss Banner · The Boss Is Announced in the Middle of the Field',de:'Boss-Banner · Der Boss wird mittig im Feld angekündigt'},
+    shipped:[
+      {en:'When a boss wave begins, a banner in the middle of the field announces the boss by name, with his intel below it. It stays for a few seconds and fades away on its own - the small boss plate at the top keeps the fight-long information as before.',de:'Wenn eine Boss-Welle beginnt, kündigt ein Banner mittig im Feld den Boss mit Namen an, darunter seine Intel. Es bleibt wenige Sekunden stehen und blendet von selbst aus - die kleine Boss-Plakette oben behält wie bisher die Informationen für den ganzen Kampf.'},
+      {en:'The banner never takes a tap: you can keep building and fighting while it shows. With reduced motion it appears without animation.',de:'Das Banner nimmt keinen Tipp an: Während es steht, kann weiter gebaut und gekämpft werden. Bei reduzierter Bewegung erscheint es ohne Animation.'},
+      {en:'Under the hood, a drawing error can no longer freeze the battlefield - the frame keeps running and reports the error once.',de:'Unter der Haube kann ein Zeichenfehler das Gefechtsfeld nicht mehr einfrieren - das Bild läuft weiter und meldet den Fehler einmalig.'},
+      {en:'Raised the cache wave to 20261123-boss1, because the field announcement changed: no device should keep fighting under the old sky out of cache.',de:'Die Cache-Welle auf 20261123-boss1 erhöht, weil sich die Feld-Ankündigung geändert hat: Kein Gerät soll mit dem alten Stand aus dem Zwischenspeicher weiterkämpfen.'},
+    ],
+    open:[
+      {en:'Visual check after loading: the stamp must read BUILD 20261123-boss1. Start a boss wave (wave 5): the banner must appear in the middle with the boss name, hold for a few seconds and fade; the small boss plate at the top must look as before.',de:'Sichtprüfung nach dem Laden: Der Stempel muss BUILD 20261123-boss1 zeigen. Eine Boss-Welle (Welle 5) starten: Das Banner muss mittig mit dem Boss-Namen erscheinen, wenige Sekunden stehen und ausblenden; die kleine Boss-Plakette oben muss aussehen wie bisher.'},
+      {en:'No device acceptance yet: the banner has not been checked on an iPhone or iPad.',de:'Noch keine Geräteabnahme: Das Banner ist nicht auf einem iPhone oder iPad geprüft.'},
+      {en:'Older visual checks are still open: the pulsing build-pad rings (20261122-ring1), BUILD 20261122-core1 (login scene, battles), the workshop and the German texts.',de:'Ältere Sichtprüfungen stehen weiter aus: die pulsierenden Bauplatz-Ringe (20261122-ring1), BUILD 20261122-core1 (Anmelde-Szene, Gefechte), die Werkstatt und die Deutsch-Texte.'},
+    ]
+  },
   {
     id:'ring1',build:'20261122-ring1',pr:364,
     title:{en:'Build Pads · Thicker, Pulsing Selection Rings',de:'Bauplätze · Dickere, pulsierende Auswahlringe'},

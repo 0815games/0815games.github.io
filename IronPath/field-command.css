@@ -394,3 +394,19 @@ body:has(#gameWorkspace:not([hidden])[data-screen="training"]) main{
   #gameView #gameWorkspace[data-screen="training"] .battle .solo-objective:not([hidden]) p{display:none}
 }
 
+/* The boss, announced in the middle of the field: the map title's frame in
+   the boss plate's red. It is a headline, not a control - pointer-events stay
+   off, it leaves on its own clock (ui/boss-banner.mjs), and the small boss
+   plate above the field keeps the fight-long information. */
+#gameView .boss-banner{position:absolute;z-index:10;left:50%;top:50%;transform:translate(-50%,-50%);width:min(440px,calc(100% - 32px));pointer-events:none;animation:boss-banner-in .45s ease-out both}
+#gameView .boss-banner[hidden]{display:none}
+#gameView .boss-banner-frame{position:relative;padding:14px 16px 13px;background:linear-gradient(#4a2320f5,#2a1512f7);border:1px solid #e1bf84;box-shadow:0 0 0 1px #170c0a,0 0 0 4px #a83d3033,0 18px 44px #000b;text-align:center}
+#gameView .boss-banner-frame::after{content:'';position:absolute;inset:4px;border:1px solid #e1bf844d;pointer-events:none}
+#gameView .boss-banner-eyebrow{display:block;color:#ef9d60;font-family:'Black Ops One','Trebuchet MS',Arial,sans-serif;font-size:9px;letter-spacing:.34em;text-transform:uppercase}
+#gameView .boss-banner-name{display:block;margin-top:5px;color:#fff1d1;font-family:'Black Ops One','Trebuchet MS',Arial,sans-serif;font-size:clamp(20px,5.6vw,29px);font-weight:400;letter-spacing:.06em;line-height:1.15;text-shadow:0 2px 0 #170c0a,0 0 18px #ef9d6040}
+#gameView .boss-banner-rule{display:block;width:64px;height:2px;margin:9px auto;background:linear-gradient(90deg,#e1bf8400,#e8cf9f,#e1bf8400)}
+#gameView .boss-banner-text{display:block;color:#f3ddba;font-size:12px;line-height:1.35}
+#gameView .boss-banner.is-leaving{animation:boss-banner-out .6s ease-in both}
+@keyframes boss-banner-in{from{opacity:0;transform:translate(-50%,-46%) scale(.96)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+@keyframes boss-banner-out{from{opacity:1;transform:translate(-50%,-50%) scale(1)}to{opacity:0;transform:translate(-50%,-54%) scale(.99)}}
+@media (prefers-reduced-motion: reduce){#gameView .boss-banner,#gameView .boss-banner.is-leaving{animation:none}}
