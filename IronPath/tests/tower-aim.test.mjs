@@ -97,3 +97,16 @@ test('no target keeps the last heading, unknown pads are pruned, reset clears',(
   aims=aim.sample(field({enemies:[{x:100,y:230,hp:10,segment:5}]}),1.3);
   assert.ok(Math.abs(aims[0].angle-Math.PI/2)<1e-9,'after reset the next sight snaps like the first');
 });
+
+test('recoil keys on the tower type, not just the pad',()=>{
+  const aim=createTowerAim();
+  const enemy={x:200,y:100,hp:10,segment:5};
+  const field2={towers:[{pad:0,type:2}],pads,enemies:[enemy],shots:[],getRange};
+  aim.sample(field2,0);
+  let aims=aim.sample({...field2,shots:[{x:100,y:100,tx:200,ty:100,kind:2,id:1}]},.1);
+  assert.equal(aims[0].recoil,0,'first sight only arms');
+  aims=aim.sample({...field2,shots:[{x:100,y:100,tx:200,ty:100,kind:0,id:2}]},.15);
+  assert.equal(aims[0].recoil,0,'an MG shot does not kick the flak');
+  aims=aim.sample({...field2,shots:[{x:100,y:100,tx:200,ty:100,kind:2,id:3}]},.2);
+  assert.equal(aims[0].recoil,1,'its own shot does');
+});

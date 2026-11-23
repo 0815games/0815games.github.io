@@ -423,11 +423,14 @@ function bunker(ctx,state,notify,approach=0){
   line(ctx,[[p1.x,p1.y-17],[p2.x,p2.y-17]],'#6b563c',4);
   ctx.fillStyle='#344231';ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText('BUNKER',0,-44);ctx.textAlign='start';
 }
-// The layered MG: the painted pit stays the ground truth of the position,
-// the gun itself is drawn in ink and olive on top of it so it can traverse
-// onto its target - swing, recoil and all - without the painting having to
-// spin. Only the MG wears the drawn head for now; the other three positions
-// keep their paintings until the look has proven itself in the field.
+// The layered turrets: the painted pit stays the ground truth of the
+// position, the gun itself is drawn in ink and olive on top of it so it can
+// traverse onto its target - swing, recoil and all - without the painting
+// having to spin. Each position wears its own head: the MG's tripod gun,
+// the howitzer's box trail and heavy barrel, the flak's shielded twin
+// barrels, the sniper's long thin rifle with scope. The ground dressing
+// (sandbags, concrete ring, ammo crates, camo mound) never turns with the
+// gun - it is ground, not weapon.
 function mgTurret(ctx,x,y,aim){
   // The sandbag ring is laid once around the plate and never turns with
   // the gun - it is ground, not weapon.
@@ -449,6 +452,79 @@ function mgTurret(ctx,x,y,aim){
   shape(ctx,[[27,-3.8],[30,-3.8],[30,-.8],[27,-.8]],'#2b352c');
   // Belt box feeding the receiver from the side.
   shape(ctx,[[-14,1],[-5,1],[-5,8],[-14,8]],'#6b7256');line(ctx,[[-9,1],[-4,-3]],'#8a8f6d',2);
+  ctx.restore();
+}
+// The layered howitzer: a concrete ring instead of sandbags - this gun was
+// dug in on a platform, not behind a pit wall. The box trail and the heavy
+// barrel kick harder than the MG's, so the recoil travel is longer.
+function cannonTurret(ctx,x,y,aim){
+  for(let k=0;k<10;k++){const a=k/10*Math.PI*2,bx=x+Math.cos(a)*29,by=y+8+Math.sin(a)*16;
+    oval(ctx,bx,by,8.4,5.4,k%2?'#9aa39b':'#8b948c','#6f7a70',1);}
+  oval(ctx,x,y+4,14,5,'rgba(24,32,26,.28)',null);
+  const angle=Number.isFinite(aim?.angle)?aim.angle:0,recoil=Math.max(0,Math.min(1,aim?.recoil||0));
+  ctx.save();ctx.translate(x,y-3);ctx.rotate(angle);ctx.translate(-recoil*5,0);
+  // Box trail: two legs splayed back from the pedestal, spades at the ends.
+  line(ctx,[[-3,3],[-17,12]],'#33402f',4);line(ctx,[[-3,-3],[-17,-12]],'#33402f',4);
+  shape(ctx,[[-20,10],[-14,10],[-14,15],[-20,15]],'#2b352c');shape(ctx,[[-20,-15],[-14,-15],[-14,-10],[-20,-10]],'#2b352c');
+  shape(ctx,[[-6,-6],[4,-6],[4,8],[-6,8]],'#46523f');
+  // Breech block and the thick barrel with its muzzle brake.
+  shape(ctx,[[-8,-7],[6,-7],[8,-4],[8,2],[-6,3],[-8,-2]],'#55624c');
+  line(ctx,[[-7,-7],[5,-7]],'#6d7c60',2);
+  shape(ctx,[[6,-5],[30,-4],[30,0],[6,1]],'#39443a');
+  shape(ctx,[[30,-5.5],[34,-5.5],[34,.5],[30,.5]],'#2b352c');
+  line(ctx,[[31,-5.5],[31,.5]],'#55624c',1.6);line(ctx,[[33,-5.5],[33,.5]],'#55624c',1.6);
+  // Elevation wheel and sight post.
+  oval(ctx,-2,9,3.2,3.2,'#6b7256','#2b352c',1.4);line(ctx,[[-2,6],[-2,12]],'#2b352c',1.4);
+  line(ctx,[[-4,-7],[-4,-10]],ink,1.8);oval(ctx,-4,-10.6,1.4,1.4,'#d9c08a',null);
+  ctx.restore();
+}
+// The layered flak: sandbags like the MG, but the gun wears an armoured
+// shield and twin barrels - the plate is what the crew hides behind.
+function flakTurret(ctx,x,y,aim){
+  for(let k=0;k<12;k++){const a=k/12*Math.PI*2,bx=x+Math.cos(a)*26,by=y+7+Math.sin(a)*14.5;
+    oval(ctx,bx,by,7.6,5,k%2?'#bfa87c':'#cbb384','#8f7a52',1);}
+  // Ammo crates stay on the ground beside the gun, never turning with it.
+  shape(ctx,[[x-31,y+9],[x-19,y+9],[x-19,y+17],[x-31,y+17]],'#6b7256','#4a5138',1.4);
+  line(ctx,[[x-25,y+9],[x-25,y+17]],'#4a5138',1.2);
+  shape(ctx,[[x+20,y+11],[x+29,y+11],[x+29,y+18],[x+20,y+18]],'#5d6449','#4a5138',1.4);
+  oval(ctx,x,y+3,13,5,'rgba(24,32,26,.28)',null);
+  const angle=Number.isFinite(aim?.angle)?aim.angle:0,recoil=Math.max(0,Math.min(1,aim?.recoil||0));
+  ctx.save();ctx.translate(x,y-3);ctx.rotate(angle);ctx.translate(-recoil*2,0);
+  // Pedestal and yoke, then the shield plate the barrels poke through.
+  shape(ctx,[[-5,-5],[3,-5],[3,7],[-5,7]],'#46523f');
+  line(ctx,[[-2,-5],[-2,-9]],'#33402f',3);line(ctx,[[-2,5],[-2,9]],'#33402f',3);
+  shape(ctx,[[-3,-11],[3,-11],[3,11],[-3,11]],'#3d4a3c','#2b352c',1.6);
+  line(ctx,[[-3,-6],[3,-6]],'#55624c',1.4);line(ctx,[[-3,6],[3,6]],'#55624c',1.4);
+  // Twin barrels with muzzle rings.
+  shape(ctx,[[3,-4.6],[28,-4.2],[28,-2.8],[3,-2.2]],'#39443a');
+  shape(ctx,[[3,2.2],[28,2.8],[28,4.2],[3,4.6]],'#39443a');
+  shape(ctx,[[28,-5],[31,-5],[31,-2.4],[28,-2.4]],'#2b352c');shape(ctx,[[28,2.4],[31,2.4],[31,5],[28,5]],'#2b352c');
+  // Ammo drum on the side and the sight post above the shield.
+  oval(ctx,-8,6,4,4,'#6b7256','#2b352c',1.4);
+  line(ctx,[[0,-11],[0,-14]],ink,1.8);oval(ctx,0,-14.6,1.4,1.4,'#d9c08a',null);
+  ctx.restore();
+}
+// The layered sniper: a camouflaged mound instead of a ring - the hide is
+// the position. The rifle is long and thin, the scope is the giveaway.
+function sniperTurret(ctx,x,y,aim){
+  oval(ctx,x,y+6,30,15,'#2c3d2a','#22331f',1.6);
+  oval(ctx,x-12,y+2,9,5,'#3d5238',null);oval(ctx,x+11,y+9,8,4.6,'#3d5238',null);oval(ctx,x+2,y-2,7,4,'#35492f',null);
+  for(const [gx,gy] of [[-20,10],[16,12],[0,16]])line(ctx,[[x+gx,y+gy],[x+gx+2,y+gy-5]],'#4a6136',1.6);
+  oval(ctx,x,y+3,13,5,'rgba(24,32,26,.28)',null);
+  const angle=Number.isFinite(aim?.angle)?aim.angle:0,recoil=Math.max(0,Math.min(1,aim?.recoil||0));
+  ctx.save();ctx.translate(x,y-3);ctx.rotate(angle);ctx.translate(-recoil*1.5,0);
+  // Bipod legs splayed forward, then the long thin rifle.
+  line(ctx,[[4,1],[12,11]],'#33402f',2.6);line(ctx,[[4,-1],[12,-11]],'#33402f',2.6);
+  shape(ctx,[[-12,-4],[6,-4],[8,-1],[8,2],[-10,3],[-12,0]],'#4a5545');
+  line(ctx,[[-11,-4],[5,-4]],'#6d7c60',1.6);
+  shape(ctx,[[7,-2.6],[36,-2],[36,-.6],[7,-.4]],'#39443a');
+  shape(ctx,[[36,-2.6],[39,-2.6],[39,-.4],[36,-.4]],'#2b352c');
+  // Scope on its mounts, magazine below, bolt handle at the rear.
+  line(ctx,[[-2,-4],[-2,-8]],ink,1.6);line(ctx,[[2,-4],[2,-8]],ink,1.6);
+  shape(ctx,[[-8,-9.5],[4,-9.5],[4,-7.5],[-8,-7.5]],'#2b352c');
+  oval(ctx,4,-8.5,1.6,1.6,'#d9c08a',null);oval(ctx,-8,-8.5,1.2,1.2,'#55624c',null);
+  shape(ctx,[[-4,2],[1,2],[1,6],[-4,6]],'#6b7256');
+  line(ctx,[[-6,-2],[-9,1]],ink,2);
   ctx.restore();
 }
 function pad(ctx,p,tower,selected,types,notify,pulse=1,aim=null){
@@ -512,7 +588,8 @@ function pad(ctx,p,tower,selected,types,notify,pulse=1,aim=null){
     if(!tier2)ctx.setLineDash([5,4]);ctx.stroke();ctx.setLineDash([]);
     ctx.restore();
   }
-  if(tower.type===0&&aim)mgTurret(ctx,x,y,aim);
+  const headPainter=[mgTurret,cannonTurret,flakTurret,sniperTurret][tower.type];
+  if(aim&&headPainter)headPainter(ctx,x,y,aim);
   else if(artwork){const w=58,h=w*artwork.height/artwork.width;ctx.drawImage(artwork,x-w/2,y+11-h,w,h);}
   else fallbackMarker(ctx,x,y-6,['MG','C','AA','S'][tower.type],types[tower.type].color,18,15);
   if(tower.classPath&&tower.classTier>=1){

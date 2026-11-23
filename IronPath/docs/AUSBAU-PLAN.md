@@ -40,4 +40,4 @@ Umsetzungshistorie im [PATCH-LOG.md](PATCH-LOG.md).
 | # | Paket | Inhalt (Kurzform) | Status |
 | --- | --- | --- | --- |
 | 8 | **Lebendiges Feld, Scheibe 1** | Drehender MG-Turmkopf (geschichtet: gemalte Stellung + gezeichneter Oberbau, Prototyp), Schadens-Rauch an Fahrzeugen/Bossen, Soldaten-Atmung/-Zielen/-Zucken. Nur Darstellung. | [~] gebaut (`IPL-0122`, PR `#384`), Betreiber-Sichtung steht aus |
-| 9 | **Lebendiges Feld, Scheibe 2** | Drehende Köpfe auch für Kanone, Flak und Scharfschütze; Feinschliff nach Sichtung von Scheibe 1. | [ ] nach Betreiber-Sichtung |
+| 9 | **Lebendiges Feld, Scheibe 2** | Drehende Köpfe auch für Kanone, Flak und Scharfschütze; Feinschliff nach Sichtung von Scheibe 1. | [x] gebaut (`IPL-0123`, PR `#385`), Betreiber-Sichtung steht aus |
