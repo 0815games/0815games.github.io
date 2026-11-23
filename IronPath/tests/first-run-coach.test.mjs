@@ -75,9 +75,10 @@ test('the card opens on the welcome and moves on what the player does',()=>{
  assert.equal(coach.step().id,'hero','standing still is not moving');
  field.walkTo(400);
  coach.tick();
- assert.equal(coach.step().id,'money');
+ assert.equal(coach.step().id,'under-fire');
 
  // Informational cards advance on NEXT while gated cards advance on live field proof.
+ next();assert.equal(coach.step().id,'money');
  next();assert.equal(coach.step().id,'deploy');
  coach.event('deploy');assert.equal(coach.step().id,'specialize');
  next();assert.equal(coach.step().id,'boss');
@@ -163,7 +164,7 @@ test('closing the card puts the task away without ending the coaching',()=>{
  assert.equal(done,0,'the ending is a separate step, not this card');
  assert.equal(coach.reopen(),true,'the recall brings the card back');
  assert.equal(coach.isOpen(),true);
- assert.match(document.getElementById('coachStep').textContent,/1 \/ 8/,'it comes back at the card it was on');
+ assert.match(document.getElementById('coachStep').textContent,/1 \/ 9/,'it comes back at the card it was on');
  assert.equal(coach.dismissed(),false,'an open card is not dismissed');
  assert.equal(coach.reopen(),false,'reopening an open card is a no-op');
  // And the put-away card still finishes by playing, not only by being reopened:
@@ -216,8 +217,8 @@ test('a minimized card still counts the field, and comes back on its own',()=>{
  assert.equal(coach.tick(),true,'the minimized card advances on the field');
  assert.equal(coach.isOpen(),true,'the card is big again by itself');
  assert.equal(coach.dismissed(),false,'no recall pill for a card that is up');
- assert.match(document.getElementById('coachStep').textContent,/5 \/ 8/,'it returns at the NEXT step');
- assert.match(document.getElementById('coachTitle').textContent,/Supplies/);
+ assert.match(document.getElementById('coachStep').textContent,/5 \/ 9/,'it returns at the NEXT step');
+ assert.match(document.getElementById('coachTitle').textContent,/You can be hit/);
  assert.equal(coachSeen('soldier-e',storage),false,'still not a finished briefing');
 });
 

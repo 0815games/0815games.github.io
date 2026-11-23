@@ -58,7 +58,7 @@ test('every card explains one thing, and names what to touch', () => {
     assert.ok(step.title && step.text, `${step.id} has words`);
     // A card that points nowhere has to be an announcement, not an instruction.
     if (!step.target) {
-      assert.ok(['hero', 'boss'].includes(step.id), `${step.id} points somewhere or is an announcement`);
+      assert.ok(['hero', 'boss', 'under-fire'].includes(step.id), `${step.id} points somewhere or is an announcement`);
     }
   }
   // The build card must point at a build marker; that is the card that failed.

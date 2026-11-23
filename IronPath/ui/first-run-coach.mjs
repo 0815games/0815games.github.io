@@ -4,7 +4,7 @@
 // evidence-based gating and SVG pad/element highlighter from createCoachHighlight,
 // and layers in painted mission artwork thumbnails + General Vance radio clip
 // notifications per training step.
-import {translateText as tr} from '../language.mjs?v=20261123-life1';
+import {translateText as tr} from '../language.mjs?v=20261123-blocke2';
 import {createCoachHighlight} from '../core/coach-highlight.mjs?v=20261112-coachptr1';
 
 export const COACH_STEPS = Object.freeze([
@@ -15,7 +15,7 @@ export const COACH_STEPS = Object.freeze([
     caption:'WAVE 1 OF 7',
     when:null,
     target:{pad:'first-free'},
-    art:'assets/tutorial-soldier.jpg?v=20261123-life1',
+    art:'assets/tutorial-soldier.jpg?v=20261123-blocke2',
     voiceClip:'mission-welcome',
   }),
   Object.freeze({
@@ -26,7 +26,7 @@ export const COACH_STEPS = Object.freeze([
     when:'build',
     ask:'Build one tower to continue',
     target:{pad:'first-free'},
-    art:'assets/tutorial-build.jpg?v=20261123-life1',
+    art:'assets/tutorial-build.jpg?v=20261123-blocke2',
     voiceClip:'mission-build',
   }),
   Object.freeze({
@@ -37,7 +37,7 @@ export const COACH_STEPS = Object.freeze([
     when:'upgrade',
     ask:'Upgrade that tower to continue',
     target:{pad:'occupied'},
-    art:'assets/tutorial-build.jpg?v=20261123-life1',
+    art:'assets/tutorial-build.jpg?v=20261123-blocke2',
     voiceClip:'mission-upgrade',
   }),
   Object.freeze({
@@ -48,8 +48,18 @@ export const COACH_STEPS = Object.freeze([
     when:'move',
     ask:'Send your soldier somewhere',
     target:null,
-    art:'assets/tutorial-soldier.jpg?v=20261123-life1',
+    art:'assets/tutorial-soldier.jpg?v=20261123-blocke2',
     voiceClip:'mission-hero',
+  }),
+  Object.freeze({
+    id:'under-fire',
+    title:'You can be hit',
+    text:'From wave 3, infantry shoots at your soldier and tanks shell your towers. A dashed ring warns first: step out and it misses. Falling costs nothing — you return at the bunker; towers repair from their panel.',
+    caption:'WATCH THE RINGS · FROM WAVE 3',
+    when:null,
+    target:null,
+    art:'assets/tutorial-defend.jpg?v=20261123-blocke2',
+    voiceClip:null,
   }),
   Object.freeze({
     id:'money',
@@ -58,7 +68,7 @@ export const COACH_STEPS = Object.freeze([
     caption:'WATCH THE SUPPLY COUNT',
     when:null,
     target:{element:'#moneyPanel'},
-    art:'assets/tutorial-defend.jpg?v=20261123-life1',
+    art:'assets/tutorial-defend.jpg?v=20261123-blocke2',
     voiceClip:'mission-supplies',
   }),
   Object.freeze({
@@ -69,7 +79,7 @@ export const COACH_STEPS = Object.freeze([
     when:'deploy',
     ask:'Press Deploy to start the wave',
     target:{element:'#start'},
-    art:'assets/tutorial-defend.jpg?v=20261123-life1',
+    art:'assets/tutorial-defend.jpg?v=20261123-blocke2',
     voiceClip:null,
   }),
   Object.freeze({
@@ -79,7 +89,7 @@ export const COACH_STEPS = Object.freeze([
     caption:'RANK 3 & SKY COVER',
     when:null,
     target:{element:'#speed'},
-    art:'assets/tutorial-airstrike.jpg?v=20261123-life1',
+    art:'assets/tutorial-airstrike.jpg?v=20261123-blocke2',
     voiceClip:'mission-specialize',
   }),
   Object.freeze({
@@ -89,7 +99,7 @@ export const COACH_STEPS = Object.freeze([
     caption:'BOSS OF WAVE 7',
     when:'boss',
     target:null,
-    art:'assets/tutorial-airstrike.jpg?v=20261123-life1',
+    art:'assets/tutorial-airstrike.jpg?v=20261123-blocke2',
     voiceClip:'mission-boss',
   }),
 ]);

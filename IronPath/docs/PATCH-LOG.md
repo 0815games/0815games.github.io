@@ -6,7 +6,7 @@ aber ersetzt weder Git noch die GitHub-PR-Historie. Die dazugehörige
 [Arbeitsanweisung](../../AGENTS.md) verlangt, dieses Log vor der Arbeit zu lesen
 und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
 
-Die Einträge IPL-0001 bis IPL-0093 stehen im
+Die Einträge IPL-0001 bis IPL-0094 stehen im
 [Archiv](PATCH-LOG-ARCHIV.md); hier stehen die neuesten 20. Beide Dateien
 zusammen sind lückenlos und doppelfrei - `../scripts/patch.mjs` (Unterbefehl `check`) und
 `../tests/patch-log-archive.test.mjs` prüfen das.
@@ -49,40 +49,6 @@ jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderl
 
 
 
-
-
-## IPL-0094 – Wegbereiter für Modul-Ordner: Packager und Wächter lernen `GAME_MODULE_FOLDERS` (keine Datei verschoben, keine Cache-Welle)
-
-- **Zeit / Quelle:** Betreiberauftrag in dieser Sitzung: „Schlag mir was gutes vor mit Verbesserungen zu allem.“ Vier abgefragte Entscheidungen, alle bindend: Struktur = **Gruppen in Unterordner** (Eintrittspunkte, HTML und CSS bleiben in der Wurzel); Gruppierung = **nach Fachgebiet**; Tempo = **scheibenweise, ein PR pro Gruppe**; Patch-Skripte = später **ein Befehl `patch.mjs`**. Dieser Eintrag ist Phase 1 (Wegbereiter); es wandert noch keine einzige Spieldatei.
-- **Block / Ziel:** Kein Spiel-Block. Ziel ist, den späteren Umzug der 187 flach liegenden `.mjs`-Module sicher zu machen, bevor er beginnt: `release-tools/stage-version.mjs` kopierte bisher nur Wurzel-`.mjs`/`.js`/`.css` in gestagte Builds — ein Modul in einem Unterordner wäre dort still verschwunden. Jetzt versteht der Packager die künftigen Fach-Ordner, und die Wächter schauen in dieselben Ordner.
-- **Branch / Basis:** `arena/5ae9c8c6-0815games-github-io` ab `8b9ee57b89eb154b8585b7aa14336f4763e909f9` (`main`, Merge von PR `#345`).
-- **Änderungen / Dateien:**
-  - `IronPath/release-tools/stage-version.mjs`: Neue exportierte Liste `GAME_MODULE_FOLDERS` (`battle`, `core`, `i18n`, `net`, `ui`, `workshop`) als einzige Quelle der Wahrheit. Der Packager kopiert diese Ordner — wo sie existieren — rekursiv unter ihren relativen Pfaden und nur Code (`.mjs`/`.js`/`.css`); Symlinks und Nicht-Code-Dateien in einem Modul-Ordner lassen das Staging laut scheitern, statt still verloren zu gehen oder still mitzufahren. Fehlende Ordner werden übersprungen, damit eine Gruppe erst umziehen kann, nachdem der Packager sie versteht.
-  - `IronPath/tests/release-stage-version.test.mjs`: Fixture um `i18n/demo.mjs`, `i18n/nested/deep.mjs` und `ui/panel.css` erweitert (Dateizahl und Inventar geprüft); neuer Test, dass Nicht-Code und Symlinks in Modul-Ordnern abgelehnt werden; der Echtbaum-Test prüft jetzt für jeden vorhandenen Modul-Ordner, dass jede Code-Datei gestagt wird.
-  - `IronPath/tests/repo-structure.test.mjs`: Der Spielgraph wird jetzt pfadgenau aufgelöst (ein `../core/x.mjs` aus `i18n/` ist dasselbe Ziel wie `./core/x.mjs` aus der Wurzel) statt nur Dateinamen zu vergleichen; das Release-Inventar umfasst Wurzel plus Modul-Ordner rekursiv; erlaubte Ordner sind `assets/`, `release-tools/` und die `GAME_MODULE_FOLDERS`; neuer Wächter, dass die Liste sortiert, doppelfrei und disjunkt zu allen Arbeitsordnern ist. Importiert wird dieselbe Liste aus `stage-version.mjs`, damit Packager und Wächter nicht auseinanderlaufen können.
-  - `IronPath/tests/translation-coverage.test.mjs`: Modul- und Wörterbuch-Scan laufen rekursiv über Wurzel plus Modul-Ordner (vorher nur `readdirSync(root)` — nach einem Umzug hätte der Test die Hälfte des Spiels still nicht mehr gesehen und trotzdem volle Abdeckung gemeldet).
-  - `IronPath/tests/multiplayer-build-stamp.test.mjs`: Der Importeur-Scan läuft rekursiv, und das Import-Muster erkennt jetzt auch Ordnerpfade (`./i18n/x.mjs?v=…`) statt nur `./x.mjs`.
-  - `IronPath/README.md` und `IronPath/docs/PATCH-ABLAUF.md`: Die sechs Fach-Ordner mit Inhaltstabelle bzw. Arbeitsregel dokumentiert (neues Modul ⇒ Fach-Ordner; Umzug heißt Importe nachziehen, Staging-Inventar vergleichen, eigene Cache-Welle).
-  - `IronPath/docs/PATCH-LOG.md` und `IronPath/docs/PATCH-LOG-ARCHIV.md`: `IPL-0074` vollständig ans Ende des Archivs verschoben, Kennungsgrenzen auf `IPL-0001` bis `IPL-0074` nachgezogen; das Log führt die neuesten 20 (`IPL-0075` bis `IPL-0094`).
-- **Prüfungen:**
-  - Staging-Vergleich vorher/nachher mit identischem Build-Namen: `node IronPath/release-tools/stage-version.mjs IronPath /tmp/stage-before 20990101-baseline1` (vor der Änderung) und danach in `/tmp/stage-after` — **711 gestagte Dateien, Inventar inklusive aller SHA-256-Hashes identisch**. Am ausgelieferten Spiel ändert sich also nichts.
-  - Bissprobe: Eine verwaiste Probe-Datei `IronPath/i18n/zz-probe.mjs` ließ `repo-structure` wie vorgesehen rot werden (7 bestanden, 1 fehlgeschlagen, Fund beim Namen genannt); Probe und Ordner danach entfernt, Test wieder 8/8 grün. Die Probe ist nicht Teil des Baums.
-  - Gesamtsuite im vollständigen Klon (nach `git fetch --unshallow origin`): `node --test IronPath/tests/*.test.mjs` = **1.260 Tests, 1.260 bestanden, 0 fehlgeschlagen, 0 übersprungen, Exit 0** (vorher 1.258; +2 neue Tests aus dieser Phase).
-  - `node IronPath/scripts/patch-check.mjs` vor dem Log-Eintrag: **0 Fehler**; die sieben Vertragsdateien liefen mit **30 Tests, 30 grün** (vorher 28; die zwei neuen Tests zählen mit).
-  - Nach der Log-Rotation: `node --test IronPath/tests/patch-log-archive.test.mjs IronPath/tests/repo-structure.test.mjs` = **13 Tests, 13 bestanden, 0 fehlgeschlagen**; `patch-check` danach **0 Fehler, 1 Hinweis** (die noch uncommitteten Änderungen dieser Phase selbst).
-  - Keine Geräte- oder Browserabnahme: Es wurde keine Datei geändert, die der Browser lädt. Der Build-Stempel bleibt unverändert `20261121-order1`; eine Cache-Welle ist für diesen Wegbereiter nicht nötig.
-- **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet` auf `arena/5ae9c8c6-0815games-github-io`. Commit, Push, PR, CI, Merge und Pages-Auslieferung sind noch nicht erfolgt und werden erst nach dem tatsächlichen Ereignis mit Kennung nachgetragen.
-- **Offen / nächster Schritt:** PR für Phase 1 öffnen und erst nach belegtem Merge/Pages-Stand als ausgeliefert bezeichnen. Danach Phase 2 scheibenweise, je ein eigener PR: zuerst `i18n/` (18 `localization-*`-Module), dann `workshop/`, `net/`, `battle/`, `ui/`, `core/`; jede Scheibe mit Import-Codemod, Staging-Vergleich, voller Suite, eigener Cache-Welle und Feldnotizen DE+EN. Phase 3 danach: die drei Patch-Skripte zu einem `patch.mjs` mit Unterbefehlen zusammenführen. Der Bauplatz-Auswahlring aus PR `#336` (ohne Hover-Vorschau) bleibt geparkt und kommt als eigener Spiel-PR nach der Struktur, damit er nicht zweimal angefasst wird.
-
-### Ereignis-Nachtrag zu IPL-0094
-
-- **Commit / PR:** Arbeitscommit `d79ff31c` auf `arena/5ae9c8c6-0815games-github-io`; Pull-Request `#346` („Phase 1: Wegbereiter für Modul-Ordner (Packager und Wächter)“) wurde mit diesem Stand geöffnet.
-- **CI:** `gh pr checks 346` endete mit **13 von 13 bestandenen Checks, 0 fehlgeschlagen, 0 ausstehend**. Belegt im Actions-Run `44978489674`, darunter `game-regressions` (Job `137073600434`), `database-rules` (Job `137073600432`) und `interface-browser-smoke` (Job `137073600131`), dazu die acht `party-finalization-browser`-Varianten und zwei Vercel-Checks.
-- **Merge:** `gh pr view 346 --json state,mergedAt,mergeCommit` ergab `state=MERGED`, `mergedAt=2026-11-22T03:09:08Z`, Merge-Commit `49b530f7ba3c290b9ab247af0e7211d3963869e9` in `main`.
-- **Pages:** Der Workflow `pages build and deployment` lief als Run `44979304520` auf dem Merge-Commit mit `completed/success`; `pages/builds/latest` meldete danach `status=built`, Dauer 46.544 ms, Commit `49b530f7ba3c290b9ab247af0e7211d3963869e9`.
-- **Auslieferung auf `main` belegt:** `IronPath/release-tools/stage-version.mjs` ist per Contents-API in der neuen Fassung vorhanden (14.386 B, SHA `efcbf0aae4d89bc416ffbb22634b28300ea585d2`). Die Modul-Ordner `IronPath/i18n`, `IronPath/battle` und `IronPath/ui` liefern weiter **404** — korrekt, denn in Phase 1 ist noch keine Datei umgezogen; die Ordner entstehen erst mit ihren Gruppen in Phase 2.
-- **Ehrliche Grenzen:** Die Live-URL wurde nicht abgerufen; belegt sind Inhalt auf `main` und der fertige Pages-Build. Keine Geräteabnahme, weil keine browsergeladene Datei geändert wurde und sich keine Modul-Adresse geändert hat.
-- **Herkunft dieses Nachtrags:** Er steht als eigener Commit auf demselben Arbeitszweig nach dem Merge von `#346`; seine eigene Commit- und PR-Kennung steht deshalb nicht hier, sondern in Git und im PR-Text.
 
 
 ## IPL-0095 – Phase 2, Scheibe 1: Die 18 deutschen Wörterbücher ziehen nach `i18n/` (eigene Cache-Welle folgt im selben PR)
@@ -516,3 +482,20 @@ jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderl
 - **Prüfungen:** `coop-ui` 1/1 (großer Harness), `menu-redesign` 7/7, `cartoon-art`/`endless-retreat-viewport`/`language` 22/22 (echte Welle-10-Sektor-Fahrt inklusive). `patch.mjs check --fast`: 0 Fehler (2 Hinweise vor der Welle). Gesamtsuite und Browser-Fahrten folgen auf der Welle/in der CI; Sichtprüfung über die lokale Live-Vorschau.
 - **Git / PR / Release:** Wird mit Welle `20261123-life1` und PR-Nummer fortgeschrieben.
 - **Offen / nächster Schritt:** Aus Block E Scheibe 2 bleiben Treffer-Feedback im engeren Sinn und die Tutorial-Einführung (E2), die Host-/Reconnect-Prüfung im Detail (E5) und die menschliche Balance mit Block C. Geräteabnahmen erfolgen generell durch den Betreiber.
+
+## IPL-0114 – Block E Scheibe 2, erster Schnitt: Treffer-Feedback und Tutorial-Einführung ins Schadenssystem (Welle `20261123-blocke2`, PR `#376`)
+- **Zeit / Quelle:** 2026-11-23 UTC; Betreiber-Entscheid in dieser Sitzung: die im Rundum-Check vorgeschlagene Reihenfolge wird übernommen – „Als erstes machen wir die oberen Blöcke fertig mit dem Tutorial und den ganzen Krempel dann alles sicherheitsrelevante und dann grad durch die Bank weg weiter". Die Reihenfolge steht jetzt dauerhaft in `docs/AUSBAU-PLAN.md` (verlinkt aus `PATCH-BLOECKE.md`), damit sie jederzeit greifbar ist.
+- **Block / Ziel:** Block E Scheibe 2 (E2), erster von drei Restpunkten: Treffer-Feedback + Tutorial-Einführung. Offen danach: Host-/Reconnect-Prüfung im Detail (E5), menschliche Balance mit Block C.
+- **Branch / Basis:** `arena/a7ff6aef-0815games-github-io` ab `fbb6473d8e9983a0c660708412fc83ac7a93f7df` (`main`, Merge PR `#375`).
+- **Änderungen / Dateien:**
+  - `IronPath/docs/AUSBAU-PLAN.md` (neu): beschlossene Reihenfolge 1–7 mit Statusspalte (Block E Scheibe 2 → Regel-Zuwachsdeckel → Sektor-Modifikatoren → Scrap-Senke/NG+ → 6-stellige Party-Codes → Start-Requests messen → Block-Tabelle pflegen). `PATCH-BLOECKE.md` verlinkt sie oben; die veraltete Block-7-Zeile der Übersicht („5 %") wurde auf den echten Stand (Scheibe 1 live, Scheibe 2 läuft) nachgezogen.
+  - `IronPath/core/hit-feedback.mjs` (neu): reine Darstellungslogik. `hitFeedbackForEvent` übersetzt Simulationsereignisse (`enemyAttack`, `soldierDown` neu mit `seconds`, `towerDisabled`, `soldierReturn`, `towerRepaired`) in Ansagen mit Gegenmaßnahme; `createHitAnnouncer` drosselt gewöhnliche Treffer pro Ziel (7 s), Alarme (Ausfall) nie. Kein Schadensentscheid hier.
+  - `IronPath/game.js`: `announceHit` – Trefferblitz am Ziel + Funkmeldung (Alarm/Warnung über `warn`, Rückkehr/Reparatur über `notice`), verdrahtet in der Solo-Ereignisschleife und im Koop-`onEvents`; im Trainingslauf erklärt der erste Treffer einmalig ausführlich das Schadenssystem (Welle-3-Regel, Ring=Warnung, Fallen ohne Strafe, Reparatur). Neuer `game.js`-Import in allen 14 Harness-Testlisten nachgetragen.
+  - `IronPath/core/combat-fx.mjs` + `IronPath/core/cartoon-art.mjs`: Koop-Gäste blitzen gelandete Treffer aus der Lebensdifferenz zweier Snapshots (Join-Baseline spielt nichts nach). Maler: Ring beim Soldaten, Raute beim Turm (Form statt nur Farbe), Schadenszahl steigt auf; reduzierte Bewegung behält Funktext + Balken als Erklärung.
+  - `IronPath/ui/first-run-coach.mjs`: neue Karte `under-fire` nach `hero` (`when: null` – erklärt nur, blockiert den Sieben-Wellen-Vertrag nie), deutsche Texte in `i18n/localization-firstrun-de.mjs`, Feedback-Texte DE in `i18n/localization-battle-de.mjs`. `soldierDown` trägt jetzt `seconds` im Ereignis (`core/simulation.mjs`).
+  - Cache-Welle `20261123-blocke2` (79 Dateien), Feldnotizen `blocke2` in `patch-notes.mjs`; Log-Rotation `IPL-0094` ins Archiv (Haupt `IPL-0095…IPL-0114`, Archiv bis `IPL-0094`).
+- **Prüfungen:**
+  - Neu/gezielt: `hit-feedback` 7/7 (inkl. Koop-Snapshot-Blitz und Coach-Karte), `first-run-coach`/`coach-highlight`/`combat-fx`/`combat-readability`/`block-e-core` grün; betroffene Flächen (coop-ui, solo-smoke, campaign-ui, endless-launcher, patch-notes, language, translation-coverage u. a.) 71/71 und 82/82.
+  - `patch.mjs check --fast`: 0 Fehler. Gesamtsuite nach `git fetch --unshallow origin`: erste Fahrt 1298 Tests / 1 Fehler (`coach-highlight`-Allowlist kannte die neue Ankündigungs-Karte nicht – Test ergänzt, danach gezielt 6/6 grün); Schlussfahrt auf dem Commit-Stand: **1298 Tests, 1298 bestanden, 0 fehlgeschlagen, 0 übersprungen**.
+- **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet`. Commit, Push, PR `#376`, CI, Merge und Pages-Auslieferung werden als Ereignis-Nachtrag nachgetragen.
+- **Offen / nächster Schritt:** E5 Host-/Reconnect-Prüfung im Detail und menschliche Balance mit Block C (Betreiber testet ingame). Danach laut `AUSBAU-PLAN.md`: Regel-Zuwachsdeckel (Sicherheit).

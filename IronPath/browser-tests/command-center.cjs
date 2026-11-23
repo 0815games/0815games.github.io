@@ -87,7 +87,7 @@ if (!commandCenterToken) throw new Error('account.js does not import command-cen
     assert.equal(await page.locator('#gameWorkspace').isVisible(),true,'the field is up before the first card');
     assert.equal(await page.locator('#game').isVisible(),true);
     assert.match(await page.locator('#coachTitle').innerText(),/Welcome, soldier/);
-    assert.match(await page.locator('#coachStep').innerText(),/1 \/ 8/);
+    assert.match(await page.locator('#coachStep').innerText(),/1 \/ 9/);
     // The soldier's own level is on the field HUD now: the specialization ring
     // locks two of its four choices behind soldier levels 5 and 10, and without
     // the number on screen "Lv 5" has nothing to compare against.
@@ -98,7 +98,7 @@ if (!commandCenterToken) throw new Error('account.js does not import command-cen
     // less than half the viewport, unlike the 450px modal it replaced.
     // The dossier dressing is real styling, not decoration in a dead file: the
     // card must paint its own plate and draw one tick per step.
-    assert.equal(await page.locator('#coachPips i').count(),8,'a tick per coach card');
+    assert.equal(await page.locator('#coachPips i').count(),9,'a tick per coach card');
     assert.equal(await page.locator('#coachPips i[data-done]').count(),1,'one tick marked on the first card');
     const plate=await page.locator('#firstRunCoach').evaluate(e=>{const s=getComputedStyle(e);return `${s.backgroundImage} ${s.borderTopWidth} ${s.borderTopColor}`;});
     assert.match(plate,/gradient/,'the card paints its own plate, not bare text over the field');
@@ -285,9 +285,9 @@ if (!commandCenterToken) throw new Error('account.js does not import command-cen
     assert.equal(ground.hit, 'CANVAS#game', 'the open-ground tap reaches the battlefield');
     await page.mouse.click(ground.x, ground.y);
     // The card follows the walk while put away, and comes back on its own.
-    await page.waitForFunction(() => /Supplies/.test(document.getElementById('coachTitle').textContent), null, {timeout: 10000});
+    await page.waitForFunction(() => /You can be hit/.test(document.getElementById('coachTitle').textContent), null, {timeout: 10000});
     await page.locator('#firstRunCoach').waitFor({state:'visible',timeout:5000});
-    assert.match(await page.locator('#coachStep').innerText(),/5 \/ 8/,'it returns at the NEXT step, not the one it left');
+    assert.match(await page.locator('#coachStep').innerText(),/5 \/ 9/,'it returns at the NEXT step, not the one it left');
     assert.equal(await page.locator('#coachRecall').isHidden(),true,'no recall pill once the card is back');
     assert.equal(await page.locator('#coachNext').isDisabled(),false,'an announcement card owes nothing');
     assert.equal(await page.locator('#coachAsk').isHidden(),true,'the gate is quiet while nothing is owed');
@@ -365,7 +365,7 @@ if (!commandCenterToken) throw new Error('account.js does not import command-cen
     assert.match(await page.locator('#coachRecall').innerText(),/SHOW TASK/,'the recall names what it brings back');
     await page.locator('#coachRecall').click();
     await page.locator('#firstRunCoach').waitFor({state:'visible',timeout:5000});
-    assert.match(await page.locator('#coachTitle').innerText(),/Supplies/,'the card comes back at the card it was on');
+    assert.match(await page.locator('#coachTitle').innerText(),/You can be hit/,'the card comes back at the card it was on');
     assert.equal(await page.locator('#coachRecall').isHidden(),true,'an open card needs no recall');
     await page.locator('#coachClose').click();
     await page.locator('#coachRecall').waitFor({state:'visible',timeout:5000});
@@ -711,7 +711,7 @@ if (!commandCenterToken) throw new Error('account.js does not import command-cen
       await page.waitForFunction(() => { const card = document.getElementById('firstRunCoach'); return card && !card.hidden; }, null, { timeout: 15000 });
       // The step line reads "FIRST RUN · 1 / 7" (German: "ERSTER EINSATZ · 1 / 7"),
       // so the card number has to be found inside it, not at the start of it.
-      assert.match(await page.locator('#coachStep').innerText(), /\b1 \/ 8\b/, `${label}: the coaching starts at the first card again`);
+      assert.match(await page.locator('#coachStep').innerText(), /\b1 \/ 9\b/, `${label}: the coaching starts at the first card again`);
       assert.match(await page.locator('#wave').innerText(), /^0 /, `${label}: on a fresh training field`);
       await page.locator('#coachClose').click();
       await page.locator('#endRun').click(); await page.locator('#gameConfirmAccept').click();
