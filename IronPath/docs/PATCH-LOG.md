@@ -6,7 +6,7 @@ aber ersetzt weder Git noch die GitHub-PR-Historie. Die dazugehörige
 [Arbeitsanweisung](../../AGENTS.md) verlangt, dieses Log vor der Arbeit zu lesen
 und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
 
-Die Einträge IPL-0001 bis IPL-0091 stehen im
+Die Einträge IPL-0001 bis IPL-0092 stehen im
 [Archiv](PATCH-LOG-ARCHIV.md); hier stehen die neuesten 20. Beide Dateien
 zusammen sind lückenlos und doppelfrei - `../scripts/patch.mjs` (Unterbefehl `check`) und
 `../tests/patch-log-archive.test.mjs` prüfen das.
@@ -49,147 +49,6 @@ jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderl
 
 
 
-## IPL-0092 – Ordnung im Repository: Spielwurzel von Arbeitsmaterial getrennt, Patch-Ablauf als Werkzeug, Patch-Log geteilt (`20261121-order1`, PR `#342`)
-
-- **Zeit / Quelle:** 2026-11-21 UTC. Auftrag des Betreibers, wörtlich: „Lass uns das repo mal
-  anschauen und Ordnung reinbringen. Saubere Struktur für jedes neues Update / patch inkl Handhabung
-  für getane Arbeiten im patchlog und Prüfungen vor und nach den patches. Struktur der Ordner und
-  alles. Sauber was zum Arbeiten benutzt wird trennen von Game Dateien." Vier abgefragte
-  Entscheidungen, bindend: Trennung = **A, Spielwurzel entrümpeln** (kein Umbau der CI-Pfade, kein
-  Wechsel des Pages-Builds); Prozess = **Doku + Skripte** (kein CI-Job, der es erzwingt); Patch-Log =
-  **neueste 20 Einträge + Archiv**; Ballast = **nichts löschen, nur umräumen**.
-- **Block / Ziel:** kein Spiel-Block. Ziel ist die Arbeitsfähigkeit des Repositorys selbst: was der
-  Browser lädt von dem trennen, womit gearbeitet wird, und den Patch-Ablauf wiederholbar machen. Am
-  Spiel ändert sich nichts - Grafik, Simulation, Balance, Speicherstände und Mehrspieler sind
-  unverändert.
-- **Branch / Basis:** `arena/f49da0c2-0815games-github-io` ab
-  `b056ca3c68b9ddfdb675e1b80a5e7c975d7f0f95` (`main`, Merge von PR `#341`).
-- **Änderungen / Dateien:** zehn Commits, je ein logischer Schritt.
-  1. `e895087e` - 26 Markdown-Dateien aus der Spielwurzel nach `docs/` (34 relative Links
-     umgeschrieben, 8 externe Referenzstellen nachgezogen: `../../AGENTS.md`, `patch-notes.mjs`, zwei
-     Tests, `tower-specialization.mjs`, zwei READMEs); neu `README.md` als Strukturkarte; neu
-     `tests/repo-structure.test.mjs`.
-  2. `f88a4c53` - drei Module ohne Importeur nach `scripts/`: `map-review-render.mjs`,
-     `workshop-server-account.mjs`, `workshop-service-config.mjs`. **Release-Inventar der Spielwurzel
-     204 → 201 Dateien**, weil `release-tools/stage-version.mjs` jede `.mjs/.js/.css` der Wurzel in
-     jeden gestagten Build kopiert. Drei Pfade im Skript korrigiert, darunter der Ausgabeordner, der
-     nach dem Umzug sonst ins Repository geschrieben hätte. Struktur-Test um drei Wächter erweitert.
-  3. `da58f519` - `tests/production-cors-probe.test.mjs` startet seinen Unterprozess mit `cwd` =
-     Repo-Root; vorher lief die Suite nur vom Repo-Root grün.
-  4. `7216229a` - neu `scripts/patch-lib.mjs`, `scripts/patch-check.mjs` (Vor-/Nachprüfung),
-     `scripts/patch-bump.mjs` (Cache-Welle, Trockenlauf als Standard), `tests/patch-tooling.test.mjs`
-     (11 Tests gegen ein Miniatur-Repository mit echtem `git init`).
-  5. `4662afbe` - der PEM-Kopf in der Fixture wird zur Laufzeit zusammengesetzt, damit die eigene
-     Geheimnis-Prüfung nicht die Testdatei selbst flaggt.
-  6. `5b8f3a68` - Ereignis-Nachtrag zu `IPL-0091` übernommen. Das ist der Commit, dessen Kennung der
-     Nachtrag selbst nicht nennen kann; sie steht hier.
-  7. `ca38e70f` - Log geteilt: `docs/PATCH-LOG.md` 4040 → 610 Zeilen (neueste 20), neu
-     `docs/PATCH-LOG-ARCHIV.md` 3441 Zeilen (`IPL-0001`…`IPL-0071`), neu
-     `tests/patch-log-archive.test.mjs`.
-  8. `e6d6c4ff` - neu `docs/PATCH-ABLAUF.md` und `docs/patch-log-vorlage.md`; die Vorlage im Log wird
-     zum Verweis, damit sie nicht an zwei Stellen auseinanderläuft.
-  9. `b8cf92aa` - Cache-Welle `20261121-road1` → `20261121-order1` über 79 Dateien per
-     `scripts/patch-bump.mjs --apply`, Feldnotizen-Eintrag `order1` in `patch-notes.mjs`, dieser
-     Log-Eintrag, `IPL-0072` ins Archiv verschoben.
-  10. dieser Commit - `docs/PATCH-ABLAUF.md` bekommt §11, eine Release-Checkliste mit **25 Kästchen**
-     zum Kopieren. Bisher waren §3, §7 und §8 Prosa und es gab im ganzen Arbeitsmaterial keinen
-     einzigen abhakbaren Punkt; unter Zeitdruck musste die Reihenfolge jedes Mal neu zusammengesucht
-     werden. Jedes Kästchen ist eine Zeile mit Zeiger auf den erklärenden Abschnitt, absichtlich keine
-     zweite Fassung der Regeln, damit nichts auseinanderlaufen kann - derselbe Grund, aus dem die
-     Log-Vorlage nur noch an einer Stelle steht.
-- **Prüfungen:** volle Suite vom Repo-Root im Serienlauf, genau wie CI, über dem gepushten Stand
-  `e6d6c4ff`: **1258 tests / 1258 pass / 0 fail / 0 skipped, EXIT=0** (Log `/tmp/suite-docs-tools.log`
-  des Arbeitsraums, nicht Teil des Repositorys). Nochmals über dem kompletten Endbaum **einschließlich
-  dieses Eintrags, der Cache-Welle und der Feldnotizen**: **1258 / 1258 / 0 fail / 0 skipped, EXIT=0**
-  (`/tmp/suite-final.log`). Zwischenstände: 1253/1253/0 nach Schritt 5,
-  1242/1241/0 mit **1 skipped** nach Schritt 2. Vor diesem Auftrag: 1242 tests / 1241 pass / 1 fail /
-  1 skipped. Isoliert: `repo-structure` 7/7, `patch-tooling` 11/11, `patch-log-archive` 5/5,
-  Verträge 7 Dateien / 28 Tests, Feldnotizen- und Stempelverträge zusammen 44/44.
-  Link-Prüfung über alle Markdown-Dateien unter `IronPath/`: 52 Dateien, 0 tote Links. Scan auf CJK-,
-  kyrillische und Fullwidth-Zeichen über alle neuen und geänderten Dateien: 0 Treffer.
-  Bissfestigkeit der Wächter geprüft, nicht angenommen: ein absichtlich in die Spielwurzel gelegtes
-  Modul ohne Importeur ließ Wächter 4 und 5 anschlagen (Probe angelegt und wieder gelöscht, 0 Reste).
-  Die Cache-Welle wurde zuerst als Trockenlauf gefahren und gegen die Handarbeit aus `IPL-0091`
-  gerechnet: identisch 79 Dateien, 276 Token-Vorkommen, 7 Anker-Zeilen, 3 geschützte Historien-Zeilen
-  in `patch-notes.mjs`. Im Diff der Welle stehen exakt 14 Nicht-`?v=`-Zeilen = die 7 Anker alt/neu.
-- **Git / PR / Release:** PR `#342`, geöffnet aus diesem Zweig gegen `main`. Zum Zeitpunkt dieses
-  Eintrags **offen**: kein CI-Ergebnis, kein Merge, kein Pages-Build, keine Auslieferung. Der Stempel
-  `20261121-order1` ist im Arbeitszweig gesetzt, nicht veröffentlicht.
-- **Grenzen, ehrlich:**
-  - **Kein Spieler sieht eine Änderung.** Nur die Cache-Welle macht sich bemerkbar: ein Gerät lädt die
-    Module einmal neu.
-  - Pages baut weiter mit `build_type: legacy` aus `main`, Pfad `/`: der ganze Baum bleibt öffentlich
-    erreichbar. Dieser Auftrag trennt Arbeitsmaterial **strukturell**, er nimmt nichts aus der
-    Auslieferung heraus. Die alten Doku-Adressen `/IronPath/*.md` gelten nicht mehr, sie liegen unter
-    `/IronPath/docs/*.md`. Wer Doku und Tests wirklich nicht ausliefern will, bräuchte einen
-    Actions-Build (Variante C, bewusst nicht gewählt).
-  - Gelöscht wurde nichts, wie entschieden. Die drei umgeräumten Module sind weiter unreferenziert
-    (`workshop-server-account.mjs` hat einen Test, die anderen beiden nicht), und die 1-Byte-Datei
-    `IronPath/empty` liegt weiter in der Spielwurzel.
-  - Kein CI-Job erzwingt den neuen Ablauf. `patch-check.mjs` meldet, es verhindert nichts.
-  - **Keine Geräteabnahme** und kein Abruf der live URL. `--verify-main` belegt Repo-Inhalt auf `main`
-    plus Pages-Baustatus, nicht die Auslieferung im Browser.
-- **Nebenfund, nicht angefasst:** `docs/PATCH-BLOECKE.md` endet mit einem **doppelt angehängten
-  Schlussblock** (23 Zeilen, 2132 Zeichen, ab Zeichen 128141): `## Gemeinsame Freigabe` steht zweimal,
-  ebenso der Admin-Login-Absatz, und die Wiederholung beginnt mit dem abgeschnittenen Wortfragment
-  `twerden sowie nach Abklingzeit.`. Gemessen gegen `main` (`b056ca3c`): beide Fassungen sind dort
-  identisch 1392 Zeilen, also **ist der Fehler älter als dieser Auftrag** und nicht durch das Umräumen
-  entstanden. Der Diff `main` → dieser Stand zeigt 27 geänderte Zeilen, und alle 27 sind reine
-  Link-Umschriebe (`firebase/…` → `../firebase/…`); keine Unicode-Schädigung. Inhaltlich ist der Block
-  einmal vorhanden, deshalb wurde nichts gelöscht - die Entscheidung liegt beim Betreiber.
-- **Offen / nächster Schritt:** CI-Ergebnis, Merge und Pages-Build zu PR `#342` prüfen und als
-  Ereignis nachtragen, sobald sie tatsächlich eingetreten sind. Vom Betreiber zu stellen:
-  `game-regressions` als Pflicht-Check (dieser Arbeitsraum bekommt auf `branches/main/protection` ein
-  `403`), die Geräteabnahme der Straße aus `#341` auf iPhone/iPad Safari, und die Entscheidung über den
-  doppelten Schlussblock in `PATCH-BLOECKE.md`. Danach Teil 2 des Auftrags aus `IPL-0091`: `#336`
-  komplett neu implementiert (dickerer pulsierender Auswahlring, Hover-Vorschau mit Welle und Anzahl
-  nächster Gegner, einschließlich der fehlenden deutschen Einträge für vier Literale).
-### Ereignis-Nachtrag zu IPL-0092 – Veröffentlichung belegt (nachträglich, 2026-11-22 UTC)
-
-Die folgenden Ereignisse sind eingetreten und geprüft; sie stehen hier, weil sie
-zur Zeit des Eintrags oben noch offen waren. Jede Zeile nennt die Kennung, mit der
-sie geprüft wurde.
-
-- **CI auf dem PR-Kopf:** `gh pr checks 342` = **13 von 13 pass, 0 fail**. Run
-  `44971539781` mit den Jobs `game-regressions` (`.../job/137052198313`) und
-  `database-rules` (`.../job/137052198482`), dazu `interface-browser-smoke`, acht
-  `party-finalization-browser`-Varianten und zwei Vercel-Checks. `game-regressions`
-  war damit zum dritten Mal in Folge grün (`#340`, `#341`, `#342`, je 13 von 13);
-  bei `#335` bis `#339` war derselbe Check jeweils rot (`#335` und `#339`
-  stichprobenartig nachgeprüft: `fail`) und wurde trotzdem gemergt.
-- **PR:** `gh pr view 342 --json state,mergedAt,mergeCommit` =
-  `state=MERGED mergedAt=2026-11-22T01:37:31Z`, Merge-Commit
-  `d9a02461b6c3921f45e4dbabb3a9a22cf61ac979` in `main`.
-- **Pages:** Workflow-Run `44972324714` (`pages build and deployment`)
-  `completed/success`; `gh api repos/.../pages/builds/latest` =
-  `status=built duration_ms=45446 commit=d9a02461b6c3921f45e4dbabb3a9a22cf61ac979
-  created=2026-11-22T01:37:32Z`.
-- **Auslieferung, über `gh api repos/.../contents/<pfad>?ref=main` belegt.** Neu
-  auf `main` vorhanden: `IronPath/docs/PATCH-ABLAUF.md` (13670 B),
-  `IronPath/docs/PATCH-LOG-ARCHIV.md` (259052 B), `IronPath/docs/PATCH-LOG.md`
-  (94065 B), `IronPath/scripts/patch-check.mjs` (18746 B),
-  `IronPath/scripts/patch-bump.mjs` (6709 B), `IronPath/scripts/patch-lib.mjs`
-  (5786 B), `IronPath/tests/patch-log-archive.test.mjs` (5034 B),
-  `IronPath/tests/patch-tooling.test.mjs` (16244 B), `IronPath/README.md`
-  (3956 B). Alte Pfade liefern `404`: `IronPath/PATCH-ABLAUF.md`,
-  `IronPath/PATCH-LOG.md`, `IronPath/map-review-render.mjs`,
-  `IronPath/workshop-service-config.mjs`. Stempel auf `main`:
-  `release-version.json` `"build": "20261121-order1"`, `index.html:7`
-  `<meta name="ironpath-build" content="20261121-order1">` und `index.html:213`
-  `BUILD 20261121-order1`. `IronPath/empty` liegt weiter mit 1 B in der
-  Spielwurzel - wie entschieden wurde nichts gelöscht.
-- **Ehrliche Grenzen.** Die live URL wurde **nicht** abgerufen; belegt ist der
-  Inhalt auf `main` und der fertige Pages-Build, nicht was ein Browser lädt.
-  **Keine Geräteabnahme** auf iPhone oder iPad. `game-regressions` ist weiter
-  **kein Pflicht-Check**: `branches/main/protection` liefert diesem Arbeitsraum
-  `403`, stellen kann das nur der Betreiber. Der doppelte Schlussblock in
-  `docs/PATCH-BLOECKE.md` ist weiter vorhanden und unentschieden.
-- **Herkunft dieses Nachtrags.** Er steht als eigener Commit auf dem Arbeitszweig
-  `arena/f49da0c2-0815games-github-io`, der mit PR `#342` gemergt wurde; die
-  Kennung des Commits und des PR, die **diesen Nachtrag** nach `main` bringen,
-  kann er nicht selbst enthalten - sie steht im PR-Text und in Git. Genau dieser
-  Umstand war bei `IPL-0091` der Grund, warum dessen Nachtrag auf `main` fehlte:
-  er lag nur im Vorzweig `a4d093ef` und wurde erst mit `5b8f3a68` übernommen.
 
 ## IPL-0093 – Doppelblock im Patchplan repariert und `IronPath/empty` gelöscht (keine Spieländerung, keine Cache-Welle)
 
@@ -658,3 +517,16 @@ sie geprüft wurde.
 - **Prüfungen:** Zieltests `menu-redesign`/`endless-launcher`/`endless-last-run-rules`/`language`: 38/38; Sicherheitsnetz `account-save-contract`/`active-session`/`rules-publish-dry-run`/`social-cleanup-rules`/`friend-stats-rules-diff`: 22/22. `patch.mjs check --fast`: 0 Fehler (2 Hinweise vor der Welle). Browser-/Emulator-Fahrten laufen in der CI; Sichtprüfung über die lokale Live-Vorschau.
 - **Git / PR / Release:** Wird mit Welle und PR-Nummer fortgeschrieben.
 - **Offen / nächster Schritt:** Cache-Welle `20261123-endless5` inkl. Feldnotizen, PR, CI, Merge, Pages-Nachweis. **Betreiber-Schritt danach:** Regelkandidat gemäß `ENDLESS-LAST-RUN-ROLLOUT.md` veröffentlichen – erst dann schreibt der Client das Feld serverseitig; bis dahin greift der Geräte-Spiegel, und die Zähler laufen unverändert weiter. Block E Scheibe 2 bleibt eigenes Paket.
+
+## IPL-0112 – Endless-Last-Run: Publish-Datei aus dem echten Live-Regel-Export gebaut (PR `#374`)
+- **Zeit / Quelle:** 2026-11-23 UTC; Betreiber lieferte den aktuellen Firebase-Regelsatz als Datei (`live-rules.json`) mit der Vorgabe: Änderungen in einer Datei speichern und GitHub-Link wiedergeben.
+- **Block / Ziel:** Aktivierung der Profil-Schreibung aus `IPL-0111` (letzte Endlos-Runde auf `players/$uid/endlessLastRun`), kein Client-Code geändert.
+- **Branch / Basis:** `arena/5cd3c659-0815games-github-io` ab `aa02ea5330dbcdfd38a06634f5ccb6b7c5371d9f` (`main`, Merge PR `#373`). Feature-Commit `5a965484b571dfb3ad589e87fbaafd7c184b3982` gepusht, PR `#374` eröffnet. Keine Cache-Welle (kein Client-Code).
+- **Änderungen / Dateien:**
+  - `IronPath/firebase/live-rules-20261123.json`: Der vom Betreiber gelieferte Live-Export, byteidentisch als Referenz abgelegt (108.675 Bytes, SHA-256 `7a78078f643918c2120a791763073caf0fecf5e9f52f8355243fe0ffac69629e`, CRLF). Enthält – wie erwartet – die vier Endlos-Zähler und `tutorial`, aber kein `endlessLastRun` bei `$other:{".validate":false}`.
+  - `IronPath/firebase/ENDLESS-LAST-RUN-TO-PUBLISH.json`: Aus exakt diesem Export per `applyEndlessLastRunRules` (`firebase/endless-last-run-candidate.mjs`) erzeugt. Struktureller Diff: **genau ein hinzugefügter Pfad** `/rules/players/$uid/endlessLastRun` (Objekt-Validierung `hasChildren(['waves','bosses','sector'])`, Ganzzahlen `waves` ≤ 100000, `bosses` ≤ 20000, `sector` ≤ 999, `date` ≥ 0, `$other:false`), **0 geändert, 0 entfernt**.
+  - `IronPath/firebase/ENDLESS-LAST-RUN-ROLLOUT.md`: Publish-Anleitung auf die konkreten Dateien und Prüfwerte konkretisiert.
+  - `IronPath/tests/endless-last-run-rules.test.mjs`: Zweiter Test pinnt das Paar (Live-SHA, Publish = Live + exakt dieses Feld per `deepEqual` auf den erneut angewendeten Bau).
+- **Prüfungen:** `node scripts/rules-publish-dry-run.mjs live-rules-20261123.json --candidate ENDLESS-LAST-RUN-TO-PUBLISH.json`: Live 200 Pfade, Kandidat 206 (6 neu), **Blocker 0, Prüfpunkte 0**, Exit 0, 16 Repo-Entwürfe quergeprüft. `node --test tests/endless-last-run-rules.test.mjs`: 2/2. Kein Cache-Stempel nötig (kein Client-Code); Gesamtsuite folgt im PR-Lauf.
+- **Git / PR / Release:** Wird mit PR-Nummer fortgeschrieben. Nach dem Merge stehen beide Dateien auf `main`; der GitHub-Link zur Publish-Datei geht an den Betreiber.
+- **Offen / nächster Schritt:** **Betreiber:** Publish-Datei in der Firebase Console einspielen (Backup liegt als Live-Export im Repo), danach eine Endlos-Runde beenden und `players/<uid>/endlessLastRun` in der Datenbank kontrollieren. Ab dann synchronisiert der bereits ausgelieferte Client (`20261123-endless5`) die letzte Runde auf alle Geräte. Block E Scheibe 2 bleibt eigenes Paket.
