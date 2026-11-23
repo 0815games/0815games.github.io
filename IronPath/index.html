@@ -230,19 +230,20 @@
     <div id="patchNotesPlanned" class="patch-notes-panel" role="tabpanel" aria-labelledby="patchNotesTabNext" hidden></div>
     <p class="patch-notes-note" data-i18n-text="Released means: merged, built and live on the website. Emulator and test runs are not a device check, and a green test suite does not finish a block.">Veröffentlicht heißt: gemergt, gebaut und live auf der Website. Emulator- und Testläufe sind keine Geräteabnahme, und eine grüne Testsuite schließt keinen Block ab.</p>
   </dialog>
-  <!-- Endless launch: DEPLOY directly above the single-image battlefield
-       carousel (starts on Random battlefield), CANCEL directly below it,
-       personal endless record at the bottom. -->
+  <!-- Endless launch: one large battlefield artwork (starts on Random
+       battlefield) with the arrows and DEPLOY integrated into the image -
+       the whole picture deploys, the label sits at its bottom edge. No
+       CANCEL row: the COMMAND CENTER back button above closes the dialog.
+       The personal endless record closes the dialog at the bottom. -->
   <dialog id="endlessLaunch" class="settings-dialog endless-launch" tabindex="-1" aria-labelledby="endlessLaunchTitle">
     <div class="dialog-banner dialog-banner-endless">
       <div class="settings-head"><span class="eyebrow" data-i18n-text="ENDLESS · FREE PLAY">ENDLESS · FREE PLAY</span><button id="endlessClose" class="settings-close dialog-back-btn" type="button" aria-label="Close endless launch" data-i18n-aria-label="Close endless launch"><span data-i18n="workspace.back">← COMMAND CENTER</span></button></div>
       <h2 id="endlessLaunchTitle" data-i18n-text="Choose your battlefield">Choose your battlefield</h2>
     </div>
-    <div class="endless-deploy-top">
-      <div class="endless-loadout"><span class="eyebrow" data-i18n-text="BATTLEFIELD">BATTLEFIELD</span><span id="endlessLoadout"></span></div>
-      <button id="endlessDeploy" class="primary" type="button" data-i18n-text="DEPLOY">DEPLOY</button>
-    </div>
-    <div class="endless-carousel" role="group" aria-label="Choose battlefield" data-i18n-aria-label="Choose battlefield">
+    <div class="endless-stage" role="group" aria-label="Choose battlefield" data-i18n-aria-label="Choose battlefield">
+      <div id="endlessThemeCard" class="endless-theme-card" data-theme="random" tabindex="0" role="region" aria-live="polite" aria-label="Random battlefield">
+        <strong id="endlessSelectedTheme">Random battlefield</strong>
+      </div>
       <button id="endlessPrev" class="endless-arrow endless-arrow-prev" type="button" aria-label="Previous battlefield" data-i18n-aria-label="Previous battlefield">
         <svg class="endless-arrow-icon" viewBox="0 0 28 48" width="24" height="42" aria-hidden="true" focusable="false">
           <path d="M19 7L7 24l12 17" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="square" stroke-linejoin="miter"/>
@@ -250,9 +251,6 @@
           <line x1="4" y1="18" x2="4" y2="30" stroke="currentColor" stroke-width="2" opacity="0.72"/>
         </svg>
       </button>
-      <div id="endlessThemeCard" class="endless-theme-card" data-theme="random" tabindex="0" role="region" aria-live="polite" aria-label="Random battlefield">
-        <strong id="endlessSelectedTheme">Random battlefield</strong>
-      </div>
       <button id="endlessNext" class="endless-arrow endless-arrow-next" type="button" aria-label="Next battlefield" data-i18n-aria-label="Next battlefield">
         <svg class="endless-arrow-icon" viewBox="0 0 28 48" width="24" height="42" aria-hidden="true" focusable="false">
           <path d="M9 7l12 17L9 41" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="square" stroke-linejoin="miter"/>
@@ -260,8 +258,8 @@
           <line x1="24" y1="18" x2="24" y2="30" stroke="currentColor" stroke-width="2" opacity="0.72"/>
         </svg>
       </button>
+      <button id="endlessDeploy" class="primary endless-deploy" type="button" data-i18n-text="DEPLOY">DEPLOY</button>
     </div>
-    <div class="endless-cancel-row"><button id="endlessCancel" type="button" data-i18n-text="CANCEL">CANCEL</button></div>
     <div class="endless-record-panel">
       <span class="eyebrow endless-record-heading" data-i18n-text="YOUR ENDLESS RECORD">YOUR ENDLESS RECORD</span>
       <div class="endless-record" aria-label="Your endless record" data-i18n-aria-label="Your endless record">

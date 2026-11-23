@@ -6,7 +6,7 @@ aber ersetzt weder Git noch die GitHub-PR-Historie. Die dazugehörige
 [Arbeitsanweisung](../../AGENTS.md) verlangt, dieses Log vor der Arbeit zu lesen
 und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
 
-Die Einträge IPL-0001 bis IPL-0086 stehen im
+Die Einträge IPL-0001 bis IPL-0087 stehen im
 [Archiv](PATCH-LOG-ARCHIV.md); hier stehen die neuesten 20. Beide Dateien
 zusammen sind lückenlos und doppelfrei - `../scripts/patch.mjs` (Unterbefehl `check`) und
 `../tests/patch-log-archive.test.mjs` prüfen das.
@@ -43,18 +43,7 @@ Die Vorlage steht als einzige Quelle in
 [patch-log-vorlage.md](patch-log-vorlage.md), zusammen mit der Erklärung, was in
 jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderlaufen.
 
-## IPL-0087 – Warmer Taktik-Soundtrack & knackfreie Audio-Synthese (`20261120-audio3`, PR `#332`)
-- **Zeit / Quelle:** 2026-10-31 UTC (Nutzerrückmeldung „Ingame Musik ist absolut grausam…“); Arbeitsbranch `arena/8968243d-0815games-github-io` ab `95811ff7dc80111c06606872669ac23d7ba66cc6` (`main`, PR `#331`), Ziel-PR `#332`.
-- **Ursachenanalyse (gemessen im Web-Audio-Graph & DSP-Simulator):**
-  1. Alte `sawtooth`-Wellen bis `2100 Hz` samt chromatisch reibenden Intervallen (`Eb3/D3`, `Eb4/A3`, Tritonus) im `boss`/`wave`-Pattern klangen schrill und ermüdend; im HQ-Menü lief zusätzlich ein `Q=1,9`-gefiltertes Windrauschen bei `440 Hz` (hörbares Pfeifen).
-  2. `weatherBuffer` nutzte fälschlich den unüberblendeten 1,5-s-Waffen-`pinkBuffer` mit hartem Loop-Sprung alle 1,5 s; Hüllkurven-`GainNode`s starteten bei Standardwert `1.0` vor `setValueAtTime`, was messbare Einzel-Sample-Klicks (`maxStepSlew = 0.465`) auslöste.
-  3. `BUS_DEFAULTS.music = 0.55` saß zu laut neben Gefechtseffekten und General-Vance-Sprachausgabe.
-- **Änderungen / Dateien:**
-  - `IronPath/battle-music.mjs`: Kompletter Neuaufbau mit konsonanten d-Moll-/dorischen 32-Takt-Mustern (`Dm`, `Fmaj7`/`Bb`, `Gm7`, `Am7`/`Asus4`), warmem Sinus-/Dreieck-Subbass, weich gefilterten Glocken-Plucks, phasenstabilen 3-stimmigen Dreieck-Pads ohne Mono-Schwebung, gedämpftem Echo-Delay, dunklem 1,6-s-Raumhall (`roomSend = 0.14`), knackfrei gerampten Hüllkurven (`initZeroGain`), phasenfestem Lookahead-Scheduler sowie eigenem 4,0-s-Crossfade-Wetterrauschen (`Q <= 0.55`, im Menü stumm).
-  - `IronPath/battle-sound.mjs`: `BUS_DEFAULTS.music` auf `0.38` eingepegelt.
-  - **Tests & Cache-Welle `20261120-audio3`:** Erweiterte Musik-/DSP-/Schleifen-Checks in `IronPath/tests/battle-sound.test.mjs`, `IronPath/browser-tests/cache-wave.cjs` (`20261120-audio2` in `oldUrls`), `IronPath/release-version.json`, `IronPath/patch-notes.mjs` (`RELEASED_PATCHES[0]` `audio3` / PR `#332`) sowie alle **78** Cache-Stempel auf `20261120-audio3`.
-- **Prüfungen:** Numerischer 44,1-kHz-DSP-Check (`maxStepSlew` von `0.4651` auf `<= 0.0086`, Peak `<= 0.2589`, `0` Sawtooth-Oszillatoren), `node --check`, vollständige Node-Testsuite & `stress-tests/run.mjs`.
-- **Offen:** Echte Hörprobe auf iPhone Safari und Desktop auf `20261120-audio3` nach Merge.
+
 
 ## IPL-0088 – Turm-Radialmenü: Optik, SVG-Symbole & Erstattungsanzeige für `Confirm sale` / `Cancel` (`20261120-sellicon1`, Ziel-PR `#333`)
 - **Zeit / Quelle:** 2026-10-31 UTC (Nutzerrückmeldung: „Confirm sale im Turm Menu hat keine Optik, bzw. kein Bild oder sonst was. Prüfen und reparieren“); Arbeitsbranch `arena/cd53c79d-0815games-github-io` ab `77831bd55f243f0c9b1cbd7a3dbb0768495b3ddc` (`main`, PR `#332`). Status aktuell: `lokal/uncommittet`.
@@ -955,3 +944,16 @@ sie geprüft wurde.
   - Cache-Welle als dritter Commit desselben PR: Feldnotizen-Eintrag `blocke1` (DE+EN, `pr: 368`) in `patch-notes.mjs`, danach `patch.mjs bump 20261123-blocke1 --apply` (79 Dateien, alle 7 Anker tragen `20261123-blocke1`); Gesamtsuite auf der neuen Welle: **1.286/1.286, Exit 0, 0 ausgelassen**; Browser-Fahrten in CI, lokal ist kein Chromium verfügbar.
 - **Git / PR / Release:** Feature- und Log-Commit `7f7daa1` liegen auf `arena/ace0b707-0815games-github-io`, PR `#368` ist eröffnet; Cache-Welle, CI, Merge und Pages-Auslieferung sind noch nicht erfolgt und werden erst nach dem tatsächlichen Ereignis mit Kennung nachgetragen.
 - **Offen / nächster Schritt:** PR öffnen, Wellen-Commit nachschieben, Gesamtsuite auf `blocke1`, CI abwarten, erst nach belegtem Merge/Pages-Stand als ausgeliefert bezeichnen. Danach Block E Scheibe 2 (Treffer-Feedback und Tutorial-Einführung, Host-/Reconnect-Prüfung im Detail) als eigenes Arbeitspaket.
+
+## IPL-0107 – Endless-Start: Bühne statt Karussell, Records als Medaillentafel
+- **Zeit / Quelle:** 2026-11-23 UTC; Betreiber-Vorgabe mit Screenshot des Endless-Dialogs (sinngemäß: Cancel-Button komplett entfernen, Deploy-Button und komplettes Battlefield-Feld oben entfernen, Pfeile und Deploy ins Kartenbild integrieren, ganzer mittlerer Bildbereich als Deploy-Klickfläche, Endless Records optisch aufwerten).
+- **Block / Ziel:** Menü-Umbau außerhalb der Blöcke A–E; der „← COMMAND CENTER“-Button oben bleibt der einzige Schließweg.
+- **Branch / Basis:** `arena/198513f8-0815games-github-io` ab `3983d9dc72572cff4dc3d67f5f15786cb069efdd` (`main`, Merge PR `#368`). Status: lokal umgesetzt, Commit/PR folgen.
+- **Änderungen / Dateien:**
+  - `IronPath/index.html`: `#endlessLaunch` neu aufgebaut – `.endless-deploy-top` samt `#endlessLoadout` und die `.endless-cancel-row` mit `#endlessCancel` ersatzlos entfernt; neue `.endless-stage` mit der einen großen Themenkarte, `#endlessPrev`/`#endlessNext` und `#endlessDeploy` liegen als Elemente auf dem Bild; der Kartentitel `#endlessSelectedTheme` bleibt unten am Bild.
+  - `IronPath/core/endless-launcher.mjs`: Klick auf das Kartenbild startet den Einsatz wie der DEPLOY-Button, Enter/Leertaste auf der fokussierten Karte ebenfalls; Pfeiltasten blättern weiter; Cancel- und Loadout-Anbindung entfernt.
+  - `IronPath/menu-redesign.css` (Abschnitt 6 neu geschrieben): Bühne 352 px hoch (mobil 248 px), Pfeile innen an den Bildrändern (46×76 px, mobil 40×62 px), DEPLOY mittig unten auf dem Bild (mind. 210 px breit), Endless Records als gerahmte Medaillentafel: Übersschrift zwischen zwei Messing-Linien, sechs Kacheln, BEST WAVE in Gold und größer hervorgehoben, „Last run“-Zeile kursiv und zentriert darunter.
+  - Tests mitgezogen: `IronPath/tests/menu-redesign.test.mjs` (Layout-Anker neu: Bühne mit integrierten Pfeilen/DEPLOY, kein Cancel/Loadout mehr, Bühnenhöhe), `IronPath/tests/endless-launcher.test.mjs` (Cancel-/Loadout-Erwartungen entfernt, neuer Test: Bild-Klick und Enter starten), `IronPath/browser-tests/command-center.cjs` (kein `#endlessLoadout`, kein `#endlessCancel`), `IronPath/browser-tests/interface-smoke.cjs` (Geometrie neu: DEPLOY/Pfeile innerhalb des Bildes, DEPLOY zentriert im unteren Bildbereich, keine Cancel-Zeile).
+- **Prüfungen:** `node --test IronPath/tests/*.test.mjs`: tests 1287 / pass 1286 / skipped 1 / fail 0, Exit 0; der eine ausgelassene Test ist der bekannte Flachklon-Effekt in `release-pages-site.test.mjs` („Pinned ancestor commits require a full Git checkout“) – nach `git fetch --unshallow origin` läuft diese Datei 6/6, die Suite ist damit effektiv vollständig grün. `node IronPath/scripts/patch.mjs check --fast`: 0 Fehler, 2 Hinweise (Stand vor der Cache-Welle). Kein lokaler Chromium: Browser-Fahrten (`command-center`, `interface-smoke`) laufen erst in der CI.
+- **Git / PR / Release:** Ereignis-Nachtrag zu `IPL-0106`: PR `#368` am 2026-11-23 als `3983d9dc72572cff4dc3d67f5f15786cb069efdd` gemergt, Pages-Build `built`, `release-version.json` auf `main` trägt `20261123-blocke1` (Auslieferung im PR-Text belegt). Dieser Eintrag wird mit Welle und PR-Nummer fortgeschrieben.
+- **Offen / nächster Schritt:** Cache-Welle `20261123-endless1` inkl. Feldnotizen, dann PR, CI, Merge und Pages-Nachweis. Aus Block E bleibt Scheibe 2 (Treffer-Feedback/Tutorial, Host-/Reconnect-Prüfung im Detail, menschliche Balance mit Block C) ein eigenes späteres Paket.

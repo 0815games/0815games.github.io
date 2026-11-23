@@ -1,8 +1,8 @@
 // The endless launch dialog: everything a soldier wants to see before free
-// play - the personal record, the battlefield choice, the last run and the
-// current loadout. Navigation only; the run itself starts through the same
+// play - the personal record, the battlefield choice and the last run.
+// Navigation only; the run itself starts through the same
 // chooseEndless path the one-click flow used.
-import {translate,translateText} from '../language.mjs?v=20261123-blocke1';
+import {translateText} from '../language.mjs?v=20261123-blocke1';
 
 // The free-play generator themes (maps.mjs draws one of five at random); the
 // launcher offers them as a choice plus true random. Labels reuse the
@@ -49,8 +49,6 @@ export function createEndlessLauncher({document,getRecord=()=>({}),getBestWave=a
     if(lastEl){
       lastEl.textContent=last?translateText('Last run: wave {wave} · {bosses} bosses · sector {sector}',{wave:last.waves,bosses:last.bosses,sector:last.sector}):translateText('No endless run yet on this device.');
     }
-    const loadoutEl=$('endlessLoadout');
-    if(loadoutEl)loadoutEl.textContent=lastRecord.loadout||translate('command.none');
   }
   function step(delta){
     index=(index+delta+ENDLESS_THEMES.length)%ENDLESS_THEMES.length;
@@ -84,14 +82,19 @@ export function createEndlessLauncher({document,getRecord=()=>({}),getBestWave=a
     paintDetails();
   }
   const close=()=>{try{dialog.close();}catch{}};
+  const deploy=()=>{close();onDeploy(currentTheme().key??null);};
   if($('endlessPrev'))$('endlessPrev').onclick=()=>step(-1);
   if($('endlessNext'))$('endlessNext').onclick=()=>step(1);
+  // The whole artwork is the deploy surface: a click anywhere on the
+  // picture starts the run, exactly like the DEPLOY button on its bottom
+  // edge. The arrows live outside the card, so they never deploy.
+  $('endlessThemeCard')?.addEventListener?.('click',deploy);
   $('endlessThemeCard')?.addEventListener?.('keydown',event=>{
     if(event.key==='ArrowLeft'){event.preventDefault?.();step(-1);}
     else if(event.key==='ArrowRight'){event.preventDefault?.();step(1);}
+    else if(event.key==='Enter'||event.key===' '){event.preventDefault?.();deploy();}
   });
   if($('endlessClose'))$('endlessClose').onclick=close;
-  if($('endlessCancel'))$('endlessCancel').onclick=close;
-  if($('endlessDeploy'))$('endlessDeploy').onclick=()=>{close();onDeploy(currentTheme().key??null);};
+  if($('endlessDeploy'))$('endlessDeploy').onclick=deploy;
   return {open,refreshLanguage,getSelectedTheme:()=>currentTheme().key??null};
 }

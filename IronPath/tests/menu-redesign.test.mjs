@@ -105,24 +105,29 @@ test('account.js wires password-change, backdrop dismiss, menu dialog cleanup, a
   }
 });
 
-test('endless quick-deploy sits above single-card carousel, cancel below, and record at bottom', () => {
+test('endless stage carries arrows and deploy inside one artwork, record at bottom', () => {
   const html = read('index.html');
   const css = read('menu-redesign.css');
 
   const endlessStart = html.indexOf('id="endlessLaunch"');
   const endlessEnd = html.indexOf('</dialog>', endlessStart);
   const endless = html.slice(endlessStart, endlessEnd);
-  const deployTop = endless.indexOf('class="endless-deploy-top"');
+  const stagePos = endless.indexOf('class="endless-stage"');
+  const cardPos = endless.indexOf('id="endlessThemeCard"');
+  const prevPos = endless.indexOf('id="endlessPrev"');
+  const nextPos = endless.indexOf('id="endlessNext"');
   const deployPos = endless.indexOf('id="endlessDeploy"');
-  const carouselPos = endless.indexOf('class="endless-carousel"');
   const selectedPos = endless.indexOf('id="endlessSelectedTheme"');
-  const cancelPos = endless.indexOf('id="endlessCancel"');
   const recordPos = endless.indexOf('class="endless-record"');
   const lastRunPos = endless.indexOf('id="endlessLastRun"');
-  assert.ok(deployTop > 0 && deployPos > deployTop, '#endlessDeploy lives in .endless-deploy-top');
-  assert.ok(deployPos < carouselPos && carouselPos < selectedPos && selectedPos < cancelPos,
-    'DEPLOY sits above the single-card carousel and CANCEL sits directly below it');
-  assert.ok(cancelPos < recordPos && recordPos < lastRunPos, '.endless-record and #endlessLastRun sit below CANCEL');
+  assert.ok(stagePos > 0 && cardPos > stagePos && prevPos > cardPos && nextPos > prevPos && deployPos > nextPos,
+    'the stage holds the artwork, both arrows and DEPLOY in one integrated picture');
+  assert.ok(selectedPos > cardPos && selectedPos < prevPos, 'the battlefield name sits at the bottom of the artwork');
+  assert.ok(!endless.includes('endlessCancel') && !endless.includes('endless-deploy-top') && !endless.includes('endlessLoadout'),
+    'no CANCEL row, no deploy/loadout field above the artwork any more');
+  assert.ok(deployPos < recordPos && recordPos < lastRunPos, '.endless-record and #endlessLastRun close the dialog below the stage');
+  assert.match(css, /#endlessLaunch \.endless-arrow\s*\{[^}]*position:\s*absolute/, 'endless arrows are integrated into the artwork');
+  assert.match(css, /#endlessLaunch #endlessDeploy\s*\{[^}]*position:\s*absolute/, 'DEPLOY sits on the artwork, not above it');
 
   const boardStart = html.indexOf('id="campaignBoard"');
   const boardEnd = html.indexOf('class="campaign-quick-select"', boardStart);
@@ -199,7 +204,7 @@ test('VIEW LAST RESULTS sits below mode cards, language toggles match, and HQ di
   // Paket 4: fixed card height on Endless themes + custom SVG arrows
   assert.match(html, /id="endlessPrev"[\s\S]*?<svg class="endless-arrow-icon"/, '#endlessPrev renders custom Iron Path vector arrow');
   assert.match(html, /id="endlessNext"[\s\S]*?<svg class="endless-arrow-icon"/, '#endlessNext renders custom Iron Path vector arrow');
-  assert.match(css, /#endlessLaunch\s+\.endless-theme-card\s*\{[^}]*height:\s*256px;[^}]*min-height:\s*256px;[^}]*max-height:\s*256px/, 'Endless terrain cards keep uniform fixed desktop height');
+  assert.match(css, /#endlessLaunch\s+\.endless-stage\s*\{[^}]*height:\s*352px/, 'the endless stage keeps one uniform tall artwork height on desktop');
 
   // Command Center soldier XP footer dock & painted action cards
   const soldierStart = nav.indexOf('id="menuSoldier"');

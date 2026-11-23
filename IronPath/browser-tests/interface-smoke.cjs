@@ -697,9 +697,10 @@ const fs = require('node:fs');
             const deploy=document.getElementById('endlessDeploy').getBoundingClientRect();
             const card=document.getElementById('endlessThemeCard');
             const label=document.getElementById('endlessSelectedTheme');
+            const prev=document.getElementById('endlessPrev').getBoundingClientRect();
+            const next=document.getElementById('endlessNext').getBoundingClientRect();
             const prevIcon=document.querySelector('#endlessPrev svg.endless-arrow-icon')?.getBoundingClientRect();
             const nextIcon=document.querySelector('#endlessNext svg.endless-arrow-icon')?.getBoundingClientRect();
-            const cancel=document.getElementById('endlessCancel').getBoundingClientRect();
             const heights=[];
             const origTheme=card.dataset.theme,origText=label.textContent;
             for(const [theme,text] of [['random','Random battlefield'],['scrub','Scorched Scrubland'],['forest','Dense Temperate Forest'],['urban','Urban Ruin & Industrial Complex'],['arctic','Arktische Tundra & Eissee'],['marsh','Tiefe Sumpfgebiete']]) {
@@ -708,10 +709,18 @@ const fs = require('node:fs');
             }
             card.dataset.theme=origTheme; label.textContent=origText;
             const r=card.getBoundingClientRect();
-            return {deployBottom:deploy.bottom,cardTop:r.top,cardBottom:r.bottom,cancelTop:cancel.top,art:getComputedStyle(card).backgroundImage,heights,prevIconWidth:prevIcon?.width??0,nextIconWidth:nextIcon?.width??0,dialogWidth:document.getElementById('endlessLaunch').getBoundingClientRect().width};
+            const inside=(a,b)=>a.left>=b.left-1&&a.right<=b.right+1&&a.top>=b.top-1&&a.bottom<=b.bottom+1;
+            return {card:r,deploy,prev,next,cancelPresent:!!document.getElementById('endlessCancel'),art:getComputedStyle(card).backgroundImage,heights,prevIconWidth:prevIcon?.width??0,nextIconWidth:nextIcon?.width??0,dialogWidth:document.getElementById('endlessLaunch').getBoundingClientRect().width,
+              deployInside:inside(deploy,r),prevInside:inside(prev,r),nextInside:inside(next,r),
+              deployCentered:Math.abs((deploy.left+deploy.right)/2-(r.left+r.right)/2)<4,
+              deployLow:deploy.top>=r.top+r.height*0.6,prevHugsLeft:prev.left<=r.left+r.width*0.25,nextHugsRight:next.right>=r.right-r.width*0.25};
           });
-          assert.ok(carouselLayout.deployBottom<=carouselLayout.cardTop+2,`${name}: #endlessDeploy sits above #endlessThemeCard`);
-          assert.ok(carouselLayout.cardBottom<=carouselLayout.cancelTop+2,`${name}: #endlessCancel sits below #endlessThemeCard`);
+          assert.equal(carouselLayout.cancelPresent,false,`${name}: endless launcher has no cancel button any more`);
+          assert.ok(carouselLayout.card.height>160,`${name}: endless stage shows one large battlefield artwork (${Math.round(carouselLayout.card.height)}px)`);
+          assert.ok(carouselLayout.deployInside,`${name}: #endlessDeploy sits inside #endlessThemeCard`);
+          assert.ok(carouselLayout.deployCentered&&carouselLayout.deployLow,`${name}: #endlessDeploy is centred on the lower part of the artwork`);
+          assert.ok(carouselLayout.prevInside&&carouselLayout.nextInside,`${name}: endless arrows sit inside the artwork`);
+          assert.ok(carouselLayout.prevHugsLeft&&carouselLayout.nextHugsRight,`${name}: endless arrows hug the artwork edges`);
           assert.match(carouselLayout.art,/endless-random/,`${name}: #endlessThemeCard opens on Random artwork`);
           assert.ok(carouselLayout.prevIconWidth>=12&&carouselLayout.nextIconWidth>=12,`${name}: #endlessPrev and #endlessNext render custom vector arrows`);
           const minH=Math.min(...carouselLayout.heights),maxH=Math.max(...carouselLayout.heights);
