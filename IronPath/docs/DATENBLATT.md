@@ -39,9 +39,10 @@ exportieren und vergleichen.
 Der Operatorplan und die Grenzen stehen in `release-tools/FIREBASE-PAGES-ROLLOUT.md`.
 `PAGES-ROLLOUT.md` beschreibt nur den älteren Vercel-Experimentpfad.
 
-**Stand 2026-11-24:** Das Testprojekt `ironpathtest` und das Vercel-Projekt
-`ironpath-release` sind gelöscht; das Spiel läuft unverändert auf
-`iron-path-dc727`. Die Testkette (`build-isolated-test-site.mjs`,
+**Stand 2026-11-24:** Das Testprojekt `ironpathtest` (inklusive Datenbank) und
+das Vercel-Projekt `ironpath-release` sind gelöscht — bei Vercel mitsamt der
+Deployments und dem öffentlichen Alias; als Vercel-Projekt bleibt nur
+`ironpath-live-session`. Das Spiel läuft unverändert auf `iron-path-dc727`. Die Testkette (`build-isolated-test-site.mjs`,
 `initialize-isolated-test.mjs`, `exercise-isolated-guard.mjs`,
 `browser-tests/release-live-test.cjs` und die drei zugehörigen `release-test-*`-
 Tests) ist aus dem Repository entfernt. Die älteren Abschnitte unten halten die

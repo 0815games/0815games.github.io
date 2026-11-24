@@ -400,11 +400,14 @@ are validated, this mechanism is experimental, not a demonstrated guarantee.
 
 ## Removed: the `ironpathtest` test pipeline (2026-11-24)
 
-The separate Firebase project `ironpathtest` and the Vercel project
-`ironpath-release` were deleted by the owner; the test database is gone.
-Firebase retires a deleted project ID permanently, so the following four
-operators and their three unit tests were removed from the repository rather
-than pointed at a new project:
+The separate Firebase project `ironpathtest` (test database) and the Vercel
+project `ironpath-release` are both gone: the Firebase project and its database
+were deleted by the owner, and the Vercel project was deleted on 2026-11-24,
+which also removed the deployments and the public alias
+`https://ironpath-release.vercel.app/`. Only `ironpath-live-session` remains as
+a Vercel project. Firebase retires a deleted project ID permanently, so the
+following four operators and their three unit tests were removed from the
+repository rather than pointed at a new project:
 
 - `build-isolated-test-site.mjs` (packaged the guarded launcher and game for
   the test project)
