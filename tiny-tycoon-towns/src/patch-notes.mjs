@@ -4,6 +4,20 @@
 
 export const RELEASED_PATCHES = [
   {
+    build: '20261124-sitz2',
+    date: '2026-11-24',
+    items: [
+      {
+        de: 'Fehler behoben: Die Schaltfläche „Hilfe“ und das Tutorial funktionierten nicht. Beides ist wieder da.',
+        en: 'Fixed: the Help button and the tutorial did not work. Both are back.',
+      },
+      {
+        de: 'Das Intro mit Logo wird jetzt beim Öffnen der Seite gezeigt, bevor die Anmeldung erscheint.',
+        en: 'The intro with the logo now plays when the page opens, before the sign-in appears.',
+      },
+    ],
+  },
+  {
     build: '20261124-sitz1',
     date: '2026-11-24',
     items: [

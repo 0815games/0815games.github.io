@@ -284,3 +284,15 @@ Ereignis ergänzt.
   (`#auth-intro`) und `style.css` (Keyframes, Reduce-Motion-Fallback), `playIntro()` in `src/main.js`
   (einmal pro Seitenaufruf, Klick oder Taste überspringt, ca. 3,6 s). Logo in der Anmeldekarte.
 - Prüfungen: 58 Tests grün, `check --fast` ohne Fehler. Auf dem Bildschirm noch nicht gesehen.
+
+### TTT-0008 – Fehler Hilfe und Tutorial (Welle `20261124-sitz2`)
+
+- Befund: Nach dem Merge von #395 brach der Start mit `ReferenceError: showHelp is not defined` ab. Dadurch
+  fehlten auch Intro und Anmeldung. Ursache: Beim Umbau der Sitzungssperre (TTT-0007) wurde ein zu großer
+  Textblock ersetzt, in dem `showHelp`, `showTutorialStep` und `endTutorial` standen. Die Funktionen waren
+  danach nicht mehr definiert.
+- Behebung: Die drei Funktionen neu geschrieben. Tutorial-Fortschritt wird wieder über `setTutorialStep`
+  gespeichert (der Import war vorhanden, der Aufruf fehlte).
+- Prüfung: eslint `no-undef` über `src/` ohne Befund (vorher 4). 58 Tests grün. `check --fast` ohne Fehler.
+- Lehre: Vor dem Merge alle Funktionsaufrufe mit `no-undef` prüfen. Das deckt diesen Fehler sofort auf.
+- Im Browser noch nicht getestet. Offen für den Betreiber: Test auf dem Handy (Intro, Hilfe, Tutorial).

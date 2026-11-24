@@ -3,21 +3,21 @@
 import {
   createTown, newSeed, chooseBiome, placeBuilding, upgradeBuilding,
   toggleSell, buyOffer, advance, hydrateTown, setTutorialStep,
-} from './domain/engine.js?v=20261124-sitz1';
+} from './domain/engine.js?v=20261124-sitz2';
 import {
   productionMultiplier, ratePerMin, buildCost, storageCap, classOf,
-} from './domain/economy.js?v=20261124-sitz1';
-import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261124-sitz1';
-import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261124-sitz1';
-import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261124-sitz1';
+} from './domain/economy.js?v=20261124-sitz2';
+import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261124-sitz2';
+import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261124-sitz2';
+import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261124-sitz2';
 const SEEN_NOTES_KEY = 'ttt:notes-seen';
-import { withTimeout } from './async-util.js?v=20261124-sitz1';
-import { createBoard } from './world/board.js?v=20261124-sitz1';
-import { createLoginScene } from './world/login-scene.js?v=20261124-sitz1';
-import { TUTORIAL_STEPS, HELP_SECTIONS } from './tutorial.js?v=20261124-sitz1';
-import { createVersionUI } from './version-ui.mjs?v=20261124-sitz1';
+import { withTimeout } from './async-util.js?v=20261124-sitz2';
+import { createBoard } from './world/board.js?v=20261124-sitz2';
+import { createLoginScene } from './world/login-scene.js?v=20261124-sitz2';
+import { TUTORIAL_STEPS, HELP_SECTIONS } from './tutorial.js?v=20261124-sitz2';
+import { createVersionUI } from './version-ui.mjs?v=20261124-sitz2';
 
-const BUILD = '20261124-sitz1';
+const BUILD = '20261124-sitz2';
 console.info(`Tiny Tycoon Towns ${BUILD}`);
 const LAST_BIOME_KEY = 'ttt.lastBiome';
 const LOCAL_KEY = (uid) => `ttt.save.v1.${uid}`;
@@ -78,7 +78,7 @@ const REMOTE_TIMEOUT_MS = 10_000;
 async function loadData() {
   const names = ['resources', 'biomes', 'buildings', 'economy', 'merchant'];
   const parts = await Promise.all(names.map((n) =>
-    fetch(`data/${n}.json?v=20261124-sitz1`).then((r) => {
+    fetch(`data/${n}.json?v=20261124-sitz2`).then((r) => {
       if (!r.ok) throw new Error(`data/${n}.json: HTTP ${r.status}`);
       return r.json();
     })));
@@ -123,7 +123,7 @@ async function boot() {
   window.addEventListener('offline', updateSync);
 
   try {
-    cloud = await import('./cloud.js?v=20261124-sitz1');
+    cloud = await import('./cloud.js?v=20261124-sitz2');
   } catch {
     showFatal('Das Konto-System konnte nicht geladen werden. Ohne Anmeldung lässt sich nicht spielen. Bitte Verbindung prüfen und neu laden.');
     return;
@@ -551,6 +551,78 @@ function showWhatsNewIfUpdated() {
   });
   $('#whatsnew-ok').focus();
   return true;
+}
+
+// ---------- Tutorial und Hilfe ----------
+// Das Tutorial läuft einmal pro Konto. Fortschritt steht in state.tutorialStep.
+// Hilfe (Knopf „Hilfe“) öffnet die Übersicht jederzeit erneut.
+let tutorialIndex = null; // aktueller Schritt, null wenn keiner offen ist
+
+function clearTutorialHighlight() {
+  document.querySelectorAll('.tut-target').forEach((el) => el.classList.remove('tut-target'));
+}
+
+function endTutorial() {
+  tutorialIndex = null;
+  clearTutorialHighlight();
+  const el = $('#tutorial');
+  if (el) {
+    el.hidden = true;
+    el.innerHTML = '';
+  }
+}
+
+function saveTutorialStep(step) {
+  if (!state) return;
+  dispatch(setTutorialStep(state, Math.min(step, TUTORIAL_STEPS.length)));
+}
+
+function showTutorialStep(index) {
+  const step = TUTORIAL_STEPS[index];
+  if (!step || !state) return endTutorial();
+  tutorialIndex = index;
+  clearTutorialHighlight();
+  if (step.target) document.querySelector(step.target)?.classList.add('tut-target');
+  const last = index === TUTORIAL_STEPS.length - 1;
+  const el = $('#tutorial');
+  el.hidden = false;
+  el.innerHTML = `<section class="tut-card" role="dialog" aria-labelledby="tut-title">
+    <p class="small muted">Schritt ${index + 1} von ${TUTORIAL_STEPS.length}</p>
+    <h2 id="tut-title">${esc(step.title)}</h2>
+    <p>${esc(step.text)}</p>
+    <p class="row">
+      <button type="button" id="tut-skip" class="ghost">Überspringen</button>
+      <button type="button" id="tut-next" class="primary">${last ? 'Fertig' : 'Weiter'}</button>
+    </p>
+  </section>`;
+  $('#tut-next').addEventListener('click', () => {
+    if (last) {
+      saveTutorialStep(TUTORIAL_STEPS.length);
+      endTutorial();
+    } else {
+      saveTutorialStep(index + 1);
+      showTutorialStep(index + 1);
+    }
+  });
+  $('#tut-skip').addEventListener('click', () => {
+    saveTutorialStep(TUTORIAL_STEPS.length);
+    endTutorial();
+  });
+  $('#tut-next').focus({ preventScroll: true });
+}
+
+/** Hilfe-Übersicht: alle Abschnitte, jederzeit über den Hilfe-Knopf. */
+function showHelp() {
+  const sections = HELP_SECTIONS.map((sec) => `<section>
+      <h3>${esc(sec.title)}</h3>
+      ${sec.paragraphs.map((p) => `<p>${esc(p)}</p>`).join('')}
+    </section>`).join('');
+  openDialog(`<div class="dlg-body help">
+    <h2 id="dlg-title">Hilfe</h2>
+    ${sections}
+    <p class="row"><button type="button" id="help-close" class="primary">Schließen</button></p>
+  </div>`);
+  $('#help-close').addEventListener('click', closeDialog);
 }
 
 function maybeStartTutorial() {
