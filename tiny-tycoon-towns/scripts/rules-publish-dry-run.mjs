@@ -101,13 +101,15 @@ function ancestorModes(live,path){
 // Blockers: the same rules that the emulator suite would enforce in IronPath.
 // Felder einer Stadt, die jeder angemeldete Spieler lesen darf (Ansicht fremder Städte).
 export const PUBLIC_VIEW=['name','biome','townLevel','tiles'];
+// Erlaubte Hauptzweige. Neue Zweige müssen hier bewusst eingetragen werden.
+export const BRANCHES=['saves','sessions','admins','profiles','friendCodes','ownCodes','friendRequests','friends'];
 export function checkRules(raw){
   const errors=[];
   const rules=unwrapRules(raw);
   if(rules['.read']!==undefined||rules['.write']!==undefined)
     errors.push('Wurzel: .read oder .write gesetzt. Die Wurzel muss geschlossen bleiben.');
   for(const key of Object.keys(rules))
-    if(!key.startsWith('.')&&key!=='saves'&&key!=='sessions'&&key!=='admins')errors.push(`Unbekannter Zweig "${key}"`);
+    if(!key.startsWith('.')&&!BRANCHES.includes(key))errors.push(`Unbekannter Zweig "${key}"`);
   walk(rules,'',(path,node)=>{
     for(const mode of ['.read','.write'])
       if(node[mode]===true||node[mode]==='true')errors.push(`${path||'/'}: ${mode} ist offen (true)`);
@@ -124,7 +126,8 @@ export function checkRules(raw){
       if(town.$other?.['.validate']!==false)errors.push('town: $other muss .validate false haben (unbekannte Felder abweisen)');
       if(!String(town['.validate']??'').includes('schemaVersion'))errors.push('town: Schema-Downgrade wird nicht geprüft');
       // Fremde Städte: nur die Ansichtsfelder dürfen gelesen werden. Münzen, Lager und Verwaltung bleiben privat.
-      if(town['.read']!==undefined)errors.push('town: .read darf nicht am Stadt-Knoten stehen (sonst sind Münzen und Lager lesbar)');
+      // Am Stadt-Knoten ist Lesen nur für Freunde erlaubt: der Eintrag in friends/$uid muss geprüft werden.
+      if(town['.read']!==undefined&&!String(town['.read']).includes("root.child('friends')"))errors.push('town: .read darf am Stadt-Knoten nur für Freunde gelten (sonst sind Münzen und Lager lesbar)');
       for(const [key,node] of Object.entries(town)){
         if(key.startsWith('.')||!node||typeof node!=='object')continue;
         if(node['.read']!==undefined&&!PUBLIC_VIEW.includes(key))errors.push(`town/${key}: .read nur für Ansichtsfelder erlaubt (${PUBLIC_VIEW.join(', ')})`);
@@ -138,6 +141,30 @@ export function checkRules(raw){
     if(!String(session['.read']??'').includes('auth.uid === $uid'))errors.push('sessions/$uid: .read ohne Eigentümerprüfung');
     if(!String(session['.write']??'').includes('auth.uid === $uid'))errors.push('sessions/$uid: .write ohne Eigentümerprüfung');
     if(session.$other?.['.validate']!==false)errors.push('sessions/$uid: $other muss .validate false haben');
+  }
+  // Profile: öffentlich lesbar (Namenssuche), nur der Inhaber schreibt.
+  if(rules.profiles){
+    const pr=rules.profiles.$uid;
+    if(!pr)errors.push('profiles/$uid fehlt');
+    else{
+      if(!String(pr['.write']??'').includes('auth.uid === $uid'))errors.push('profiles/$uid: .write ohne Eigentümerprüfung');
+      if(pr.$other?.['.validate']!==false)errors.push('profiles/$uid: $other muss .validate false haben');
+    }
+  }
+  // Freundescode: Code -> UID nur für genau diesen Code, nur der Inhaber legt ihn an oder löscht ihn.
+  if(rules.friendCodes){
+    const fc=rules.friendCodes.$code;
+    if(!fc)errors.push('friendCodes/$code fehlt');
+    else if(!String(fc['.write']??'').includes('auth.uid'))errors.push('friendCodes/$code: .write ohne Eigentümerprüfung');
+    else if(String(fc['.read']??'')==='' )errors.push('friendCodes/$code: .read fehlt');
+  }
+  if(rules.ownCodes?.$uid){
+    if(!String(rules.ownCodes.$uid['.read']??'').includes('auth.uid === $uid'))errors.push('ownCodes/$uid: .read ohne Eigentümerprüfung');
+  }
+  // Freunde: Liste nur für den Inhaber lesbar. Eintrag schreibt der Inhaber oder der Angefragte, nur mit offener Anfrage.
+  if(rules.friends?.$uid){
+    const fr=rules.friends.$uid;
+    if(!String(fr['.read']??'').includes('auth.uid === $uid'))errors.push('friends/$uid: .read ohne Eigentümerprüfung');
   }
   // Betreiber: admins/{uid} nur für das Konto selbst lesbar, nie von Clients schreibbar.
   const adm=rules.admins?.$uid;

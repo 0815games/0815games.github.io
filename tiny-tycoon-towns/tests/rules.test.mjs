@@ -63,3 +63,16 @@ test('other towns: only the view fields are readable, never coins, stock or the 
   // Die Ansicht selbst ist erlaubt.
   assert.equal(checkRules(candidate).errors.filter((e) => e.includes('Ansichtsfelder') || e.includes('Stadt-Knoten')).length, 0);
 });
+
+test('friends draft passes the lock-mode checks (bissfest)', () => {
+  const draft = JSON.parse(readFileSync(new URL('../firebase/friends-draft.rules.json', import.meta.url), 'utf8'));
+  assert.deepEqual(checkRules(draft).errors, []);
+});
+
+test('friend requests can only be created by the sender (bissfest)', () => {
+  const draft = JSON.parse(readFileSync(new URL('../firebase/friends-draft.rules.json', import.meta.url), 'utf8'));
+  const rule = String(draft.rules.friendRequests.$to.$from['.write']);
+  // Der Empfänger darf nur löschen (annehmen/ablehnen), nie anlegen.
+  assert.ok(rule.includes('auth.uid === $from ||'));
+  assert.ok(rule.includes('auth.uid === $to && !newData.exists()'));
+});
