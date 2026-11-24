@@ -36,6 +36,15 @@ Herkunft nur ein kleines Detail.
 Regel: bei Fleisch zuerst die FORM nennen (Steak, Rippchen, Klaue,
 Braten), die Herkunft nur als Beigabe.
 
+## Befüllte statt gezeichneter Motive
+
+`cooked_lurk` kam als vollflaechig gefuellte Silhouette zurueck statt als
+Linienkunst (25 % helle Pixel gegen 14,6 % Mittel). Die Weiss-Pruefung
+sieht das nicht — hier hilft nur der Blick aufs Kontrollblatt.
+
+Regel fuer die Restmotive: "outline line art, hollow interior, no solid
+fill" gehoert bei jedem Motiv in den Prompt, das eine grosse Flaeche hat.
+
 ## Ausschuss in Block 5
 
 `bp_stimpack` und `gears` hatten weissen Hintergrund (85,6 % / 36,3 %) —
