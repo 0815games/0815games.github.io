@@ -23,6 +23,11 @@ Waffen: `pistol_10mm` `revolver_44` `shotgun` `combat_shotgun` `smg`
 `assault_rifle` `minigun` `laser_pistol` `laser_rifle` `plasma_pistol` `plasma_rifle`
 Rüstung: `power_armor`
 
+## Kaputte Rohbilder
+
+`knuckles` — weisse Stoerung in allen vier Ecken (9 % der Flaeche). Neu zeichnen.
+`baseball_bat` — zeigt zwei gekreuzte Schlaeger statt einem. Neu zeichnen.
+
 ## Block 3 — Restliche Waffen (23)
 
 Schusswaffen:

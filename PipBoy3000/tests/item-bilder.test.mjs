@@ -77,7 +77,9 @@ test('itemBildPfad liefert relative Pfade', () => {
   assert.ok(!pfad.startsWith('/'), 'absoluter Pfad: bricht auf einem der beiden Hosts');
 
   // Item ohne Bild -> null, damit der Aufrufer auf das Emoji zurueckfaellt.
-  assert.equal(Game.itemBildPfad('machete'), null);
+  // Das Set waechst, deshalb ein Item, das noch weit hinten in der Liste
+  // steht (Rohstoffe kommen zuletzt).
+  assert.equal(Game.itemBildPfad('screws'), null);
   assert.equal(Game.itemBildPfad(null), null);
   assert.equal(Game.itemBildPfad('gibt_es_nicht'), null);
 });
