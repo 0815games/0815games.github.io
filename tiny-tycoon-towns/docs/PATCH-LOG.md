@@ -491,3 +491,17 @@ Ereignis ergänzt.
 - Grenzen: Modell mit idealem Bot, Annahme 2 Aktionen je Minute, keine Lagerverwaltung durch den Spieler. Die Zahlen sind eine Richtung, keine Abnahme.
 - Offen / nächster Schritt: Entscheidung des Nutzers, wie Stufe 10 erreichbar wird (Jetzt 5 in ROADMAP.md). Danach Werte setzen und Tests anpassen. Der Freibrief-Gate auf Stufe 10 ist noch nicht im Code (CHARTER_MIN_LEVEL steht noch auf 8).
 
+### TTT-0029 – Balance: XP aus Ausbauten (Messung in Kopie, Spiel unverändert)
+
+- Zeit / Quelle: Nutzerentscheidung im Chat: Stadtlevel 10 über mehr XP aus Ausbauten erreichen.
+- Änderungen im Repo: keine am Spiel. `data/economy.json` und `src/domain/engine.js` unverändert. Die Varianten liefen nur in einer Kopie unter `/tmp`.
+- Befunde:
+  1. XP je Ausbau linear (5 × neue Stufe): Alles wird schneller. Stufe 10 bei 1,3 bis 1,9 h, je nach Schwelle.
+  2. XP je Ausbau quadratisch (1 × Stufe²): Das Verhältnis Stufe 10 zu Stufe 5 sinkt auf etwa 2. Das ist das Verhältnis, das die Ziele brauchen (12 h zu 6 h). Lineare Varianten hatten etwa 3.
+  3. Bester Kandidat (Schwellen 2 bis 5 × 40, Schwellen 6 bis 11 × 34, XP = Stufe²): Stufe 5 bei 3,2 bis 4,6 h, Stufe 10 bei 9,6 bis 10,6 h in Deepwoods, Highlands und Coast. Stufe 5 in Riverlands bei 3,2 h, unter dem Ziel.
+  4. Riverlands bleibt in allen Varianten ab Stufe 9 stehen. Das Gitter ist bei 80 Gebäuden voll, und die XP reichen nicht mehr. Das ist eine Wirtschaftsfrage von Riverlands, keine Schwellenfrage.
+  5. Ergebnis: Die Ziele (Stufe 5 bei 4 bis 8 h, Stufe 10 bei 12 h) sind mit diesen Stellschrauben in drei Bioms nahe, in Riverlands nicht erreichbar. Noch offen ist, ob Riverlands mehr Einnahmen braucht oder ob das Gitter später wächst.
+- Prüfungen: keine neuen Tests, Stand von TTT-0028 (76 pass, 0 fail).
+- Grenzen: Bot mit 2 Aktionen je aktiver Minute (Annahme), Gitter-Erweiterung nur an Stufen gebunden, 150 Tage Simulation.
+- Offen / nächster Schritt: Nutzer entscheidet über Riverlands (mehr Einnahmen, Gitterwachstum oder Ziel anpassen) und die Formel für XP je Ausbau. Danach Umsetzung im Spiel, Tests, Freibrief-Gate auf Stufe 10 (CHARTER_MIN_LEVEL).
+
