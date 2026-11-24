@@ -3,20 +3,21 @@
 import {
   createTown, newSeed, chooseBiome, placeBuilding, upgradeBuilding,
   toggleSell, buyOffer, advance, hydrateTown, setTutorialStep,
-} from './domain/engine.js?v=20261124-konto2';
+} from './domain/engine.js?v=20261124-welt1';
 import {
   productionMultiplier, ratePerMin, buildCost, storageCap, classOf,
-} from './domain/economy.js?v=20261124-konto2';
-import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261124-konto2';
-import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261124-konto2';
-import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261124-konto2';
-import { withTimeout } from './async-util.js?v=20261124-konto2';
-import { createBoard } from './world/board.js?v=20261124-konto2';
-import { createLoginScene } from './world/login-scene.js?v=20261124-konto2';
-import { TUTORIAL_STEPS, HELP_SECTIONS } from './tutorial.js?v=20261124-konto2';
-import { createVersionUI } from './version-ui.mjs?v=20261124-konto2';
+} from './domain/economy.js?v=20261124-welt1';
+import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261124-welt1';
+import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261124-welt1';
+import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261124-welt1';
+const SEEN_NOTES_KEY = 'ttt:notes-seen';
+import { withTimeout } from './async-util.js?v=20261124-welt1';
+import { createBoard } from './world/board.js?v=20261124-welt1';
+import { createLoginScene } from './world/login-scene.js?v=20261124-welt1';
+import { TUTORIAL_STEPS, HELP_SECTIONS } from './tutorial.js?v=20261124-welt1';
+import { createVersionUI } from './version-ui.mjs?v=20261124-welt1';
 
-const BUILD = '20261124-konto2';
+const BUILD = '20261124-welt1';
 console.info(`Tiny Tycoon Towns ${BUILD}`);
 const LAST_BIOME_KEY = 'ttt.lastBiome';
 const LOCAL_KEY = (uid) => `ttt.save.v1.${uid}`;
@@ -77,7 +78,7 @@ const REMOTE_TIMEOUT_MS = 10_000;
 async function loadData() {
   const names = ['resources', 'biomes', 'buildings', 'economy', 'merchant'];
   const parts = await Promise.all(names.map((n) =>
-    fetch(`data/${n}.json?v=20261124-konto2`).then((r) => {
+    fetch(`data/${n}.json?v=20261124-welt1`).then((r) => {
       if (!r.ok) throw new Error(`data/${n}.json: HTTP ${r.status}`);
       return r.json();
     })));
@@ -122,7 +123,7 @@ async function boot() {
   window.addEventListener('offline', updateSync);
 
   try {
-    cloud = await import('./cloud.js?v=20261124-konto2');
+    cloud = await import('./cloud.js?v=20261124-welt1');
   } catch {
     showFatal('Das Konto-System konnte nicht geladen werden. Ohne Anmeldung lässt sich nicht spielen. Bitte Verbindung prüfen und neu laden.');
     return;
@@ -508,8 +509,38 @@ function startGame() {
   if (state.townXp === 0) {
     toast('Tipp: Wähle eine Wiese und baue deinen ersten Hof.');
   }
-  // Einmal pro Konto: der Fortschritt steht im Spielstand und wandert mit der Cloud.
-  if ((state.tutorialStep ?? 0) < TUTORIAL_STEPS.length) showTutorialStep(state.tutorialStep ?? 0);
+  // Nach einem Update einmal die Neuerungen zeigen. Danach (oder bei Neuinstallation) das Tutorial.
+  if (!showWhatsNewIfUpdated()) maybeStartTutorial();
+}
+
+/** Einmal pro Browser pro Version. Liefert true, wenn der Dialog offen ist. */
+function showWhatsNewIfUpdated() {
+  let seen = null;
+  try {
+    seen = localStorage.getItem(SEEN_NOTES_KEY);
+    localStorage.setItem(SEEN_NOTES_KEY, BUILD);
+  } catch { /* Ohne Speicher gibt es keinen Hinweis, das Spiel läuft trotzdem. */ }
+  // Neuinstallation (kein Eintrag) oder dieselbe Version: nichts anzeigen.
+  if (!seen || seen === BUILD) return false;
+  const entry = RELEASED_PATCHES.find((p) => p.build === BUILD);
+  if (!entry) return false;
+  const items = entry.items.map((it) => `<li>${esc(it.de)}</li>`).join('');
+  openDialog(`<div class="dlg-body help">
+    <h2 id="dlg-title">Neu in dieser Version</h2>
+    <p class="small muted">Version ${esc(BUILD)} · ${esc(entry.date)}</p>
+    <ul>${items}</ul>
+    <p class="row"><button type="button" id="whatsnew-ok" class="primary">Verstanden</button></p>
+  </div>`);
+  $('#whatsnew-ok').addEventListener('click', () => {
+    closeDialog();
+    maybeStartTutorial();
+  });
+  $('#whatsnew-ok').focus();
+  return true;
+}
+
+function maybeStartTutorial() {
+  if (state && (state.tutorialStep ?? 0) < TUTORIAL_STEPS.length) showTutorialStep(state.tutorialStep ?? 0);
 }
 
 function tick() {
