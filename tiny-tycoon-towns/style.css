@@ -215,7 +215,7 @@ dialog input {
 }
 .app-shell[inert] { pointer-events: none; }
 
-/* ---------- Versionsprüfung (wie IronPath) ---------- */
+/* ---------- Versionsprüfung ---------- */
 .release-check {
   position: fixed;
   inset: 0;

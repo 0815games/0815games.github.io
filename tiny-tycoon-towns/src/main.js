@@ -69,7 +69,7 @@ let remoteLoaded = false;  // true once the cloud copy was read successfully; no
 let remoteRetryPending = false;
 let board = null;          // Weltansicht (canvas), see ./world/board.js
 let loginScene = null;     // animated backdrop of the sign-in screen
-let versionGate = null;    // update gate, ported from IronPath (see ./version-ui.mjs)
+let versionGate = null;    // update gate (see ./version-ui.mjs and docs/ADR-update-gate.md)
 let connected = true;      // Realtime Database connection, from .info/connected
 const REMOTE_TIMEOUT_MS = 10_000;
 
@@ -94,7 +94,7 @@ function ctx() {
 }
 
 async function boot() {
-  // Same rule as IronPath: this build must be confirmed current before the game starts.
+  // This build must be confirmed current before the game starts (docs/ADR-update-gate.md).
   // While the check runs, or after it failed, the release overlay holds the screen.
   try {
     versionGate = createVersionUI({
@@ -195,17 +195,9 @@ async function enterAccount(user) {
   const res = await fetchRemote(uid);
   if (!res.ok) {
     console.error('Spielstand aus der Cloud nicht geladen:', res.error);
-    if (!local) {
-      showRetry(cloudErrorText(res.error));
-      return;
-    }
-    // Local copy exists: play on it. Writes to the cloud wait until a read succeeds,
-    // so an old local copy cannot overwrite newer progress from another device.
-    state = local;
-    cloudDirty = false;
-    lastCloudAt = 0;
-    startGame();
-    toast('Cloud gerade nicht erreichbar. Du spielst mit dem lokalen Stand und er wird nachgeladen.', 'error');
+    // Kein Spielen ohne bestätigten Cloud-Stand: kein Offline-Start, auch nicht mit lokalem Stand.
+    // Der lokale Stand bleibt unangetastet als Sicherung.
+    showRetry(cloudErrorText(res.error));
     return;
   }
 
