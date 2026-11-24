@@ -4,6 +4,16 @@
 
 export const RELEASED_PATCHES = [
   {
+    build: '20261124-sitz8',
+    date: '2026-11-24',
+    items: [
+      {
+        de: 'Der Betreiber-Bereich hat jetzt einen eigenen Knopf auf der Anmeldeseite.',
+        en: 'The operator area now has its own button on the sign-in page.',
+      },
+    ],
+  },
+  {
     build: '20261124-sitz7',
     date: '2026-11-24',
     items: [

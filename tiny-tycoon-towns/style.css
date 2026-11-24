@@ -511,3 +511,22 @@ dialog input {
 .admin-savebar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 12px; }
 .admin-savebar p { margin: 0; flex-basis: 100%; }
 button.danger { background: #E4837A; border-color: var(--ink); }
+
+/* Eigener Zugangsknopf zum Betreiber-Bereich auf der Anmeldeseite. */
+.auth-admin-entry {
+  position: absolute;
+  left: 50%;
+  bottom: 48px;
+  transform: translateX(-50%);
+  z-index: 2;
+  padding: 10px 20px;
+  min-height: 44px;
+  font-weight: 700;
+  color: var(--ink);
+  text-decoration: none;
+  background: var(--gold);
+  border: 3px solid var(--ink);
+  border-radius: 999px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+}
+.auth-admin-entry:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
