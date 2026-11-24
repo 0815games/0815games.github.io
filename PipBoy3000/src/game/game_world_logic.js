@@ -228,41 +228,53 @@ Object.assign(Game, {
         UI.update(); 
     },
 
+    // Strahlungsdosis eines Feldes, mit Schutz verrechnet.
+    //
+    // getrennt von addRadiation, weil kleine Dosen sonst still verschwinden:
+    // 4 RAD minus 20 Prozent Gasmaske sind 3,2, und Math.ceil macht daraus
+    // wieder 4. Der Schutz waere bei jeder kleinen Dosis wirkungslos
+    // (docs/BALANCE_BEFUNDE.md, Nachtrag WOLKEN). Deshalb wird der Rest
+    // gesammelt und erst ab einem ganzen Punkt ausgezahlt.
+    strahlungsDosis: function(amount) {
+        if(!this.state || amount <= 0) return amount;
+
+        const perkLvl = this.getPerkLevel('rad_resistant');
+        let reduction = perkLvl * 0.10;
+
+        // Bewusst ueber equipBonus() und nicht ueber getStat(): getStat setzt
+        // fuer jeden unbekannten Schluessel eine Basis von 5 an, ein Spieler
+        // ohne Schutz haette damit schon 5 Prozent Resistenz.
+        const resistenz = this.equipBonus('RAD_RESIST') +
+            ((typeof this.buffBonus === 'function') ? this.buffBonus('RAD_RESIST') : 0);
+        const schutz = this.equipBonus('RAD');
+        reduction += resistenz / 100;
+        reduction += schutz / 100;
+        reduction = Math.min(0.90, reduction);
+
+        const rest = amount * (1 - reduction);
+        const ganz = Math.floor(rest);
+
+        // Den angebrochenen Rest aufheben, damit viele kleine Dosen zusammen
+        // doch einen Punkt ergeben.
+        if(typeof this.state.radRest === 'undefined') this.state.radRest = 0;
+        this.state.radRest += (rest - ganz);
+        if(this.state.radRest >= 1) {
+            const extra = Math.floor(this.state.radRest);
+            this.state.radRest -= extra;
+            return ganz + extra;
+        }
+        return ganz;
+    },
+
     addRadiation: function(amount) {
         if(!this.state) return;
         if(typeof this.state.rads === 'undefined') this.state.rads = 0;
         
+        // Schutz rechnet strahlungsDosis() ein: Perk, Ausrüstung und Buffs,
+        // gedeckelt bei 90 Prozent (docs/BALANCE_BEFUNDE.md, B4).
         let finalAmount = amount;
-        if (amount > 0) {
-            // Zwei Quellen, die vorher nur eine war: der Perk und die
-            // Ausrüstung. Strahlenschutzanzug (RAD+1000), Gasmaske (RAD+20)
-            // und Rad-X (RAD_RESIST+20) hatten bis hierher keine Wirkung
-            // (docs/BALANCE_BEFUNDE.md, B4).
-            const perkLvl = this.getPerkLevel('rad_resistant');
-            let reduction = perkLvl * 0.10;
-
-            // Ausrüstung: der Bonus liegt in `bonus.RAD_RESIST` (Rad-X, 20)
-            // oder `bonus.RAD` (Anzug 1000, Maske 20). Bewusst über
-            // equipBonus() und nicht über getStat(): getStat() setzt für
-            // jeden unbekannten Schlüssel eine Basis von 5 an (die
-            // SPECIAL-Vorgabe), ein Spieler ohne Schutz hätte damit schon
-            // 5 % Resistenz.
-            // RAD und RAD_RESIST sind beide in Prozent gemeint: die Gasmaske
-            // hat 20, Rad-X 20. Der Strahlenschutzanzug trägt 1000, einen
-            // Platzhalterwert - der läuft in den Deckel unten.
-            const resistenz = this.equipBonus('RAD_RESIST') +
-                ((typeof this.buffBonus === 'function') ? this.buffBonus('RAD_RESIST') : 0);
-            const schutz = this.equipBonus('RAD');
-            reduction += resistenz / 100;
-            reduction += schutz / 100;
-
-            // Gedeckelt: auch ein Strahlenschutzanzug soll nicht immun machen.
-            // RAD+1000 ist ein Platzhalterwert aus den Daten.
-            reduction = Math.min(0.90, reduction);
-
-            if (reduction > 0) {
-                finalAmount = Math.ceil(amount * (1 - reduction));
-            }
+        if (amount > 0 && typeof this.strahlungsDosis === 'function') {
+            finalAmount = this.strahlungsDosis(amount);
         }
         this.state.rads = Math.min(this.state.maxHp, Math.max(0, this.state.rads + finalAmount));
         

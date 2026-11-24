@@ -1,5 +1,26 @@
 # CHANGELOG
 
+## v14.0.3 (Wandernde RAD-Wolken, 2026-11-24)
+RAD war bis hierher ein Getränkewert: Schlafen, gebratenes Fleisch, ein
+Minispiel. Keine Zone und kein Wetter hat gestrahlt — die Glühende See war
+reine Optik.
+
+- [FEATURE] **RAD-Wolken wandern durch die Spielwelt:** ein eigenes Modul
+  (`src/game/world_air.js`) hält Daten und Regeln, `drawRadClouds()` zeichnet
+  sie. Vier RAD je Feld, Dichte nach Biom (Glühende See 5 je Sektor, Sümpfe 3,
+  Wald und Dschungel 2, Ödland und Gebirge 1, Stadt 0).
+- [FEATURE] **Sie bewegen sich langsam:** ein Wolkenzug alle sechs Sekunden,
+  mit leichter Ostdrift. Deutlich langsamer als der Spieler — man sieht sie
+  kommen und kann außen herum.
+- [FEATURE] **Der Schutz zählt:** Gasmaske, Strahlenschutzanzug, Rad-X und der
+  Rad-Resistenz-Perk senken die Dosis über dieselbe Mechanik wie überall sonst.
+- [BUGFIX] **Kleine Strahlungsdosen waren ungeschützt:** 4 RAD minus 20 Prozent
+  Gasmaske sind 3,2 — `Math.ceil` machte daraus wieder 4. Der Schutz war bei
+  jeder kleinen Dosis wirkungslos. Die Reste werden jetzt gesammelt und erst
+  ab einem ganzen Punkt ausgezahlt.
+- [TESTS] 14 neue Tests (121 gesamt). Der Balancing-Bericht hat einen neuen
+  Abschnitt „Strahlung".
+
 ## v14.0.2 (Rohfleisch und Lagerschrank, 2026-11-24)
 Zwei Lücken aus der RAD-Analyse: Rohfleisch war ungenießbar, und das Lager
 hatte keinen Stauraum.

@@ -309,20 +309,57 @@ essbar, gebraten unerreichbar. Beide Rezepte sind ergänzt (`cook_dog` Stufe 2,
 `cook_yao` Stufe 4). `tests/proviant.test.mjs` prüft, dass jede Rohware ein
 Gegenstück hat.
 
-## Noch offen: RAD als Ortsphänomen
+## Nachtrag — WOLKEN (behoben in v14.0.3)
 
-RAD kommt derzeit aus Schlafen, Kochware, einem Minispiel und RadAway.
-**Keine Zone und kein Wetter erzeugt Strahlung.** Die Glühende See ist reine
-Optik, der Strahlungssturm in `game_render.js` bewegt nur Partikel.
+RAD kam bis Version 14.0.2 nur aus Schlafen, Kochware, einem Minispiel und
+RadAway. **Keine Zone und kein Wetter erzeugte Strahlung** — die Glühende See
+war reine Optik, der Strahlungssturm bewegte nur Partikel.
 
-Das ist der nächste sinnvolle Schritt: RAD als Eigenschaft von Biom und Wetter
-(`game_map.js` setzt `state.zone`, `game_core.js` kennt die Biome). Vorschlag:
+Seit 14.0.3 wandern RAD-Wolken durch die Spielwelt. Bewusst **kein** zweites
+Schadenssystem: Gift hätte einen eigenen Widerstand, ein Gegenmittel und eine
+eigene Heilung gebraucht. RAD trifft auf Mechanik, die es schon gibt —
+Gasmaske, Strahlenschutzanzug, Rad-X, Rad-Resistenz-Perk, RadAway.
 
-| Quelle | RAD |
-|---|---|
-| Glühende See, Betreten eines neuen Sektors | +5 |
-| Strahlungssturm (Wetter) | +2 pro Sektorwechsel |
-| Dungeon ab Ebene 3 | +1 pro Zug |
+| Biom | Wolken je Sektor |
+|---|---:|
+| Glühende See | 5 |
+| Todes-Sümpfe | 3 |
+| Verstrahlter Wald, Dschungel | 2 |
+| Ödland, Gebirge | 1 |
+| Stadt | 0 |
 
-Damit wäre RAD ein Ortsphänomen und nicht nur ein Getränkewert. Noch nicht
-umgesetzt.
+Eine Wolke hat Radius 2 (euklidisch), macht 4 RAD je Feld und zieht alle sechs
+Sekunden ein Feld weit mit leichter Ostdrift. Sie wandert bewusst **deutlich
+langsamer als der Spieler** — eine gleich schnelle Wolke kann man nicht
+umgehen, nur erleiden.
+
+### Der Fund dabei: Rundung fraß den Schutz
+
+4 RAD minus 20 % Gasmaske sind 3,2. `Math.ceil` machte daraus wieder 4 — die
+Gasmaske war bei jeder kleinen Dosis **exakt wirkungslos**, und weil die Wolke
+nur kleine Dosen verteilt, wäre der ganze Widerstandsapparat dort blind
+geblieben. Aufgefallen ist es, weil der Test „Gasmaske senkt die Dosis einer
+Wolke" rot blieb, obwohl die Ausrüstung korrekt angelegt war.
+
+`Game.strahlungsDosis()` sammelt jetzt die angebrochenen Reste in
+`state.radRest` und zahlt erst ab einem ganzen Punkt aus. Gemessen, vier Züge
+in der Wolke:
+
+| Schutz | RAD |
+|---|---:|
+| ohne | 16 |
+| Gasmaske | 12 |
+| Gasmaske + Rad-X | 9 |
+| Perk Rad-Resistenz 5 | 8 |
+| Strahlenschutzanzug | 1 |
+
+Die großen Dosen bleiben unverändert: 50 RAD mit Gasmaske sind weiterhin 40.
+
+## Noch offen
+
+- **Gift** hat im Spiel nichts: keinen Widerstand, kein Gegenmittel, keinen
+  Perk. `poison_gland` (Giftdrüse) fällt von Skorpionen und ist unbenutzt. Ein
+  Giftnebel wäre ein zweites System, kein Anhängsel — bewusst nicht gebaut.
+- **Kachel `'M'`** (Monster) wird gezeichnet und blockiert, aber vom Generator
+  nie gesetzt. Kämpfe starten nur über einen 3-%-Würfel beim Bewegen. Die
+  Schublade für „bewegliches Hindernis auf der Karte" ist da und leer.

@@ -516,8 +516,25 @@ export function buildReport() {
   }
   l.push('');
 
+  // --- Strahlung / RAD-Wolken ---
+  l.push('## 8. Strahlung');
+  l.push('');
+  const wolken = window.Game && window.Game.RAD_WOLKEN_JE_BIOM ? window.Game.RAD_WOLKEN_JE_BIOM : null;
+  if (wolken) {
+    l.push(`Wandernde RAD-Wolken: ${window.Game.RAD_PRO_FELD} RAD je Feld, ein Wolkenzug alle`);
+    l.push(`${Math.round(window.Game.RAD_WOLKE_ZUG_MS / 1000)} Sekunden. Dichte nach Biom:`);
+    l.push('');
+    l.push('| Biom | Wolken je Sektor |');
+    l.push('|---|---:|');
+    for (const [biom, zahl] of Object.entries(wolken)) l.push(`| ${biom} | ${zahl} |`);
+    l.push('');
+    l.push(`Die Glühende See hat mit ${wolken.desert} die meisten. Wer eine Wolke quer durchquert,`);
+    l.push(`kommt mit rund ${window.Game.RAD_PRO_FELD * 2 * 2} RAD durch - etwa ein halbes RadAway.`);
+    l.push('');
+  }
+
   // --- Wirtschaft ---
-  l.push('## 8. Wirtschaft');
+  l.push('## 9. Wirtschaft');
   l.push('');
   l.push(`- Waffenpreise: ${economy.waffenPreise.min} bis ${economy.waffenPreise.max} KK (Median ${economy.waffenPreise.median})`);
   l.push(`- Startkapital: ${economy.startKapital} KK`);
@@ -528,7 +545,7 @@ export function buildReport() {
   l.push('');
 
   // --- Fazit ---
-  l.push('## 9. Fazit');
+  l.push('## 10. Fazit');
   l.push('');
   const befund = [];
   if (armor.zeilen.every(a => a.schutz === '—')) befund.push('Rüstung schützt nicht (kein `def`-Feld).');

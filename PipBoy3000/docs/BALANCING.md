@@ -3,7 +3,7 @@
 Erzeugt von `node tools/balance.mjs --write`. Nicht von Hand ändern —
 die Zahlen kommen aus dem gebauten Bündel und dem Quelltext.
 
-Stand: Version 14.0.2
+Stand: Version 14.0.3
 
 ## 1. Waffen
 
@@ -122,7 +122,7 @@ Alle 10 Perks werden im Code gelesen.
 | STR | `src/game/game_combat.js:253` | 1 | 11 |
 | PER | `src/data/data_minigames.js:191`<br>`src/game/game_combat.js:193` | 2 | 3 |
 | END | `src/game/game_core.js:141` | 1 | 44 |
-| CHA | `src/game/game_world_logic.js:321` | 1 | 0 |
+| CHA | `src/game/game_world_logic.js:333` | 1 | 0 |
 | INT | `src/data/data_minigames.js:17`<br>`src/data/data_minigames.js:277` | 2 | 4 |
 | AGI | `src/data/data_minigames.js:190`<br>`src/game/game_combat.js:311` | 2 | -2 |
 | LUC | `src/data/data_minigames.js:144`<br>`src/game/game_core.js:147`<br>`src/ui/ui_render_minigames.js:276` | 3 | 0 |
@@ -194,14 +194,32 @@ Treffer bis zum Kill bei 50 % Trefferchance (die Grundchance liegt bei 50 + PER�
 | Supermutant | 200 | 30 | 150-250 | 200 | 50 | 34 | 20 | 10 | 6 |
 | Todeskralle | 500 | 80 | 500-800 | 500 | 126 | 84 | 50 | 24 | 14 |
 
-## 8. Wirtschaft
+## 8. Strahlung
+
+Wandernde RAD-Wolken: 4 RAD je Feld, ein Wolkenzug alle
+6 Sekunden. Dichte nach Biom:
+
+| Biom | Wolken je Sektor |
+|---|---:|
+| desert | 5 |
+| swamp | 3 |
+| forest | 2 |
+| jungle | 2 |
+| wasteland | 1 |
+| mountain | 1 |
+| city | 0 |
+
+Die Glühende See hat mit 5 die meisten. Wer eine Wolke quer durchquert,
+kommt mit rund 16 RAD durch - etwa ein halbes RadAway.
+
+## 9. Wirtschaft
 
 - Waffenpreise: 0 bis 3000 KK (Median 180)
 - Startkapital: 50 KK
 - Höchste Beute pro Kampf: 50 KK
 - Kämpfe bis zur teuersten Waffe (nur Beute, ohne Verkäufe): **60**
 
-## 9. Fazit
+## 10. Fazit
 
 Das Spiel hat 34 Waffen, 33 Rüstungsteile, 10 Perks,
 16 Verbrauchsgüter und 9 Monster.
