@@ -23,14 +23,16 @@ Waffen: `pistol_10mm` `revolver_44` `shotgun` `combat_shotgun` `smg`
 `assault_rifle` `minigun` `laser_pistol` `laser_rifle` `plasma_pistol` `plasma_rifle`
 Rüstung: `power_armor`
 
-## Ausschuss in Block 5 — offen
+## Ausschuss in Block 5
 
-`bp_stimpack` — weisser Hintergrund statt schwarz.
-`gears` — weisser Hintergrund statt schwarz.
-`duct_tape` — weisser Streifen ueber die volle Breite am unteren Rand
-(y 896-1023); beim Zuschneiden waere daraus eine weisse Kante geworden.
+`bp_stimpack` und `gears` hatten weissen Hintergrund (85,6 % / 36,3 %) —
+mit dem Zusatz "on a SOLID PURE BLACK BACKGROUND (no white, no light grey)"
+im Prompt beide im zweiten Anlauf sauber.
 
-Alle drei vom Pruefskript abgefangen, neu zeichnen.
+`duct_tape` ist aufgegeben: zwei Versuche, beide Male ein weisser
+Streifen ueber die volle Breite am unteren Rand (y 896-1023 und
+y 925-1023). Das Motiv selbst war richtig, der Streifen ist ein Artefakt
+der Erzeugung. Weitere Versuche mit demselben Motiv sind unrentabel.
 
 ## Regel: Hintergrund pruefen
 
@@ -108,15 +110,15 @@ Rucksäcke (fertig): `backpack_frame` `backpack_leather` `backpack_metal`
 Werkzeug: `camp_kit` `lockpick` `wrench` `clipboard` `tin_can`
 `radio_part` `fusion_core`
 
-Baupläne (1/2): `bp_ammo` · offen: `bp_stimpack`
+Baupläne ✓: `bp_ammo` `bp_stimpack`
 
 Munition (fertig): `ammo` (Schrott .38) `ammo_308` `ammo_cell`
 
-Rohstoffe (7/12): `junk_metal` `cloth` `screws` `glue` `springs` `plastic` `leather`
-Offen: `duct_tape` `gears` `circuit` `adhesive` `oil`
+Rohstoffe (11/12): `junk_metal` `cloth` `screws` `glue` `springs` `plastic` `leather`
+`gears` `circuit` `adhesive` `oil` · aufgegeben: `duct_tape`
 
-Selten: `nuclear_mat` `legendary_part` `deathclaw_hand` `titanium`
-`bone` `acid` `poison_gland` `gunpowder`
+Selten (4/8): `nuclear_mat` `legendary_part` `titanium` `bone`
+Offen: `deathclaw_hand` `acid` `poison_gland` `gunpowder`
 
 Nahrung (roh): `meat_roach` `meat_fly` `meat_mole` `meat_dog`
 `meat_scorp` `meat_yao` `meat_lurk` `hide_yao`
