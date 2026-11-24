@@ -6,6 +6,7 @@
 // dass diese Liste mit ORDER in entries.mjs übereinstimmt.
 import './src/data/data_core.js';
 import './src/data/data_items.js';
+import './src/data/data_item_icons.js';
 import './src/data/data_recipes.js';
 import './src/data/data_monsters.js';
 import './src/data/data_minigames.js';

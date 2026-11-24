@@ -18,6 +18,7 @@ const DIR = dirname(fileURLToPath(import.meta.url));
 export const ORDER = [
   'src/data/data_core.js',
   'src/data/data_items.js',
+  'src/data/data_item_icons.js',
   'src/data/data_recipes.js',
   'src/data/data_monsters.js',
   'src/data/data_minigames.js',

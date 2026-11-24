@@ -150,6 +150,16 @@ window.Game = {
         if(typeof UI !== 'undefined' && UI.update) UI.update();
     },
 
+    // Pfad zum Item-Bild oder null. Die Bilder liegen neben der Seite in
+    // img/items/ - relativer Pfad, damit GitHub Pages (/PipBoy3000/) und
+    // Vercel denselben Code benutzen koennen.
+    itemBildPfad: function(id) {
+        if(!id) return null;
+        const liste = (window.GameData && window.GameData.itemBilder) || [];
+        if(!liste.includes(id)) return null;
+        return `img/items/${id}.png`;
+    },
+
     getUsedSlots: function() { if(!this.state || !this.state.inventory) return 0; return this.state.inventory.length; },
     getStackLimit: function(itemId) { if(itemId==='caps')return 99999; if(this.items[itemId] && this.items[itemId].type==='ammo')return 100; const i=this.items[itemId]; if(!i)return 1; if(i.type==='component'||i.type==='rare'||i.type==='consumable'||i.type==='junk')return 20; if(i.type==='ammo')return 100; return 1; },
     // Zaehlt alle Munitionsarten zusammen. Vorher nur 'ammo' - mit sechs

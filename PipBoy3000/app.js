@@ -436,6 +436,24 @@
   });
   if (typeof Game !== "undefined") Game.items = window.GameData.items;
 
+  // src/data/data_item_icons.js
+  if (typeof window.GameData === "undefined") window.GameData = {};
+  window.GameData.itemBilder = [
+    "ammo_10mm",
+    "ammo_micro",
+    "ammo_shell",
+    "buffout",
+    "jet",
+    "nuka_cola",
+    "nuka_quantum",
+    "pistol_10mm",
+    "power_armor",
+    "radaway",
+    "radx",
+    "stealth_boy",
+    "stimpack"
+  ];
+
   // src/data/data_recipes.js
   if (typeof window.GameData === "undefined") window.GameData = {};
   window.GameData.recipes = [
@@ -1962,6 +1980,15 @@
       let strangerLvl = this.getPerkLevel("mysterious_stranger");
       this.state.critChance = luc * 1 + strangerLvl * 2;
       if (typeof UI !== "undefined" && UI.update) UI.update();
+    },
+    // Pfad zum Item-Bild oder null. Die Bilder liegen neben der Seite in
+    // img/items/ - relativer Pfad, damit GitHub Pages (/PipBoy3000/) und
+    // Vercel denselben Code benutzen koennen.
+    itemBildPfad: function(id) {
+      if (!id) return null;
+      const liste = window.GameData && window.GameData.itemBilder || [];
+      if (!liste.includes(id)) return null;
+      return `img/items/${id}.png`;
     },
     getUsedSlots: function() {
       if (!this.state || !this.state.inventory) return 0;
@@ -6280,6 +6307,13 @@
             return "📦";
         }
       };
+      const itemBild = (id, type) => {
+        if (typeof Game.itemBildPfad !== "function") return getIcon(type);
+        const pfad = Game.itemBildPfad(id);
+        if (!pfad) return getIcon(type);
+        return `<img src="${pfad}" alt="" class="w-8 h-8 object-contain"
+                        onerror="this.replaceWith(document.createTextNode('${getIcon(type)}'))">`;
+      };
       const createBtn = (itemDef, entry, isEquipped, label, onClick) => {
         const btn = document.createElement("div");
         let cssClass = "relative border border-green-500 bg-green-900/30 w-full h-16 flex flex-col items-center justify-center transition-colors group";
@@ -6293,7 +6327,7 @@
         let extraClass = entry.props && entry.props.color ? entry.props.color : "";
         const countDisplay2 = entry.count > 1 || itemDef.type === "ammo" ? `<div class="absolute top-0 right-0 bg-green-900 text-white text-[10px] px-1 font-mono">${entry.count}</div>` : "";
         btn.innerHTML = `
-                <div class="text-2xl">${getIcon(itemDef.type)}</div>
+                <div class="text-2xl flex items-center justify-center">${itemBild(itemDef.id, itemDef.type)}</div>
                 <div class="text-[10px] truncate max-w-full px-1 font-bold ${extraClass}">${displayName}</div>
                 ${countDisplay2}
             `;
