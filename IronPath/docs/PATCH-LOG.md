@@ -6,7 +6,7 @@ aber ersetzt weder Git noch die GitHub-PR-Historie. Die dazugehörige
 [Arbeitsanweisung](../../AGENTS.md) verlangt, dieses Log vor der Arbeit zu lesen
 und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
 
-Die Einträge IPL-0001 bis IPL-0104 stehen im
+Die Einträge IPL-0001 bis IPL-0105 stehen im
 [Archiv](PATCH-LOG-ARCHIV.md); hier stehen die neuesten 20. Beide Dateien
 zusammen sind lückenlos und doppelfrei - `../scripts/patch.mjs` (Unterbefehl `check`) und
 `../tests/patch-log-archive.test.mjs` prüfen das.
@@ -55,20 +55,6 @@ jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderl
 
 
 
-## IPL-0105 – Fähigkeits-Abklingzeit pausiert zwischen den Wellen (eigene Cache-Welle folgt im selben PR)
-
-- **Zeit / Quelle:** Betreiber-Befund und -Weisung vom 2026-11-23: „Die Action Skills Zeit läuft auch zwischen den Wellen weiter, also wenn die Welle beendet ist und bis zu dem Zeitpunkt, wo man die neue Welle startet, läuft aktuell der Timer vom Skill runter. Das sollte nicht sein. Die Zeiten sollte nur ablaufen während dem auch aktiv gespielt wird.“ Zugleich: Alle übrigen je aufgeführten offenen Punkte außer Block E sind zu vergessen; Geräteabnahmen erfolgen generell durch den Betreiber und werden nicht mehr als offene Punkte aufgeführt. Nach dieser Scheibe folgt Block E.
-- **Block / Ziel:** Gefechtskern. Die gemeinsame Simulation (`core/simulation.mjs`, `stepMatch`) läuft zwischen den Wellen weiter, damit Soldaten sich bewegen und gebaut werden kann — dabei lief bisher auch die Fähigkeits-Abklingzeit (`p.cooldown`) herunter. Sie tickt jetzt nur noch, solange eine Welle aktiv läuft (`state.running`). Spielregeln, Fähigkeitswerte und Wirkungsdauern (z. B. Overdrive) ändern sich nicht. Weil sich das Verhalten einer browsergeladenen Kerndatei ändert, trägt derselbe PR eine eigene Cache-Welle (`20261123-skill1`, dritter Commit mit Feldnotizen DE+EN, sobald die PR-Nummer existiert).
-- **Branch / Basis:** `arena/fb0b581a-0815games-github-io` ab `680c69b46cb9a91ac14c9623f0b0fe8c7fd6785b` (`main`, Merge von PR `#366`).
-- **Änderungen / Dateien:**
-  - `IronPath/core/simulation.mjs`: eine Zeile — `if(!jamField&&state.running)p.cooldown=Math.max(0,p.cooldown-dt);`. Das Störfeld des Bosses Riegel friert die Aufladung wie bisher zusätzlich ein; die Soldatenbewegung in der Bauphase bleibt unverändert möglich.
-  - `IronPath/tests/ability-cooldown-wave-pause.test.mjs` (neu, 4 Tests: keine Aufladung in der Bauphase, Bewegung zwischen den Wellen bleibt möglich, Aufladung nur während laufender Welle und erneutes Einfrieren am Wellenende, nie unter null).
-  - `IronPath/docs/PATCH-LOG.md` und `IronPath/docs/PATCH-LOG-ARCHIV.md`: `IPL-0085` vollständig ins Archiv, Grenzen auf `IPL-0001` bis `IPL-0085`; das Log führt die neuesten 20 (`IPL-0086` bis `IPL-0105`).
-- **Prüfungen:**
-  - Neuer Test 4/4; `boss-personality.test.mjs` (Störfeld friert die Aufladung ein — dort läuft die Welle), `ability-hud.test.mjs` und `ability-hud-ui.test.mjs` („Let the 30s cooldown finish inside the running wave“) grün.
-  - Cache-Welle als dritter Commit desselben PR: Feldnotizen-Eintrag `skill1` (DE+EN, `pr: 367`) in `patch-notes.mjs`, danach `patch.mjs bump 20261123-skill1 --apply` (79 Dateien, alle 7 Anker tragen `20261123-skill1`). Seine `open`-Liste nennt auf Betreiber-Weisung keine Geräteabnahme, sondern nur das nächste Arbeitspaket Block E. Gesamtsuite auf der neuen Welle: **1.274/1.274, Exit 0, 0 ausgelassen** (nach `git fetch --unshallow origin`; im flachen Klon wurde ein Test übersprungen). Browser-Fahrten in CI, lokal ist kein Chromium verfügbar.
-- **Git / PR / Release:** Feature- und dieser Log-Commit liegen auf `arena/fb0b581a-0815games-github-io`; PR-Nummer, Cache-Welle, CI, Merge und Pages-Auslieferung sind noch nicht erfolgt und werden erst nach dem tatsächlichen Ereignis mit Kennung nachgetragen.
-- **Offen / nächster Schritt:** PR öffnen, Wellen-Commit nachschieben, Gesamtsuite auf `skill1`, CI abwarten, erst nach belegtem Merge/Pages-Stand als ausgeliefert bezeichnen. Danach Block E als nächstes Arbeitspaket.
 
 ## IPL-0106 – Block E, Scheibe 1: Lebens-, Angriffs- und Reparatursystem im Simulationskern (eigene Cache-Welle folgt im selben PR)
 
@@ -339,3 +325,15 @@ jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderl
 - **Prüfungen:** `tower-heads` 4/4, `tower-aim` 9/9, `soldier-motion` 3/3; Schnelltor „Kein Fehler, 2 Hinweis(e)“; Gesamtsuite **1349 Tests, 1348 bestanden, 0 Fehler, 1 übersprungen**.
 - **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet`. Commit, Push, PR `#386`, danach Cache-Welle `20261123-aim3` mit Feldnotizen `aim3` als zweiter Commit (Muster `IPL-0104`), CI, Merge und Pages-Auslieferung werden als Ereignis nachgetragen. **Betreiber-Sichtung auf `20261123-aim3`:** Köpfe müssen weich einrasten und nur das Rohr darf zurückstoßen.
 - **Offen / nächster Schritt:** `IPL-0125` „Mehr Lebendigkeit“ (Mündungsfeuer, Hülsen) folgt als eigener Eintrag.
+
+## IPL-0125 – Lebendiges Feld, mehr Leben: Mündungsfeuer und Hülsen aus dem Rückstoß (Cache-Welle folgt im selben PR)
+
+- **Zeit / Quelle:** 2026-11-23 UTC; Betreiber: „Erst Feinschliff, dann mehr Lebendigkeit.“ Dieses Paket ist der zweite Teil: Mündungsfeuer und Hülsenauswurf an den drehenden Köpfen aus `IPL-0122`–`IPL-0124`.
+- **Block / Ziel:** Kein Spiel-Block; reine Darstellung. Keine Simulations-, Snapshot-, Protokoll- oder Regeländerung — Feuer und Hülsen werden aus dem Rückstoßwert gezeichnet, den der Tracker ohnehin liefert; kein neuer Zustand, keine Uhr, kein Netz.
+- **Branch / Basis:** `arena/76a1f074-0815games-github-io` ab `44190a1f03c8c30903a3b912976dfa4c7df957c6` (`main`, Merge PR `#386`).
+- **Änderungen / Dateien:**
+  - `IronPath/core/cartoon-art.mjs`: Neuer Helfer `muzzleFx()` — Mündungsfeuer (zwei Sterne in der Emblem-Sprache: außen `#ff9a3c`, Kern `#ffd75c`, Deckkraft aus dem Rückstoß) an der Mündung, solange der Tritt frisch ist (Rückstoß > 0,5); Hülsenauswurf (Messing-Oval) aus der Auswurföffnung, der mit abklingendem Rückstoß nach oben-hinten fliegt und verblasst. Alle vier Maler rufen ihn mit ihren Mündungs- und Öffnungspositionen (Flak: zwei Mündungen). Reduzierte Bewegung sieht nichts davon, weil der Tracker dort Rückstoß 0 liefert.
+  - `IronPath/tests/tower-heads.test.mjs`: Differential-Test — bei vollem Rückstoß kommen je Typ genau die FX-Striche dazu (MG/Kanone/Sniper +3, Flak +5 für zwei Mündungen), unter der Feuerschwelle fliegt nur die Hülse (+1).
+- **Prüfungen:** `tower-heads` 5/5, `tower-aim` 9/9; Schnelltor „Kein Fehler, 2 Hinweis(e)“; Gesamtsuite **1350 Tests, 1349 bestanden, 0 Fehler, 1 übersprungen**.
+- **Git / PR / Release:** Code-Commit + Push, PR `#387`; zweiter Commit: Cache-Welle `20261123-aim4` mit Feldnotizen `aim4` (79 Dateien, Muster `IPL-0104`). CI, Merge und Pages-Auslieferung werden als Ereignis nachgetragen. **Betreiber-Sichtung auf `20261123-aim4`:** Jeder Schuss muss am Rohr aufblitzen und eine Hülse auswerfen.
+- **Offen / nächster Schritt:** Die Reihe „Lebendiges Feld“ ist damit vollständig (Scheibe 1 + 2, Feinschliff, mehr Leben). Neue Punkte beschließt der Betreiber.

@@ -1,11 +1,11 @@
-import {translateText as tr,getLanguage} from '../language.mjs?v=20261123-aim3';
+import {translateText as tr,getLanguage} from '../language.mjs?v=20261123-aim4';
 import {towerDisplay} from './progression.mjs?v=20261105-prestige1';
-import {specializationRank} from './tower-specialization.mjs?v=20261123-aim3';
-import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261123-aim3';
-import {ENEMY_INTEL,SOLDIER_MAX_HP} from './combat.mjs?v=20261123-aim3';
+import {specializationRank} from './tower-specialization.mjs?v=20261123-aim4';
+import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261123-aim4';
+import {ENEMY_INTEL,SOLDIER_MAX_HP} from './combat.mjs?v=20261123-aim4';
 import {bossPhase} from './boss-mechanics.mjs?v=20261031-finale1';
 import {shotTrace,shotsToDraw} from './shot-tracers.mjs?v=20261117-shots1';
-import {buildRoadPath} from './road-geometry.mjs?v=20261123-aim3';
+import {buildRoadPath} from './road-geometry.mjs?v=20261123-aim4';
 // Drawing only: the simulation, coordinates and hit areas stay unchanged.
 const ink='#1d3028',paper='#f1e7c4';
 function line(ctx,points,color=ink,width=3){ctx.beginPath();points.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();}
@@ -431,6 +431,24 @@ function bunker(ctx,state,notify,approach=0){
 // barrels, the sniper's long thin rifle with scope. The ground dressing
 // (sandbags, concrete ring, ammo crates, camo mound) never turns with the
 // gun - it is ground, not weapon.
+// Muzzle flash and shell casing, both read off the same kick the barrel
+// just made: the flash lives while the kick is fresh (recoil above half),
+// the casing flies out of the ejection port as the kick fades. The recoil
+// value is the whole animation - no state, no clock, and reduced motion
+// never sees it because the tracker answers recoil 0 there.
+function muzzleFx(ctx,recoil,muzzles,port,arc){
+  if(recoil<=0)return;
+  const cx=port[0]+(1-recoil)*arc[0],cy=port[1]+(1-recoil)*arc[1];
+  ctx.save();ctx.globalAlpha=recoil;oval(ctx,cx,cy,2.2,1.4,'#d9c08a','#8a6f3c',.8);ctx.restore();
+  if(recoil<=.5)return;
+  const f=(recoil-.5)*2;
+  for(const [mx,my,r] of muzzles){
+    ctx.save();ctx.globalAlpha=f;
+    ctx.fillStyle='#ff9a3c';star(ctx,mx,my,r);ctx.fill();
+    ctx.fillStyle='#ffd75c';star(ctx,mx,my,r*.55);ctx.fill();
+    ctx.restore();
+  }
+}
 function mgTurret(ctx,x,y,aim){
   // The sandbag ring is laid once around the plate and never turns with
   // the gun - it is ground, not weapon.
@@ -455,6 +473,7 @@ function mgTurret(ctx,x,y,aim){
   shape(ctx,[[27,-3.8],[30,-3.8],[30,-.8],[27,-.8]],'#2b352c');
   // Belt box feeding the receiver from the side.
   shape(ctx,[[-14,1],[-5,1],[-5,8],[-14,8]],'#6b7256');line(ctx,[[-9,1],[-4,-3]],'#8a8f6d',2);
+  muzzleFx(ctx,recoil,[[31.5,-2.3,6]],[-2,3],[-4,-8]);
   ctx.restore();
 }
 // The layered howitzer: a concrete ring instead of sandbags - this gun was
@@ -482,6 +501,7 @@ function cannonTurret(ctx,x,y,aim){
   line(ctx,[[31,-5.5],[31,.5]],'#55624c',1.6);line(ctx,[[33,-5.5],[33,.5]],'#55624c',1.6);
   // Sight post rides on the breech, so it kicks with the barrel.
   line(ctx,[[-4,-7],[-4,-10]],ink,1.8);oval(ctx,-4,-10.6,1.4,1.4,'#d9c08a',null);
+  muzzleFx(ctx,recoil,[[35.5,-2.5,7]],[2,3],[-5,-7]);
   ctx.restore();
 }
 // The layered flak: sandbags like the MG, but the gun wears an armoured
@@ -510,6 +530,7 @@ function flakTurret(ctx,x,y,aim){
   // Ammo drum on the side and the sight post above the shield.
   oval(ctx,-8,6,4,4,'#6b7256','#2b352c',1.4);
   line(ctx,[[0,-11],[0,-14]],ink,1.8);oval(ctx,0,-14.6,1.4,1.4,'#d9c08a',null);
+  muzzleFx(ctx,recoil,[[32.5,-3.7,5],[32.5,3.7,5]],[-4,9],[-4,-8]);
   ctx.restore();
 }
 // The layered sniper: a camouflaged mound instead of a ring - the hide is
@@ -534,6 +555,7 @@ function sniperTurret(ctx,x,y,aim){
   oval(ctx,4,-8.5,1.6,1.6,'#d9c08a',null);oval(ctx,-8,-8.5,1.2,1.2,'#55624c',null);
   shape(ctx,[[-4,2],[1,2],[1,6],[-4,6]],'#6b7256');
   line(ctx,[[-6,-2],[-9,1]],ink,2);
+  muzzleFx(ctx,recoil,[[40.5,-1.5,5]],[-4,3],[-3,-7]);
   ctx.restore();
 }
 function pad(ctx,p,tower,selected,types,notify,pulse=1,aim=null){
