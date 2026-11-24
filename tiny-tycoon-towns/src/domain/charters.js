@@ -1,5 +1,6 @@
 // Freibriefe (Prestige) nach docs/GAME_PLAN.md, Abschnitt 4.11.
-// Reine Rechenregeln: keine Oberfläche, kein Speichern. Die Anbindung an Stand und Spiel folgt später.
+// Reine Rechenregeln. Oberfläche und Speichern in main.js und cloud.js.
+// Die Perk-Wirkung geht über applyCharterToData() in die Spieldaten, die Wirtschaft liest sie dort.
 
 export const CHARTER_MIN_LEVEL = 8;
 export const CHARTER_MIN_LIFETIME = 100000;
@@ -75,6 +76,26 @@ export function buyPerk(charter, id) {
 }
 
 /** Wirkung eines Perks bei der aktuellen Stufe, z. B. 0.10 für +10 % oder 500 für Startmünzen. */
+/**
+ * Kopie der Spieldaten mit den Perk-Wirkungen dieses Kontos. Die Originaldaten bleiben unverändert.
+ * Faktoren: yieldMultiplier (Ertrag), storageMultiplier (Lager), priceMultiplier (Verkaufspreis),
+ * offline.baseCapHours (Offline-Obergrenze, +Stunden).
+ */
+export function applyCharterToData(data, charter) {
+  const c = charter ?? emptyCharter();
+  const e = data.economy;
+  return {
+    ...data,
+    economy: {
+      ...e,
+      yieldMultiplier: 1 + perkEffect(c, 'yield'),
+      storageMultiplier: 1 + perkEffect(c, 'storage'),
+      priceMultiplier: 1 + perkEffect(c, 'market'),
+      offline: { ...e.offline, baseCapHours: e.offline.baseCapHours + perkEffect(c, 'memory') },
+    },
+  };
+}
+
 export function perkEffect(charter, id) {
   const def = PERKS.find((p) => p.id === id);
   return def ? perkLevel(charter, id) * def.per : 0;

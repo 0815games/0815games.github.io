@@ -62,3 +62,31 @@ test('perk effects scale with the level', () => {
   assert.equal(perkEffect(c, 'nope'), 0);
   assert.equal(buyPerk(c, 'nope').ok, false);
 });
+
+import { applyCharterToData as applyCharter } from '../src/domain/charters.js';
+import { productionMultiplier, storageCap, sellPrice } from '../src/domain/economy.js';
+
+test('Perk-Wirkungen landen in den Spieldaten, Originaldaten bleiben', () => {
+  const base = {
+    economy: { storage: { base: 500, perWarehouseLevel: 0 }, offline: { baseCapHours: 8 }, levelBonusPerTownLevel: 0 },
+    resources: { wood: { basePrice: 10 } },
+    biomes: {},
+    buildings: {},
+  };
+  const charter = { earned: 9, spent: 6, perks: { yield: 2, storage: 3, market: 1, memory: 2 }, founded: {} };
+  const d = applyCharter(base, charter);
+  assert.equal(d.economy.offline.baseCapHours, 10);
+  assert.equal(base.economy.offline.baseCapHours, 8, 'Original unverändert');
+  assert.equal(d.economy.storageMultiplier, 1.6);
+  assert.equal(storageCap({ tiles: {}, townLevel: 1, biome: 'x' }, d), 800);
+  assert.equal(sellPrice('wood', d), 10.5);
+  assert.equal(sellPrice('wood', base), 10, 'ohne Perk unverändert');
+});
+
+test('ohne Freibrief bleiben die Spieldaten neutral', () => {
+  const base = { economy: { storage: { base: 500, perWarehouseLevel: 0 }, offline: { baseCapHours: 8 } }, resources: { wood: { basePrice: 10 } } };
+  const d = applyCharter(base, null);
+  assert.equal(d.economy.yieldMultiplier, 1);
+  assert.equal(sellPrice('wood', d), 10);
+  assert.equal(d.economy.offline.baseCapHours, 8);
+});

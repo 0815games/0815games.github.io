@@ -12,6 +12,7 @@ import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261124-si
 import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261124-sitz18';
 import {
   PERKS, canFoundCharter, grantCharters, buyPerk, perkEffect, perkLevel, availableCharters, emptyCharter,
+  applyCharterToData,
 } from './domain/charters.js?v=20261124-sitz18';
 const SEEN_NOTES_KEY = 'ttt:notes-seen';
 import { withTimeout } from './async-util.js?v=20261124-sitz18';
@@ -62,6 +63,7 @@ const fmt0 = (n) => nf0.format(Math.floor(n));
 const fmtRate = (n) => nf2.format(n);
 
 let data = null;
+let baseData = null; // Spieldaten ohne Freibrief-Perks, z. B. für Besuche
 let cloud = null;          // ./cloud.js, loaded after the data
 let uid = null;            // signed-in user, null when signed out
 let state = null;          // current town, null until loaded or founded
@@ -100,9 +102,9 @@ async function loadData() {
   return Object.fromEntries(names.map((n, i) => [n, parts[i]]));
 }
 
-function ctx() {
+function ctx(d = data) {
   return {
-    data,
+    data: d,
     dateKey: localDateKey(),
     maxElapsedSec: data.economy.offline.baseCapHours * 3600,
   };
@@ -124,7 +126,8 @@ async function boot() {
   }
   await versionGate.start();
   try {
-    data = await loadData();
+    baseData = await loadData();
+    refreshData();
   } catch (e) {
     showFatal(`Spieldaten konnten nicht geladen werden. Bitte über einen Webserver öffnen. (${e.message})`);
     return;
@@ -178,6 +181,7 @@ async function enterAccount(user) {
   if (!user) {
     charter = null;
     charterLoaded = false;
+    refreshData();
     if (adminUnwatch) adminUnwatch();
     adminUnwatch = null;
     adminChanged = false;
@@ -1286,7 +1290,7 @@ async function startVisit(friendUid, friendName) {
   }
   endVisit();
   const town = hydrateTown(raw);
-  const model = { state: advance(town, Date.now(), ctx()).state };
+  const model = { state: advance(town, Date.now(), ctx(baseData)).state };
   visit = { uid: friendUid, model, board: null, timer: null };
   $('#visit-name').textContent = town.name;
   $('#visit').hidden = false;
@@ -1296,14 +1300,14 @@ async function startVisit(friendUid, friendName) {
     describe: (x, y) => describeIn(model.state, x, y),
     getModel: () => ({
       state: model.state,
-      data,
+      data: baseData,
       unlocked: (x, y) => isUnlocked(x, y, model.state.townLevel, data),
     }),
   });
   updateVisitInfo();
   visit.timer = setInterval(() => {
     if (!visit || visit.model !== model) return;
-    model.state = advance(model.state, Date.now(), ctx()).state;
+    model.state = advance(model.state, Date.now(), ctx(baseData)).state;
     visit.board?.redraw();
     updateVisitInfo();
   }, 1000);
@@ -1328,7 +1332,7 @@ function describeIn(st, x, y) {
   const tile = st?.tiles[keyOf(x, y)];
   if (!tile) return '';
   const b = tile.building;
-  return [`Feld ${x + 1}, ${y + 1}`, TERRAIN_DE[tile.terrain], b ? data.buildings[b.id].name.de : 'frei'].join(' · ');
+  return [`Feld ${x + 1}, ${y + 1}`, TERRAIN_DE[tile.terrain], b ? baseData.buildings[b.id].name.de : 'frei'].join(' · ');
 }
 
 /**
@@ -1348,8 +1352,13 @@ function claimExistingName(forUid, town) {
 // Solange er nicht geladen ist, wird nichts geschrieben, damit ein leerer Stand nicht den echten überschreibt.
 let charter = null;
 let charterLoaded = false;
-// Nur diese Perks wirken schon. Die übrigen zeigt das Fenster mit „Wirkung folgt“.
-const WIRED_PERKS = new Set(['startCoins']);
+// Nur diese Perks wirken schon. „Eilpost“ kommt mit den Konvois (P2) und ist bis dahin markiert.
+const WIRED_PERKS = new Set(['startCoins', 'yield', 'storage', 'market', 'memory']);
+
+/** Spieldaten mit den Perk-Wirkungen dieses Kontos neu berechnen. */
+function refreshData() {
+  if (baseData) data = applyCharterToData(baseData, charter);
+}
 
 async function loadCharterFor(forUid) {
   charter = null;
@@ -1359,6 +1368,7 @@ async function loadCharterFor(forUid) {
     const base = emptyCharter();
     charter = raw ? { ...base, ...raw, perks: raw.perks ?? {}, founded: raw.founded ?? {} } : base;
     charterLoaded = true;
+    refreshData();
   } catch (err) {
     console.error('Freibriefe nicht geladen:', err);
   }
@@ -1390,7 +1400,7 @@ function charterHtml() {
   const rows = PERKS.map((p) => {
     const lvl = perkLevel(c, p.id);
     const canBuy = charterLoaded && lvl < p.max && avail >= 1;
-    const note = WIRED_PERKS.has(p.id) ? '' : ' · Wirkung folgt';
+    const note = WIRED_PERKS.has(p.id) ? '' : ' · Wirkung folgt (Konvois, ab P2)';
     return `<li class="friend-card">
       <div><strong>${esc(p.label)}</strong> <span class="small">Stufe ${lvl}/${p.max}</span>
         <div class="small">${esc(p.effect)}${note}</div></div>
@@ -1455,6 +1465,8 @@ async function buyPerkUi(id, repaint) {
     return;
   }
   charter = r.charter;
+  refreshData();
+  renderAll();
   repaint();
   toast('Perk gekauft.');
 }
