@@ -1,11 +1,11 @@
-import {translateText as tr,getLanguage} from '../language.mjs?v=20261123-aim4';
+import {translateText as tr,getLanguage} from '../language.mjs?v=20261123-aim5';
 import {towerDisplay} from './progression.mjs?v=20261105-prestige1';
-import {specializationRank} from './tower-specialization.mjs?v=20261123-aim4';
-import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261123-aim4';
-import {ENEMY_INTEL,SOLDIER_MAX_HP} from './combat.mjs?v=20261123-aim4';
+import {specializationRank} from './tower-specialization.mjs?v=20261123-aim5';
+import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261123-aim5';
+import {ENEMY_INTEL,SOLDIER_MAX_HP} from './combat.mjs?v=20261123-aim5';
 import {bossPhase} from './boss-mechanics.mjs?v=20261031-finale1';
 import {shotTrace,shotsToDraw} from './shot-tracers.mjs?v=20261117-shots1';
-import {buildRoadPath} from './road-geometry.mjs?v=20261123-aim4';
+import {buildRoadPath} from './road-geometry.mjs?v=20261123-aim5';
 // Drawing only: the simulation, coordinates and hit areas stay unchanged.
 const ink='#1d3028',paper='#f1e7c4';
 function line(ctx,points,color=ink,width=3){ctx.beginPath();points.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();}
@@ -737,6 +737,77 @@ function ambient(ctx,theme,time,width,height){
   else{for(let i=0;i<4;i++){const x=((i*270+t*7)%(width+220))-110;oval(ctx,x,80+i*(height/4),85,13,'#d9ddbd',null);}}
   ctx.restore();
 }
+// How startled the birds are: read off the shot list every viewer already
+// receives - the freshest shot's remaining life (minus snapshot age, the same
+// arithmetic the tracer uses) plus how many shots are in flight. No state, no
+// clock, no new value on the wire: every client startles at the same moment.
+export function ambientAlarm(shots,shotAge=0){
+  const age=Number.isFinite(shotAge)?shotAge:0;
+  let fresh=0,count=0;
+  for(const s of shots||[]){
+    if(!s)continue;
+    const duration=Number.isFinite(s.duration)&&s.duration>0?s.duration:.12;
+    const left=(Number.isFinite(s.life)?s.life:0)-age;
+    if(!(left>0))continue;
+    count++;
+    const a=left/duration;
+    if(a>fresh)fresh=a;
+  }
+  if(!count)return 0;
+  const alarm=count/6+fresh*.55;
+  return alarm>1?1:alarm;
+}
+
+// Lebendiges Ambient: cloud shadows drift over the ground, wind litter tumbles
+// across it, and a small flock crosses the sky. The flock climbs and beats
+// faster while shots are fresh (ambientAlarm), and settles when the field goes
+// quiet. All three layers are drawn from the clock and the shot list alone -
+// nothing is stored, so no two viewers can disagree about the sky. Reduced
+// motion and the weather toggle switch the whole scene off.
+function ambientLife(ctx,theme,time,width,height,shots,shotAge){
+  const t=Number.isFinite(time)?time:0;
+  const alarm=ambientAlarm(shots,shotAge);
+  // 1. Cloud shadows: two wide, soft ellipses crossing the field slowly.
+  ctx.save();ctx.fillStyle='#16211c';
+  for(let i=0;i<2;i++){
+    ctx.globalAlpha=.055+i*.015;
+    const x=((i*.57+t*.013)%(1))*(width+440)-220;
+    const y=height*(.28+.38*i)+Math.sin(t*.07+i*2.1)*18;
+    ctx.beginPath();ctx.ellipse(x,y,176-i*28,58+i*10,0,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(x+120,y+22,110,40,0,0,Math.PI*2);ctx.fill();
+  }
+  ctx.restore();
+  // 2. Wind litter: twigs and leaves tumbling low across the ground, tinted
+  // by the biome so the desert blows sand and the marsh blows reed.
+  const litter={arctic:'#eef4ec',marsh:'#c7d8a8',forest:'#9db471',urban:'#b9bfae'}[theme]||'#c9b27a';
+  ctx.save();ctx.globalAlpha=.5;ctx.strokeStyle=litter;ctx.lineWidth=1.6;
+  for(let i=0;i<9;i++){
+    const x=((i*.19+t*(.045+.011*(i%3)))%(1))*(width+90)-45;
+    const y=height*.22+((i*71)%(height*.62))+Math.sin(t*1.4+i*2.3)*9;
+    const a=Math.sin(t*2.2+i*1.7)*.9;
+    ctx.beginPath();
+    ctx.moveTo(x-Math.cos(a)*4,y-Math.sin(a)*4);
+    ctx.lineTo(x+Math.cos(a)*4,y+Math.sin(a)*4);
+    ctx.stroke();
+  }
+  ctx.restore();
+  // 3. The flock: six birds crossing the sky. Fresh shots make them climb and
+  // beat their wings faster; quiet weather lets them glide. The wings are two
+  // quadratic strokes - a flat line glides, a curved one flaps.
+  ctx.save();ctx.strokeStyle='#1d3028';ctx.lineWidth=1.6;ctx.globalAlpha=.78;
+  for(let i=0;i<6;i++){
+    const x=((i*.17+t*(.035+.006*i))%(1))*(width+140)-70;
+    const y=52+i*21+Math.sin(t*.5+i*1.4)*7-alarm*(16+i*3);
+    const flap=Math.sin(t*(6+alarm*12)+i*1.9)*(2.6+alarm*2);
+    const w=6+alarm*2;
+    ctx.beginPath();
+    ctx.moveTo(x-w,y+flap);
+    ctx.quadraticCurveTo(x-w*.35,y-flap*.8,x,y);
+    ctx.quadraticCurveTo(x+w*.35,y-flap*.8,x+w,y+flap);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
 // The road and terrain never change during a match; draw them once per path.
 const terrainCache=new WeakMap();
 // Same-origin illustrated ground is cosmetic. Cache a new terrain layer once it
@@ -1147,7 +1218,7 @@ function lifeBar(ctx,x,y,width,fraction){
   ctx.restore();
 }
 export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,theme='road',shotAge=0,effects=[],reducedMotion=false,weatherEffects=true,combatTracers=true,soldierPoses={},towerAims={},groundTracks=[],paths=[path],width=960,height=540,bunkerPosition={x:900,y:400},storyMission=null,storyStage=null,storyTime=0,renderScale=1,artVersion=0,deco=[],zones=[],torches=[],onSpritesReady=null,groundSeed=0}){
-  ctx.save();ctx.lineCap='round';ctx.lineJoin='round';const storyArt=storyMission?prepareStoryArt(ctx.canvas?.ownerDocument):null;drawTerrain(ctx,path,theme,{paths,width,height,storyMission,pads,storyArt,renderScale,artVersion,deco,zones,notify:onSpritesReady,groundSeed});drawZoneStates(ctx,zones,state);fieldZone(ctx,path,state,theme);brokenIce(ctx,path,state,theme);drawGroundTracks(ctx,groundTracks,theme);if(storyMission){if(weatherEffects)drawStoryAtmosphere(ctx,storyMission,storyTime,reducedMotion,width,height,path,pads);drawStoryObjective(ctx,storyMission,storyStage,storyTime,reducedMotion,storyArt);}else if(!reducedMotion&&weatherEffects)ambient(ctx,theme,storyTime,width,height);const approach=path.length>1?Math.atan2(bunkerPosition.y-path[path.length-2].y,bunkerPosition.x-path[path.length-2].x):0;
+  ctx.save();ctx.lineCap='round';ctx.lineJoin='round';const storyArt=storyMission?prepareStoryArt(ctx.canvas?.ownerDocument):null;drawTerrain(ctx,path,theme,{paths,width,height,storyMission,pads,storyArt,renderScale,artVersion,deco,zones,notify:onSpritesReady,groundSeed});drawZoneStates(ctx,zones,state);fieldZone(ctx,path,state,theme);brokenIce(ctx,path,state,theme);drawGroundTracks(ctx,groundTracks,theme);if(storyMission){if(weatherEffects)drawStoryAtmosphere(ctx,storyMission,storyTime,reducedMotion,width,height,path,pads);drawStoryObjective(ctx,storyMission,storyStage,storyTime,reducedMotion,storyArt);}else if(!reducedMotion&&weatherEffects)ambient(ctx,theme,storyTime,width,height);if(!reducedMotion&&weatherEffects)ambientLife(ctx,theme,storyTime,width,height,state.shots,shotAge);const approach=path.length>1?Math.atan2(bunkerPosition.y-path[path.length-2].y,bunkerPosition.x-path[path.length-2].x):0;
   // The bunker flinches when it takes a hit - the impact effect carries the
   // timing, the shake is a decaying wobble around the flinch.
   const hit=!reducedMotion&&(effects||[]).find(f=>f&&f.kind==='bunkerHit');

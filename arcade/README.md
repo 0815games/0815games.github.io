@@ -1,7 +1,8 @@
-# Zwischen den Welten — 2.0.1
+# Zwischen den Welten — 2.0.3
 
 - Vollständiger Ersatz der bisherigen Hero-/Kartenoberfläche.
-- Fünf animierte Portal-Szenen, zyklischer 3D-Wechsel und Startübergang.
+- Sechs animierte Portal-Szenen, zyklischer 3D-Wechsel und Startübergang.
+- Iron Path steht als meistgenutztes Spiel an erster Stelle (Portal 01); UFO-Jagd und Neon Pong sind entfernt.
 - Vorhandene SVG-Motive werden in die neuen Szenen eingebunden, nicht als Vorschau-Fenster gezeigt.
 - Keine iFrames, Spielprozesse oder automatisch abgespielter Ton.
 - theme.js bleibt die System-/Hell-/Dunkel-Steuerung.

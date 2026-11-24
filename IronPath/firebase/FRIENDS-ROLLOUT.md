@@ -45,7 +45,8 @@ a publishable file. `scripts/rules-publish-dry-run.mjs` checks the workshop draf
 not this social candidate; it is not a substitute for that review. For the
 experimental maintenance guard the social candidate must additionally be passed
 through the guarded Rules builder and tested as a combined candidate; the
-previously installed `ironpathtest` Rules still use the old pinned reference.
+previously installed `ironpathtest` Rules used the old pinned reference; that
+project is deleted, so only the production Rules matter now.
 The guard changes far more than the five social expressions and blocks existing
 ordinary sessions: do not publish it ahead of a compatible deployment. Never
 paste an unreviewed candidate over live Rules.
