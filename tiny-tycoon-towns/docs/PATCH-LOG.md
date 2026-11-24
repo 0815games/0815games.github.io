@@ -415,3 +415,10 @@ Ereignis ergänzt.
 - Entscheidung Altbestand: Variante B (ältere Stadt mit gleichem Namen bekommt eine Nummer, nach Rückfrage). Noch nicht umgesetzt,
   weil es aktuell nur eine Stadt gibt. Wird umgesetzt, sobald ein Duplikat entsteht.
 - Prüfungen: 65 Tests grün, `check` ohne Fehler.
+
+### TTT-0023 – Freibriefe: Rechenregeln (Welle `20261124-sitz18`)
+
+- Neu: `src/domain/charters.js` mit Gründungsbedingung (Stadtlevel 8, 100.000 Gesamtertrag), Gewinn
+  `floor(sqrt(Ertrag / 100000))`, Perk-Baum (28 Punkte) und Kaufregeln. Quelle: `docs/GAME_PLAN.md`, Abschnitt 4.11.
+- Noch nicht im Spiel: kein Stand-Feld, keine Oberfläche, keine Regeländerung. Offen: Zurücksetzen der Stadt, Anbindung der Perk-Wirkungen an die Produktion.
+- Prüfungen: 71 Tests grün, `check` ohne Fehler.
