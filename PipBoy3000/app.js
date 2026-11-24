@@ -447,11 +447,16 @@
     "baseball_bat",
     "bat_alum",
     "bat_spiked",
+    "boots_combat",
     "boots_leather",
     "bracers_leather",
     "buffout",
+    "combat_armor",
+    "combat_arms",
+    "combat_legs",
     "combat_shotgun",
     "deathclaw_gauntlet",
+    "helmet_metal",
     "hunting_rifle",
     "jet",
     "knife",
@@ -461,6 +466,8 @@
     "leather_armor",
     "leather_helm",
     "machete",
+    "metal_armor",
+    "metal_arms",
     "minigun",
     "nuka_cola",
     "nuka_quantum",
@@ -488,7 +495,8 @@
     "sniper_rifle",
     "stealth_boy",
     "stimpack",
-    "switchblade"
+    "switchblade",
+    "synth_armor"
   ];
 
   // src/data/data_recipes.js
