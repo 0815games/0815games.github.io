@@ -88,7 +88,7 @@ nie lief. **Keine der vier Funktionen hatte je eine Wirkung.**
 
 ---
 
-## 4. Munition: nicht nur ein fehlendes `ammoType` (B9, verschärft)
+## 4. Munition war gebaut, aber nie verbunden *(behoben)*
 
 In `to_do.log` steht, der Verbrauchspfad sei „korrekt gebaut, aber keine Waffe
 hat ein `ammoType`". Beim Nachsehen ist es mehr:
@@ -106,9 +106,38 @@ Das ist kein Balance-Thema, sondern eine **fehlende Verbindung**. Die
 Bestandteile liegen alle bereit; es fehlt die Zeile, die einer Fernkampfwaffe
 `ammoType: 'ammo'` gibt.
 
-→ **Empfehlung:** als eigenen, kleinen Schritt machen — und dann ist das
-Balancing die eigentliche Arbeit. Mit 34 Waffen und einem einzigen Munitionstyp
-wird sonst alles gleich.
+**Behoben und ausgebaut.** Statt nur `ammo` an alle Waffen zu hängen, gibt es
+jetzt **sechs Munitionsarten** mit eigenem Preis, Lager und Rezept:
+
+| Sorte | Waffen | Verbrauch | Preis/Paket |
+|---|---|---|---|
+| `ammo` (.38) | Pipe-Pistole, -Gewehr, -Revolver | 1 | 10 KK |
+| `ammo_10mm` | 10mm-Pistole, SMG | 1 / 3 | 20 KK |
+| `ammo_308` | .44, Jagdgewehr, Sniper, Sturmgewehr | 1 / 2 | 30 KK |
+| `ammo_shell` | Doppelflinte, Kampfflinte | 2 | 40 KK |
+| `ammo_micro` | Minigun | 5 | 20 KK |
+| `ammo_cell` | Laser, Plasma | 2 / 3 | 50 KK |
+
+`alien_blaster` bleibt munitionslos — das war im Code schon so vorgesehen.
+
+**Was dafür mitgeändert werden musste**, sonst wäre es Bruchwerk geworden:
+
+- `syncAmmo` zählte nur `id === 'ammo'` → summiert jetzt alle Arten über den
+  Item-Typ
+- `getStackLimit` hatte `'ammo'` fest verdrahtet → prüft jetzt den Item-Typ
+- Der Händler kannte einen einzigen `ammoStock` → lagert je Sorte
+  (`ammoStockByType`), `ammoStock` bleibt als alter Schlüssel bestehen, damit
+  bestehende Spielstände nicht leer dastehen
+- Die Shop-Liste zeigte eine Zeile „10x MUNITION" → listet alle vorhandenen
+  Sorten, günstigste zuerst
+- Das Rezept `craft_ammo` deckte nur eine Sorte ab → fünf weitere Rezepte mit
+  passenden Zutaten und Level-Anforderungen
+
+**Der eigentliche Gewinn:** der Zweig in `Combat.playerAttack`, der bei leerer
+Munition „WAFFE LEER! *KLICK*" meldet und automatisch auf die beste
+Nahkampfwaffe wechselt, ist erstmals **erreichbar**. Er war jahrelang tot,
+weil keine Waffe je `ammoType` hatte. Elfe Tests decken den Pfad ab, inklusive
+Ende-zu-Ende-Schuss und Leerlaufen.
 
 ---
 

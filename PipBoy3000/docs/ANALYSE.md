@@ -99,12 +99,19 @@ einfache Stufenabfrage. Das komplette Präfix-System war toter Code.
 und war ebenfalls nicht vorhanden; der Ersatzweg löschte `save_0`, `slot_0`,
 `wasteland_save_0` und `vault_save_0` — Schlüssel, die das Spiel nie schreibt.
 
-### B9 — Munition wurde nicht verbraucht *(offen, dokumentiert)*
+### B9 — Munition wurde nicht verbraucht *(behoben)*
 `game_combat.js` fragt korrekt `ammoType` ab und verbraucht Munition — aber
 **keine einzige Waffe im Katalog hat ein `ammoType`**. `getWeaponStats` liefert
 deshalb immer `null`, und der Verbrauchspfad wird nie betreten. Das Feld
 `usesAmmo: true` existiert in den Daten, wird aber von keiner Codezeile gelesen.
 Der offene Punkt „kein munitionsverbrauch" aus `to_do.log` ist damit erklärt.
+
+**Behoben:** 17 Feuerwaffen haben jetzt `ammoType` und `ammoCost`, verteilt auf
+sechs Munitionsarten mit eigenem Preis, Lager und Rezept. `syncAmmo`,
+`getStackLimit`, der Händler und die Shop-Liste arbeiten mit allen Arten. Der
+Zweig „WAFFE LEER" in `playerAttack` ist erstmals erreichbar. Details und
+Begründungen in [BEFUNDE.md](BEFUNDE.md) Punkt 4, elf Tests in
+`tests/ammo.test.mjs`.
 
 ### B10 — Doppelt gepflegte Monsterdaten *(offen, dokumentiert)*
 `data_monsters.js` **ersetzt** `GameData.monsters` vollständig, statt zu
@@ -182,9 +189,8 @@ ein Fund im Browser:
 Eine Nachlese nach dem Umbau steht in [BEFUNDE.md](BEFUNDE.md) — inklusive
 eines Fehlers, den der Umbau selbst verursacht hat (Handbuch/Changelog 404).
 
-B1–B8 behoben und durch Tests abgesichert. B9 und B10 sind bewusst offen: beide
-sind Balancing- bzw. Datenpflege-Themen ohne Absturzfolge, und B9 braucht eine
-Design-Entscheidung (welche Waffe verbraucht wie viel).
+B1–B9 behoben und durch Tests abgesichert. B10 ist bewusst offen (Datenpflege
+ohne Absturzfolge).
 
 ---
 
@@ -192,7 +198,6 @@ Design-Entscheidung (welche Waffe verbraucht wie viel).
 
 | Punkt | Warum noch offen |
 |---|---|
-| **Munitionsverbrauch** (B9) | Braucht `ammoType`/`ammoCost` an den Fernkampfwaffen — eine Design-Entscheidung, keine Reparatur. |
 | **Monsterdaten zusammenführen** (B10) | `data_monsters.js` sollte `Object.assign` nutzen wie die übrigen Datenmodule. Kleiner Eingriff, eigener Schritt. |
 | **Firebase v9/v10 modular** | Der Umbau auf ES-Module ist die Voraussetzung; jetzt möglich, aber ein eigener Schritt mit eigenem Test (Auth-Fluss). |
 | **Admin-Anmeldung** | `src/admin.js` enthält Klartext-Zugangsdaten. Auf GitHub Pages sind sie öffentlich abrufbar. Das muss raus aus dem Client — Firebase-Admin-Claim oder Cloud Function. **Dringendster offener Punkt.** |

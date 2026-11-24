@@ -119,30 +119,38 @@ Object.assign(window.GameData.items, {
     // ==============================
     // === FERNKAMPF (Guns/Ammo) ===
     // ==============================
-    ammo: { name: "Munition", type: "ammo", cost: 2, desc: "Patronen.", weight: 0.05 },
+    // Munition in sechs Arten. `ammo` bleibt die Schrott-Sorte fuer die
+    // Pipe-Waffen: bestehende Spielstaende, Haendler-Lager und das Rezept
+    // craft_ammo arbeiten weiter damit (docs/BEFUNDE.md, 4).
+    ammo:     { name: "Schrott-Munition (.38)", type: "ammo", cost: 1, desc: "Selbstgegossen. Passt in Rohrwaffen.", weight: 0.05 },
+    ammo_10mm: { name: "10mm-Munition", type: "ammo", cost: 2, desc: "Standard-Kaliber.", weight: 0.05 },
+    ammo_308:  { name: ".308-Munition", type: "ammo", cost: 3, desc: "Gewehrpatronen.", weight: 0.08 },
+    ammo_shell: { name: "Schrotpatronen", type: "ammo", cost: 4, desc: "Für Flinten.", weight: 0.1 },
+    ammo_micro: { name: "Mikro-Zellen", type: "ammo", cost: 2, desc: "Minigun-Futter.", weight: 0.04 },
+    ammo_cell: { name: "Energiezellen", type: "ammo", cost: 5, desc: "Laser und Plasma.", weight: 0.1 },
 
     // Pipe Weapons (Schrott)
-    pipe_pistol: { name: "Rohrpistole", type: "weapon", slot: "weapon", baseDmg: 5, cost: 15, desc: "Selbstgebaut.", usesAmmo: true },
-    pipe_rifle: { name: "Rohrgewehr", type: "weapon", slot: "weapon", baseDmg: 7, cost: 30, desc: "Längerer Lauf.", usesAmmo: true },
-    pipe_revolver: { name: "Rohrrevolver", type: "weapon", slot: "weapon", baseDmg: 9, cost: 45, desc: "Kaliber .45.", usesAmmo: true },
-    pipe_sniper: { name: "Rohr-Sniper", type: "weapon", slot: "weapon", baseDmg: 12, cost: 60, desc: "Mit Zielfernrohr.", usesAmmo: true },
+    pipe_pistol: { name: "Rohrpistole", type: "weapon", slot: "weapon", baseDmg: 5, cost: 15, desc: "Selbstgebaut.", usesAmmo: true, ammoType: 'ammo', ammoCost: 1 },
+    pipe_rifle: { name: "Rohrgewehr", type: "weapon", slot: "weapon", baseDmg: 7, cost: 30, desc: "Längerer Lauf.", usesAmmo: true, ammoType: 'ammo', ammoCost: 1 },
+    pipe_revolver: { name: "Rohrrevolver", type: "weapon", slot: "weapon", baseDmg: 9, cost: 45, desc: "Kaliber .45.", usesAmmo: true, ammoType: 'ammo', ammoCost: 1 },
+    pipe_sniper: { name: "Rohr-Sniper", type: "weapon", slot: "weapon", baseDmg: 12, cost: 60, desc: "Mit Zielfernrohr.", usesAmmo: true, ammoType: 'ammo', ammoCost: 2 },
 
     // Conventional
-    pistol_10mm: { name: "10mm Pistole", type: "weapon", slot: "weapon", baseDmg: 12, cost: 120, desc: "Verlässlich.", usesAmmo: true },
-    revolver_44: { name: ".44 Revolver", type: "weapon", slot: "weapon", baseDmg: 25, cost: 250, desc: "Dirty Harry Style.", usesAmmo: true },
-    smg: { name: "Maschinenpistole", type: "weapon", slot: "weapon", baseDmg: 10, cost: 300, desc: "Schnellfeuer.", usesAmmo: true },
-    hunting_rifle: { name: "Jagdgewehr", type: "weapon", slot: "weapon", baseDmg: 20, cost: 200, desc: "Präzise.", usesAmmo: true },
-    sniper_rifle: { name: "Scharfschützengewehr", type: "weapon", slot: "weapon", baseDmg: 35, cost: 700, desc: "Tödlich auf Distanz.", usesAmmo: true },
-    shotgun: { name: "Doppelflinte", type: "weapon", slot: "weapon", baseDmg: 30, cost: 350, desc: "Zwei Läufe.", usesAmmo: true },
-    combat_shotgun: { name: "Kampfflinte", type: "weapon", slot: "weapon", baseDmg: 38, cost: 600, desc: "Magazin-geladen.", usesAmmo: true },
-    assault_rifle: { name: "Sturmgewehr", type: "weapon", slot: "weapon", baseDmg: 28, cost: 550, desc: "Militärstandard.", usesAmmo: true },
-    minigun: { name: "Minigun", type: "weapon", slot: "weapon", baseDmg: 15, cost: 1500, desc: "Extremes Schnellfeuer (Mehrfach-Treffer).", usesAmmo: true },
+    pistol_10mm: { name: "10mm Pistole", type: "weapon", slot: "weapon", baseDmg: 12, cost: 120, desc: "Verlässlich.", usesAmmo: true, ammoType: 'ammo_10mm', ammoCost: 1 },
+    revolver_44: { name: ".44 Revolver", type: "weapon", slot: "weapon", baseDmg: 25, cost: 250, desc: "Dirty Harry Style.", usesAmmo: true, ammoType: 'ammo_308', ammoCost: 1 },
+    smg: { name: "Maschinenpistole", type: "weapon", slot: "weapon", baseDmg: 10, cost: 300, desc: "Schnellfeuer.", usesAmmo: true, ammoType: 'ammo_10mm', ammoCost: 3 },
+    hunting_rifle: { name: "Jagdgewehr", type: "weapon", slot: "weapon", baseDmg: 20, cost: 200, desc: "Präzise.", usesAmmo: true, ammoType: 'ammo_308', ammoCost: 1 },
+    sniper_rifle: { name: "Scharfschützengewehr", type: "weapon", slot: "weapon", baseDmg: 35, cost: 700, desc: "Tödlich auf Distanz.", usesAmmo: true, ammoType: 'ammo_308', ammoCost: 1 },
+    shotgun: { name: "Doppelflinte", type: "weapon", slot: "weapon", baseDmg: 30, cost: 350, desc: "Zwei Läufe.", usesAmmo: true, ammoType: 'ammo_shell', ammoCost: 2 },
+    combat_shotgun: { name: "Kampfflinte", type: "weapon", slot: "weapon", baseDmg: 38, cost: 600, desc: "Magazin-geladen.", usesAmmo: true, ammoType: 'ammo_shell', ammoCost: 2 },
+    assault_rifle: { name: "Sturmgewehr", type: "weapon", slot: "weapon", baseDmg: 28, cost: 550, desc: "Militärstandard.", usesAmmo: true, ammoType: 'ammo_308', ammoCost: 2 },
+    minigun: { name: "Minigun", type: "weapon", slot: "weapon", baseDmg: 15, cost: 1500, desc: "Extremes Schnellfeuer (Mehrfach-Treffer).", usesAmmo: true, ammoType: 'ammo_micro', ammoCost: 5 },
 
     // Energy
-    laser_pistol: { name: "Laserpistole", type: "weapon", slot: "weapon", baseDmg: 22, cost: 400, desc: "Vorsicht, heiß.", usesAmmo: true },
-    laser_rifle: { name: "Lasergewehr", type: "weapon", slot: "weapon", baseDmg: 32, cost: 650, desc: "Lange Reichweite.", usesAmmo: true },
-    plasma_pistol: { name: "Plasmapistole", type: "weapon", slot: "weapon", baseDmg: 35, cost: 600, desc: "Grüner Schleim.", usesAmmo: true },
-    plasma_rifle: { name: "Plasmagewehr", type: "weapon", slot: "weapon", baseDmg: 45, cost: 900, desc: "Schmilzt Rüstung.", usesAmmo: true },
+    laser_pistol: { name: "Laserpistole", type: "weapon", slot: "weapon", baseDmg: 22, cost: 400, desc: "Vorsicht, heiß.", usesAmmo: true, ammoType: 'ammo_cell', ammoCost: 2 },
+    laser_rifle: { name: "Lasergewehr", type: "weapon", slot: "weapon", baseDmg: 32, cost: 650, desc: "Lange Reichweite.", usesAmmo: true, ammoType: 'ammo_cell', ammoCost: 2 },
+    plasma_pistol: { name: "Plasmapistole", type: "weapon", slot: "weapon", baseDmg: 35, cost: 600, desc: "Grüner Schleim.", usesAmmo: true, ammoType: 'ammo_cell', ammoCost: 3 },
+    plasma_rifle: { name: "Plasmagewehr", type: "weapon", slot: "weapon", baseDmg: 45, cost: 900, desc: "Schmilzt Rüstung.", usesAmmo: true, ammoType: 'ammo_cell', ammoCost: 3 },
     alien_blaster: { name: "Alien Blaster", type: "weapon", slot: "weapon", baseDmg: 80, cost: 3000, desc: "Extraterrestrisch.", usesAmmo: false },
 
     // ======================================

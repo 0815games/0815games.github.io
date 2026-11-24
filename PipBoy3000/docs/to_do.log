@@ -38,8 +38,9 @@
 - [x] templates/radio.html und vault.html waren nie erreichbar (radio rief
       nicht existierende Functions). Gelöscht, dazu der tote Detail-Block in
       quests.html (BEFUNDE.md Punkt 2).
-- [ ] Munition: usesAmmo wird nie gelesen, der ganze Zweig ist unerreichbar
-      (BEFUNDE.md Punkt 4, verschärft B9).
+- [x] Munition ist verbunden: sechs Arten, gestaffelter Verbrauch, eigener
+      Shop-Bestand, fünf neue Rezepte. Der "WAFFE LEER"-Zweig ist erstmals
+      erreichbar (BEFUNDE.md Punkt 4, löst B9).
 - [x] Kronkorken-Drops landen als Guthaben statt als Phantom-Item: Combat.win
       nutzt jetzt safeGiveItem (BEFUNDE.md Punkt 5).
 - [x] Dynamische Tailwind-Klassen durch vollständige Paletten ersetzt

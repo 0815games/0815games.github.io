@@ -151,8 +151,15 @@ window.Game = {
     },
 
     getUsedSlots: function() { if(!this.state || !this.state.inventory) return 0; return this.state.inventory.length; },
-    getStackLimit: function(itemId) { if(itemId==='ammo')return 100; if(itemId==='caps')return 99999; const i=this.items[itemId]; if(!i)return 1; if(i.type==='component'||i.type==='rare'||i.type==='consumable'||i.type==='junk')return 20; if(i.type==='ammo')return 100; return 1; },
-    syncAmmo: function() { if(!this.state)return; const t=this.state.inventory.reduce((s,i)=>i.id==='ammo'?s+i.count:s,0); this.state.ammo=t; if(typeof UI!=='undefined'&&UI.update)UI.update(); },
+    getStackLimit: function(itemId) { if(itemId==='caps')return 99999; if(this.items[itemId] && this.items[itemId].type==='ammo')return 100; const i=this.items[itemId]; if(!i)return 1; if(i.type==='component'||i.type==='rare'||i.type==='consumable'||i.type==='junk')return 20; if(i.type==='ammo')return 100; return 1; },
+    // Zaehlt alle Munitionsarten zusammen. Vorher nur 'ammo' - mit sechs
+    // Sorten waere der HUD-Zaehler sonst still falsch (docs/BEFUNDE.md, 4).
+    syncAmmo: function() {
+        if(!this.state) return;
+        const t = this.state.inventory.reduce((sum, i) => (i && this.items[i.id] && this.items[i.id].type === 'ammo') ? sum + i.count : sum, 0);
+        this.state.ammo = t;
+        if(typeof UI !== 'undefined' && UI.update) UI.update();
+    },
     getStat: function(key) { if(!this.state)return 5; let v=this.state.stats[key]||5; ['weapon','body','head','legs','feet','arms','back'].forEach(s=>{const i=this.state.equip[s]; if(i){if(i.bonus&&i.bonus[key])v+=i.bonus[key]; if(i.props&&i.props.bonus&&i.props.bonus[key])v+=i.props.bonus[key];}}); return v; },
     expToNextLevel: function(l) { return Math.floor(100 * Math.pow(l, 1.5)); },
     
@@ -268,7 +275,17 @@ window.Game = {
         const now = Date.now(); if(!this.state.shop) this.state.shop = { nextRestock: 0, stock: {}, merchantCaps: 1000 };
         if(now >= this.state.shop.nextRestock) {
             const stock = {}; stock['stimpack'] = 2+Math.floor(Math.random()*4); stock['radaway']=1+Math.floor(Math.random()*3); stock['nuka_cola']=3+Math.floor(Math.random()*5);
-            this.state.shop.ammoStock=30+(Math.floor(Math.random()*9)*10); 
+            // Munitionslager je Sorte. Die Menge haengt am Preis: teure Energie-
+            // zellen liegen seltener im Regal als Schrott-Munition.
+            this.state.shop.ammoStock = 30 + (Math.floor(Math.random() * 9) * 10);
+            this.state.shop.ammoStockByType = {
+                ammo: 30 + (Math.floor(Math.random() * 9) * 10),
+                ammo_10mm: 20 + (Math.floor(Math.random() * 8) * 10),
+                ammo_308: 10 + (Math.floor(Math.random() * 5) * 10),
+                ammo_shell: 10 + (Math.floor(Math.random() * 4) * 10),
+                ammo_micro: 20 + (Math.floor(Math.random() * 8) * 10),
+                ammo_cell: 10 + (Math.floor(Math.random() * 3) * 10)
+            };
             stock['camp_kit'] = 1;
             this.state.shop.merchantCaps = 500 + Math.floor(Math.random() * 1000);
             this.state.shop.stock = stock; this.state.shop.nextRestock = now + 3600000;
