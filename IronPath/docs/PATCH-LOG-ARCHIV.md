@@ -4569,3 +4569,15 @@ sie geprüft wurde.
 - **Prüfungen:** `node --test IronPath/tests/menu-redesign.test.mjs IronPath/tests/endless-launcher.test.mjs`: 18/18. `patch.mjs check --fast`: 0 Fehler (2 Hinweise vor der Welle). Sichtprüfung über lokale Live-Vorschau durch den Betreiber möglich; Browser-Fahrten laufen mangels lokalem Chromium in der CI. Gesamtsuite folgt auf der Cache-Welle.
 - **Git / PR / Release:** Wird mit Welle und PR-Nummer fortgeschrieben.
 - **Offen / nächster Schritt:** Cache-Welle `20261123-endless2` inkl. Feldnotizen, PR, CI, Merge, Pages-Nachweis. Block E Scheibe 2 bleibt eigenes Paket.
+
+## IPL-0109 – Endless-Bühne: Standard-Pfeile in Militär-Optik zurück, DEPLOY nur schriftbreit (Welle `20261123-endless3`, PR `#371`)
+- **Zeit / Quelle:** 2026-11-23 UTC; Betreiber-Rückmeldung zu `IPL-0108`: „Die Pfeilge fallen mit optisch gar nicht. Wir gehen wieder zu standart Pfeilen in Militär optik über.“ und „Deploy button soweit sogut. Aber wieso über die gesamte breite? Reicht doch fix in der mitte so breit wie die schrift selbst.“
+- **Block / Ziel:** Feinschliff am Endless-Startdialog, kein Block-Thema.
+- **Branch / Basis:** `arena/1b685ae1-0815games-github-io` ab `483dbd74cd81c6bfa644c707e5bb1a978d7a1335` (`main`, Merge PR `#370`). Feature-Commit `0506cbeb5fbdfac1692551308124f36533ab14a1` gepusht, PR `#371` eröffnet; Cache-Welle `20261123-endless3` mit Feldnotizen (`patch-notes.mjs`, `RELEASED_PATCHES[0]` = `endless3`, PR `#371`).
+- **Änderungen / Dateien:**
+  - `IronPath/index.html`: Pfeil-SVGs zurück auf die klassischen schlanken Linien-Chevrons (`viewBox 0 0 28 48`, Doppelstrich mit Tragstrich) statt der gefüllten 48er-Doppel-Chevrons aus `IPL-0108`.
+  - `IronPath/menu-redesign.css`: Pfeil-Buttons zurück auf das schlanke Standardmaß (46×76 px, mobil 40×62 px) mit dunklem Oliv-Verlauf, Messing-Rand und Messing-Chevron – also Standard-Pfeile in Militär-Optik; die genietete Panzerplatte aus `IPL-0108` ist entfernt. `#endlessDeploy` verliert seine Mindestbreite (220 px Desktop / 180 px mobil) und ist jetzt nur so breit wie die Stencil-Schrift plus Innenabstand, weiterhin mittig unten auf dem Bild mit Glow-Rahmen.
+  - Tests: `IronPath/tests/menu-redesign.test.mjs` (Anker: 28er-Standard-Chevrons; DEPLOY ohne `min-width`).
+- **Prüfungen:** `node --test IronPath/tests/menu-redesign.test.mjs IronPath/tests/endless-launcher.test.mjs`: 18/18. `patch.mjs check --fast`: 0 Fehler (2 Hinweise vor der Welle). Browser-Geometrie (Pfeil-/DEPLOY-Lage im Bild) ist durch die unveränderten Anker in `interface-smoke.cjs` weiter gedeckt und läuft in der CI; Sichtprüfung über die lokale Live-Vorschau.
+- **Git / PR / Release:** Wird mit Welle und PR-Nummer fortgeschrieben.
+- **Offen / nächster Schritt:** Cache-Welle `20261123-endless3` inkl. Feldnotizen, PR, CI, Merge, Pages-Nachweis. Block E Scheibe 2 bleibt eigenes Paket.

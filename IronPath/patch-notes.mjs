@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see docs/PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261123-aim6';
+import {getLanguage} from './language.mjs?v=20261124-aim7';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,20 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'aim7',build:'20261124-aim7',pr:425,
+    title:{en:'Balance at the Sector Edge · The Retreat You Can Rebuild Into',de:'Balancing an der Sektorkante · Der Rückzug, den man wieder aufbauen kann'},
+    shipped:[
+      {en:'The retreat after a cleared sector now sells your towers at eighty percent instead of sixty, and the first wave on the new field spawns in the old rhythm - you rebuild into the new threat instead of meeting it bare-handed.',de:'Der Rückzug nach einem geräumten Sektor verkauft deine Türme jetzt mit achtzig statt sechzig Prozent, und die erste Welle auf dem neuen Feld spawnt im alten Takt - du baust auf, statt der neuen Bedrohung wehrlos zu begegnen.'},
+      {en:'A linked field report runs the whole balance matrix with one command - gear tiers, every soldier class, tower placements, sector retreats and co-op pairs - and compares the result against a committed baseline.',de:'Ein verknüpftes Feld-Report läuft mit einem Befehl durch die ganze Balance-Matrix - Ausrüstungsstufen, jede Soldatenklasse, Turm-Positionen, Sektor-Rückzüge und Coop-Paare - und vergleicht das Ergebnis gegen eine kommittete Baseline.'},
+      {en:'The wave trace records health, supplies, towers, leaks and every retreat per wave, so a balance hunch becomes a number you can re-check after each change - regressions fail the check loudly.',de:'Der Wellen-Trace schreibt Gesundheit, Vorrat, Türme, Leaks und jeden Rückzug pro Welle - aus einer Balance-Ahnung wird eine Zahl, die nach jeder Änderung erneut prüfbar ist; Regressionen fallen laut auf.'},
+      {en:'Raised the cache wave to 20261124-aim7, because the balance gained new layers: no device should fight with yesterdays eyes.',de:'Die Cache-Welle auf 20261124-aim7 erhöht, weil das Balancing neue Ebenen bekam: Kein Gerät soll mit den Augen von gestern kämpfen.'},
+    ],
+    open:[
+      {en:'The field report is the tool for the next balance hunch: node tests/balance-field-report.mjs --check. Whether the opening waves should get more bite is the operators call - the reports early column already measures it.',de:'Das Feld-Report ist das Werkzeug für die nächste Balance-Ahnung: node tests/balance-field-report.mjs --check. Ob die Öffnungswellen mehr Biss bekommen sollen, entscheidet der Betreiber - die early-Säule des Reports misst es bereits.'},
+      {en:'Acceptance of this wave is the operators own run in the game - device checks stay with the operator. What comes next is the operators call.',de:'Die Sichtung dieser Welle macht der Betreiber selbst im Spiel - Geräteabnahmen bleiben Betreiber-Sache. Was als Nächstes kommt, entscheidet der Betreiber.'},
+    ]
+  },
   {
     id:'aim6',build:'20261123-aim6',pr:405,
     title:{en:'Living Field VI · Powder, Scars and a Breathing Field',de:'Lebendiges Feld VI · Pulver, Spuren und ein atmendes Feld'},
