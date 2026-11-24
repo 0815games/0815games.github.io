@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see docs/PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261123-aim2';
+import {getLanguage} from './language.mjs?v=20261123-aim3';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,20 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'aim3',build:'20261123-aim3',pr:386,
+    title:{en:'Living Field III · The Guns Settle, the Barrels Kick',de:'Lebendiges Feld III · Die Waffen rasten ein, die Rohre stoßen'},
+    shipped:[
+      {en:'The traversing heads have learned manners: they sweep at full rate across the field and then ease onto their target instead of slamming into it, and the swing itself is a touch more deliberate than before.',de:'Die schwenkenden Köpfe haben Manieren gelernt: Sie fegen mit voller Rate übers Feld und rasten dann weich auf ihrem Ziel ein, statt hineinzuknallen - und der Schwenk selbst ist einen Tick bewusster als zuvor.'},
+      {en:'The recoil now lives where it belongs: the tripod, the box trail, the pedestal and the shield stay planted while only the barrel group - receiver, breech, twin barrels, rifle - slides back inside the mount, like a real gun carriage.',de:'Der Rückstoß lebt jetzt, wo er hingehört: Dreibein, Kastenschwanz, Sockel und Schild bleiben stehen, während nur die Waffengruppe - Gehäuse, Verschluss, Doppellauf, Gewehr - in der Lafette zurückgleitet, wie eine echte Waffenlafette.'},
+      {en:'The kick itself lasts a breath longer, so the eye can catch it: a shot you can see is a shot you believe.',de:'Der Tritt selbst dauert einen Atemzug länger, damit das Auge ihn erwischt: Ein Schuss, den man sieht, ist ein Schuss, den man glaubt.'},
+      {en:'Honest note: still pure stagecraft - no damage, range or rule changed, and the multiplayer picture stays identical for host and guests.',de:'Ehrlicher Hinweis: Immer noch reine Bühnenkunst - kein Schaden, keine Reichweite, keine Regel geändert, und das Mehrspieler-Bild bleibt für Host und Gäste identisch.'},
+      {en:'Raised the cache wave to 20261123-aim3, because the turret motion changed: no device should fight with yesterday’s eyes.',de:'Die Cache-Welle auf 20261123-aim3 erhöht, weil sich die Turmbewegung geändert hat: Kein Gerät soll mit den Augen von gestern kämpfen.'},
+    ],
+    open:[
+      {en:'Next: muzzle flashes and flying shell casings, drawn from the kick the guns already make.',de:'Als Nächstes: Mündungsfeuer und fliegende Hülsen, gezeichnet aus dem Tritt, den die Waffen ohnehin machen.'},
+    ]
+  },
   {
     id:'aim2',build:'20261123-aim2',pr:385,
     title:{en:'Living Field II · Every Gun Tracks Its Targets',de:'Lebendiges Feld II · Jede Waffe führt ihre Ziele nach'},
