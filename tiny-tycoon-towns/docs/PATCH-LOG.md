@@ -201,3 +201,50 @@ Ereignis ergänzt.
     Ob die Regeln im Live-Projekt veröffentlicht sind, ist nicht bekannt.
 - Git / PR / Veröffentlichung: siehe Nachtrag. Nicht gemergt, nicht veröffentlicht.
 - Offen: Regeln veröffentlichen (`docs/FIREBASE.md`), Domains prüfen, Test im echten Browser.
+
+## TTT-0006 – Welt, Anmeldung, Versions-Gate, Tutorial (Welle `20261124-welt1`)
+
+- Zeit / Quelle: Sitzung 2026-11-24 (UTC). Auftrag des Betreibers: Kachel-Optik ersetzen durch eine große,
+  animierte Spielwelt; Anmeldung als erster Bildschirm; IronPath-Patch-Logik übernehmen; Pinch-Zoom am Handy;
+  Abmelden mit Rückfrage; keine doppelte Anmeldung; Tutorial einmal pro Konto mit Hilfe-Übersicht; Neuerungen
+  nach einem Update.
+- Änderungen (Commits auf `arena/28851d80-0815games-github-io` bzw. `arena/4f82f7fb-0815games-github-io`):
+  - PR #393 gemergt (`b5870ea1`): Canvas-Weltansicht (`src/world/`), Anmeldung mit animierter Insel
+    (`src/world/login-scene.js`), Versions-Gate aus IronPath (`src/version-check.mjs`, `src/version-ui.mjs`,
+    `src/bounded-json.mjs`), `release-version.json` im Format 1, ADR `docs/ADR-world-rendering.md`,
+    `docs/ADR-update-gate.md`.
+  - `5df987c`: Pinch-Zoom (zwei Finger) in `src/world/board.js`; Rückfrage beim Abmelden; Sperre gegen doppelte
+    Anmeldung im selben Browser über `BroadcastChannel` (`ttt-session`).
+  - `cc50336`: Tutorial (8 Schritte, `src/tutorial.js`), Fortschritt als `town.tutorialStep` mit dem Konto
+    gespeichert, Aktion `setTutorialStep` in `src/domain/engine.js`; Hilfe-Button mit Übersicht aller Regeln.
+  - `4a45967`: Cache-Welle `20261124-welt1` (`bump --apply`, 14 Dateien, 5 Anker); Neuerungen-Dialog einmal
+    pro Browser und Version (`ttt:notes-seen`), danach das Tutorial; Feldnotizen-Eintrag DE/EN.
+- Prüfungen (lokal, Node 22.22.3):
+  - `node --test tests/*.test.mjs`: 57 Tests, 57 pass, 0 fail (neu: `version-check`, `tutorial`).
+  - `node scripts/patch.mjs check --fast`: kein Fehler, Hinweise zu Branch und flachem Klon.
+  - Oberflächenlauf in jsdom (ad hoc, nicht im Repo, Stand vor `4a45967`): Anmeldebildschirm sichtbar,
+    Spiel nach Anmeldung klickbar, Auswahl per Klick und Pfeiltaste, keine Fehler.
+- Grenzen, nicht geprüft:
+  - Kein echter Browser. Pinch-Zoom, Anmeldung am Handy, Tutorial-Hervorhebung und Neuerungen-Dialog sind nur
+    im Code und in Tests belegt, nicht gesehen.
+  - Der Harness für den Oberflächenlauf ist nach dieser Sitzung nicht mehr vorhanden.
+  - Anmeldung über Geräte hinweg (IronPath-Sitzungssperre in der Datenbank) fehlt. Dafür braucht es
+    Datenbankregeln und eine Veröffentlichung.
+  - Offline-Start wird vom Versions-Gate blockiert, wie bei IronPath. Entscheidung offen.
+  - Regeln sind nicht veröffentlicht; ob sie im Live-Projekt liegen, ist unbekannt.
+- Veröffentlichung: Code liegt auf dem Branch, nicht auf `main`. Kein Merge ohne Freigabe.
+- Offen: Browser-Test der neuen Welle, Entscheidung zum Offline-Start, Regeln veröffentlichen
+  (`docs/FIREBASE.md`), geräteübergreifende Sitzungssperre.
+
+### Nachtrag TTT-0006 (vor Merge, Welle `20261124-welt1` unverändert)
+
+- Zeit / Quelle: Sitzung 2026-11-24 (UTC). Auftrag des Betreibers: kein Offline-Start, Datenbankregeln
+  bereitstellen, IronPath-Verweise aus den Spieltexten entfernen.
+- Änderungen (Commit 304d798):
+  - `src/main.js`: Ist der Cloud-Stand nicht lesbar, bleibt das Spiel gesperrt (Wiederholen-Knopf). Der
+    lokale Stand wird nicht mehr gespielt, bleibt aber als Sicherung erhalten.
+  - `src/patch-notes.mjs`, `index.html`, `style.css`, Kommentare: Verweise auf IronPath entfernt, die
+    Spieltexte nennen IronPath nicht mehr.
+  - Regeln (`firebase/database.rules.json`) unverändert. Geprüft: alle Felder des Spielstands sind erlaubt.
+- Prüfungen: 57 Tests grün, `check --fast` ohne Fehler, `rules:check` ohne Live-Export: Struktur OK.
+- Offen: Regeln in der Konsole oder per CLI veröffentlichen (`docs/FIREBASE.md`, Schritte 1 bis 5).

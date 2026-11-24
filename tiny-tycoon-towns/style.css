@@ -215,7 +215,7 @@ dialog input {
 }
 .app-shell[inert] { pointer-events: none; }
 
-/* ---------- Versionsprüfung (wie IronPath) ---------- */
+/* ---------- Versionsprüfung ---------- */
 .release-check {
   position: fixed;
   inset: 0;
@@ -254,3 +254,41 @@ dialog input {
 }
 .version-notice button { min-height: 34px; font-size: 13px; }
 #resultsVersionStatus { margin: 0 0 8px; }
+
+/* ---------- Tutorial und Hilfe ---------- */
+.tutorial {
+  position: fixed;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  z-index: 650;
+  width: min(94vw, 460px);
+}
+.tut-card {
+  padding: 14px 16px;
+  border: 3px solid var(--ink);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.35);
+  animation: card-in 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.tut-card h2 { font-size: 19px; margin-bottom: 6px; }
+.tut-card p { margin: 0 0 8px; }
+.tut-card .row { margin: 0; }
+.tut-card button { min-height: 40px; }
+.tut-target {
+  outline: 4px solid var(--gold);
+  outline-offset: 4px;
+  border-radius: 10px;
+  animation: tut-pulse 1.4s ease-in-out infinite;
+}
+@keyframes tut-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(233, 162, 59, 0.6); }
+  50% { box-shadow: 0 0 0 10px rgba(233, 162, 59, 0); }
+}
+.help section { margin-bottom: 12px; }
+.help h3 { font-size: 16px; margin-bottom: 4px; }
+.help p { margin: 0 0 6px; line-height: 1.45; }
+@media (prefers-reduced-motion: reduce) {
+  .tut-target, .tut-card { animation: none; }
+}

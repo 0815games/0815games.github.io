@@ -4,6 +4,44 @@
 
 export const RELEASED_PATCHES = [
   {
+    build: '20261124-welt1',
+    date: '2026-11-24',
+    items: [
+      {
+        de: 'Neue Spielwelt: Die Insel ist jetzt eine animierte Landschaft mit Tag und Nacht, Wolken, rauchenden Schornsteinen und Produktionssymbolen statt Kacheln.',
+        en: 'New game world: the island is now an animated landscape with day and night, clouds, smoking chimneys and production icons instead of tiles.',
+      },
+      {
+        de: 'Karte bedienen: Ziehen verschiebt, Mausrad und Zwei-Finger-Geste zoomen. Tastatur: Pfeiltasten, Enter, + und −.',
+        en: 'Map controls: drag to pan, mouse wheel and two-finger pinch to zoom. Keyboard: arrow keys, Enter, + and −.',
+      },
+      {
+        de: 'Anmeldebildschirm als erste Ansicht, mit animierter Insel im Hintergrund. Das Spiel erscheint erst nach der Anmeldung.',
+        en: 'Sign-in screen as the first view, with an animated island in the background. The game appears only after sign-in.',
+      },
+      {
+        de: 'Versionsprüfung: Neue Versionen werden beim Start und im Hintergrund erkannt. Die Seite lädt neu, sobald nichts gespeichert wird.',
+        en: 'Version check: new versions are detected at start and in the background. The page reloads once nothing is unsaved.',
+      },
+      {
+        de: 'Offline-Start ist nicht möglich: Ohne Verbindung zur Cloud bleibt das Spiel gesperrt, bis der Stand gelesen werden kann. Der lokale Stand bleibt als Sicherung erhalten.',
+        en: 'No offline start: without a connection to the cloud the game stays locked until the save can be read. The local copy is kept as a backup.',
+      },
+      {
+        de: 'Abmelden fragt vorher nach. Ein Konto kann in einem Browser nur in einem Fenster geöffnet sein.',
+        en: 'Sign-out asks first. An account can be open in only one window per browser.',
+      },
+      {
+        de: 'Tutorial: Einmal pro Konto mit acht Schritten. Über „Hilfe“ gibt es jederzeit die Übersicht aller Regeln.',
+        en: 'Tutorial: eight steps, once per account. The help overview with all rules is available any time via “Help”.',
+      },
+      {
+        de: 'Stand: im Code geprüft (Tests und Oberflächenlauf ohne echten Browser), noch nicht im Live-Projekt getestet.',
+        en: 'Status: checked in code (tests and UI run without a real browser), not yet tested on the live project.',
+      },
+    ],
+  },
+  {
     build: '20261124-konto2',
     date: '2026-11-24',
     items: [

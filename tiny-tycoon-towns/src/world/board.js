@@ -1,7 +1,7 @@
 // DOM-Brücke für die Weltansicht: Canvas, Kamera (Ziehen, Zoom), Tastatur, Animation.
 // Der Spielzustand kommt von außen (main.js). Diese Datei verändert ihn nie.
-import { toScreen } from './iso.js?v=20261124-konto2';
-import { renderWorld, pickTile, makeFx, stepFx, produceIcons, coinGain, dayFactor, GRID_SIZE, HALL } from './scene.js?v=20261124-konto2';
+import { toScreen } from './iso.js?v=20261124-welt1';
+import { renderWorld, pickTile, makeFx, stepFx, produceIcons, coinGain, dayFactor, GRID_SIZE, HALL } from './scene.js?v=20261124-welt1';
 
 const DRAG_PX = 6;
 const K_MIN = 0.45;
@@ -28,7 +28,7 @@ export function createBoard(container, opts) {
   let t0 = last;
   let rafId = 0;
   let dirty = true;
-  const drag = { active: false, moved: false, sx: 0, sy: 0, cx: 0, cy: 0 };
+  const drag = { active: false, id: null, moved: false, sx: 0, sy: 0, cx: 0, cy: 0 };
   const center = toScreen(HALL.x + 0.5, HALL.y + 0.5);
   cam.x = center.x;
   cam.y = center.y;
@@ -74,17 +74,45 @@ export function createBoard(container, opts) {
   }
 
   // ----- Eingabe -----
+  // Maus und Touch über Pointer-Events. Ein Finger zieht oder klickt, zwei Finger zoomen (Pinch).
+  const pointers = new Map();     // pointerId -> {x, y}
+  let pinch = null;               // {dist, k} while two pointers are down
+  const dist2 = () => {
+    const [p, q] = [...pointers.values()];
+    return Math.hypot(p.x - q.x, p.y - q.y);
+  };
+  const setZoom = (k) => {
+    cam.k = Math.min(K_MAX, Math.max(K_MIN, k));
+    clampCam();
+    dirty = true;
+  };
+
   canvas.addEventListener('pointerdown', (e) => {
-    if (e.button !== 0) return;
-    drag.active = true;
-    drag.moved = false;
-    drag.sx = e.clientX;
-    drag.sy = e.clientY;
-    drag.cx = cam.x;
-    drag.cy = cam.y;
+    if (e.button !== 0 && e.pointerType === 'mouse') return;
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pointers.size === 1) {
+      drag.active = true;
+      drag.id = e.pointerId;
+      drag.moved = false;
+      drag.sx = e.clientX;
+      drag.sy = e.clientY;
+      drag.cx = cam.x;
+      drag.cy = cam.y;
+    } else if (pointers.size === 2) {
+      // Zweiter Finger: ab jetzt Zoom, und die Geste darf nicht als Klick enden.
+      pinch = { dist: dist2(), k: cam.k };
+      drag.moved = true;
+      canvas.classList.add('dragging');
+    }
   });
   window.addEventListener('pointermove', (e) => {
-    if (drag.active) {
+    if (pointers.has(e.pointerId)) pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pinch && pointers.size === 2) {
+      const d = dist2();
+      if (pinch.dist > 0) setZoom(pinch.k * (d / pinch.dist));
+      return;
+    }
+    if (drag.active && e.pointerId === drag.id) {
       const dx = e.clientX - drag.sx;
       const dy = e.clientY - drag.sy;
       if (!drag.moved && Math.hypot(dx, dy) > DRAG_PX) {
@@ -100,7 +128,7 @@ export function createBoard(container, opts) {
       }
       return;
     }
-    if (e.target !== canvas) return;
+    if (drag.active || e.target !== canvas) return;
     const t = screenToTile(e);
     const next = t && opts.getModel().unlocked(t.x, t.y) ? t : null;
     if (JSON.stringify(next) !== JSON.stringify(hover)) {
@@ -109,15 +137,22 @@ export function createBoard(container, opts) {
       dirty = true;
     }
   });
-  window.addEventListener('pointerup', (e) => {
-    if (!drag.active) return;
+  const endPointer = (e) => {
+    if (!pointers.has(e.pointerId)) return;
+    const wasDragPointer = e.pointerId === drag.id && drag.active;
+    pointers.delete(e.pointerId);
+    if (pinch && pointers.size < 2) pinch = null;
+    if (!wasDragPointer) return;
     drag.active = false;
-    canvas.classList.remove('dragging');
-    if (!drag.moved && e.target === canvas) {
+    // Den verbleibenden Finger nicht als neuen Zug weiterführen.
+    if (pointers.size === 0) canvas.classList.remove('dragging');
+    if (!drag.moved && e.type === 'pointerup' && e.target === canvas) {
       const t = screenToTile(e);
       if (t) opts.onSelect(t);
     }
-  });
+  };
+  window.addEventListener('pointerup', endPointer);
+  window.addEventListener('pointercancel', endPointer);
   canvas.addEventListener('pointerleave', () => {
     if (hover) { hover = null; dirty = true; }
   });

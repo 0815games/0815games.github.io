@@ -2,20 +2,22 @@
 // No game rules live here. Firebase is only touched through ./cloud.js.
 import {
   createTown, newSeed, chooseBiome, placeBuilding, upgradeBuilding,
-  toggleSell, buyOffer, advance, hydrateTown,
-} from './domain/engine.js?v=20261124-konto2';
+  toggleSell, buyOffer, advance, hydrateTown, setTutorialStep,
+} from './domain/engine.js?v=20261124-welt1';
 import {
   productionMultiplier, ratePerMin, buildCost, storageCap, classOf,
-} from './domain/economy.js?v=20261124-konto2';
-import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261124-konto2';
-import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261124-konto2';
-import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261124-konto2';
-import { withTimeout } from './async-util.js?v=20261124-konto2';
-import { createBoard } from './world/board.js?v=20261124-konto2';
-import { createLoginScene } from './world/login-scene.js?v=20261124-konto2';
-import { createVersionUI } from './version-ui.mjs?v=20261124-konto2';
+} from './domain/economy.js?v=20261124-welt1';
+import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261124-welt1';
+import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261124-welt1';
+import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261124-welt1';
+const SEEN_NOTES_KEY = 'ttt:notes-seen';
+import { withTimeout } from './async-util.js?v=20261124-welt1';
+import { createBoard } from './world/board.js?v=20261124-welt1';
+import { createLoginScene } from './world/login-scene.js?v=20261124-welt1';
+import { TUTORIAL_STEPS, HELP_SECTIONS } from './tutorial.js?v=20261124-welt1';
+import { createVersionUI } from './version-ui.mjs?v=20261124-welt1';
 
-const BUILD = '20261124-konto2';
+const BUILD = '20261124-welt1';
 console.info(`Tiny Tycoon Towns ${BUILD}`);
 const LAST_BIOME_KEY = 'ttt.lastBiome';
 const LOCAL_KEY = (uid) => `ttt.save.v1.${uid}`;
@@ -67,7 +69,7 @@ let remoteLoaded = false;  // true once the cloud copy was read successfully; no
 let remoteRetryPending = false;
 let board = null;          // Weltansicht (canvas), see ./world/board.js
 let loginScene = null;     // animated backdrop of the sign-in screen
-let versionGate = null;    // update gate, ported from IronPath (see ./version-ui.mjs)
+let versionGate = null;    // update gate (see ./version-ui.mjs and docs/ADR-update-gate.md)
 let connected = true;      // Realtime Database connection, from .info/connected
 const REMOTE_TIMEOUT_MS = 10_000;
 
@@ -76,7 +78,7 @@ const REMOTE_TIMEOUT_MS = 10_000;
 async function loadData() {
   const names = ['resources', 'biomes', 'buildings', 'economy', 'merchant'];
   const parts = await Promise.all(names.map((n) =>
-    fetch(`data/${n}.json?v=20261124-konto2`).then((r) => {
+    fetch(`data/${n}.json?v=20261124-welt1`).then((r) => {
       if (!r.ok) throw new Error(`data/${n}.json: HTTP ${r.status}`);
       return r.json();
     })));
@@ -92,7 +94,7 @@ function ctx() {
 }
 
 async function boot() {
-  // Same rule as IronPath: this build must be confirmed current before the game starts.
+  // This build must be confirmed current before the game starts (docs/ADR-update-gate.md).
   // While the check runs, or after it failed, the release overlay holds the screen.
   try {
     versionGate = createVersionUI({
@@ -121,7 +123,7 @@ async function boot() {
   window.addEventListener('offline', updateSync);
 
   try {
-    cloud = await import('./cloud.js?v=20261124-konto2');
+    cloud = await import('./cloud.js?v=20261124-welt1');
   } catch {
     showFatal('Das Konto-System konnte nicht geladen werden. Ohne Anmeldung lässt sich nicht spielen. Bitte Verbindung prüfen und neu laden.');
     return;
@@ -163,6 +165,8 @@ async function enterAccount(user) {
     currentUser = null;
     state = null;
     remoteLoaded = false;
+    activeUid = null;
+    endTutorial();
     renderSignedOut();
     showLoginScreen('login');
     return;
@@ -170,6 +174,18 @@ async function enterAccount(user) {
   hideLoginScreen();
   closeDialog();
   if (uid === user.uid && state) return; // token refresh, nothing to load
+  if (activeUid !== user.uid) {
+    const free = await claimSession(user.uid);
+    if (!free) {
+      // Das Konto läuft schon in einem anderen Fenster. Hier wird nichts geladen oder gespeichert.
+      currentUser = user;
+      uid = null;
+      state = null;
+      renderSignedOut();
+      showRetry(OCCUPIED_TEXT);
+      return;
+    }
+  }
   currentUser = user;
   uid = user.uid;
   remoteLoaded = false;
@@ -179,17 +195,9 @@ async function enterAccount(user) {
   const res = await fetchRemote(uid);
   if (!res.ok) {
     console.error('Spielstand aus der Cloud nicht geladen:', res.error);
-    if (!local) {
-      showRetry(cloudErrorText(res.error));
-      return;
-    }
-    // Local copy exists: play on it. Writes to the cloud wait until a read succeeds,
-    // so an old local copy cannot overwrite newer progress from another device.
-    state = local;
-    cloudDirty = false;
-    lastCloudAt = 0;
-    startGame();
-    toast('Cloud gerade nicht erreichbar. Du spielst mit dem lokalen Stand und er wird nachgeladen.', 'error');
+    // Kein Spielen ohne bestätigten Cloud-Stand: kein Offline-Start, auch nicht mit lokalem Stand.
+    // Der lokale Stand bleibt unangetastet als Sicherung.
+    showRetry(cloudErrorText(res.error));
     return;
   }
 
@@ -451,10 +459,8 @@ function bindStatic() {
     dispatch(toggleSell(state, { resource: btn.dataset.sell }));
   });
   $('#feld-btn').addEventListener('click', showFieldNotes);
-  $('#logout-btn').addEventListener('click', async () => {
-    flushNow();
-    try { await cloud.logout(); } catch { toast('Abmelden fehlgeschlagen.', 'error'); }
-  });
+  $('#logout-btn').addEventListener('click', askLogout);
+  $('#help-btn').addEventListener('click', showHelp);
   $('#reset-btn').addEventListener('click', () => {
     if (!state || !uid) return;
     if (!confirm('Die aktuelle Stadt wird gelöscht, auch in der Cloud. Wirklich neu beginnen?')) return;
@@ -482,6 +488,7 @@ function onPanelClick(e) {
 
 function startGame() {
   versionGate?.afterGame();
+  endTutorial();
   const before = state.lastTick;
   const now = Date.now();
   const r = advance(state, now, ctx());
@@ -494,6 +501,38 @@ function startGame() {
   if (state.townXp === 0) {
     toast('Tipp: Wähle eine Wiese und baue deinen ersten Hof.');
   }
+  // Nach einem Update einmal die Neuerungen zeigen. Danach (oder bei Neuinstallation) das Tutorial.
+  if (!showWhatsNewIfUpdated()) maybeStartTutorial();
+}
+
+/** Einmal pro Browser pro Version. Liefert true, wenn der Dialog offen ist. */
+function showWhatsNewIfUpdated() {
+  let seen = null;
+  try {
+    seen = localStorage.getItem(SEEN_NOTES_KEY);
+    localStorage.setItem(SEEN_NOTES_KEY, BUILD);
+  } catch { /* Ohne Speicher gibt es keinen Hinweis, das Spiel läuft trotzdem. */ }
+  // Neuinstallation (kein Eintrag) oder dieselbe Version: nichts anzeigen.
+  if (!seen || seen === BUILD) return false;
+  const entry = RELEASED_PATCHES.find((p) => p.build === BUILD);
+  if (!entry) return false;
+  const items = entry.items.map((it) => `<li>${esc(it.de)}</li>`).join('');
+  openDialog(`<div class="dlg-body help">
+    <h2 id="dlg-title">Neu in dieser Version</h2>
+    <p class="small muted">Version ${esc(BUILD)} · ${esc(entry.date)}</p>
+    <ul>${items}</ul>
+    <p class="row"><button type="button" id="whatsnew-ok" class="primary">Verstanden</button></p>
+  </div>`);
+  $('#whatsnew-ok').addEventListener('click', () => {
+    closeDialog();
+    maybeStartTutorial();
+  });
+  $('#whatsnew-ok').focus();
+  return true;
+}
+
+function maybeStartTutorial() {
+  if (state && (state.tutorialStep ?? 0) < TUTORIAL_STEPS.length) showTutorialStep(state.tutorialStep ?? 0);
 }
 
 function tick() {
@@ -713,6 +752,114 @@ function toast(msg, kind = 'info') {
   el.className = `toast show ${kind === 'error' ? 'error' : ''}`;
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => { el.className = 'toast'; }, 3200);
+}
+
+/** Rückfrage vor dem Abmelden. Der Stand wird vorher gesichert. */
+function askLogout() {
+  openDialog(`<div class="dlg-body">
+    <h2 id="dlg-title">Abmelden?</h2>
+    <p>Deine Stadt wird vorher gesichert. Zum Weiterspielen meldest du dich wieder an.</p>
+    <p class="row">
+      <button type="button" id="logout-cancel">Abbrechen</button>
+      <button type="button" id="logout-ok" class="primary">Abmelden</button>
+    </p>
+  </div>`);
+  $('#logout-cancel').addEventListener('click', closeDialog);
+  $('#logout-ok').addEventListener('click', async () => {
+    closeDialog();
+    flushNow();
+    try { await cloud.logout(); } catch { toast('Abmelden fehlgeschlagen. Du bist noch angemeldet.', 'error'); }
+  });
+  $('#logout-cancel').focus();
+}
+
+// Eine Anmeldung pro Konto im selben Browser. Firebase teilt die Anmeldung zwischen Tabs,
+// deshalb sperrt das zweite Fenster nur das Spiel, statt sich selbst oder das erste abzumelden.
+const SESSION_CHANNEL = typeof BroadcastChannel === 'function' ? new BroadcastChannel('ttt-session') : null;
+let activeUid = null;      // Konto, das in diesem Fenster gerade spielt
+const OCCUPIED_TEXT = 'Dieses Konto ist bereits in einem anderen Fenster dieses Browsers geöffnet. Schließe das andere Fenster und prüfe dann erneut.';
+
+SESSION_CHANNEL?.addEventListener('message', (e) => {
+  if (e.data?.type === 'probe' && activeUid && e.data.uid === activeUid) {
+    SESSION_CHANNEL.postMessage({ type: 'active', uid: activeUid });
+  }
+});
+
+/** Liefert true, wenn dieses Fenster das Konto übernehmen darf. */
+async function claimSession(sessionUid) {
+  if (!SESSION_CHANNEL) return true; // ohne Kanal gibt es keine Prüfung
+  let busy = false;
+  const onReply = (e) => { if (e.data?.type === 'active' && e.data.uid === sessionUid) busy = true; };
+  SESSION_CHANNEL.addEventListener('message', onReply);
+  SESSION_CHANNEL.postMessage({ type: 'probe', uid: sessionUid });
+  await new Promise((r) => setTimeout(r, 350));
+  SESSION_CHANNEL.removeEventListener('message', onReply);
+  if (busy) return false;
+  activeUid = sessionUid;
+  return true;
+}
+
+// ---------- Tutorial und Hilfe ----------
+
+/** Zeigt einen Tutorial-Schritt als Karte unten. Der Zielbereich wird hervorgehoben. */
+function showTutorialStep(i) {
+  const step = TUTORIAL_STEPS[i];
+  if (!step || !state) return endTutorial();
+  const last = i === TUTORIAL_STEPS.length - 1;
+  const box = $('#tutorial');
+  highlightTarget(step.target);
+  box.hidden = false;
+  box.innerHTML = `<div class="tut-card" role="region" aria-label="Tutorial">
+    <p class="small muted">Schritt ${i + 1} von ${TUTORIAL_STEPS.length}</p>
+    <h2>${esc(step.title)}</h2>
+    <p>${esc(step.text)}</p>
+    <p class="row">
+      <button type="button" id="tut-skip" class="ghost">Überspringen</button>
+      <button type="button" id="tut-next" class="primary">${last ? 'Fertig' : 'Weiter'}</button>
+    </p>
+  </div>`;
+  $('#tut-next').addEventListener('click', () => advanceTutorial(i + 1));
+  $('#tut-skip').addEventListener('click', () => advanceTutorial(TUTORIAL_STEPS.length));
+  $('#tut-next').focus({ preventScroll: true });
+}
+
+function advanceTutorial(next) {
+  if (!state) return;
+  dispatch(setTutorialStep(state, next));
+  if (next >= TUTORIAL_STEPS.length) endTutorial();
+  else showTutorialStep(next);
+}
+
+function endTutorial() {
+  const box = $('#tutorial');
+  if (box) { box.hidden = true; box.innerHTML = ''; }
+  highlightTarget(null);
+}
+
+function highlightTarget(selector) {
+  document.querySelectorAll('.tut-target').forEach((el) => el.classList.remove('tut-target'));
+  if (selector) $(selector)?.classList.add('tut-target');
+}
+
+function showHelp() {
+  const sections = HELP_SECTIONS.map((sec) =>
+    `<section><h3>${esc(sec.title)}</h3>${sec.paragraphs.map((p) => `<p>${esc(p)}</p>`).join('')}</section>`).join('');
+  openDialog(`<div class="dlg-body help">
+    <h2 id="dlg-title">Hilfe</h2>
+    ${sections}
+    <p class="row">
+      <button type="button" id="help-tut">Tutorial wiederholen</button>
+      <button type="button" id="help-close" class="primary">Schließen</button>
+    </p>
+    <p class="small muted">Build ${esc(BUILD)}</p>
+  </div>`);
+  $('#help-close').addEventListener('click', closeDialog);
+  $('#help-tut').addEventListener('click', () => {
+    closeDialog();
+    if (!state) return;
+    dispatch(setTutorialStep(state, 0));
+    showTutorialStep(0);
+  });
 }
 
 function openDialog(html) {
