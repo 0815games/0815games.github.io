@@ -1061,7 +1061,7 @@ function zoneInterior(ctx,zone,style,rng){
   }
   // Sludge bubbles: dark ring, pale cap.
   for(let i=0;i<4+Math.floor(rng()*3);i++){
-   const a=rng()*Math.PI*2,d=r()*.6*r*(.3+rng()*.55),x=zone.x+Math.cos(a)*d,y=zone.y+Math.sin(a)*d*.7;
+   const a=rng()*Math.PI*2,d=rng()*.6*r*(.3+rng()*.55),x=zone.x+Math.cos(a)*d,y=zone.y+Math.sin(a)*d*.7;
    const br=2+rng()*3;ctx.globalAlpha=.8;
    ctx.beginPath();ctx.arc(x,y,br,0,Math.PI*2);ctx.strokeStyle=style.shade;ctx.lineWidth=1.2;ctx.stroke();
    ctx.beginPath();ctx.arc(x-br*.2,y-br*.25,br*.4,0,Math.PI*2);ctx.fillStyle=style.edge;ctx.fill();
@@ -1105,7 +1105,7 @@ function zoneInterior(ctx,zone,style,rng){
    ctx.stroke();
   }
   for(let i=0;i<7+Math.floor(rng()*4);i++){
-   const a=rng()*Math.PI*2,d=r()*.75*r*(.3+rng()*.6),x=zone.x+Math.cos(a)*d,y=zone.y+Math.sin(a)*d*.7;
+   const a=rng()*Math.PI*2,d=rng()*.75*r*(.3+rng()*.6),x=zone.x+Math.cos(a)*d,y=zone.y+Math.sin(a)*d*.7;
    ctx.globalAlpha=.4;ctx.fillStyle=style.detail;
    ctx.beginPath();ctx.arc(x,y,1+rng()*1.6,0,Math.PI*2);ctx.fill();
   }
