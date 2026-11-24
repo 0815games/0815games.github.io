@@ -1,20 +1,21 @@
 // UI layer: renders the state and forwards player input to the pure domain.
-// No game rules live here.
+// No game rules live here. Firebase is only touched through ./cloud.js.
 import {
-  SCHEMA_VERSION, createTown, newSeed, chooseBiome, placeBuilding, upgradeBuilding,
-  toggleSell, buyOffer, advance,
-} from './domain/engine.js';
+  createTown, newSeed, chooseBiome, placeBuilding, upgradeBuilding,
+  toggleSell, buyOffer, advance, hydrateTown,
+} from './domain/engine.js?v=20261124-konto1';
 import {
-  productionMultiplier, ratePerMin, buildCost, storageCap,
-  classOf,
-} from './domain/economy.js';
-import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js';
-import { merchantOffers, localDateKey } from './domain/merchant.js';
+  productionMultiplier, ratePerMin, buildCost, storageCap, classOf,
+} from './domain/economy.js?v=20261124-konto1';
+import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261124-konto1';
+import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261124-konto1';
+import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261124-konto1';
 
-const SAVE_KEY = 'ttt.save.v1';
 const LAST_BIOME_KEY = 'ttt.lastBiome';
+const LOCAL_KEY = (uid) => `ttt.save.v1.${uid}`;
 const OFFLINE_DIALOG_MS = 60_000;
-const SAVE_EVERY_MS = 5_000;
+const LOCAL_SAVE_MS = 5_000;
+const CLOUD_SAVE_MS = 60_000;
 const TOWN_NAMES = ['Eichenhain', 'Kieselau', 'Sonnenbrück', 'Mühlbach', 'Fuchsfurt', 'Silberwiese', 'Nebelhorn', 'Tannenbach'];
 const TERRAIN_DE = { meadow: 'Wiese', forest: 'Wald', rock: 'Fels', water: 'Wasser', sand: 'Strand' };
 const CLASS_DE = { abundant: 'Reich (×1,5)', neutral: 'neutral', scarce: 'Karg (×0,25)' };
@@ -48,16 +49,20 @@ const fmt0 = (n) => nf0.format(Math.floor(n));
 const fmtRate = (n) => nf2.format(n);
 
 let data = null;
-let state = null;
+let cloud = null;          // ./cloud.js, loaded after the data
+let uid = null;            // signed-in user, null when signed out
+let state = null;          // current town, null until loaded or founded
 let selected = { x: 4, y: 4 };
-let dirty = false;
+let cloudDirty = false;    // local change not yet confirmed by the cloud
+let cloudPending = false;  // a cloud write is in flight
+let lastCloudAt = 0;
 
-// ---------- Boot ----------
+// ---------- Boot and account ----------
 
 async function loadData() {
   const names = ['resources', 'biomes', 'buildings', 'economy', 'merchant'];
   const parts = await Promise.all(names.map((n) =>
-    fetch(`data/${n}.json`).then((r) => {
+    fetch(`data/${n}.json?v=20261124-konto1`).then((r) => {
       if (!r.ok) throw new Error(`data/${n}.json: HTTP ${r.status}`);
       return r.json();
     })));
@@ -72,64 +77,176 @@ function ctx() {
   };
 }
 
-function loadSave() {
+async function boot() {
   try {
-    const raw = localStorage.getItem(SAVE_KEY);
-    if (!raw) return null;
-    const s = JSON.parse(raw);
-    return s.schemaVersion === SCHEMA_VERSION ? s : null;
+    data = await loadData();
+  } catch (e) {
+    showFatal(`Spieldaten konnten nicht geladen werden. Bitte über einen Webserver öffnen. (${e.message})`);
+    return;
+  }
+  bindStatic();
+  setInterval(tick, 1000);
+  setInterval(cloudTick, LOCAL_SAVE_MS);
+  document.addEventListener('visibilitychange', () => { if (document.hidden) flushNow(); });
+  window.addEventListener('pagehide', flushNow);
+  window.addEventListener('online', updateSync);
+  window.addEventListener('offline', updateSync);
+
+  try {
+    cloud = await import('./cloud.js?v=20261124-konto1');
+  } catch {
+    showFatal('Das Konto-System konnte nicht geladen werden. Ohne Anmeldung lässt sich nicht spielen. Bitte Verbindung prüfen und neu laden.');
+    return;
+  }
+  cloud.onUser(onUser);
+}
+
+async function onUser(user) {
+  if (!user) {
+    uid = null;
+    state = null;
+    renderSignedOut();
+    showAuth('login');
+    return;
+  }
+  closeDialog();
+  if (uid === user.uid && state) return; // token refresh, nothing to load
+  uid = user.uid;
+  showFatal('Stadt wird geladen …', { quiet: true });
+
+  const local = loadLocal(uid);
+  let remote = null;
+  let remoteOk = true;
+  try {
+    const raw = await cloud.loadTown(uid);
+    remote = raw ? hydrateTown(raw) : null;
+  } catch (e) {
+    remoteOk = false;
+    toast(cloud.dbErrorDe(e), 'error');
+  }
+
+  const candidates = [remote, local].filter(Boolean).sort((a, b) => b.lastTick - a.lastTick);
+  if (!candidates.length) {
+    if (!remoteOk) {
+      showFatal('Dein Spielstand ist gerade nicht erreichbar. Bitte Verbindung prüfen und neu laden.');
+      return;
+    }
+    state = null;
+    showFounding();
+    return;
+  }
+  state = candidates[0];
+  // A newer local copy that the cloud does not have yet must be pushed.
+  cloudDirty = state === local && (!remote || local.lastTick > remote.lastTick);
+  lastCloudAt = 0;
+  startGame();
+}
+
+function renderSignedOut() {
+  $('#logout-btn').hidden = true;
+  $('#sync').textContent = '';
+  $('#town-name').textContent = 'Tiny Tycoon Towns';
+  $('#town-meta').textContent = 'Bitte anmelden, um zu spielen.';
+  $('#board').innerHTML = '';
+  $('#stock').innerHTML = '';
+  $('#panel').innerHTML = '';
+}
+
+function showFatal(text, { quiet = false } = {}) {
+  if (!quiet) $('#panel').innerHTML = `<p class="warn">${esc(text)}</p>`;
+  else $('#panel').innerHTML = `<p class="muted">${esc(text)}</p>`;
+}
+
+// ---------- Saving ----------
+
+function loadLocal(u) {
+  try {
+    const raw = localStorage.getItem(LOCAL_KEY(u));
+    return raw ? hydrateTown(JSON.parse(raw)) : null;
   } catch {
     return null;
   }
 }
 
-function save() {
-  if (!state) return;
+function saveLocal() {
+  if (!state || !uid) return;
   try {
-    localStorage.setItem(SAVE_KEY, JSON.stringify(state));
-    dirty = false;
+    localStorage.setItem(LOCAL_KEY(uid), JSON.stringify(state));
   } catch {
-    toast('Speichern nicht möglich. Ist der Speicher des Browsers voll?', 'error');
+    toast('Lokales Speichern nicht möglich. Ist der Speicher des Browsers voll?', 'error');
   }
 }
 
-async function boot() {
-  try {
-    data = await loadData();
-  } catch (e) {
-    $('#panel').innerHTML = `<p class="warn">Spieldaten konnten nicht geladen werden. Bitte über einen Webserver öffnen.</p><p class="small">${esc(e.message)}</p>`;
-    return;
-  }
-  bindStatic();
-  state = loadSave();
-  if (!state) {
-    showFounding();
-  } else {
-    startGame();
-  }
+function cloudSave() {
+  if (!state || !uid || !cloudDirty || cloudPending) return;
+  const sentUid = uid;
+  const snapshot = JSON.parse(JSON.stringify(state));
+  cloudDirty = false;
+  cloudPending = true;
+  updateSync();
+  cloud.saveTown(sentUid, snapshot)
+    .then(() => { lastCloudAt = Date.now(); })
+    .catch((e) => {
+      cloudDirty = true;
+      toast(cloud.dbErrorDe(e), 'error');
+    })
+    .finally(() => { cloudPending = false; updateSync(); });
 }
 
-function startGame() {
-  const before = state.lastTick;
-  const now = Date.now();
-  const r = advance(state, now, ctx());
-  state = r.state;
-  save();
-  const awaySec = (now - before) / 1000;
-  if (now - before >= OFFLINE_DIALOG_MS) showOfflineReport(r, awaySec);
-  renderAll();
-  setInterval(tick, 1000);
-  setInterval(() => { if (dirty) save(); }, SAVE_EVERY_MS);
-  document.addEventListener('visibilitychange', () => { if (document.hidden) save(); });
-  window.addEventListener('pagehide', save);
+/** Runs every few seconds: local copy always, cloud copy at most once a minute. */
+function cloudTick() {
+  saveLocal();
+  if (cloudDirty && Date.now() - lastCloudAt >= CLOUD_SAVE_MS) cloudSave();
+  updateSync();
 }
 
-function tick() {
-  const r = advance(state, Date.now(), ctx());
-  state = r.state;
-  dirty = true;
-  renderHud();
-  updateStockNumbers();
+function flushNow() {
+  saveLocal();
+  if (cloudDirty) cloudSave();
+}
+
+function updateSync() {
+  const el = $('#sync');
+  if (!uid) { el.textContent = ''; return; }
+  let text;
+  if (!navigator.onLine) text = 'Offline · lokal gesichert';
+  else if (cloudPending) text = 'Speichert in der Cloud …';
+  else if (cloudDirty) text = 'Änderungen warten auf Cloud-Speicherung';
+  else text = 'In der Cloud gespeichert';
+  el.textContent = text;
+}
+
+function showAuth(mode, msg = '') {
+  const isLogin = mode === 'login';
+  const dlg = openDialog(`<form id="auth-form" class="dlg-body" novalidate>
+    <h2 id="dlg-title">${isLogin ? 'Anmelden' : 'Konto erstellen'}</h2>
+    <p class="small">Deine Stadt wird in der Cloud gespeichert. Mit demselben Konto spielst du auf jedem Gerät weiter.</p>
+    <label>E-Mail<br><input name="email" type="email" autocomplete="email" required></label>
+    <label>Passwort (mindestens 6 Zeichen)<br>
+      <input name="password" type="password" minlength="6" required
+        autocomplete="${isLogin ? 'current-password' : 'new-password'}"></label>
+    <p id="auth-msg" class="warn small" role="alert">${esc(msg)}</p>
+    <button type="submit" class="primary">${isLogin ? 'Anmelden' : 'Konto erstellen'}</button>
+    <button type="button" id="auth-switch">${isLogin ? 'Neu hier? Konto erstellen' : 'Schon registriert? Anmelden'}</button>
+  </form>`);
+  dlg.addEventListener('cancel', (e) => e.preventDefault());
+  dlg.querySelector('#auth-switch').addEventListener('click', () => showAuth(isLogin ? 'register' : 'login'));
+  dlg.querySelector('#auth-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const email = String(fd.get('email') ?? '').trim();
+    const password = String(fd.get('password') ?? '');
+    const btn = e.target.querySelector('button[type=submit]');
+    btn.disabled = true;
+    try {
+      if (isLogin) await cloud.login(email, password);
+      else await cloud.register(email, password);
+      // onUser() takes over from here and closes this dialog.
+    } catch (err) {
+      btn.disabled = false;
+      dlg.querySelector('#auth-msg').textContent = cloud.authErrorDe(err);
+    }
+  });
 }
 
 // ---------- Actions ----------
@@ -140,11 +257,10 @@ function dispatch(result, okMsg) {
     return;
   }
   state = result.state;
-  save();
+  cloudDirty = true;
+  saveLocal();
   for (const e of result.events) {
-    if (e.type === 'levelUp') {
-      toast(`Stadtlevel ${e.level} erreicht. Dein Raster wächst!`);
-    }
+    if (e.type === 'levelUp') toast(`Stadtlevel ${e.level} erreicht. Dein Raster wächst!`);
   }
   if (okMsg && !result.events.some((e) => e.type === 'levelUp')) toast(okMsg);
   renderAll();
@@ -179,13 +295,22 @@ function bindStatic() {
   $('#panel').addEventListener('click', onPanelClick);
   $('#stock').addEventListener('click', (e) => {
     const btn = e.target.closest('[data-sell]');
-    if (!btn) return;
+    if (!btn || !state) return;
     dispatch(toggleSell(state, { resource: btn.dataset.sell }));
   });
+  $('#feld-btn').addEventListener('click', showFieldNotes);
+  $('#logout-btn').addEventListener('click', async () => {
+    flushNow();
+    try { await cloud.logout(); } catch { toast('Abmelden fehlgeschlagen.', 'error'); }
+  });
   $('#reset-btn').addEventListener('click', () => {
-    if (!confirm('Die aktuelle Stadt wird gelöscht. Wirklich neu beginnen?')) return;
-    localStorage.removeItem(SAVE_KEY);
+    if (!state || !uid) return;
+    if (!confirm('Die aktuelle Stadt wird gelöscht, auch in der Cloud. Wirklich neu beginnen?')) return;
+    const doomed = uid;
+    localStorage.removeItem(LOCAL_KEY(doomed));
+    cloud.deleteTown(doomed).catch((e) => toast(cloud.dbErrorDe(e), 'error'));
     state = null;
+    cloudDirty = false;
     selected = { x: 4, y: 4 };
     showFounding();
   });
@@ -193,12 +318,38 @@ function bindStatic() {
 
 function onPanelClick(e) {
   const btn = e.target.closest('button[data-action]');
-  if (!btn || btn.disabled) return;
+  if (!btn || btn.disabled || !state) return;
   const { action, id, index } = btn.dataset;
   const { x, y } = selected;
   if (action === 'build') dispatch(placeBuilding(state, { x, y, buildingId: id }, ctx()), 'Gebaut.');
   if (action === 'upgrade') dispatch(upgradeBuilding(state, { x, y }, ctx()), 'Aufgewertet.');
   if (action === 'buy') dispatch(buyOffer(state, { index: Number(index) }, ctx()), 'Gekauft. Eberhard nickt zufrieden.');
+}
+
+// ---------- Game loop ----------
+
+function startGame() {
+  const before = state.lastTick;
+  const now = Date.now();
+  const r = advance(state, now, ctx());
+  state = r.state;
+  saveLocal();
+  if (now - before >= OFFLINE_DIALOG_MS) showOfflineReport(r, (now - before) / 1000);
+  renderAll();
+  updateSync();
+  $('#logout-btn').hidden = false;
+  if (state.townXp === 0) {
+    toast('Tipp: Wähle eine Wiese und baue deinen ersten Hof.');
+  }
+}
+
+function tick() {
+  if (!state) return;
+  const r = advance(state, Date.now(), ctx());
+  state = r.state;
+  cloudDirty = true;
+  renderHud();
+  updateStockNumbers();
 }
 
 // ---------- Rendering ----------
@@ -211,6 +362,7 @@ function renderAll() {
 }
 
 function renderHud() {
+  if (!state) return;
   const t = state;
   const biome = data.biomes[t.biome].name.de;
   $('#town-name').textContent = t.name;
@@ -234,6 +386,7 @@ function renderHud() {
 }
 
 function renderBoard() {
+  if (!state) return;
   const t = state;
   const cells = [];
   for (let y = 0; y < GRID; y++) {
@@ -281,6 +434,7 @@ function totalRates() {
 }
 
 function renderStock() {
+  if (!state) return;
   const cap = storageCap(state, data);
   const rates = totalRates();
   const items = Object.keys(data.resources).map((r) => {
@@ -302,6 +456,7 @@ function renderStock() {
 }
 
 function updateStockNumbers() {
+  if (!state) return;
   const cap = storageCap(state, data);
   const rates = totalRates();
   for (const li of document.querySelectorAll('#stock li[data-res]')) {
@@ -313,6 +468,7 @@ function updateStockNumbers() {
 }
 
 function renderPanel() {
+  if (!state) return;
   const { x, y } = selected;
   const tile = state.tiles[keyOf(x, y)];
   const unlocked = isUnlocked(x, y, state.townLevel, data);
@@ -320,7 +476,7 @@ function renderPanel() {
   let html = `<section><h2>Feld ${x + 1}, ${y + 1}</h2><p class="muted">${TERRAIN_DE[tile.terrain]}${unlocked ? '' : ' · gesperrt'}</p></section>`;
 
   if (!unlocked) {
-    html += `<section><p>Dieses Feld ist noch im Nebel. Mit höherem Stadtlevel wird die Fläche größer.</p></section>`;
+    html += '<section><p>Dieses Feld ist noch im Nebel. Mit höherem Stadtlevel wird die Fläche größer.</p></section>';
   } else if (b?.id === 'townHall') {
     html += `<section><h3>${data.buildings.townHall.icon} Rathaus</h3>
       <p>Verkauft automatisch ${data.economy.sell.townHallThroughputPerMin} Einheiten pro Minute. Mehr Durchsatz gibt der Marktplatz.</p></section>`;
@@ -331,7 +487,7 @@ function renderPanel() {
   }
 
   html += merchantSection();
-  html += `<section class="small muted"><p>Tipp: Ein Hof auf einer Wiese bringt +20 %. Nachbarschaft zählt auch, zum Beispiel Imkerei neben Hof.</p></section>`;
+  html += '<section class="small muted"><p>Tipp: Ein Hof auf einer Wiese bringt +20 %. Nachbarschaft zählt auch, zum Beispiel Imkerei neben Hof.</p></section>';
   $('#panel').innerHTML = html;
 }
 
@@ -356,11 +512,11 @@ function buildingDetails(b, x, y) {
     const ok = state.coins >= c.coins && state.stock[c.material.resource] >= c.material.amount;
     html += `<p class="small">Upgrade: ${fmt0(c.coins)} 🪙 und ${c.material.amount} ${esc(matName)}</p>`;
     html += `<button type="button" class="primary" data-action="upgrade" ${ok ? '' : 'disabled'}>Auf Stufe ${b.level + 1} ausbauen</button>`;
-    if (!ok) html += `<p class="small warn">Dir fehlen Münzen oder Material.</p>`;
+    if (!ok) html += '<p class="small warn">Dir fehlen Münzen oder Material.</p>';
   } else {
-    html += `<p class="small ok">Maximalstufe erreicht.</p>`;
+    html += '<p class="small ok">Maximalstufe erreicht.</p>';
   }
-  return html + '</section>';
+  return `${html}</section>`;
 }
 
 function buildMenu(x, y) {
@@ -384,7 +540,7 @@ function buildMenu(x, y) {
           <div class="meta">${fmt0(c.coins)} 🪙 · ${c.material.amount} ${esc(matName)}</div>
           <div class="meta">${meta}</div>
           ${locked ? `<div class="locked-note">Ab Stadtlevel ${d.unlockTownLevel}</div>` : ''}
-          ${!locked && !affordable ? `<div class="locked-note">Dir fehlen Münzen oder Material</div>` : ''}
+          ${!locked && !affordable ? '<div class="locked-note">Dir fehlen Münzen oder Material</div>' : ''}
         </div>
         <button type="button" data-action="build" data-id="${id}" ${locked || !affordable ? 'disabled' : ''}>Bauen</button>
       </div>`;
@@ -474,11 +630,12 @@ function showFounding() {
     const name = new FormData(e.target).get('name').toString().trim() || randomTownName();
     localStorage.setItem(LAST_BIOME_KEY, biome);
     state = createTown({ name, biome, seed: newSeed(), now: Date.now(), data });
-    save();
-    closeDialog();
     selected = { x: 4, y: 4 };
+    closeDialog();
+    cloudDirty = true;
+    lastCloudAt = 0;
     startGame();
-    if (!state.townXp) toast('Tipp: Wähle eine Wiese und baue deinen ersten Hof.');
+    cloudSave();
   });
   dlg.addEventListener('cancel', (e) => e.preventDefault());
 }
@@ -500,6 +657,19 @@ function showOfflineReport(r, awaySec) {
     <p>Verkauft für <strong>${fmt0(sold?.coins ?? 0)} 🪙</strong>.</p>
     ${r.capped ? `<p class="small">Die Obergrenze von ${data.economy.offline.baseCapHours} Stunden wurde erreicht. Länger weg zu sein bringt nicht mehr.</p>` : ''}
     <button type="submit" class="primary">Weiter</button>
+  </form>`);
+}
+
+function showFieldNotes() {
+  const list = (items) => items.map((it) => `<li>${esc(it.de)}<br><span class="small muted">${esc(it.en)}</span></li>`).join('');
+  const patches = RELEASED_PATCHES.map((p) => `<h3>${esc(p.token)} · ${esc(p.date)}</h3><ul>${list(p.items)}</ul>`).join('');
+  openDialog(`<form method="dialog" class="dlg-body">
+    <h2 id="dlg-title">Feldnotizen</h2>
+    <h3>Stand dieser Welle</h3>
+    ${patches}
+    <h3>Offen</h3>
+    <ul>${list(OPEN_ITEMS)}</ul>
+    <button type="submit" class="primary">Schließen</button>
   </form>`);
 }
 

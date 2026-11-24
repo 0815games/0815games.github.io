@@ -191,3 +191,7 @@ dialog input {
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }
+
+.hud-actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+#sync { margin: 2px 0 0; }
+[hidden] { display: none !important; }

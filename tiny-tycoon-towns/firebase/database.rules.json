@@ -1,0 +1,44 @@
+{
+  "rules": {
+    "saves": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        "town": {
+          ".write": "auth != null && auth.uid === $uid",
+          ".validate": "newData.hasChildren(['schemaVersion','id','name','biome','townLevel','coins','stock','tiles','lastTick']) && (!data.exists() || newData.child('schemaVersion').val() >= data.child('schemaVersion').val())",
+          "schemaVersion": { ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 99" },
+          "id": { ".validate": "newData.isString() && newData.val().length <= 64" },
+          "name": { ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 24" },
+          "biome": { ".validate": "newData.val() == 'riverlands' || newData.val() == 'deepwoods' || newData.val() == 'highlands' || newData.val() == 'coast'" },
+          "seed": { ".validate": "newData.isNumber()" },
+          "townLevel": { ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 12" },
+          "townXp": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+          "coins": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+          "lifetimeCoins": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+          "tutorialStep": { ".validate": "newData.isNumber()" },
+          "lastTick": { ".validate": "newData.isNumber()" },
+          "createdAt": { ".validate": "newData.isNumber()" },
+          "stock": {
+            "$resource": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 1000000" }
+          },
+          "sellEnabled": {
+            "$resource": { ".validate": "newData.isBoolean()" }
+          },
+          "tiles": {
+            "$tile": {
+              ".validate": "newData.hasChildren(['terrain']) && (newData.child('terrain').val() == 'meadow' || newData.child('terrain').val() == 'forest' || newData.child('terrain').val() == 'rock' || newData.child('terrain').val() == 'water' || newData.child('terrain').val() == 'sand')"
+            }
+          },
+          "merchant": {
+            "dateKey": { ".validate": "newData.isString()" },
+            "bought": {
+              "$index": { ".validate": "newData.isBoolean()" }
+            },
+            "$other": { ".validate": false }
+          },
+          "$other": { ".validate": false }
+        }
+      }
+    }
+  }
+}

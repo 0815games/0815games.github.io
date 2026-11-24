@@ -1,13 +1,13 @@
 // Game engine: state creation, player actions and time advance.
 // Every exported action is (state, input, ctx) -> { state, events, error? }.
 // The input state is never mutated.
-import { generateTerrain } from './terrain.js';
-import { GRID, HALL, keyOf, parseKey, inBounds, isUnlocked } from './grid.js';
+import { generateTerrain } from './terrain.js?v=20261124-konto1';
+import { GRID, HALL, keyOf, parseKey, inBounds, isUnlocked } from './grid.js?v=20261124-konto1';
 import {
   classOf, buildCost, productionMultiplier, townLevelFor,
   storageCap, throughputPerMin, sellPrice,
-} from './economy.js';
-import { merchantOffers } from './merchant.js';
+} from './economy.js?v=20261124-konto1';
+import { merchantOffers } from './merchant.js?v=20261124-konto1';
 
 export const SCHEMA_VERSION = 1;
 export const BIOMES = ['riverlands', 'deepwoods', 'highlands', 'coast'];
@@ -84,6 +84,23 @@ function pay(s, coins, material) {
 
 function fail(state, error) {
   return { state, events: [], error };
+}
+
+/**
+ * Brings a stored town (Firebase or localStorage) into the current shape.
+ * Realtime Database drops empty objects and null values, so they are restored here.
+ */
+export function hydrateTown(raw) {
+  const s = clone(raw);
+  s.schemaVersion ??= SCHEMA_VERSION;
+  s.merchant = { dateKey: s.merchant?.dateKey ?? null, bought: s.merchant?.bought ?? {} };
+  s.sellEnabled ??= {};
+  s.stock ??= {};
+  s.tiles ??= {};
+  s.townXp ??= 0;
+  s.lifetimeCoins ??= 0;
+  s.tutorialStep ??= 0;
+  return s;
 }
 
 // ---------- Actions ----------
