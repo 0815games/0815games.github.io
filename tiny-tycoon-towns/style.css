@@ -214,7 +214,7 @@ dialog input {
 .auth-screen.intro-done .auth-card { animation: card-in 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
 .auth-screen:not(.intro-running) .auth-intro { display: none; }
 .auth-screen.intro-running .auth-card { visibility: hidden; }
-.auth-card-logo { display: block; width: 96px; height: auto; margin: -6px auto 0; border-radius: 18px; }
+.auth-card-logo { display: block; width: 120px; height: auto; margin: -10px auto -4px; }
 @keyframes intro-logo {
   0% { opacity: 0; transform: translateY(-40px) scale(0.6) rotate(-6deg); }
   100% { opacity: 1; transform: none; }

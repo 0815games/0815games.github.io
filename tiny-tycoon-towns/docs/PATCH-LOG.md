@@ -304,3 +304,10 @@ Ereignis ergänzt.
   erzeugt mit ImageMagick). Intro zeigt Logo und Untertitel, der Titel steht nicht mehr doppelt. Quelldateien
   nicht im Repo.
 - Prüfungen: 58 Tests grün, `check` ohne Fehler, lint `no-undef` ohne Befund. Auf dem Bildschirm noch nicht gesehen.
+
+### TTT-0010 – Logo ohne Kasten (Welle `20261124-sitz4`)
+
+- Auftrag: kein eckiger Block mehr. Das Logo soll frei stehen und sich ins Bild einfügen.
+- Änderungen: `icons/logo.png` (transparent, freigestellte Stadt mit Name darüber), `icons/town.png` (nur die Stadt,
+  für die kleine Anmeldekarte). Quelldateien nicht im Repo.
+- Prüfungen: 58 Tests grün, `check` ohne Fehler, lint `no-undef` ohne Befund.
