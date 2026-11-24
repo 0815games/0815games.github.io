@@ -163,6 +163,7 @@ async function enterAccount(user) {
     currentUser = null;
     state = null;
     remoteLoaded = false;
+    activeUid = null;
     renderSignedOut();
     showLoginScreen('login');
     return;
@@ -170,6 +171,18 @@ async function enterAccount(user) {
   hideLoginScreen();
   closeDialog();
   if (uid === user.uid && state) return; // token refresh, nothing to load
+  if (activeUid !== user.uid) {
+    const free = await claimSession(user.uid);
+    if (!free) {
+      // Das Konto läuft schon in einem anderen Fenster. Hier wird nichts geladen oder gespeichert.
+      currentUser = user;
+      uid = null;
+      state = null;
+      renderSignedOut();
+      showRetry(OCCUPIED_TEXT);
+      return;
+    }
+  }
   currentUser = user;
   uid = user.uid;
   remoteLoaded = false;
@@ -451,10 +464,7 @@ function bindStatic() {
     dispatch(toggleSell(state, { resource: btn.dataset.sell }));
   });
   $('#feld-btn').addEventListener('click', showFieldNotes);
-  $('#logout-btn').addEventListener('click', async () => {
-    flushNow();
-    try { await cloud.logout(); } catch { toast('Abmelden fehlgeschlagen.', 'error'); }
-  });
+  $('#logout-btn').addEventListener('click', askLogout);
   $('#reset-btn').addEventListener('click', () => {
     if (!state || !uid) return;
     if (!confirm('Die aktuelle Stadt wird gelöscht, auch in der Cloud. Wirklich neu beginnen?')) return;
@@ -713,6 +723,51 @@ function toast(msg, kind = 'info') {
   el.className = `toast show ${kind === 'error' ? 'error' : ''}`;
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => { el.className = 'toast'; }, 3200);
+}
+
+/** Rückfrage vor dem Abmelden. Der Stand wird vorher gesichert. */
+function askLogout() {
+  openDialog(`<div class="dlg-body">
+    <h2 id="dlg-title">Abmelden?</h2>
+    <p>Deine Stadt wird vorher gesichert. Zum Weiterspielen meldest du dich wieder an.</p>
+    <p class="row">
+      <button type="button" id="logout-cancel">Abbrechen</button>
+      <button type="button" id="logout-ok" class="primary">Abmelden</button>
+    </p>
+  </div>`);
+  $('#logout-cancel').addEventListener('click', closeDialog);
+  $('#logout-ok').addEventListener('click', async () => {
+    closeDialog();
+    flushNow();
+    try { await cloud.logout(); } catch { toast('Abmelden fehlgeschlagen. Du bist noch angemeldet.', 'error'); }
+  });
+  $('#logout-cancel').focus();
+}
+
+// Eine Anmeldung pro Konto im selben Browser. Firebase teilt die Anmeldung zwischen Tabs,
+// deshalb sperrt das zweite Fenster nur das Spiel, statt sich selbst oder das erste abzumelden.
+const SESSION_CHANNEL = typeof BroadcastChannel === 'function' ? new BroadcastChannel('ttt-session') : null;
+let activeUid = null;      // Konto, das in diesem Fenster gerade spielt
+const OCCUPIED_TEXT = 'Dieses Konto ist bereits in einem anderen Fenster dieses Browsers geöffnet. Schließe das andere Fenster und prüfe dann erneut.';
+
+SESSION_CHANNEL?.addEventListener('message', (e) => {
+  if (e.data?.type === 'probe' && activeUid && e.data.uid === activeUid) {
+    SESSION_CHANNEL.postMessage({ type: 'active', uid: activeUid });
+  }
+});
+
+/** Liefert true, wenn dieses Fenster das Konto übernehmen darf. */
+async function claimSession(sessionUid) {
+  if (!SESSION_CHANNEL) return true; // ohne Kanal gibt es keine Prüfung
+  let busy = false;
+  const onReply = (e) => { if (e.data?.type === 'active' && e.data.uid === sessionUid) busy = true; };
+  SESSION_CHANNEL.addEventListener('message', onReply);
+  SESSION_CHANNEL.postMessage({ type: 'probe', uid: sessionUid });
+  await new Promise((r) => setTimeout(r, 350));
+  SESSION_CHANNEL.removeEventListener('message', onReply);
+  if (busy) return false;
+  activeUid = sessionUid;
+  return true;
 }
 
 function openDialog(html) {
