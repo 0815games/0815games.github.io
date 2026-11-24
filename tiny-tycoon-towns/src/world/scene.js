@@ -1,8 +1,8 @@
 // Weltansicht: Insel im Meer, Kamera, Eingabe, Partikel und Tag-Nacht.
 // renderWorld() zeichnet nur auf einen Kontext und ist deshalb auch ohne Browser prüfbar.
 // createScene() verbindet sie mit einem <canvas> im DOM.
-import { HW, HH, toScreen, toTile, hash } from './iso.js?v=20261124-sitz10';
-import { drawTile, drawBuilding, fillPoly, shade, mix, P } from './art.js?v=20261124-sitz10';
+import { HW, HH, toScreen, toTile, hash } from './iso.js?v=20261124-sitz11';
+import { drawTile, drawBuilding, fillPoly, shade, mix, P } from './art.js?v=20261124-sitz11';
 
 export const GRID_SIZE = 10;     // spielbares Raster (siehe src/domain/grid.js)
 export const HALL = { x: 4, y: 4 };

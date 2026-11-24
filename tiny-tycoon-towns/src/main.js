@@ -3,21 +3,21 @@
 import {
   createTown, newSeed, chooseBiome, placeBuilding, upgradeBuilding,
   toggleSell, buyOffer, advance, hydrateTown, setTutorialStep,
-} from './domain/engine.js?v=20261124-sitz10';
+} from './domain/engine.js?v=20261124-sitz11';
 import {
   productionMultiplier, ratePerMin, buildCost, storageCap, classOf,
-} from './domain/economy.js?v=20261124-sitz10';
-import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261124-sitz10';
-import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261124-sitz10';
-import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261124-sitz10';
+} from './domain/economy.js?v=20261124-sitz11';
+import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261124-sitz11';
+import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261124-sitz11';
+import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261124-sitz11';
 const SEEN_NOTES_KEY = 'ttt:notes-seen';
-import { withTimeout } from './async-util.js?v=20261124-sitz10';
-import { createBoard } from './world/board.js?v=20261124-sitz10';
-import { createLoginScene } from './world/login-scene.js?v=20261124-sitz10';
-import { TUTORIAL_STEPS, HELP_SECTIONS } from './tutorial.js?v=20261124-sitz10';
-import { createVersionUI } from './version-ui.mjs?v=20261124-sitz10';
+import { withTimeout } from './async-util.js?v=20261124-sitz11';
+import { createBoard } from './world/board.js?v=20261124-sitz11';
+import { createLoginScene } from './world/login-scene.js?v=20261124-sitz11';
+import { TUTORIAL_STEPS, HELP_SECTIONS } from './tutorial.js?v=20261124-sitz11';
+import { createVersionUI } from './version-ui.mjs?v=20261124-sitz11';
 
-const BUILD = '20261124-sitz10';
+const BUILD = '20261124-sitz11';
 console.info(`Tiny Tycoon Towns ${BUILD}`);
 const LAST_BIOME_KEY = 'ttt.lastBiome';
 const LOCAL_KEY = (uid) => `ttt.save.v1.${uid}`;
@@ -88,7 +88,7 @@ const REMOTE_TIMEOUT_MS = 10_000;
 async function loadData() {
   const names = ['resources', 'biomes', 'buildings', 'economy', 'merchant'];
   const parts = await Promise.all(names.map((n) =>
-    fetch(`data/${n}.json?v=20261124-sitz10`).then((r) => {
+    fetch(`data/${n}.json?v=20261124-sitz11`).then((r) => {
       if (!r.ok) throw new Error(`data/${n}.json: HTTP ${r.status}`);
       return r.json();
     })));
@@ -133,7 +133,7 @@ async function boot() {
   window.addEventListener('offline', updateSync);
 
   try {
-    cloud = await import('./cloud.js?v=20261124-sitz10');
+    cloud = await import('./cloud.js?v=20261124-sitz11');
   } catch {
     showFatal('Das Konto-System konnte nicht geladen werden. Ohne Anmeldung lässt sich nicht spielen. Bitte Verbindung prüfen und neu laden.');
     return;
@@ -540,9 +540,10 @@ function bindStatic() {
   document.addEventListener('click', (e) => {
     if (!menuList.hidden && !e.target.closest('.hud')) setMenu(false);
   });
-  $('#reset-btn').addEventListener('click', () => {
+  $('#reset-btn').addEventListener('click', async () => {
     if (!state || !uid) return;
-    if (!confirm('Die aktuelle Stadt wird gelöscht, auch in der Cloud. Wirklich neu beginnen?')) return;
+    const yes = await askConfirm('Neu beginnen?', 'Die aktuelle Stadt wird gelöscht, auch in der Cloud.', { ok: 'Ja, neu beginnen', danger: true });
+    if (!yes || !state || !uid) return;
     const doomed = uid;
     localStorage.removeItem(LOCAL_KEY(doomed));
     cloud.deleteTown(doomed).catch((e) => toast(cloud.dbErrorDe(e), 'error'));
@@ -1086,6 +1087,31 @@ function closeDialog() {
   if (dlg.open) dlg.close();
 }
 
+/** Rückfrage im Spiel-Design (ersetzt den Browser-Dialog confirm). Resolve: true = Ja, false = Nein/Abbruch. */
+function askConfirm(title, text, { ok = 'Ja', cancel = 'Abbrechen', danger = false } = {}) {
+  return new Promise((resolve) => {
+    const dlg = openDialog(`<div class="dlg-body confirm">
+      <h2 id="dlg-title">${esc(title)}</h2>
+      <p>${esc(text)}</p>
+      <div class="confirm-row">
+        <button type="button" class="ghost" id="confirm-no">${esc(cancel)}</button>
+        <button type="button" class="${danger ? 'danger' : 'primary'}" id="confirm-yes">${esc(ok)}</button>
+      </div>
+    </div>`);
+    let done = false;
+    const finish = (value) => {
+      if (done) return;
+      done = true;
+      resolve(value);
+      closeDialog();
+    };
+    dlg.querySelector('#confirm-yes').addEventListener('click', () => finish(true));
+    dlg.querySelector('#confirm-no').addEventListener('click', () => finish(false));
+    dlg.addEventListener('close', () => finish(false), { once: true });
+    dlg.querySelector('#confirm-yes').focus();
+  });
+}
+
 function randomTownName() {
   return TOWN_NAMES[Math.floor(Math.random() * TOWN_NAMES.length)];
 }
@@ -1097,7 +1123,7 @@ function showFounding() {
   const paint = () => {
     const b = data.biomes[biome];
     const names = (ids) => ids.map((r) => `${data.resources[r].icon} ${data.resources[r].name.de}`).join(', ');
-    dlg.innerHTML = `<form method="dialog" id="found-form" class="dlg-body">
+    dlg.innerHTML = `<form method="dialog" id="found-form" class="dlg-body" novalidate>
       <h2 id="dlg-title">Willkommen in Tiny Tycoon Towns</h2>
       <p>Deine kleine Stadt wächst auch dann, wenn du nicht spielst. Dein Biom entscheidet, was du selbst herstellen kannst.</p>
       <div class="biome-card">
@@ -1106,7 +1132,8 @@ function showFounding() {
         <p class="small"><strong>Karg:</strong> ${names(b.scarce)}</p>
         <button type="button" id="reroll">Anderes Biom würfeln</button>
       </div>
-      <label>Stadtname<br><input name="name" id="town-input" value="${esc(randomTownName())}" maxlength="24" required></label>
+      <label>Stadtname<br><input name="name" id="town-input" value="${esc(randomTownName())}" maxlength="24"></label>
+      <p id="found-msg" class="warn small" role="alert"></p>
       <button type="submit" class="primary">Stadt gründen (150 🪙)</button>
     </form>`;
     dlg.querySelector('#reroll').addEventListener('click', () => {
@@ -1116,7 +1143,13 @@ function showFounding() {
   };
   paint();
   dlg.querySelector('#found-form').addEventListener('submit', (e) => {
-    const name = new FormData(e.target).get('name').toString().trim() || randomTownName();
+    const name = new FormData(e.target).get('name').toString().trim();
+    if (!name) {
+      // Eigene Meldung statt des Browser-Hinweises bei Pflichtfeldern
+      e.preventDefault();
+      dlg.querySelector('#found-msg').textContent = 'Gib deiner Stadt einen Namen.';
+      return;
+    }
     localStorage.setItem(LAST_BIOME_KEY, biome);
     state = createTown({ name, biome, seed: newSeed(), now: Date.now(), data });
     selected = { x: 4, y: 4 };

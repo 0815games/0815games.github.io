@@ -561,3 +561,15 @@ button.danger { background: #E4837A; border-color: var(--ink); }
 }
 .panel .cycle button[data-cycle]:active { transform: scale(0.94); }
 .panel .opt > button { min-height: 44px; font-weight: 700; }
+
+/* Rückfrage im Spiel-Design (ersetzt Browser-Dialoge) */
+.confirm p { margin: 0; }
+.confirm-row { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
+.confirm-row button { min-height: 44px; min-width: 120px; font-weight: 700; }
+
+/* Scrollbalken im Spiel-Stil statt Browser-Standard */
+* { scrollbar-width: thin; scrollbar-color: var(--ink) transparent; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--ink); border-radius: 8px; border: 2px solid var(--paper); }
+::-webkit-scrollbar-thumb:hover { background: #2a2020; }
