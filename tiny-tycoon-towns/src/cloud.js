@@ -50,6 +50,7 @@ const AUTH_DE = {
   'auth/too-many-requests': 'Zu viele Versuche. Bitte später erneut probieren.',
   'auth/network-request-failed': 'Keine Verbindung zum Server.',
   'auth/operation-not-allowed': 'Die Anmeldung per E-Mail ist im Projekt nicht aktiviert.',
+  'auth/unauthorized-domain': 'Diese Seitenadresse ist in Firebase nicht autorisiert. Unter Authentication → Settings → Authorized domains eintragen.',
 };
 
 export function authErrorDe(err) {
