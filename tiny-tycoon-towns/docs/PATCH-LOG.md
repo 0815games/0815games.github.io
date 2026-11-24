@@ -248,3 +248,23 @@ Ereignis ergänzt.
   - Regeln (`firebase/database.rules.json`) unverändert. Geprüft: alle Felder des Spielstands sind erlaubt.
 - Prüfungen: 57 Tests grün, `check --fast` ohne Fehler, `rules:check` ohne Live-Export: Struktur OK.
 - Offen: Regeln in der Konsole oder per CLI veröffentlichen (`docs/FIREBASE.md`, Schritte 1 bis 5).
+
+## TTT-0007 – Anmeldung über alle Geräte nur einmal (Welle `20261124-sitz1`)
+
+- Zeit / Quelle: Sitzung 2026-11-24 (UTC). Auftrag des Betreibers: Doppelanmeldung auch über verschiedene
+  Browser und Geräte verhindern, und die Regel dafür in den Firebase-Regeln absichern.
+- Änderungen (Commit d8fd459):
+  - `firebase/database.rules.json`: neuer Pfad `sessions/{uid}` (nur Inhaber, Felder `id` und `at`, unbekannte
+    Felder abgewiesen).
+  - `src/cloud.js`: `claimSession` (Transaktion, Ablauf nach 120 s ohne Herzschlag), `releaseSession`,
+    `watchSession`.
+  - `src/main.js`: Herzschlag alle 30 s. Ein zweites Fenster bekommt „Hier übernehmen“. Das bisherige Fenster
+    speichert nichts mehr und bietet selbst „Hier übernehmen“ an. Kennung pro Tab in `sessionStorage`,
+    damit Neuladen nicht sperrt. Der Browser-Kanal aus TTT-0006 ist ersetzt.
+  - `scripts/rules-publish-dry-run.mjs`: kennt `sessions/{uid}` und prüft die Eigentümerregeln.
+  - Welle `20261124-sitz1` (bump --apply, 14 Dateien), Neuerungen-Eintrag DE/EN, Hilfe-Text angepasst.
+  - `docs/FIREBASE.md`: Hinweis, dass die Regeln vor der Welle veröffentlicht werden müssen.
+- Prüfungen: 58 Tests grün. `rules:check` ohne Live-Export: OK, Struktur. `check --fast` ohne Fehler.
+- Grenzen, nicht geprüft: kein echter Browser, kein Test über zwei Geräte. Die Sperre hängt an den
+  Gerätezeiten (Zeitstempel vom Client). Eine Abweichung von mehreren Minuten kann die Sperre verkürzen.
+- Vor dem Merge: Regeln in Firebase veröffentlichen. Ohne Regeln schlägt die Anmeldung fehl.
