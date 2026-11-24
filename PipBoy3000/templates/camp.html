@@ -31,16 +31,33 @@
             <span class="text-xs opacity-70">Essen zubereiten</span>
         </button>
 
+        <button class="flex flex-col items-center justify-center border border-cyan-500 text-cyan-400 hover:bg-cyan-900/30 p-4 transition-all" onclick="UI.renderCampStorage()">
+            <span class="text-3xl mb-1">📦</span>
+            <span class="font-bold">SCHRANK</span>
+            <span class="text-xs opacity-70" id="camp-storage-hint">Lagerplatz</span>
+        </button>
+
         <button class="flex flex-col items-center justify-center border border-red-500 text-red-400 hover:bg-red-900/30 p-4 transition-all" onclick="Game.packCamp()">
             <span class="text-3xl mb-1">🎒</span>
             <span class="font-bold">ABBAUEN</span>
             <span class="text-xs opacity-70">Zelt einpacken</span>
         </button>
 
-        <button class="flex flex-col items-center justify-center border border-green-500 text-green-500 hover:bg-green-900/30 p-4 transition-all" onclick="UI.switchView('map')">
+        <button class="col-span-2 flex flex-col items-center justify-center border border-green-500 text-green-500 hover:bg-green-900/30 p-4 transition-all" onclick="UI.switchView('map')">
             <span class="text-3xl mb-1">🗺️</span>
             <span class="font-bold">ZURÜCK</span>
             <span class="text-xs opacity-70">Zur Karte</span>
+        </button>
+    </div>
+
+    <div id="camp-storage-view" class="hidden absolute inset-0 bg-gray-900 z-50 flex flex-col p-4">
+        <h2 class="text-2xl font-bold text-cyan-400 mb-1 border-b-2 border-cyan-900 pb-2 flex items-center gap-2">
+            <span>📦</span> LAGERSCHRANK
+        </h2>
+        <div id="camp-storage-head" class="text-xs text-cyan-300 my-2"></div>
+        <div id="camp-storage-list" class="flex-grow overflow-y-auto pr-2 custom-scrollbar"></div>
+        <button onclick="UI.renderCamp(true)" class="mt-4 border border-yellow-500 text-yellow-500 py-3 font-bold hover:bg-yellow-900/40 uppercase tracking-widest">
+            << Zurück zum Zelt
         </button>
     </div>
 

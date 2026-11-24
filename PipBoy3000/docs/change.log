@@ -1,5 +1,26 @@
 # CHANGELOG
 
+## v14.0.2 (Rohfleisch und Lagerschrank, 2026-11-24)
+Zwei Lücken aus der RAD-Analyse: Rohfleisch war ungenießbar, und das Lager
+hatte keinen Stauraum.
+
+- [FEATURE] **Rohfleisch ist essbar:** Kakerlakenfleisch, Fliegenfleisch,
+  Rattenfleisch, Hundefleisch, Mirelurk-Fleisch, Skorpiondrüse und
+  Yao-Guai-Rippchen tragen jetzt ein `raw`-Feld. Roh essen heilt weniger und
+  verstrahlt deutlich mehr als gebraten — zum ersten Mal gibt es damit eine
+  Entscheidung zwischen „jetzt essen" und „erst am Lagerfeuer braten".
+- [FEATURE] **Lagerschrank:** Der Schrank im Lager fasst 10 Plätze auf
+  Stufe 1 und je 5 mehr pro Stufe (55 auf Stufe 10). Einlagern nimmt Ware aus
+  dem Rucksack, Entnehmen legt sie zurück. Beim Einpacken reist der Inhalt
+  mit, beim nächsten Aufbau ist er wieder da.
+- [FEATURE] **Zwei Kochrezepte ergänzt:** Hundefleisch und Yao-Guai-Rippchen
+  hatten kein Rezept. Roh essbar und gebraten unerreichbar wäre eine Sackgasse
+  gewesen — jeder Rohstoff braucht sein gebratenes Gegenstück.
+- [BUGFIX] **Balancing-Bericht:** Die Textzeile zu den Buff-Items behauptete
+  weiter „Effekte noch WIP", obwohl B3 behoben ist. Der Abschnitt heißt jetzt
+  „Roh oder gebraten" und stellt beide Varianten gegenüber.
+- [TESTS] 14 neue Tests (107 gesamt).
+
 ## v14.0.1 (Balancing-Befunde, 2026-11-24)
 Alle sieben Befunde aus `docs/BALANCE_BEFUNDE.md` sind behoben. Neu ist
 `docs/BALANCING.md`: ein aus dem Quellstand erzeugtes Datenblatt mit Waffen,

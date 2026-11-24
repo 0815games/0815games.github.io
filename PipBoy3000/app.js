@@ -297,20 +297,26 @@
     camp_kit: { name: "Zelt-Bausatz", type: "tool", cost: 150, desc: "Errichtet ein Lager im Ödland.", weight: 5 },
     lockpick: { name: "Haarklammer", type: "tool", cost: 5, desc: "Zum Knacken von Schlössern." },
     // --- MONSTER DROPS & FOOD ---
-    meat_roach: { name: "Kakerlakenfleisch", type: "component", cost: 5, desc: "Ekelhaft, aber essbar." },
-    meat_fly: { name: "Fliegenfleisch", type: "component", cost: 5, desc: "Schleimig." },
-    meat_mole: { name: "Rattenfleisch", type: "component", cost: 8, desc: "Zäh." },
-    meat_dog: { name: "Hundefleisch", type: "component", cost: 10, desc: "Etwas zäh, aber nahrhaft." },
-    meat_scorp: { name: "Skorpiondrüse", type: "component", cost: 20, desc: "Delikatesse." },
-    meat_yao: { name: "Yao Guai Rippchen", type: "component", cost: 35, desc: "Sehr nahrhaft." },
+    meat_roach: { name: "Kakerlakenfleisch", type: "component", cost: 5, desc: "Ekelhaft, aber roh essbar. Gekocht deutlich bekömmlicher.", raw: { heal: 8, rad: 6 } },
+    meat_fly: { name: "Fliegenfleisch", type: "component", cost: 5, desc: "Schleimig.", raw: { heal: 8, rad: 6 } },
+    meat_mole: { name: "Rattenfleisch", type: "component", cost: 8, desc: "Zäh.", raw: { heal: 12, rad: 9 } },
+    meat_dog: { name: "Hundefleisch", type: "component", cost: 10, desc: "Etwas zäh, aber nahrhaft.", raw: { heal: 15, rad: 10 } },
+    meat_scorp: { name: "Skorpiondrüse", type: "component", cost: 20, desc: "Delikatesse.", raw: { heal: 22, rad: 14 } },
+    meat_yao: { name: "Yao Guai Rippchen", type: "component", cost: 35, desc: "Sehr nahrhaft - roh aber stark verstrahlt.", raw: { heal: 30, rad: 16 } },
     hide_yao: { name: "Yao Guai Leder", type: "component", cost: 40, desc: "Robustes Fell." },
-    meat_lurk: { name: "Mirelurk-Fleisch", type: "component", cost: 15, desc: "Weiches Schalentier-Fleisch." },
+    meat_lurk: { name: "Mirelurk-Fleisch", type: "component", cost: 15, desc: "Weiches Schalentier-Fleisch.", raw: { heal: 18, rad: 12 } },
     // Cooked
     cooked_roach: { name: "Gegrillte Kakerlake", type: "consumable", effect: "heal_rad", val: 15, rad: 2, cost: 10, desc: "+15 HP, +2 RAD" },
     cooked_mole: { name: "Ratten-Steak", type: "consumable", effect: "heal_rad", val: 25, rad: 3, cost: 20, desc: "+25 HP, +3 RAD" },
     cooked_fly: { name: "Gegrillte Fliege", type: "consumable", effect: "heal_rad", val: 15, rad: 2, cost: 10, desc: "+15 HP, +2 RAD" },
     cooked_scorp: { name: "Skorpion-Überraschung", type: "consumable", effect: "heal_rad", val: 45, rad: 5, cost: 40, desc: "+45 HP, +5 RAD" },
     cooked_lurk: { name: "Mirelurk-Happen", type: "consumable", effect: "heal_rad", val: 35, rad: 4, cost: 30, desc: "+35 HP, +4 RAD" },
+    // Hundefleisch und Yao-Guai-Rippchen hatten bisher kein Rezept: roh
+    // ungeniessbar, gebraten unerreichbar. Mit dem neuen Rohverzehr faellt
+    // das auf - jedes rohe Stueck braucht ein gebratenes Gegenstueck,
+    // sonst gibt es keine Wahl zwischen den beiden.
+    cooked_dog: { name: "Hunde-Steak", type: "consumable", effect: "heal_rad", val: 28, rad: 3, cost: 22, desc: "+28 HP, +3 RAD" },
+    cooked_yao: { name: "Yao Guai Steak", type: "consumable", effect: "heal_rad", val: 50, rad: 6, cost: 55, desc: "+50 HP, +6 RAD" },
     stealth_boy: { name: "Stealth Boy", type: "consumable", effect: "buff", bonus: { AGI: 10 }, duration: 60, cost: 200, desc: "Macht kurzzeitig unsichtbar." },
     // --- CONSUMABLES (CHEMIS & MEDS) ---
     stimpack: { name: "Stimpack", type: "consumable", effect: "heal", val: 40, cost: 50, desc: "Sofortige Heilung (+40 HP)." },
@@ -500,7 +506,9 @@
     { id: "cook_fly", type: "cooking", out: "cooked_fly", count: 1, req: { "meat_fly": 1 }, lvl: 1 },
     { id: "cook_mole", type: "cooking", out: "cooked_mole", count: 1, req: { "meat_mole": 1 }, lvl: 1 },
     { id: "cook_lurk", type: "cooking", out: "cooked_lurk", count: 1, req: { "meat_lurk": 1 }, lvl: 2 },
-    { id: "cook_scorp", type: "cooking", out: "cooked_scorp", count: 1, req: { "meat_scorp": 1 }, lvl: 3 }
+    { id: "cook_scorp", type: "cooking", out: "cooked_scorp", count: 1, req: { "meat_scorp": 1 }, lvl: 3 },
+    { id: "cook_dog", type: "cooking", out: "cooked_dog", count: 1, req: { "meat_dog": 1 }, lvl: 2 },
+    { id: "cook_yao", type: "cooking", out: "cooked_yao", count: 1, req: { "meat_yao": 1 }, lvl: 4 }
   ];
   if (typeof Game !== "undefined") Game.recipes = window.GameData.recipes;
 
@@ -4149,6 +4157,24 @@
         this.deployCamp(index);
         return;
       }
+      if (itemDef.raw) {
+        const healAmt = itemDef.raw.heal || 0;
+        const radAmt = itemDef.raw.rad || 0;
+        const effectiveMax = this.state.maxHp - (this.state.rads || 0);
+        if (this.state.hp >= effectiveMax && radAmt > 0) {
+          UI.log("Du bist satt - roh essen wuerde nur verstrahlen.", "text-gray-500");
+          return;
+        }
+        this.state.hp = Math.min(effectiveMax, this.state.hp + healAmt);
+        UI.log(`Roh gegessen: ${itemDef.name} (+${healAmt} HP, +${radAmt} RAD)`, "text-orange-300");
+        this.removeFromInventory(invItem.id, 1);
+        this.addRadiation(radAmt);
+        this.updateWeight();
+        UI.update();
+        if (this.state.view === "inventory") UI.renderInventory();
+        this.saveGame();
+        return;
+      }
       if (invItem.id === "nuka_cola") {
         const effectiveMax = this.state.maxHp - (this.state.rads || 0);
         this.state.hp = Math.min(this.state.hp + 15, effectiveMax);
@@ -4448,8 +4474,10 @@
         sector: { x: this.state.sector.x, y: this.state.sector.y },
         x: this.state.player.x,
         y: this.state.player.y,
-        level: startLevel
+        level: startLevel,
+        storage: this.state.savedCampStorage || []
       };
+      this.state.savedCampStorage = null;
       UI.log(`Lager aufgeschlagen! (Stufe ${startLevel})`, "text-green-400 font-bold");
       UI.switchView("camp");
       this.saveGame();
@@ -4457,6 +4485,7 @@
     packCamp: function() {
       if (!this.state.camp) return;
       this.state.savedCampLevel = this.state.camp.level;
+      this.state.savedCampStorage = this.state.camp.storage || [];
       this.state.camp = null;
       UI.log(`Lager eingepackt. (Level ${this.state.savedCampLevel} gesichert)`, "text-yellow-400");
       UI.switchView("map");
@@ -4496,6 +4525,71 @@
       UI.log(`Lager verbessert auf Stufe ${this.state.camp.level}!`, "text-green-400 font-bold animate-pulse");
       this.saveGame();
       if (typeof UI.renderCamp === "function") UI.renderCamp();
+    },
+    // --- Lagerschrank ---
+    // Das Lager war eine Basisfunktion: schlafen, kochen, ausbauen. Der
+    // Schrank ist der erste echte Ausbau - Stauraum, der mit der Stufe
+    // waechst. Er loest das eigentliche Problem des Lagers: das Inventar ist
+    // eng (10 + STR + Rucksack), und wer Beute sammelt, muss unterwegs
+    // wegwerfen. Bisher half das Lager dabei nicht.
+    getCampStorageSlots: function() {
+      if (!this.state || !this.state.camp) return 0;
+      const lvl = this.state.camp.level || 1;
+      return 10 + (lvl - 1) * 5;
+    },
+    getCampStorage: function() {
+      if (!this.state || !this.state.camp) return [];
+      if (!Array.isArray(this.state.camp.storage)) this.state.camp.storage = [];
+      return this.state.camp.storage;
+    },
+    getCampStorageUsed: function() {
+      return this.getCampStorage().length;
+    },
+    storeInCamp: function(invIndex, amount) {
+      if (!this.state || !this.state.camp) {
+        UI.log("Kein Lager aufgeschlagen.", "text-red-500");
+        return false;
+      }
+      const item = this.state.inventory[invIndex];
+      if (!item) return false;
+      const lager = this.getCampStorage();
+      if (lager.length >= this.getCampStorageSlots()) {
+        UI.log("Lagerschrank ist voll!", "text-red-500 font-bold");
+        return false;
+      }
+      const menge = Math.min(item.count, amount || item.count);
+      if (menge <= 0) return false;
+      const vorhanden = lager.find((e) => e.id === item.id && !e.props && !e.isLegendary);
+      if (vorhanden && !item.props && !item.isLegendary) {
+        vorhanden.count += menge;
+      } else {
+        const kopie = { ...item, count: menge };
+        lager.push(kopie);
+      }
+      item.count -= menge;
+      if (item.count <= 0) this.state.inventory.splice(invIndex, 1);
+      UI.log(`${menge}x ${item.name || this.items[item.id] && this.items[item.id].name || item.id} eingelagert.`, "text-blue-300");
+      this.updateWeight();
+      this.saveGame();
+      return true;
+    },
+    takeFromCamp: function(storageIndex, amount) {
+      if (!this.state || !this.state.camp) return false;
+      const lager = this.getCampStorage();
+      const eintrag = lager[storageIndex];
+      if (!eintrag) return false;
+      if (this.getUsedSlots() >= this.getMaxSlots()) {
+        UI.log("Inventar voll! Erst Platz schaffen.", "text-red-500");
+        return false;
+      }
+      const menge = Math.min(eintrag.count, amount || eintrag.count);
+      this.addToInventory(eintrag.id, menge);
+      eintrag.count -= menge;
+      if (eintrag.count <= 0) lager.splice(storageIndex, 1);
+      UI.log(`${menge}x ${this.items[eintrag.id] ? this.items[eintrag.id].name : eintrag.id} entnommen.`, "text-blue-300");
+      this.updateWeight();
+      this.saveGame();
+      return true;
     },
     restInCamp: function() {
       if (!this.state || !this.state.camp) return;
@@ -7324,7 +7418,8 @@
                 ${rows}
             </div>
             <div class="text-[10px] text-gray-500 text-center italic">
-                Höhere Stufen heilen effektiver.<br>Strahlung (+5) beim Kochen bleibt konstant.
+                Höhere Stufen heilen effektiver und vergrößern den Lagerschrank<br>
+                (10 Plätze auf Stufe 1, +5 je Stufe). Strahlung (+5) beim Schlafen bleibt konstant.
             </div>
         `;
       this.showInfoDialog("LAGER INFO", content);
@@ -7336,6 +7431,8 @@
       }
       const cookingView = document.getElementById("camp-cooking-view");
       const mainActions = document.getElementById("camp-main-actions");
+      const storageView = document.getElementById("camp-storage-view");
+      if (storageView) storageView.classList.add("hidden");
       const statusBox = document.getElementById("camp-status-box");
       const upgradeCont = document.getElementById("camp-upgrade-container");
       if (cookingView && mainActions) {
@@ -7366,6 +7463,8 @@
       let healPct = 30 + (lvl - 1) * 8;
       if (lvl >= 10) healPct = 100;
       if (healPct > 100) healPct = 100;
+      const schrankHint = document.getElementById("camp-storage-hint");
+      if (schrankHint) schrankHint.textContent = `${Game.getCampStorageUsed()} / ${Game.getCampStorageSlots()} Plätze`;
       if (statusBox) {
         let comfort = lvl === 1 ? "Basis-Zelt" : lvl >= 10 ? "Luxus-Bunker" : "Komfort-Zelt";
         statusBox.textContent = `${comfort} (Lvl ${lvl}). Heilung ${Math.floor(healPct)}%.`;
@@ -7405,6 +7504,81 @@
                     <span class="text-xs opacity-70">${upgradeSub}</span>
                 </button>
             `;
+      }
+    },
+    renderCampStorage: function() {
+      this.campMode = "storage";
+      const storageView = document.getElementById("camp-storage-view");
+      const cookingView = document.getElementById("camp-cooking-view");
+      const mainActions = document.getElementById("camp-main-actions");
+      const statusBox = document.getElementById("camp-status-box");
+      const upgradeCont = document.getElementById("camp-upgrade-container");
+      if (storageView) {
+        storageView.classList.remove("hidden");
+        storageView.classList.add("bg-gray-900", "z-50");
+      }
+      if (cookingView) cookingView.classList.add("hidden");
+      if (mainActions) mainActions.classList.add("hidden");
+      if (statusBox) statusBox.classList.add("hidden");
+      if (upgradeCont) upgradeCont.classList.add("hidden");
+      const liste = document.getElementById("camp-storage-list");
+      const kopf = document.getElementById("camp-storage-head");
+      if (!liste) return;
+      const belegt = Game.getCampStorageUsed();
+      const plaetze = Game.getCampStorageSlots();
+      if (kopf) kopf.textContent = `Belegt: ${belegt} / ${plaetze} Plätze · Schrank wächst mit der Lagerstufe`;
+      liste.innerHTML = "";
+      const lager = Game.getCampStorage();
+      if (lager.length === 0) {
+        liste.innerHTML = '<div class="text-gray-500 italic text-center mt-6">Der Schrank ist leer.</div>';
+      } else {
+        lager.forEach((eintrag, i) => {
+          const def = Game.items[eintrag.id] || {};
+          const div = document.createElement("div");
+          div.className = "border border-cyan-900 bg-cyan-900/10 p-2 mb-2 flex justify-between items-center";
+          div.innerHTML = `
+                    <div class="flex flex-col">
+                        <span class="font-bold text-cyan-300">${eintrag.name || def.name || eintrag.id}</span>
+                        <span class="text-xs text-cyan-600">${eintrag.count}x</span>
+                    </div>
+                    <button class="border border-cyan-500 text-cyan-400 px-3 py-1 text-sm font-bold hover:bg-cyan-900/40">ENTNEHMEN</button>
+                `;
+          div.querySelector("button").onclick = () => {
+            Game.takeFromCamp(i);
+            this.renderCampStorage();
+          };
+          liste.appendChild(div);
+        });
+      }
+      const trenner = document.createElement("div");
+      trenner.className = "text-xs text-gray-500 uppercase tracking-widest mt-4 mb-2 border-t border-gray-800 pt-2";
+      trenner.textContent = "Aus dem Rucksack einlagern";
+      liste.appendChild(trenner);
+      const rucksack = Game.state.inventory || [];
+      let etwasDa = false;
+      rucksack.forEach((item, i) => {
+        const def = Game.items[item.id] || {};
+        const div = document.createElement("div");
+        div.className = "border border-gray-800 bg-black/40 p-2 mb-1 flex justify-between items-center";
+        div.innerHTML = `
+                <div class="flex flex-col">
+                    <span class="text-green-300">${item.name || def.name || item.id}</span>
+                    <span class="text-xs text-gray-500">${item.count}x</span>
+                </div>
+                <button class="border border-green-700 text-green-500 px-3 py-1 text-sm font-bold hover:bg-green-900/40">EINLAGERN</button>
+            `;
+        div.querySelector("button").onclick = () => {
+          Game.storeInCamp(i);
+          this.renderCampStorage();
+        };
+        liste.appendChild(div);
+        etwasDa = true;
+      });
+      if (!etwasDa) {
+        const leer = document.createElement("div");
+        leer.className = "text-gray-600 italic text-center text-sm";
+        leer.textContent = "Rucksack ist leer.";
+        liste.appendChild(leer);
       }
     },
     renderCampCooking: function(switchToCooking = true) {
@@ -8909,13 +9083,14 @@
         displayName = invItem.props.name;
         if (invItem.props.dmgMult) statsText = `Schaden: ${Math.floor(item.baseDmg * invItem.props.dmgMult)} (Mod)`;
       } else {
-        if (item.type === "consumable") statsText = `Effekt: ${item.effect} (${item.val})`;
+        if (item.raw) statsText = `Roh essbar: +${item.raw.heal} HP, +${item.raw.rad} RAD`;
+        else if (item.type === "consumable") statsText = `Effekt: ${item.effect} (${item.val})`;
         else if (item.type === "weapon") statsText = `Schaden: ${item.baseDmg}`;
         else if (item.type === "body") statsText = `Rüstung: +${item.bonus ? item.bonus.END : 0} END`;
         else if (item.type === "junk" || item.type === "component") statsText = "Material / Schrott";
         else statsText = item.desc || "Item";
       }
-      const isUsable = !["junk", "component", "misc", "rare", "ammo"].includes(item.type);
+      const isUsable = !!item.raw || !["junk", "component", "misc", "rare", "ammo"].includes(item.type);
       box.innerHTML = `
             <h2 class="text-xl font-bold text-green-400 mb-2">${displayName}</h2>
             <div class="text-xs text-green-200 mb-4 border-t border-b border-green-900 py-2">Typ: ${item.type.toUpperCase()}<br>Wert: ${item.cost} KK<br><span class="text-yellow-400">${statsText}</span></div>

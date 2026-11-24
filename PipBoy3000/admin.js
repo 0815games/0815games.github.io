@@ -297,20 +297,26 @@
     camp_kit: { name: "Zelt-Bausatz", type: "tool", cost: 150, desc: "Errichtet ein Lager im Ödland.", weight: 5 },
     lockpick: { name: "Haarklammer", type: "tool", cost: 5, desc: "Zum Knacken von Schlössern." },
     // --- MONSTER DROPS & FOOD ---
-    meat_roach: { name: "Kakerlakenfleisch", type: "component", cost: 5, desc: "Ekelhaft, aber essbar." },
-    meat_fly: { name: "Fliegenfleisch", type: "component", cost: 5, desc: "Schleimig." },
-    meat_mole: { name: "Rattenfleisch", type: "component", cost: 8, desc: "Zäh." },
-    meat_dog: { name: "Hundefleisch", type: "component", cost: 10, desc: "Etwas zäh, aber nahrhaft." },
-    meat_scorp: { name: "Skorpiondrüse", type: "component", cost: 20, desc: "Delikatesse." },
-    meat_yao: { name: "Yao Guai Rippchen", type: "component", cost: 35, desc: "Sehr nahrhaft." },
+    meat_roach: { name: "Kakerlakenfleisch", type: "component", cost: 5, desc: "Ekelhaft, aber roh essbar. Gekocht deutlich bekömmlicher.", raw: { heal: 8, rad: 6 } },
+    meat_fly: { name: "Fliegenfleisch", type: "component", cost: 5, desc: "Schleimig.", raw: { heal: 8, rad: 6 } },
+    meat_mole: { name: "Rattenfleisch", type: "component", cost: 8, desc: "Zäh.", raw: { heal: 12, rad: 9 } },
+    meat_dog: { name: "Hundefleisch", type: "component", cost: 10, desc: "Etwas zäh, aber nahrhaft.", raw: { heal: 15, rad: 10 } },
+    meat_scorp: { name: "Skorpiondrüse", type: "component", cost: 20, desc: "Delikatesse.", raw: { heal: 22, rad: 14 } },
+    meat_yao: { name: "Yao Guai Rippchen", type: "component", cost: 35, desc: "Sehr nahrhaft - roh aber stark verstrahlt.", raw: { heal: 30, rad: 16 } },
     hide_yao: { name: "Yao Guai Leder", type: "component", cost: 40, desc: "Robustes Fell." },
-    meat_lurk: { name: "Mirelurk-Fleisch", type: "component", cost: 15, desc: "Weiches Schalentier-Fleisch." },
+    meat_lurk: { name: "Mirelurk-Fleisch", type: "component", cost: 15, desc: "Weiches Schalentier-Fleisch.", raw: { heal: 18, rad: 12 } },
     // Cooked
     cooked_roach: { name: "Gegrillte Kakerlake", type: "consumable", effect: "heal_rad", val: 15, rad: 2, cost: 10, desc: "+15 HP, +2 RAD" },
     cooked_mole: { name: "Ratten-Steak", type: "consumable", effect: "heal_rad", val: 25, rad: 3, cost: 20, desc: "+25 HP, +3 RAD" },
     cooked_fly: { name: "Gegrillte Fliege", type: "consumable", effect: "heal_rad", val: 15, rad: 2, cost: 10, desc: "+15 HP, +2 RAD" },
     cooked_scorp: { name: "Skorpion-Überraschung", type: "consumable", effect: "heal_rad", val: 45, rad: 5, cost: 40, desc: "+45 HP, +5 RAD" },
     cooked_lurk: { name: "Mirelurk-Happen", type: "consumable", effect: "heal_rad", val: 35, rad: 4, cost: 30, desc: "+35 HP, +4 RAD" },
+    // Hundefleisch und Yao-Guai-Rippchen hatten bisher kein Rezept: roh
+    // ungeniessbar, gebraten unerreichbar. Mit dem neuen Rohverzehr faellt
+    // das auf - jedes rohe Stueck braucht ein gebratenes Gegenstueck,
+    // sonst gibt es keine Wahl zwischen den beiden.
+    cooked_dog: { name: "Hunde-Steak", type: "consumable", effect: "heal_rad", val: 28, rad: 3, cost: 22, desc: "+28 HP, +3 RAD" },
+    cooked_yao: { name: "Yao Guai Steak", type: "consumable", effect: "heal_rad", val: 50, rad: 6, cost: 55, desc: "+50 HP, +6 RAD" },
     stealth_boy: { name: "Stealth Boy", type: "consumable", effect: "buff", bonus: { AGI: 10 }, duration: 60, cost: 200, desc: "Macht kurzzeitig unsichtbar." },
     // --- CONSUMABLES (CHEMIS & MEDS) ---
     stimpack: { name: "Stimpack", type: "consumable", effect: "heal", val: 40, cost: 50, desc: "Sofortige Heilung (+40 HP)." },

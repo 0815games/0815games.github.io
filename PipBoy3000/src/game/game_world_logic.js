@@ -49,8 +49,10 @@ Object.assign(Game, {
         this.state.camp = { 
             sector: { x: this.state.sector.x, y: this.state.sector.y }, 
             x: this.state.player.x, y: this.state.player.y, 
-            level: startLevel 
+            level: startLevel,
+            storage: this.state.savedCampStorage || []
         };
+        this.state.savedCampStorage = null;
         
         UI.log(`Lager aufgeschlagen! (Stufe ${startLevel})`, "text-green-400 font-bold");
         UI.switchView('camp');
@@ -61,6 +63,9 @@ Object.assign(Game, {
         if(!this.state.camp) return;
         
         this.state.savedCampLevel = this.state.camp.level;
+        // Der Schrank reist mit: sonst waeren eingelagerte Sachen beim
+        // Einpacken verloren.
+        this.state.savedCampStorage = this.state.camp.storage || [];
         
         this.state.camp = null;
         UI.log(`Lager eingepackt. (Level ${this.state.savedCampLevel} gesichert)`, "text-yellow-400");
@@ -104,6 +109,82 @@ Object.assign(Game, {
         UI.log(`Lager verbessert auf Stufe ${this.state.camp.level}!`, "text-green-400 font-bold animate-pulse");
         this.saveGame();
         if(typeof UI.renderCamp === 'function') UI.renderCamp();
+    },
+
+    // --- Lagerschrank ---
+    // Das Lager war eine Basisfunktion: schlafen, kochen, ausbauen. Der
+    // Schrank ist der erste echte Ausbau - Stauraum, der mit der Stufe
+    // waechst. Er loest das eigentliche Problem des Lagers: das Inventar ist
+    // eng (10 + STR + Rucksack), und wer Beute sammelt, muss unterwegs
+    // wegwerfen. Bisher half das Lager dabei nicht.
+    getCampStorageSlots: function() {
+        if(!this.state || !this.state.camp) return 0;
+        const lvl = this.state.camp.level || 1;
+        return 10 + (lvl - 1) * 5;      // Stufe 1: 10, Stufe 10: 55
+    },
+
+    getCampStorage: function() {
+        if(!this.state || !this.state.camp) return [];
+        if(!Array.isArray(this.state.camp.storage)) this.state.camp.storage = [];
+        return this.state.camp.storage;
+    },
+
+    getCampStorageUsed: function() {
+        return this.getCampStorage().length;
+    },
+
+    storeInCamp: function(invIndex, amount) {
+        if(!this.state || !this.state.camp) { UI.log("Kein Lager aufgeschlagen.", "text-red-500"); return false; }
+        const item = this.state.inventory[invIndex];
+        if(!item) return false;
+
+        const lager = this.getCampStorage();
+        if(lager.length >= this.getCampStorageSlots()) {
+            UI.log("Lagerschrank ist voll!", "text-red-500 font-bold");
+            return false;
+        }
+
+        const menge = Math.min(item.count, amount || item.count);
+        if(menge <= 0) return false;
+
+        // Bestehenden Stapel im Schrank auffuellen, sonst neuen anlegen.
+        const vorhanden = lager.find(e => e.id === item.id && !e.props && !e.isLegendary);
+        if(vorhanden && !item.props && !item.isLegendary) {
+            vorhanden.count += menge;
+        } else {
+            const kopie = { ...item, count: menge };
+            lager.push(kopie);
+        }
+
+        item.count -= menge;
+        if(item.count <= 0) this.state.inventory.splice(invIndex, 1);
+
+        UI.log(`${menge}x ${item.name || (this.items[item.id] && this.items[item.id].name) || item.id} eingelagert.`, "text-blue-300");
+        this.updateWeight();
+        this.saveGame();
+        return true;
+    },
+
+    takeFromCamp: function(storageIndex, amount) {
+        if(!this.state || !this.state.camp) return false;
+        const lager = this.getCampStorage();
+        const eintrag = lager[storageIndex];
+        if(!eintrag) return false;
+
+        if(this.getUsedSlots() >= this.getMaxSlots()) {
+            UI.log("Inventar voll! Erst Platz schaffen.", "text-red-500");
+            return false;
+        }
+
+        const menge = Math.min(eintrag.count, amount || eintrag.count);
+        this.addToInventory(eintrag.id, menge);
+        eintrag.count -= menge;
+        if(eintrag.count <= 0) lager.splice(storageIndex, 1);
+
+        UI.log(`${menge}x ${this.items[eintrag.id] ? this.items[eintrag.id].name : eintrag.id} entnommen.`, "text-blue-300");
+        this.updateWeight();
+        this.saveGame();
+        return true;
     },
 
     restInCamp: function() {

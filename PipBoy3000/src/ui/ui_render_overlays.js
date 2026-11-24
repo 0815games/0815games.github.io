@@ -236,14 +236,17 @@ Object.assign(UI, {
             displayName = invItem.props.name;
             if(invItem.props.dmgMult) statsText = `Schaden: ${Math.floor(item.baseDmg * invItem.props.dmgMult)} (Mod)`;
         } else {
-            if(item.type === 'consumable') statsText = `Effekt: ${item.effect} (${item.val})`;
+            if(item.raw) statsText = `Roh essbar: +${item.raw.heal} HP, +${item.raw.rad} RAD`;
+            else if(item.type === 'consumable') statsText = `Effekt: ${item.effect} (${item.val})`;
             else if(item.type === 'weapon') statsText = `Schaden: ${item.baseDmg}`;
             else if(item.type === 'body') statsText = `Rüstung: +${item.bonus ? item.bonus.END : 0} END`;
             else if(item.type === 'junk' || item.type === 'component') statsText = "Material / Schrott";
             else statsText = item.desc || "Item";
         }
 
-        const isUsable = !['junk', 'component', 'misc', 'rare', 'ammo'].includes(item.type);
+        // Rohfleisch ist ein Bauteil, aber essbar - sonst waere das neue
+        // raw-Feld im Inventar unsichtbar.
+        const isUsable = !!item.raw || !['junk', 'component', 'misc', 'rare', 'ammo'].includes(item.type);
 
         box.innerHTML = `
             <h2 class="text-xl font-bold text-green-400 mb-2">${displayName}</h2>
