@@ -24,7 +24,10 @@
 }
 
 * { box-sizing: border-box; }
-body { margin: 0; min-height: 100vh; background: var(--paper); }
+html { overflow-x: hidden; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body { margin: 0; min-height: 100vh; background: var(--paper); overflow-x: hidden; touch-action: manipulation; }
+/* Zoom nur auf der Karte: Die übrige Seite nimmt keine Pinch-Gesten an. */
+.board, .world-canvas, .visit-board { touch-action: none; }
 h1, h2, h3 { margin: 0 0 0.4rem; line-height: 1.2; }
 h1 { font-size: 22px; }
 h2 { font-size: 18px; }

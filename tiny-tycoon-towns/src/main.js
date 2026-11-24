@@ -505,6 +505,12 @@ function dispatch(result, okMsg) {
   renderAll();
 }
 
+// iOS Safari: Pinch-Zoom der Seite unterdrücken, Karte bleibt davon ausgenommen (eigene Pointer-Events).
+for (const type of ['gesturestart', 'gesturechange', 'gestureend']) {
+  document.addEventListener(type, (e) => { if (!e.target.closest?.('.board, .visit-board')) e.preventDefault(); }, { passive: false });
+}
+document.addEventListener('dblclick', (e) => { if (!e.target.closest?.('.board, .visit-board')) e.preventDefault(); }, { passive: false });
+
 function selectTile({ x, y }) {
   const key = `${x},${y}`;
   if (key !== lastSelKey) {
