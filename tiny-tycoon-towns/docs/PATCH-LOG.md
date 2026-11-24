@@ -165,3 +165,8 @@ Ereignis ergänzt.
   - `npm run rules:check`: Regeln OK, Exit 0.
 - Git / PR / Veröffentlichung: Push siehe Nachtrag. Kein PR. Nicht veröffentlicht.
 - Offen: wie in TTT-0003 (Regeln veröffentlichen, Domains prüfen, Gerätetest, Standort, Emulator).
+
+### Ereignis-Nachtrag zu TTT-0004
+
+- Push: `git push origin arena/7efbfaa5-0815games-github-io`, Ausgabe `2efc81ce..82f7e906` (Fast-forward, Exit 0).
+- PR: nicht erstellt.
