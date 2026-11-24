@@ -4,6 +4,16 @@
 
 export const RELEASED_PATCHES = [
   {
+    build: '20261124-sitz16',
+    date: '2026-11-24',
+    items: [
+      {
+        de: 'Die offenen Punkte im Spiel sind aktualisiert: Die Regeln sind veröffentlicht.',
+        en: 'The open items in the game are updated: the rules are published.',
+      },
+    ],
+  },
+  {
     build: '20261124-sitz15',
     date: '2026-11-24',
     items: [
@@ -272,15 +282,15 @@ export const RELEASED_PATCHES = [
 // Noch nicht erledigt oder nicht belegt. Getrennt von dem, was veröffentlicht ist.
 export const OPEN_ITEMS = [
   {
-    de: 'Die Realtime-Database-Regeln sind im Repo, aber noch nicht in Firebase veröffentlicht. Bis dahin bleibt der Speicher gesperrt.',
-    en: 'The Realtime Database rules are in the repo but not yet published in Firebase. Until then storage stays locked.',
+    de: 'Freunde, Einladungen und Besuche sind noch nicht auf einem echten Gerät geprüft.',
+    en: 'Friends, invitations and visits have not yet been checked on a real device.',
+  },
+  {
+    de: 'Alte Städte, die schon vor den eindeutigen Namen den gleichen Namen tragen, bleiben vorerst unverändert.',
+    en: 'Older towns that already share a name keep it for now.',
   },
   {
     de: 'Die Emulator-Tests für die Regeln sind noch nicht eingerichtet.',
     en: 'Emulator tests for the rules are not set up yet.',
-  },
-  {
-    de: 'Auf einem echten Gerät ist die Anmeldung noch nicht geprüft.',
-    en: 'Sign-in has not yet been checked on a real device.',
   },
 ];

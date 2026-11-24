@@ -400,3 +400,9 @@ Ereignis ergänzt.
 - Behebung: Das Overlay blendet nicht mehr aus, nur der Schriftzug. Das Logo bleibt bis zum Flug voll sichtbar.
   Der Flug dauert 1,1 s mit weicherer Kurve.
 - Prüfungen: 65 Tests grün, lint ohne Befund. Im echten Login nicht geprüft (Firebase nicht erreichbar).
+
+### TTT-0021 – Offene Punkte aktualisiert (Welle `20261124-sitz16`)
+
+- Die Liste „Offen“ im Spiel nannte die Regeln noch als nicht veröffentlicht. Sie sind jetzt live.
+- Neu aufgeführt: Freunde, Einladungen und Besuche sind noch nicht auf einem Gerät geprüft. Alte gleiche Stadtnamen bleiben bis zur Entscheidung.
+- Prüfungen: 65 Tests grün, `check` ohne Fehler.
