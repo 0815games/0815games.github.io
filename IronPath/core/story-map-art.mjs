@@ -1,4 +1,4 @@
-import {translateText as tr} from '../language.mjs?v=20261124-aim7';
+import {translateText as tr} from '../language.mjs?v=20261124-aim8';
 // Solo campaign presentation only. These decorations never change map geometry,
 // hit testing, terrain rules or simulation state.
 const STYLES={
@@ -76,7 +76,7 @@ const artFiles={antenna:'radio',receiver:'radio',relay:'radio',station:'radio',t
 const artEntries=new Map();let artVersion=0;
 export function prepareStoryArt(doc){
  if(!doc?.createElement)return {version:0,get:()=>null};
- for(const name of new Set(Object.values(artFiles))){if(artEntries.has(name))continue;const image=doc.createElement('img'),entry={image,ready:false};artEntries.set(name,entry);image.onload=()=>{entry.ready=true;artVersion++;};image.src=`assets/landmark2-${name}-sprite.png`;}
+ for(const name of new Set(Object.values(artFiles))){if(artEntries.has(name))continue;const image=doc.createElement('img'),entry={image,ready:false};artEntries.set(name,entry);image.onload=()=>{entry.ready=true;artVersion++;};image.src=`assets/landmark2-${name}-sprite.png?v=20261121-towerdeco1`;}
  return {version:artVersion,get:kind=>{const item=artEntries.get(artFiles[kind]);return item?.ready?item.image:null;}};
 }
 function building(ctx,x,y,kind,s,art=null){

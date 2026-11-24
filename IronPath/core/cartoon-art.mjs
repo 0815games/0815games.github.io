@@ -1,11 +1,11 @@
-import {translateText as tr,getLanguage} from '../language.mjs?v=20261124-aim7';
+import {translateText as tr,getLanguage} from '../language.mjs?v=20261124-aim8';
 import {towerDisplay} from './progression.mjs?v=20261105-prestige1';
-import {specializationRank} from './tower-specialization.mjs?v=20261124-aim7';
-import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261124-aim7';
-import {ENEMY_INTEL,SOLDIER_MAX_HP} from './combat.mjs?v=20261124-aim7';
+import {specializationRank} from './tower-specialization.mjs?v=20261124-aim8';
+import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261124-aim8';
+import {ENEMY_INTEL,SOLDIER_MAX_HP} from './combat.mjs?v=20261124-aim8';
 import {bossPhase} from './boss-mechanics.mjs?v=20261031-finale1';
 import {shotTrace,shotsToDraw} from './shot-tracers.mjs?v=20261117-shots1';
-import {buildRoadPath} from './road-geometry.mjs?v=20261124-aim7';
+import {buildRoadPath} from './road-geometry.mjs?v=20261124-aim8';
 // Drawing only: the simulation, coordinates and hit areas stay unchanged.
 const ink='#1d3028',paper='#f1e7c4';
 function line(ctx,points,color=ink,width=3){ctx.beginPath();points.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();}
@@ -348,20 +348,53 @@ export function drawRoad(ctx,path,theme='road',texture=null,roadTexture=null){
   });
 }
 // Presentation only: the marked segment retains the simulation's exact endpoints.
-function roadZone(ctx,a,b,{color,edge,label,detail}){
+function roadZone(ctx,a,b,{color,deep,edge,label,detail}){
   const dx=b.x-a.x,dy=b.y-a.y,length=Math.hypot(dx,dy);if(!length)return;
+  const toRGBA=(hex,a)=>{const n=parseInt(hex.slice(1),16);return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`;};
   ctx.save();ctx.translate(a.x,a.y);ctx.rotate(Math.atan2(dy,dx));ctx.lineCap='butt';
-  ctx.globalAlpha=.34;line(ctx,[[0,0],[length,0]],color,45);ctx.globalAlpha=.8;
+  // A band cut into the road: soft shoulders, a sunken (darker) centre line.
+  // Reported: the slow patches read as flat brown stripes - give them depth.
+  // Headless canvas mocks (tests) have no gradient factory - fall back to
+  // the flat band instead of crashing the scene.
+  const grad=typeof ctx.createLinearGradient==='function'?ctx.createLinearGradient(0,-24,0,24):null;
+  if(grad){
+    grad.addColorStop(0,toRGBA(edge,0));grad.addColorStop(.2,toRGBA(color,.4));
+    grad.addColorStop(.5,toRGBA(deep||color,.6));grad.addColorStop(.8,toRGBA(color,.4));grad.addColorStop(1,toRGBA(edge,0));
+    ctx.fillStyle=grad;ctx.fillRect(0,-24,length,48);
+  }else{
+    ctx.globalAlpha=.34;line(ctx,[[0,0],[length,0]],color,45);ctx.globalAlpha=1;
+  }
+  ctx.globalAlpha=.75;
   line(ctx,[[0,-21],[length,-21]],edge,1.5);line(ctx,[[0,21],[length,21]],edge,1.5);
-  for(let x=14;x<length-8;x+=25){if(detail==='ice'){line(ctx,[[x,-13],[x+5,-5],[x+1,2],[x+8,11]],edge,1);}else if(detail==='mud'){oval(ctx,x,-6,4,1.5,edge,null);oval(ctx,x+8,7,6,2,edge,null);}else{line(ctx,[[x,-10],[x+5,-8]],edge,1.5);line(ctx,[[x+9,8],[x+15,10]],edge,1.5);}}
+  ctx.globalAlpha=1;
+  // Surface detail: ice veins, sludge swirls or debris chunks, deterministic
+  // along the band.
+  for(let x=12;x<length-8;x+=19){
+    const w=(x*7919)%13;
+    if(detail==='ice'){
+      ctx.globalAlpha=.7;ctx.strokeStyle=edge;ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(x,-12+(w%5));ctx.lineTo(x+4,-4+(w%4));ctx.lineTo(x+1,2+(w%3));ctx.lineTo(x+7,11-(w%4));ctx.stroke();
+      ctx.globalAlpha=.3;ctx.fillStyle='#ffffff';oval(ctx,x+10,-6+(w%7),5,2,null,null);
+    }else if(detail==='mud'){
+      ctx.globalAlpha=.5;ctx.fillStyle=edge;oval(ctx,x+(w%6),-6+(w%5),4.5,1.6,null,null);
+      oval(ctx,x+7+(w%4),7-(w%5),6,2.2,null,null);
+      ctx.globalAlpha=.7;ctx.beginPath();ctx.arc(x+3+(w%8),1+(w%6),1.6,0,Math.PI*2);ctx.strokeStyle=deep||color;ctx.lineWidth=1.2;ctx.stroke();
+    }else{
+      ctx.globalAlpha=.65;ctx.fillStyle=edge;
+      oval(ctx,x+(w%5),-9+(w%6),3.2,1.6,null,null);oval(ctx,x+8,8-(w%5),3.6,1.8,null,null);
+      ctx.globalAlpha=.5;ctx.strokeStyle=edge;ctx.lineWidth=1.3;
+      ctx.beginPath();ctx.moveTo(x,-10);ctx.lineTo(x+5,-8);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(x+9,8);ctx.lineTo(x+15,10);ctx.stroke();
+    }
+  }
   ctx.globalAlpha=1;ctx.font='bold 10px Arial';ctx.textAlign='center';ctx.lineWidth=4;ctx.strokeStyle='#182b25';ctx.strokeText(label,length/2,-27);ctx.fillStyle='#e2e5d3';ctx.fillText(label,length/2,-27);ctx.restore();
 }
-function thinIce(ctx,path,theme){if(theme!=='arctic'||path.length!==10)return;roadZone(ctx,path[4],path[5],{color:'#6b9aa3',edge:'#d7ece9',label:tr('THIN ICE'),detail:'ice'});}
-function bog(ctx,path,theme){if(theme!=='marsh'||path.length!==10)return;roadZone(ctx,path[6],path[7],{color:'#584d36',edge:'#c0b694',label:tr('DEEP BOG'),detail:'mud'});}
+function thinIce(ctx,path,theme){if(theme!=='arctic'||path.length!==10)return;roadZone(ctx,path[4],path[5],{color:'#6b9aa3',deep:'#2f5f74',edge:'#d7ece9',label:tr('THIN ICE'),detail:'ice'});}
+function bog(ctx,path,theme){if(theme!=='marsh'||path.length!==10)return;roadZone(ctx,path[6],path[7],{color:'#584d36',deep:'#241f12',edge:'#c0b694',label:tr('DEEP BOG'),detail:'mud'});}
 function fieldZone(ctx,path,state,theme){
  if(!state.mapId?.startsWith('g2-')||path.length!==10||!['forest','urban'].includes(theme))return;
  const cleared=theme==='urban'&&state.rubbleCleared;
- roadZone(ctx,path[2],path[3],{color:theme==='forest'?'#475b43':cleared?'#778270':'#645f54',edge:theme==='forest'?'#b0c4a1':'#d0c9b4',label:theme==='forest'?tr('AMBUSH TRAIL'):cleared?tr('RUBBLE CLEARED'):tr('RUBBLE {amount}',{amount:Math.max(0,Math.ceil(200-(state.rubbleDamage||0)))}),detail:'debris'});
+ roadZone(ctx,path[2],path[3],{color:theme==='forest'?'#475b43':cleared?'#778270':'#645f54',deep:theme==='forest'?'#1f2c1d':cleared?'#4a5444':'#3a352c',edge:theme==='forest'?'#b0c4a1':'#d0c9b4',label:theme==='forest'?tr('AMBUSH TRAIL'):cleared?tr('RUBBLE CLEARED'):tr('RUBBLE {amount}',{amount:Math.max(0,Math.ceil(200-(state.rubbleDamage||0)))}),detail:'debris'});
 }
 function brokenIce(ctx,path,state,theme){if(theme!=='arctic'||!state.iceBroken||path.length!==10)return;roadZone(ctx,path[4],path[5],{color:'#335e6d',edge:'#d2eff0',label:tr('BROKEN ICE'),detail:'ice'});}
 // Sprite images are strictly visual and load on demand; vector art remains a
@@ -387,7 +420,7 @@ function sprite(ctx,name,notify){
     // V3 art ships under the same file names as V2: without a version query a
     // returning player's browser serves the old sprite from its HTTP cache and
     // the new emblems never land. Bump this with every art re-issue.
-    image.src=`assets/${name}-sprite.png?v=20261111-defringe1`;
+    image.src=`assets/${name}-sprite.png?v=20261121-towerdeco1`;
   }
   const entry=spriteImages.get(name);return entry.ready?entry.image:null;
 }
@@ -941,12 +974,17 @@ export function drawGroundTracks(ctx,tracks,theme='road'){
 // Marked terrain patches: a tinted ellipse on the road with its field label.
 // The state overlays (broken ice, rubble remaining) are drawn per frame in
 // drawZoneStates, so the cached layer below stays valid for the whole run.
+// Each zone is a small painted diorama, not a tinted disc. Every kind gets
+// the same five-layer recipe - ground bleed, depth gradient, shore step,
+// interior detail, rim life - in its own palette, so a player reads
+// "freezing water" / "deep mud" / "rubble field" at a glance (reported:
+// "teilweise einfach nur braun und hingemalt ... es muss Tiefe haben").
 const ZONE_STYLES=Object.freeze({
- ice:{fill:'rgba(107,154,163,.5)',edge:'#d7ece9',label:'THIN ICE'},
- bog:{fill:'rgba(88,77,54,.55)',edge:'#c0b694',label:'DEEP BOG'},
- rubble:{fill:'rgba(100,95,84,.5)',edge:'#d0c9b4',label:'RUBBLE'},
- ambush:{fill:'rgba(71,91,67,.55)',edge:'#b0c4a1',label:'AMBUSH TRAIL'},
- dust:{fill:'rgba(168,137,94,.4)',edge:'#e0c9a4',label:'DUST'}
+ ice:{fill:'rgba(107,154,163,.5)',deep:'#39697d',halo:'rgba(150,201,212,.15)',shade:'#1d4356',edge:'#d7ece9',detail:'#e8f6f7',label:'THIN ICE'},
+ bog:{fill:'rgba(88,77,54,.55)',deep:'#33301c',halo:'rgba(124,112,76,.17)',shade:'#221e12',edge:'#c0b694',detail:'#a89c74',label:'DEEP BOG'},
+ rubble:{fill:'rgba(100,95,84,.5)',deep:'#4b4740',halo:'rgba(142,136,122,.15)',shade:'#322f29',edge:'#d0c9b4',detail:'#8a8474',label:'RUBBLE'},
+ ambush:{fill:'rgba(71,91,67,.55)',deep:'#26331f',halo:'rgba(112,142,96,.16)',shade:'#172312',edge:'#b0c4a1',detail:'#6f8a4d',label:'AMBUSH TRAIL'},
+ dust:{fill:'rgba(168,137,94,.4)',deep:'#8a6f47',halo:'rgba(216,188,142,.18)',shade:'#69512f',edge:'#e0c9a4',detail:'#c9a877',label:'DUST'}
 });
 // Reported idea: "Fackeln als Straßen Rand in guten Abständen" - warm light
 // posts at regular intervals make the enemy route readable at a glance and
@@ -986,21 +1024,120 @@ function drawTorches(ctx,torches,theme,time,reducedMotion,notify){
 function zoneBlob(ctx,zone,scale=1){
   const wob=(zone.id||0)*2.399+1.7;
   ctx.beginPath();
-  for(let k=0;k<=12;k++){
-    const a=k/12*Math.PI*2,rr=zone.r*scale*(1+.13*Math.sin(a*3+wob)+.08*Math.sin(a*5-wob*2));
+  for(let k=0;k<=18;k++){
+    const a=k/18*Math.PI*2,rr=zone.r*scale*(1+.13*Math.sin(a*3+wob)+.08*Math.sin(a*5-wob*2));
     const x=zone.x+Math.cos(a)*rr,y=zone.y+Math.sin(a)*rr*.74;
     k?ctx.lineTo(x,y):ctx.moveTo(x,y);
   }
   ctx.closePath();
 }
+// Interior painters per zone kind. Everything is deterministic per zone id -
+// the terrain cache redraws the patch identically forever.
+function zoneInterior(ctx,zone,style,rng){
+ const r=zone.r,kind=zone.kind;
+ if(kind==='ice'){
+  // Freeze cracks: radial white veins with small branches.
+  ctx.strokeStyle=style.detail;ctx.lineCap='round';
+  for(let i=0;i<5+Math.floor(rng()*3);i++){
+   const a=rng()*Math.PI*2,len=r*(.34+rng()*.4),x=zone.x+Math.cos(a)*r*.15,y=zone.y+Math.sin(a)*r*.1;
+   const ex=x+Math.cos(a)*len,ey=y+Math.sin(a)*len*.74;
+   ctx.globalAlpha=.55+rng()*.3;ctx.lineWidth=1+rng()*.8;
+   ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo((x+ex)/2+(rng()-.5)*10,(y+ey)/2+(rng()-.5)*7);ctx.lineTo(ex,ey);ctx.stroke();
+   if(rng()<.7){const t=.5+rng()*.3,bx=x+(ex-x)*t,by=y+(ey-y)*t,ba=a+(rng()<.5?1:-1)*(0.5+rng()*.6);
+    ctx.beginPath();ctx.moveTo(bx,by);ctx.lineTo(bx+Math.cos(ba)*len*.34,by+Math.sin(ba)*len*.28);ctx.stroke();}
+  }
+  // Sheen: two soft highlights read as a wet, glassy surface.
+  ctx.globalAlpha=.16;ctx.fillStyle='#ffffff';
+  oval(ctx,zone.x-r*.3,zone.y-r*.28,r*.34,r*.13,null,null);
+  ctx.globalAlpha=.1;oval(ctx,zone.x+r*.24,zone.y+r*.2,r*.26,r*.1,null,null);
+  ctx.globalAlpha=1;
+ }else if(kind==='bog'){
+  // Depth swirls: darker spirals sink in the middle, lighter sludge floats.
+  for(let i=0;i<6+Math.floor(rng()*3);i++){
+   const a=rng()*Math.PI*2,d=rng()*r*.62,x=zone.x+Math.cos(a)*d,y=zone.y+Math.sin(a)*d*.7;
+   ctx.globalAlpha=.3+rng()*.25;
+   ctx.fillStyle=rng()<.42?style.detail:style.shade;
+   oval(ctx,x,y,r*(.12+rng()*.16),r*(.05+rng()*.06),null,null);
+  }
+  // Sludge bubbles: dark ring, pale cap.
+  for(let i=0;i<4+Math.floor(rng()*3);i++){
+   const a=rng()*Math.PI*2,d=rng()*.6*r*(.3+rng()*.55),x=zone.x+Math.cos(a)*d,y=zone.y+Math.sin(a)*d*.7;
+   const br=2+rng()*3;ctx.globalAlpha=.8;
+   ctx.beginPath();ctx.arc(x,y,br,0,Math.PI*2);ctx.strokeStyle=style.shade;ctx.lineWidth=1.2;ctx.stroke();
+   ctx.beginPath();ctx.arc(x-br*.2,y-br*.25,br*.4,0,Math.PI*2);ctx.fillStyle=style.edge;ctx.fill();
+  }
+  ctx.globalAlpha=1;
+ }else if(kind==='rubble'){
+  // Broken masonry: angular chunks with a lit top face and a dark joint.
+  for(let i=0;i<9+Math.floor(rng()*5);i++){
+   const a=rng()*Math.PI*2,d=rng()*r*.68,x=zone.x+Math.cos(a)*d,y=zone.y+Math.sin(a)*d*.7;
+   const sr=4+rng()*7,pts=[];
+   for(let k=0;k<6;k++){const aa=k/6*Math.PI*2+rng()*.4,rr=sr*(.7+rng()*.5);pts.push([x+Math.cos(aa)*rr,y+Math.sin(aa)*rr*.72]);}
+   ctx.beginPath();pts.forEach(([px,py],i2)=>i2?ctx.lineTo(px,py):ctx.moveTo(px,py));ctx.closePath();
+   ctx.globalAlpha=.75;ctx.fillStyle=style.detail;ctx.fill();
+   ctx.strokeStyle=style.shade;ctx.lineWidth=1.3;ctx.stroke();
+   ctx.globalAlpha=.5;ctx.beginPath();ctx.moveTo(pts[4][0],pts[4][1]);ctx.lineTo(pts[5][0],pts[5][1]);ctx.lineTo(pts[0][0],pts[0][1]);ctx.strokeStyle='#d8d2c0';ctx.lineWidth=1.4;ctx.stroke();
+  }
+  ctx.globalAlpha=1;
+ }else if(kind==='ambush'){
+  // Leaf litter and moss clumps: the trail hides under canopy debris.
+  for(let i=0;i<10+Math.floor(rng()*6);i++){
+   const a=rng()*Math.PI*2,d=rng()*r*.72,x=zone.x+Math.cos(a)*d,y=zone.y+Math.sin(a)*d*.7;
+   ctx.save();ctx.translate(x,y);ctx.rotate(rng()*Math.PI);
+   ctx.globalAlpha=.4+rng()*.35;ctx.fillStyle=rng()<.6?style.detail:'#8fa05a';
+   oval(ctx,0,0,3.4+rng()*3.4,1.6+rng()*1.6,null,null);
+   ctx.restore();
+  }
+  for(let i=0;i<3+Math.floor(rng()*3);i++){
+   const a=rng()*Math.PI*2,d=rng()*r*.6,x=zone.x+Math.cos(a)*d,y=zone.y+Math.sin(a)*d*.7;
+   ctx.globalAlpha=.5;ctx.strokeStyle='#4c3b28';ctx.lineWidth=1.6;
+   ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+(rng()-.5)*16,y+(rng()-.5)*10);ctx.stroke();
+  }
+  ctx.globalAlpha=1;
+ }else{ // dust
+  // Dry lakebed: forked cracks and wind-drawn streaks.
+  ctx.strokeStyle=style.shade;ctx.lineCap='round';
+  for(let i=0;i<5+Math.floor(rng()*3);i++){
+   const a=rng()*Math.PI*2,len=r*(.3+rng()*.4),x=zone.x+Math.cos(a)*r*.12,y=zone.y+Math.sin(a)*r*.08;
+   ctx.globalAlpha=.5+rng()*.25;ctx.lineWidth=1+rng()*.9;
+   ctx.beginPath();ctx.moveTo(x,y);
+   ctx.quadraticCurveTo(x+Math.cos(a)*len*.5+(rng()-.5)*12,y+Math.sin(a)*len*.4,x+Math.cos(a)*len,y+Math.sin(a)*len*.7);
+   ctx.stroke();
+  }
+  for(let i=0;i<7+Math.floor(rng()*4);i++){
+   const a=rng()*Math.PI*2,d=rng()*.75*r*(.3+rng()*.6),x=zone.x+Math.cos(a)*d,y=zone.y+Math.sin(a)*d*.7;
+   ctx.globalAlpha=.4;ctx.fillStyle=style.detail;
+   ctx.beginPath();ctx.arc(x,y,1+rng()*1.6,0,Math.PI*2);ctx.fill();
+  }
+  ctx.globalAlpha=1;
+ }
+}
 function drawZone(ctx,zone){
  const style=ZONE_STYLES[zone.kind]||ZONE_STYLES.rubble;
  // Reported: "Gebiete wie Sumpf sehen auch aus als passen sie nicht mehr
- // rein, der nur Kreis" - the zone becomes part of the ground: an organic
- // blotch, a whisper of a border, a soft label instead of a sign plate.
- ctx.save();zoneBlob(ctx,zone,.96);
- ctx.fillStyle=style.fill;ctx.fill();
- ctx.setLineDash([7,9]);ctx.globalAlpha=.6;ctx.strokeStyle=style.edge;ctx.lineWidth=1.5;ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=1;
+ // rein, der nur Kreis" - and later "einfach nur braun und hingemalt, es
+ // muss Tiefe haben". Recipe: bleed -> depth gradient -> shore step ->
+ // clipped interior diorama -> rim clumps -> the old whisper of a border.
+ const rng=detailRng((((zone.id||0)+1)*2654435761)>>>0 ^ zone.kind.length*97);
+ ctx.save();
+ zoneBlob(ctx,zone,1.16);ctx.fillStyle=style.halo;ctx.fill();
+ const grad=radial(ctx,zone.x-zone.r*.24,zone.y-zone.r*.2,zone.r*.08,zone.x,zone.y,zone.r*.98);
+ if(grad){grad.addColorStop(0,style.deep);grad.addColorStop(.62,style.fill);grad.addColorStop(1,style.fill);}
+ zoneBlob(ctx,zone,.96);ctx.fillStyle=grad||style.fill;ctx.fill();
+ // Shore step: an inner rim shadow makes the patch sink below the field.
+ zoneBlob(ctx,zone,.88);ctx.globalAlpha=.45;ctx.strokeStyle=style.shade;ctx.lineWidth=6;ctx.stroke();ctx.globalAlpha=1;
+ ctx.save();zoneBlob(ctx,zone,.93);ctx.clip();zoneInterior(ctx,zone,style,rng);ctx.restore();
+ // Rim life: small clumps sitting on the shoreline.
+ for(let i=0;i<9+Math.floor(rng()*5);i++){
+  const a=rng()*Math.PI*2,rr=zone.r*(.9+rng()*.16);
+  const x=zone.x+Math.cos(a)*rr,y=zone.y+Math.sin(a)*rr*.74;
+  ctx.globalAlpha=.5+rng()*.4;
+  if(zone.kind==='ice'){ctx.fillStyle='#eef8fa';oval(ctx,x,y,3+rng()*3.4,2+rng()*2,null,null);}
+  else if(zone.kind==='bog'){ctx.strokeStyle=style.detail;ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+(rng()-.5)*4,y-5-rng()*7);ctx.stroke();}
+  else{ctx.fillStyle=style.edge;oval(ctx,x,y,2+rng()*3,1.4+rng()*2,null,null);}
+ }
+ ctx.globalAlpha=1;
+ zoneBlob(ctx,zone,.96);ctx.setLineDash([7,9]);ctx.globalAlpha=.55;ctx.strokeStyle=style.edge;ctx.lineWidth=1.5;ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=1;
  ctx.font='bold 10px Georgia';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='rgba(241,231,196,.75)';
  ctx.strokeText(tr(style.label),zone.x,zone.y-zone.r*.72-8);
  ctx.fillStyle='rgba(29,48,40,.85)';ctx.fillText(tr(style.label),zone.x,zone.y-zone.r*.72-8);
@@ -1009,8 +1146,22 @@ function drawZone(ctx,zone){
 function drawZoneStates(ctx,zones,state){
  for(const zone of zones||[]){
   if(zone.kind==='ice'&&state?.zoneBroken?.[zone.id]){
-   ctx.save();zoneBlob(ctx,zone);
-   ctx.fillStyle='rgba(51,94,109,.55)';ctx.fill();ctx.strokeStyle='#d2eff0';ctx.lineWidth=2;ctx.stroke();
+   // The shelf has gone: dark open water with drifting shards, painted over
+   // the cached zone so the state flip reads instantly.
+   ctx.save();
+   const grad=radial(ctx,zone.x-zone.r*.2,zone.y-zone.r*.15,zone.r*.1,zone.x,zone.y,zone.r*.95);
+   if(grad){grad.addColorStop(0,'#1d4356');grad.addColorStop(1,'rgba(51,94,109,.75)');}
+   zoneBlob(ctx,zone,.94);ctx.fillStyle=grad||'rgba(51,94,109,.75)';ctx.fill();
+   ctx.strokeStyle='#d2eff0';ctx.lineWidth=2;ctx.stroke();
+   const rng=detailRng((((zone.id||0)+1)*40503)>>>0);
+   for(let i=0;i<9+Math.floor(rng()*5);i++){
+    const a=rng()*Math.PI*2,d=(.34+rng()*.56)*zone.r;
+    const x=zone.x+Math.cos(a)*d,y=zone.y+Math.sin(a)*d*.72,sz=4+rng()*7,rot=rng()*Math.PI;
+    ctx.save();ctx.translate(x,y);ctx.rotate(rot);
+    ctx.beginPath();ctx.moveTo(0,-sz*.6);ctx.lineTo(sz*.7,sz*.5);ctx.lineTo(-sz*.7,sz*.45);ctx.closePath();
+    ctx.fillStyle='rgba(223,243,246,.9)';ctx.fill();ctx.strokeStyle='#9fd0da';ctx.lineWidth=1.2;ctx.stroke();
+    ctx.restore();
+   }
    ctx.fillStyle='#d2eff0';ctx.font='bold 10px Georgia';ctx.textAlign='center';ctx.fillText(tr('BROKEN ICE'),zone.x,zone.y+4);ctx.restore();
   }else if(zone.kind==='rubble'&&state&&!state.zoneCleared?.[zone.id]&&(state.zoneDamage?.[zone.id]||0)>0){
    ctx.save();ctx.fillStyle='#d0c9b4';ctx.font='bold 10px Georgia';ctx.textAlign='center';
@@ -1025,7 +1176,11 @@ function drawZoneStates(ctx,zones,state){
 // same look as towers and field - rendered artwork, not flat vector boxes. The
 // vector branches below stay as the asset-loading fallback, exactly like the
 // tower pads keep theirs.
-const DECO_ART={cabin:56,barn:64,stand:44,stilt:46,shed:58,ruin:62,wall:72,factory:68,gate:34,mast:56,forester:64,cross:36};
+const DECO_ART={cabin:56,barn:64,stand:44,stilt:46,shed:58,ruin:62,wall:72,factory:68,gate:34,mast:56,forester:64,cross:36,
+  // Clutter: the static "totes Leben" set - barrels, carts, crates, rocks,
+  // stumps, log piles, fences, signposts. Small widths so the field reads
+  // full without anything competing with the buildings.
+  barrels:40,cart:46,crates:40,rocks:42,stump:34,logpile:44,fence:44,signpost:30};
 // V2 field art: the set dressing is realistically painted now, matching
 // bunker, emplacements, torches and actors. The kind keeps its map identity
 // (the generator is untouched); only the artwork reference moves to the
@@ -1065,11 +1220,9 @@ function drawDeco(ctx,deco,theme,notify,scale=1){
       // as "Gebaeude sehr schlecht erkennbar".
       const w=(DECO_ART[d.kind]||58)*scale,h=w*artwork.height/artwork.width;
       ctx.save();ctx.translate(d.x,d.y);
-      // Grounding: a dark earth clearing under the building plus a directional
-      // contact shadow (light from the top-left) separates it from the busy
-      // tile mosaic behind it - the building reads as a solid object.
-      oval(ctx,0,10,w*.56,Math.max(5,h*.14),'rgba(15,21,16,.24)',null);
-      oval(ctx,w*.1,11,w*.44,Math.max(4,h*.1),'rgba(10,15,11,.3)',null);
+      // Grounding comes baked into the V3 sprites: they sit on their own
+      // earthen plinth with a soft contact shadow, exactly like the towers.
+      // The old dark clearing ovals doubled that shadow into a smudge.
       ctx.drawImage(artwork,-w/2,13-h,w,h);
       ctx.restore();continue;
     }
@@ -1095,6 +1248,16 @@ function drawDeco(ctx,deco,theme,notify,scale=1){
       shape(ctx,[[6,-10],[6,-24],[12,-24],[12,-10]],'#7b7f7a',ink,2.5);
       ctx.fillStyle='#2c3a30';ctx.fillRect(-12,-4,7,10);ctx.fillRect(6,-2,6,8);
       ctx.fillStyle='#c8d4c9';ctx.fillRect(-2,-6,5,5);
+    }else if(d.kind==='barrels'||d.kind==='crates'||d.kind==='logpile'){
+      // Clutter stand-ins for the asset-loading window; the painted sprite
+      // takes over as soon as it arrives.
+      shape(ctx,[[-11,12],[-11,-3],[11,-3],[11,12]],'#7a5c3b',ink,2.5);
+      line(ctx,[[-11,4],[11,4]],[ink],1.5);
+    }else if(d.kind==='rocks'||d.kind==='stump'){
+      oval(ctx,0,7,11,7,d.kind==='stump'?'#6e5a41':'#7d8578',ink,2.5);
+    }else if(d.kind==='cart'||d.kind==='fence'||d.kind==='signpost'){
+      line(ctx,[[-12,12],[-8,-2]],[ink],3);line(ctx,[[12,12],[8,-2]],[ink],3);
+      line(ctx,[[-10,-2],[10,-2]],[ink],2.5);
     }else{
       // Cabin, barn, shed, stilt house, gatehouse: one cartoon house body.
       const roof=d.kind==='gate'?roofs:d.kind==='barn'?'#6e3f2e':roofs;

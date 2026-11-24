@@ -1,6 +1,6 @@
 # Iron Path – Patch-Log: Archiv
 
-Ältere Einträge IPL-0001 bis IPL-0108. Die neuesten 20 stehen in
+Ältere Einträge IPL-0001 bis IPL-0110. Die neuesten 20 stehen in
 [PATCH-LOG.md](PATCH-LOG.md); die Regeln für beide Dateien dort und in
 [`../../AGENTS.md`](../../AGENTS.md). Beim Verschieben wandert ein Eintrag immer
 vollständig einschließlich seiner Ereignis-Nachträge.
@@ -4581,3 +4581,15 @@ sie geprüft wurde.
 - **Prüfungen:** `node --test IronPath/tests/menu-redesign.test.mjs IronPath/tests/endless-launcher.test.mjs`: 18/18. `patch.mjs check --fast`: 0 Fehler (2 Hinweise vor der Welle). Browser-Geometrie (Pfeil-/DEPLOY-Lage im Bild) ist durch die unveränderten Anker in `interface-smoke.cjs` weiter gedeckt und läuft in der CI; Sichtprüfung über die lokale Live-Vorschau.
 - **Git / PR / Release:** Wird mit Welle und PR-Nummer fortgeschrieben.
 - **Offen / nächster Schritt:** Cache-Welle `20261123-endless3` inkl. Feldnotizen, PR, CI, Merge, Pages-Nachweis. Block E Scheibe 2 bleibt eigenes Paket.
+
+## IPL-0110 – Endless-Bühne: DEPLOY wirklich schriftbreit, Ruhe-Glow gedämpft, Bühne höhenresponsiv (Welle `20261123-endless4`, PR `#372`)
+- **Zeit / Quelle:** 2026-11-23 UTC; Betreiber-Rückmeldung zu `IPL-0109`: „Deploy button immer noch komplett breit wie das Bild fenster. Außerdem ist der Glow ohne Mous over zu viel.“ und „Gerne darf das Bild auch Höher sein und sich an der Höhe der jeweilgien bildschirme orientieren“.
+- **Block / Ziel:** Feinschliff am Endless-Startdialog, kein Block-Thema.
+- **Branch / Basis:** `arena/39231886-0815games-github-io` ab `2ba35cd193906638416c69008b78963acaf627af` (`main`, Merge PR `#371`). Feature-Commit `c3323458678fa5cbf86e8d2190a30d99794bc31d` gepusht, PR `#372` eröffnet; Cache-Welle `20261123-endless4` mit Feldnotizen (`patch-notes.mjs`, `RELEASED_PATCHES[0]` = `endless4`, PR `#372`).
+- **Ursachenanalyse:** Die globale Regel `button,select{width:100%}` in `IronPath/style.css` griff weiter, weil `#endlessDeploy` keine eigene Breite setzte – das Entfernen der Mindestbreite in `IPL-0109` allein konnte daran nichts ändern. Erst ein ausdrückliches `width:fit-content` in der feldspezifischen Regel schlägt die Basisregel.
+- **Änderungen / Dateien:**
+  - `IronPath/menu-redesign.css`: `#endlessDeploy` mit `width:fit-content`, `max-width:calc(100% - 32px)` und `text-align:center` – jetzt exakt schriftbreit plus Innenabstand. Ruhe-Glow gedämpft (äußerer Schein `0 0 10px/0.35` + `0 0 24px/0.14`, Buchstaben-Glow halbiert); der starke Schein (`0 0 26px`/`58px`) kommt erst bei Hover. Bühne `.endless-stage` höhenresponsiv: Desktop `clamp(320px, 48vh, 520px)`, mobil `clamp(230px, 36vh, 340px)` (jeweils auch als `dvh`-Variante) statt fixer 352/248 px.
+  - Tests: `IronPath/tests/menu-redesign.test.mjs` (Anker: `fit-content`, ruhiger Ruhe-Glow, Hover-Glow, höhenresponsive Bühne), `IronPath/browser-tests/interface-smoke.cjs` (neue Geometrie-Wache: DEPLOY höchstens 70 % der Bühnenbreite).
+- **Prüfungen:** `node --test IronPath/tests/menu-redesign.test.mjs IronPath/tests/endless-launcher.test.mjs`: 18/18. `patch.mjs check --fast`: 0 Fehler (2 Hinweise vor der Welle). Browser-Geometrie läuft in der CI; Sichtprüfung über die lokale Live-Vorschau.
+- **Git / PR / Release:** Wird mit Welle und PR-Nummer fortgeschrieben.
+- **Offen / nächster Schritt:** Cache-Welle `20261123-endless4` inkl. Feldnotizen, PR, CI, Merge, Pages-Nachweis. Block E Scheibe 2 bleibt eigenes Paket.

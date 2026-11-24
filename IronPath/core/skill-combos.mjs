@@ -1,4 +1,4 @@
-import {SKILL_PATH_MAP} from './skills.mjs?v=20261124-aim7';
+import {SKILL_PATH_MAP} from './skills.mjs?v=20261124-aim8';
 
 export const COMBOS=[
   {id:'assault',name:'Assault Barrage',paths:['assault'],description:'Assault abilities launch a ground salvo against hit enemies, pinning them and striking the strongest target.'},

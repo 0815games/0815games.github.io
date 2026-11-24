@@ -9,3 +9,9 @@ build/
 *.bak
 *.before-*
 IronPath/tests/balance-report-latest.json
+
+# Arbeitsschicht fuer die Turm-Design-Sprites (IPL-0130):
+# Generierungen, Cutouts und Review-Boards bleiben lokal, bis die
+# freigestellten Endprodukte unter den Altdatei-Namen in IronPath/assets
+# abgelegt sind.
+IronPath/preview-sprites/
