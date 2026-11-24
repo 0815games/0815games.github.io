@@ -196,6 +196,11 @@ Nachträglich gefunden und in [BEFUNDE.md](BEFUNDE.md) als Punkt 9 und 10
 geführt: das Loot-Würfelsystem hatte keinen Aufrufer, und der Katalogschaden
 kam im Kampf nie an (jede Waffe machte 2 Schaden).
 
+Eine Balancing-Messung über alle Waffen, Rüstungen, Perks, SPECIAL-Werte und
+Verbrauchsgüter steht in [BALANCING.md](BALANCING.md) (erzeugt von
+`tools/balance.mjs`), die daraus folgenden Lücken in
+[BALANCE_BEFUNDE.md](BALANCE_BEFUNDE.md).
+
 ---
 
 ## 5. Was noch offen ist

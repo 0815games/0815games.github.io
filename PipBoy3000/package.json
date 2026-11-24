@@ -11,6 +11,7 @@
     "build": "node build.mjs",
     "build:check": "node build.mjs --check",
     "test": "node --test --test-force-exit tests/*.test.mjs",
+    "test:balance": "node --test --test-force-exit tests/balance.test.mjs",
     "verify": "npm run build:check && npm test"
   },
   "devDependencies": {
