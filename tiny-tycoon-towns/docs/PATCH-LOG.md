@@ -170,3 +170,12 @@ Ereignis ergänzt.
 
 - Push: `git push origin arena/7efbfaa5-0815games-github-io`, Ausgabe `2efc81ce..82f7e906` (Fast-forward, Exit 0).
 - PR: nicht erstellt.
+
+### Ereignis-Nachtrag: PR und Merge (TTT-0003 bis TTT-0004)
+
+- PR: #392 von `arena/7efbfaa5-0815games-github-io` nach `main`, erstellt.
+- Checks vor dem Merge: `patch-check` (GitHub Actions) pass, Vercel-Preview pass, Mergestatus CLEAN.
+- Merge: `gh pr merge 392 --merge`, Merge-Commit `e631efac`, Zeit 2026-11-24 07:31:38 UTC.
+- Pages-Build für `e631efac`: Status `built`. Ein Abruf von `https://0815games.github.io/tiny-tycoon-towns/`
+  war aus der Sandbox nicht möglich (keine Verbindung zu github.io), also nicht im Browser geprüft.
+- Nicht geprüft: Oberfläche im Browser (kein Browser in der Sandbox). Regeln nicht veröffentlicht.
