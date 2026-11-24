@@ -141,16 +141,30 @@ Interaktion: Die gesamte Zeile eines Artikels ist nun klickbar (Touch-Optimiert)
 
 Munition:
 
-Munition wird jetzt in 10er-Paketen verkauft (1 Klick = 10 Schuss = 10 KK).
+Munition wird in 10er-Paketen verkauft (1 Klick = 10 Schuss).
 
-Munition hat eine eigene, blau hervorgehobene Zeile ganz oben.
+Es gibt sechs Sorten — jede Waffe braucht ihre eigene:
 
-Wenn der Händler keine Munition mehr hat, verschwindet die Zeile automatisch.
+  Schrott (.38)   Rohrwaffen, billig und überall zu haben
+  10mm            Pistole, Maschinenpistole
+  .308            Revolver, Jagdgewehr, Sniper, Sturmgewehr
+  Schrot          Doppelflinte, Kampfflinte
+  Mikro-Zellen    Minigun (verbraucht fünf pro Schuss)
+  Energiezellen   Laser und Plasma, die teuerste Sorte
+
+Wie viel eine Waffe pro Schuss zieht, hängt an der Waffe: eine Pistole eine
+Patrone, die Minigun fünf.
+Jede Sorte hat eine eigene blaue Zeile im Laden und verschwindet, wenn sie
+ausverkauft ist. Munition lässt sich an der Werkbank herstellen.
+
+Ist die Munition leer, klickt die Waffe nur ("WAFFE LEER") und du wechselst
+automatisch auf die beste Nahkampfwaffe, die du dabei hast.
 
 Fixes: Ein Fehler wurde behoben, durch den Klicks im Shop-Menü von visuellen Effekten (Scanlines) blockiert wurden. Die Buttons liegen nun technisch auf der obersten Ebene (z-index: 100).
 
 3. 📻 Audio System
-Entfernt: Das Radio-Feature wurde aus Performance- und Stabilitätsgründen vorerst komplett aus dem game_core und ui_core entfernt.
+Entfernt: Das Radio-Feature wurde aus Performance- und Stabilitätsgründen
+komplett entfernt — inklusive des nie erreichbaren Templates.
 
 4. 💾 Technik & Dateisystem
 Timestamps: Alle modifizierten Skript-Dateien enthalten nun am Anfang einen Zeitstempel zur besseren Versionskontrolle.

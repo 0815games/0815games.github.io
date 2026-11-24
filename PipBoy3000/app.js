@@ -356,27 +356,35 @@
     // ==============================
     // === FERNKAMPF (Guns/Ammo) ===
     // ==============================
-    ammo: { name: "Munition", type: "ammo", cost: 2, desc: "Patronen.", weight: 0.05 },
+    // Munition in sechs Arten. `ammo` bleibt die Schrott-Sorte fuer die
+    // Pipe-Waffen: bestehende Spielstaende, Haendler-Lager und das Rezept
+    // craft_ammo arbeiten weiter damit (docs/BEFUNDE.md, 4).
+    ammo: { name: "Schrott-Munition (.38)", type: "ammo", cost: 1, desc: "Selbstgegossen. Passt in Rohrwaffen.", weight: 0.05 },
+    ammo_10mm: { name: "10mm-Munition", type: "ammo", cost: 2, desc: "Standard-Kaliber.", weight: 0.05 },
+    ammo_308: { name: ".308-Munition", type: "ammo", cost: 3, desc: "Gewehrpatronen.", weight: 0.08 },
+    ammo_shell: { name: "Schrotpatronen", type: "ammo", cost: 4, desc: "Für Flinten.", weight: 0.1 },
+    ammo_micro: { name: "Mikro-Zellen", type: "ammo", cost: 2, desc: "Minigun-Futter.", weight: 0.04 },
+    ammo_cell: { name: "Energiezellen", type: "ammo", cost: 5, desc: "Laser und Plasma.", weight: 0.1 },
     // Pipe Weapons (Schrott)
-    pipe_pistol: { name: "Rohrpistole", type: "weapon", slot: "weapon", baseDmg: 5, cost: 15, desc: "Selbstgebaut.", usesAmmo: true },
-    pipe_rifle: { name: "Rohrgewehr", type: "weapon", slot: "weapon", baseDmg: 7, cost: 30, desc: "Längerer Lauf.", usesAmmo: true },
-    pipe_revolver: { name: "Rohrrevolver", type: "weapon", slot: "weapon", baseDmg: 9, cost: 45, desc: "Kaliber .45.", usesAmmo: true },
-    pipe_sniper: { name: "Rohr-Sniper", type: "weapon", slot: "weapon", baseDmg: 12, cost: 60, desc: "Mit Zielfernrohr.", usesAmmo: true },
+    pipe_pistol: { name: "Rohrpistole", type: "weapon", slot: "weapon", baseDmg: 5, cost: 15, desc: "Selbstgebaut.", usesAmmo: true, ammoType: "ammo", ammoCost: 1 },
+    pipe_rifle: { name: "Rohrgewehr", type: "weapon", slot: "weapon", baseDmg: 7, cost: 30, desc: "Längerer Lauf.", usesAmmo: true, ammoType: "ammo", ammoCost: 1 },
+    pipe_revolver: { name: "Rohrrevolver", type: "weapon", slot: "weapon", baseDmg: 9, cost: 45, desc: "Kaliber .45.", usesAmmo: true, ammoType: "ammo", ammoCost: 1 },
+    pipe_sniper: { name: "Rohr-Sniper", type: "weapon", slot: "weapon", baseDmg: 12, cost: 60, desc: "Mit Zielfernrohr.", usesAmmo: true, ammoType: "ammo", ammoCost: 2 },
     // Conventional
-    pistol_10mm: { name: "10mm Pistole", type: "weapon", slot: "weapon", baseDmg: 12, cost: 120, desc: "Verlässlich.", usesAmmo: true },
-    revolver_44: { name: ".44 Revolver", type: "weapon", slot: "weapon", baseDmg: 25, cost: 250, desc: "Dirty Harry Style.", usesAmmo: true },
-    smg: { name: "Maschinenpistole", type: "weapon", slot: "weapon", baseDmg: 10, cost: 300, desc: "Schnellfeuer.", usesAmmo: true },
-    hunting_rifle: { name: "Jagdgewehr", type: "weapon", slot: "weapon", baseDmg: 20, cost: 200, desc: "Präzise.", usesAmmo: true },
-    sniper_rifle: { name: "Scharfschützengewehr", type: "weapon", slot: "weapon", baseDmg: 35, cost: 700, desc: "Tödlich auf Distanz.", usesAmmo: true },
-    shotgun: { name: "Doppelflinte", type: "weapon", slot: "weapon", baseDmg: 30, cost: 350, desc: "Zwei Läufe.", usesAmmo: true },
-    combat_shotgun: { name: "Kampfflinte", type: "weapon", slot: "weapon", baseDmg: 38, cost: 600, desc: "Magazin-geladen.", usesAmmo: true },
-    assault_rifle: { name: "Sturmgewehr", type: "weapon", slot: "weapon", baseDmg: 28, cost: 550, desc: "Militärstandard.", usesAmmo: true },
-    minigun: { name: "Minigun", type: "weapon", slot: "weapon", baseDmg: 15, cost: 1500, desc: "Extremes Schnellfeuer (Mehrfach-Treffer).", usesAmmo: true },
+    pistol_10mm: { name: "10mm Pistole", type: "weapon", slot: "weapon", baseDmg: 12, cost: 120, desc: "Verlässlich.", usesAmmo: true, ammoType: "ammo_10mm", ammoCost: 1 },
+    revolver_44: { name: ".44 Revolver", type: "weapon", slot: "weapon", baseDmg: 25, cost: 250, desc: "Dirty Harry Style.", usesAmmo: true, ammoType: "ammo_308", ammoCost: 1 },
+    smg: { name: "Maschinenpistole", type: "weapon", slot: "weapon", baseDmg: 10, cost: 300, desc: "Schnellfeuer.", usesAmmo: true, ammoType: "ammo_10mm", ammoCost: 3 },
+    hunting_rifle: { name: "Jagdgewehr", type: "weapon", slot: "weapon", baseDmg: 20, cost: 200, desc: "Präzise.", usesAmmo: true, ammoType: "ammo_308", ammoCost: 1 },
+    sniper_rifle: { name: "Scharfschützengewehr", type: "weapon", slot: "weapon", baseDmg: 35, cost: 700, desc: "Tödlich auf Distanz.", usesAmmo: true, ammoType: "ammo_308", ammoCost: 1 },
+    shotgun: { name: "Doppelflinte", type: "weapon", slot: "weapon", baseDmg: 30, cost: 350, desc: "Zwei Läufe.", usesAmmo: true, ammoType: "ammo_shell", ammoCost: 2 },
+    combat_shotgun: { name: "Kampfflinte", type: "weapon", slot: "weapon", baseDmg: 38, cost: 600, desc: "Magazin-geladen.", usesAmmo: true, ammoType: "ammo_shell", ammoCost: 2 },
+    assault_rifle: { name: "Sturmgewehr", type: "weapon", slot: "weapon", baseDmg: 28, cost: 550, desc: "Militärstandard.", usesAmmo: true, ammoType: "ammo_308", ammoCost: 2 },
+    minigun: { name: "Minigun", type: "weapon", slot: "weapon", baseDmg: 15, cost: 1500, desc: "Extremes Schnellfeuer (Mehrfach-Treffer).", usesAmmo: true, ammoType: "ammo_micro", ammoCost: 5 },
     // Energy
-    laser_pistol: { name: "Laserpistole", type: "weapon", slot: "weapon", baseDmg: 22, cost: 400, desc: "Vorsicht, heiß.", usesAmmo: true },
-    laser_rifle: { name: "Lasergewehr", type: "weapon", slot: "weapon", baseDmg: 32, cost: 650, desc: "Lange Reichweite.", usesAmmo: true },
-    plasma_pistol: { name: "Plasmapistole", type: "weapon", slot: "weapon", baseDmg: 35, cost: 600, desc: "Grüner Schleim.", usesAmmo: true },
-    plasma_rifle: { name: "Plasmagewehr", type: "weapon", slot: "weapon", baseDmg: 45, cost: 900, desc: "Schmilzt Rüstung.", usesAmmo: true },
+    laser_pistol: { name: "Laserpistole", type: "weapon", slot: "weapon", baseDmg: 22, cost: 400, desc: "Vorsicht, heiß.", usesAmmo: true, ammoType: "ammo_cell", ammoCost: 2 },
+    laser_rifle: { name: "Lasergewehr", type: "weapon", slot: "weapon", baseDmg: 32, cost: 650, desc: "Lange Reichweite.", usesAmmo: true, ammoType: "ammo_cell", ammoCost: 2 },
+    plasma_pistol: { name: "Plasmapistole", type: "weapon", slot: "weapon", baseDmg: 35, cost: 600, desc: "Grüner Schleim.", usesAmmo: true, ammoType: "ammo_cell", ammoCost: 3 },
+    plasma_rifle: { name: "Plasmagewehr", type: "weapon", slot: "weapon", baseDmg: 45, cost: 900, desc: "Schmilzt Rüstung.", usesAmmo: true, ammoType: "ammo_cell", ammoCost: 3 },
     alien_blaster: { name: "Alien Blaster", type: "weapon", slot: "weapon", baseDmg: 80, cost: 3e3, desc: "Extraterrestrisch.", usesAmmo: false },
     // ======================================
     // === RÜSTUNGEN (Nach Sets sortiert) ===
@@ -426,7 +434,14 @@
   if (typeof window.GameData === "undefined") window.GameData = {};
   window.GameData.recipes = [
     // --- BASIC SURVIVAL ---
+    // Schrott-Munition bleibt das Einstiegsrezept. Die übrigen Sorten brauchen
+    // passende Zutaten und etwas mehr Level, damit Munition nicht beliebig ist.
     { id: "craft_ammo", type: "ammo", out: "AMMO", count: 10, req: { "junk_metal": 2 }, lvl: 1 },
+    { id: "craft_ammo_10mm", type: "ammo", out: "ammo_10mm", count: 10, req: { "junk_metal": 2, "gunpowder": 1 }, lvl: 2 },
+    { id: "craft_ammo_308", type: "ammo", out: "ammo_308", count: 10, req: { "junk_metal": 3, "gunpowder": 2 }, lvl: 3 },
+    { id: "craft_ammo_shell", type: "ammo", out: "ammo_shell", count: 10, req: { "junk_metal": 3, "gunpowder": 1, "cloth": 1 }, lvl: 3 },
+    { id: "craft_ammo_micro", type: "ammo", out: "ammo_micro", count: 20, req: { "junk_metal": 2, "screws": 2 }, lvl: 4 },
+    { id: "craft_ammo_cell", type: "ammo", out: "ammo_cell", count: 10, req: { "circuit": 1, "nuclear_mat": 1 }, lvl: 5 },
     { id: "craft_stimpack_simple", type: "med", out: "stimpack", count: 1, req: { "meat_roach": 2, "junk_metal": 1 }, lvl: 1 },
     { id: "craft_stimpack", type: "med", out: "stimpack", count: 1, req: { "meat_fly": 1, "junk_metal": 1, "adhesive": 1 }, lvl: 2 },
     // --- BACKPACK MODDING (TIER SYSTEM) ---
@@ -1859,17 +1874,19 @@
       return this.state.inventory.length;
     },
     getStackLimit: function(itemId) {
-      if (itemId === "ammo") return 100;
       if (itemId === "caps") return 99999;
+      if (this.items[itemId] && this.items[itemId].type === "ammo") return 100;
       const i = this.items[itemId];
       if (!i) return 1;
       if (i.type === "component" || i.type === "rare" || i.type === "consumable" || i.type === "junk") return 20;
       if (i.type === "ammo") return 100;
       return 1;
     },
+    // Zaehlt alle Munitionsarten zusammen. Vorher nur 'ammo' - mit sechs
+    // Sorten waere der HUD-Zaehler sonst still falsch (docs/BEFUNDE.md, 4).
     syncAmmo: function() {
       if (!this.state) return;
-      const t = this.state.inventory.reduce((s, i) => i.id === "ammo" ? s + i.count : s, 0);
+      const t = this.state.inventory.reduce((sum, i) => i && this.items[i.id] && this.items[i.id].type === "ammo" ? sum + i.count : sum, 0);
       this.state.ammo = t;
       if (typeof UI !== "undefined" && UI.update) UI.update();
     },
@@ -2012,6 +2029,14 @@
         stock["radaway"] = 1 + Math.floor(Math.random() * 3);
         stock["nuka_cola"] = 3 + Math.floor(Math.random() * 5);
         this.state.shop.ammoStock = 30 + Math.floor(Math.random() * 9) * 10;
+        this.state.shop.ammoStockByType = {
+          ammo: 30 + Math.floor(Math.random() * 9) * 10,
+          ammo_10mm: 20 + Math.floor(Math.random() * 8) * 10,
+          ammo_308: 10 + Math.floor(Math.random() * 5) * 10,
+          ammo_shell: 10 + Math.floor(Math.random() * 4) * 10,
+          ammo_micro: 20 + Math.floor(Math.random() * 8) * 10,
+          ammo_cell: 10 + Math.floor(Math.random() * 3) * 10
+        };
         stock["camp_kit"] = 1;
         this.state.shop.merchantCaps = 500 + Math.floor(Math.random() * 1e3);
         this.state.shop.stock = stock;
@@ -4424,6 +4449,21 @@
     buyAmmo: function(qty) {
       this.buyItem("ammo", qty);
     },
+    // Munition lagert je Sorte. 'ammoStock' bleibt als alter Schluessel
+    // bestehen, damit vorhandene Spielstaende nicht leer dastehen.
+    ammoStockOf: function(id) {
+      const shop = Game.state && Game.state.shop || {};
+      if (shop.ammoStockByType && shop.ammoStockByType[id] !== void 0) return shop.ammoStockByType[id];
+      if (id === "ammo") return shop.ammoStock || 0;
+      return 0;
+    },
+    addAmmoStock: function(id, amount) {
+      if (!Game.state.shop) Game.state.shop = { nextRestock: 0, stock: {}, merchantCaps: 1e3 };
+      if (!Game.state.shop.ammoStockByType) Game.state.shop.ammoStockByType = {};
+      const current = this.ammoStockOf(id);
+      Game.state.shop.ammoStockByType[id] = current + amount;
+      if (id === "ammo") Game.state.shop.ammoStock = Game.state.shop.ammoStockByType[id];
+    },
     buyItem: function(id, qtyMode = 1) {
       if (id === "camp_kit") {
         if (typeof UI !== "undefined") UI.error("Nicht käuflich!");
@@ -4437,10 +4477,10 @@
       let stock = 0;
       let pricePerUnit = item.cost;
       let itemsPerUnit = 1;
-      if (id === "ammo") {
-        stock = this.state.shop.ammoStock || 0;
+      if (item.type === "ammo") {
+        stock = this.ammoStockOf(id);
         itemsPerUnit = 10;
-        pricePerUnit = 10;
+        pricePerUnit = (item.cost || 1) * 10;
       } else {
         stock = this.state.shop.stock && this.state.shop.stock[id] !== void 0 ? this.state.shop.stock[id] : 0;
       }
@@ -4469,7 +4509,7 @@
       }
       Game.state.caps -= totalCost;
       Game.state.shop.merchantCaps += totalCost;
-      if (id === "ammo") Game.state.shop.ammoStock -= totalItemsReceived;
+      if (item.type === "ammo") this.addAmmoStock(id, -totalItemsReceived);
       else Game.state.shop.stock[id] -= packsToBuy;
       Game.addToInventory(id, totalItemsReceived);
       if (typeof UI !== "undefined") {
@@ -4513,9 +4553,9 @@
       if (entry.count <= 0) {
         Game.state.inventory.splice(invIndex, 1);
       }
-      if (entry.id === "ammo") {
-        Game.state.shop.ammoStock = (Game.state.shop.ammoStock || 0) + amount;
-        if (this.syncAmmo) this.syncAmmo();
+      if (item && item.type === "ammo") {
+        this.addAmmoStock(entry.id, amount);
+        if (Game.syncAmmo) Game.syncAmmo();
       } else {
         if (!Game.state.shop.stock[entry.id]) Game.state.shop.stock[entry.id] = 0;
         Game.state.shop.stock[entry.id] += amount;
@@ -6578,8 +6618,8 @@
       if (!container) return;
       container.innerHTML = "";
       const stock = Game.state.shop.stock || {};
-      const ammoStock = Game.state.shop.ammoStock !== void 0 ? Game.state.shop.ammoStock : 0;
       const myCaps = Game.state.caps;
+      const ammoRows = Object.keys(Game.items).filter((id) => Game.items[id] && Game.items[id].type === "ammo").map((id) => ({ id, qty: Game.ammoStockOf ? Game.ammoStockOf(id) : 0, item: Game.items[id] })).filter((entry) => entry.qty > 0).sort((a, b) => (a.item.cost || 1) - (b.item.cost || 1));
       const createRow = (icon, name, qty, price, key, isAmmo = false) => {
         const canBuy = myCaps >= price;
         let colorText = isAmmo ? "text-blue-300" : "text-yellow-200";
@@ -6618,8 +6658,17 @@
             `;
         return row;
       };
-      if (ammoStock > 0) {
-        container.appendChild(createRow("🧨", "10x MUNITION", ammoStock, 10, "ammo", true));
+      if (ammoRows.length > 0) {
+        ammoRows.forEach((entry) => {
+          container.appendChild(createRow(
+            "🧨",
+            "10x " + entry.item.name.toUpperCase(),
+            entry.qty,
+            (entry.item.cost || 1) * 10,
+            entry.id,
+            true
+          ));
+        });
         container.innerHTML += `<div class="h-px bg-yellow-900/50 my-4 mx-2"></div>`;
       }
       const categories = {

@@ -77,3 +77,36 @@ test('jede Ansicht, die ein Template lädt, hat einen Renderer', () => {
   const missing = views.filter(({fn}) => !new RegExp(`${fn}\\s*:\\s*function`).test(code));
   assert.deepEqual(missing, [], `Renderer fehlen: ${missing.map(m => m.fn).join(', ')}`);
 });
+
+test('jedes Template wird auch geladen', () => {
+  // radio.html und vault.html lagen jahrelang im Ordner, ohne dass switchView
+  // sie je angefordert hätte. radio.html rief dabei Game.tuningRadio und
+  // Game.toggleRadio - beide gibt es nicht (docs/BEFUNDE.md, 2).
+  const templates = readdirSync(join(ROOT, 'templates'))
+    .filter(name => name.endsWith('.html'))
+    .map(name => name.replace(/\.html$/, ''));
+  const loaded = new Set([
+    ...[...code.matchAll(/switchView\(\s*'([a-z]+)'/g)].map(m => m[1]),
+    ...[...code.matchAll(/toggleView\(\s*'([a-z]+)'/g)].map(m => m[1]),
+    ...[...code.matchAll(/name === '([a-z]+)'/g)].map(m => m[1])
+  ]);
+  const dead = templates.filter(name => !loaded.has(name));
+  assert.deepEqual(dead, [], `Templates ohne Aufrufer: ${dead.join(', ')}`);
+});
+
+test('Templates rufen keine Funktionen auf, die es nicht gibt', () => {
+  // Ein onclick auf eine fehlende Funktion wirft erst beim Klick - und dann
+  // still, weil der Browser den Fehler nur in die Konsole schreibt.
+  const problems = [];
+  for (const name of readdirSync(join(ROOT, 'templates'))) {
+    if (!name.endsWith('.html')) continue;
+    const body = readFileSync(join(ROOT, 'templates', name), 'utf8');
+    for (const match of body.matchAll(/on(?:click|input|change)="(?:Game|UI)\.(\w+)\(/g)) {
+      const fn = match[1];
+      const defined = new RegExp(`(?:^|[^\\w])${fn}\\s*:`, 'm').test(code)
+        || new RegExp(`function\\s+${fn}\\b`).test(code);
+      if (!defined) problems.push(`${name}: ${fn}()`);
+    }
+  }
+  assert.deepEqual(problems, [], `Aufrufe ohne Definition:\n  ${problems.join('\n  ')}`);
+});

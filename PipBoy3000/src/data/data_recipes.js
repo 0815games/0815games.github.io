@@ -4,7 +4,14 @@ if(typeof window.GameData === 'undefined') window.GameData = {};
 
 window.GameData.recipes = [
     // --- BASIC SURVIVAL ---
+    // Schrott-Munition bleibt das Einstiegsrezept. Die übrigen Sorten brauchen
+    // passende Zutaten und etwas mehr Level, damit Munition nicht beliebig ist.
     { id: 'craft_ammo', type: 'ammo', out: 'AMMO', count: 10, req: { 'junk_metal': 2 }, lvl: 1 },
+    { id: 'craft_ammo_10mm', type: 'ammo', out: 'ammo_10mm', count: 10, req: { 'junk_metal': 2, 'gunpowder': 1 }, lvl: 2 },
+    { id: 'craft_ammo_308', type: 'ammo', out: 'ammo_308', count: 10, req: { 'junk_metal': 3, 'gunpowder': 2 }, lvl: 3 },
+    { id: 'craft_ammo_shell', type: 'ammo', out: 'ammo_shell', count: 10, req: { 'junk_metal': 3, 'gunpowder': 1, 'cloth': 1 }, lvl: 3 },
+    { id: 'craft_ammo_micro', type: 'ammo', out: 'ammo_micro', count: 20, req: { 'junk_metal': 2, 'screws': 2 }, lvl: 4 },
+    { id: 'craft_ammo_cell', type: 'ammo', out: 'ammo_cell', count: 10, req: { 'circuit': 1, 'nuclear_mat': 1 }, lvl: 5 },
     { id: 'craft_stimpack_simple', type: 'med', out: 'stimpack', count: 1, req: { 'meat_roach': 2, 'junk_metal': 1 }, lvl: 1 },
     { id: 'craft_stimpack', type: 'med', out: 'stimpack', count: 1, req: { 'meat_fly': 1, 'junk_metal': 1, 'adhesive': 1 }, lvl: 2 },
     

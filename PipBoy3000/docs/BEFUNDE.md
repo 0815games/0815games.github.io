@@ -33,7 +33,7 @@ Deshalb der neue, statische Test — er braucht kein Klicken.
 
 ---
 
-## 2. `templates/vault.html` und `templates/radio.html` werden nie geladen
+## 2. `templates/vault.html` und `templates/radio.html` wurden nie geladen *(behoben)*
 
 Beide Dateien liegen im ausgelieferten Ordner und werden von `switchView()`
 nie angefordert. Für `radio.html` steht das schon in `to_do.log`; `vault.html`
@@ -44,8 +44,20 @@ Die Vault-Ansicht wird vollständig in JavaScript gebaut
 Radio steht im Spielerhandbuch sogar ausdrücklich, dass das Feature „vorerst
 komplett entfernt" wurde.
 
-→ **Empfehlung:** beide löschen. Das sind ~60 Zeilen, die niemand vermisst,
-aber jeder beim Suchen verwirren. Kein Spielverhalten ändert sich.
+**Behoben durch Löschen.** Beim Nachsehen war der Fall klarer als gedacht:
+
+- `radio.html` ruft `Game.tuningRadio()` und `Game.toggleRadio()` auf —
+  **beide Funktionen existieren nicht**. Wäre das Template je geladen worden,
+  hätte jeder Knopf still ins Leere gegriffen.
+- `vault.html` dupliziert das Vault-Menü, das `_showVaultMenuInternal()` baut —
+  inklusive „AUSRUHEN & HEILEN". Zwei Fassungen derselben Ansicht, von denen
+  eine nie gezeigt wird.
+
+**Dabei mitgefunden:** `quests.html` enthielt einen Detail-Block mit einem Knopf
+auf `closeQuestDetail()` — auch diese Funktion gibt es nicht. Der Block lag
+hinter `hidden` und wurde nie befüllt. Ebenfalls entfernt.
+
+Drei Stellen weniger, ~110 Zeilen, die niemand vermisst.
 
 ---
 
@@ -76,7 +88,7 @@ nie lief. **Keine der vier Funktionen hatte je eine Wirkung.**
 
 ---
 
-## 4. Munition: nicht nur ein fehlendes `ammoType` (B9, verschärft)
+## 4. Munition war gebaut, aber nie verbunden *(behoben)*
 
 In `to_do.log` steht, der Verbrauchspfad sei „korrekt gebaut, aber keine Waffe
 hat ein `ammoType`". Beim Nachsehen ist es mehr:
@@ -94,9 +106,38 @@ Das ist kein Balance-Thema, sondern eine **fehlende Verbindung**. Die
 Bestandteile liegen alle bereit; es fehlt die Zeile, die einer Fernkampfwaffe
 `ammoType: 'ammo'` gibt.
 
-→ **Empfehlung:** als eigenen, kleinen Schritt machen — und dann ist das
-Balancing die eigentliche Arbeit. Mit 34 Waffen und einem einzigen Munitionstyp
-wird sonst alles gleich.
+**Behoben und ausgebaut.** Statt nur `ammo` an alle Waffen zu hängen, gibt es
+jetzt **sechs Munitionsarten** mit eigenem Preis, Lager und Rezept:
+
+| Sorte | Waffen | Verbrauch | Preis/Paket |
+|---|---|---|---|
+| `ammo` (.38) | Pipe-Pistole, -Gewehr, -Revolver | 1 | 10 KK |
+| `ammo_10mm` | 10mm-Pistole, SMG | 1 / 3 | 20 KK |
+| `ammo_308` | .44, Jagdgewehr, Sniper, Sturmgewehr | 1 / 2 | 30 KK |
+| `ammo_shell` | Doppelflinte, Kampfflinte | 2 | 40 KK |
+| `ammo_micro` | Minigun | 5 | 20 KK |
+| `ammo_cell` | Laser, Plasma | 2 / 3 | 50 KK |
+
+`alien_blaster` bleibt munitionslos — das war im Code schon so vorgesehen.
+
+**Was dafür mitgeändert werden musste**, sonst wäre es Bruchwerk geworden:
+
+- `syncAmmo` zählte nur `id === 'ammo'` → summiert jetzt alle Arten über den
+  Item-Typ
+- `getStackLimit` hatte `'ammo'` fest verdrahtet → prüft jetzt den Item-Typ
+- Der Händler kannte einen einzigen `ammoStock` → lagert je Sorte
+  (`ammoStockByType`), `ammoStock` bleibt als alter Schlüssel bestehen, damit
+  bestehende Spielstände nicht leer dastehen
+- Die Shop-Liste zeigte eine Zeile „10x MUNITION" → listet alle vorhandenen
+  Sorten, günstigste zuerst
+- Das Rezept `craft_ammo` deckte nur eine Sorte ab → fünf weitere Rezepte mit
+  passenden Zutaten und Level-Anforderungen
+
+**Der eigentliche Gewinn:** der Zweig in `Combat.playerAttack`, der bei leerer
+Munition „WAFFE LEER! *KLICK*" meldet und automatisch auf die beste
+Nahkampfwaffe wechselt, ist erstmals **erreichbar**. Er war jahrelang tot,
+weil keine Waffe je `ammoType` hatte. Elfe Tests decken den Pfad ab, inklusive
+Ende-zu-Ende-Schuss und Leerlaufen.
 
 ---
 
@@ -169,7 +210,7 @@ Farbe braucht damit einen bewussten Eintrag — und fällt auf, wenn sie fehlt.
 
 ---
 
-## 7. Widersprüchliche Versionsstände
+## 7. Widersprüchliche Versionsstände *(behoben)*
 
 | Datei | Wert |
 |---|---|
@@ -181,9 +222,10 @@ Der Sprung von 13.37 auf 14.0.0 ist der Umbau, aber er steht nirgends im Spiel.
 Wer die Seite öffnet, sieht 13.37, obwohl sich die halbe Struktur geändert hat.
 Der Changelog behauptet inzwischen v14.0.0.
 
-→ **Empfehlung:** entscheiden, ob der Umbau eine Spielversion ist. Wenn ja,
-`shell/Version` auf 14.0.0 heben — das ist die einzige Quelle, alles andere
-leitet sich davon ab.
+**Behoben:** `shell/Version` steht auf 14.0.0. Anzeige, `build.json`,
+`package.json` und der Admin-Seitentitel (der noch „V13.37" trug) stimmen
+überein. `shell/Version` bleibt die einzige Quelle — der Build leitet `?v=`,
+Manifest und Auslieferung daraus ab.
 
 ---
 

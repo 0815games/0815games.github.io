@@ -191,6 +191,23 @@ Object.assign(Game, {
 
     buyAmmo: function(qty) { this.buyItem('ammo', qty); },
 
+    // Munition lagert je Sorte. 'ammoStock' bleibt als alter Schluessel
+    // bestehen, damit vorhandene Spielstaende nicht leer dastehen.
+    ammoStockOf: function(id) {
+        const shop = (Game.state && Game.state.shop) || {};
+        if (shop.ammoStockByType && shop.ammoStockByType[id] !== undefined) return shop.ammoStockByType[id];
+        if (id === 'ammo') return shop.ammoStock || 0;
+        return 0;
+    },
+
+    addAmmoStock: function(id, amount) {
+        if (!Game.state.shop) Game.state.shop = { nextRestock: 0, stock: {}, merchantCaps: 1000 };
+        if (!Game.state.shop.ammoStockByType) Game.state.shop.ammoStockByType = {};
+        const current = this.ammoStockOf(id);
+        Game.state.shop.ammoStockByType[id] = current + amount;
+        if (id === 'ammo') Game.state.shop.ammoStock = Game.state.shop.ammoStockByType[id];
+    },
+
     buyItem: function(id, qtyMode = 1) {
         // [FIX] Camp Kit nicht kaufbar
         if (id === 'camp_kit') { if(typeof UI !== 'undefined') UI.error("Nicht käuflich!"); return; }
@@ -202,9 +219,12 @@ Object.assign(Game, {
         let pricePerUnit = item.cost; 
         let itemsPerUnit = 1; 
 
-        if (id === 'ammo') {
-            stock = this.state.shop.ammoStock || 0; 
-            itemsPerUnit = 10; pricePerUnit = 10; 
+        if (item.type === 'ammo') {
+            // Munition wird in 10er-Paketen verkauft. Der Preis pro Paket
+            // richtet sich nach der Sorte (Schrott 10, Energiezellen 50).
+            stock = this.ammoStockOf(id);
+            itemsPerUnit = 10;
+            pricePerUnit = (item.cost || 1) * 10;
         } else {
             stock = (this.state.shop.stock && this.state.shop.stock[id] !== undefined) ? this.state.shop.stock[id] : 0;
         }
@@ -230,7 +250,7 @@ Object.assign(Game, {
         Game.state.caps -= totalCost;
         Game.state.shop.merchantCaps += totalCost; 
         
-        if (id === 'ammo') Game.state.shop.ammoStock -= totalItemsReceived;
+        if (item.type === 'ammo') this.addAmmoStock(id, -totalItemsReceived);
         else Game.state.shop.stock[id] -= packsToBuy;
 
         Game.addToInventory(id, totalItemsReceived); 
@@ -278,9 +298,9 @@ Object.assign(Game, {
             Game.state.inventory.splice(invIndex, 1);
         }
 
-        if (entry.id === 'ammo') {
-            Game.state.shop.ammoStock = (Game.state.shop.ammoStock || 0) + amount;
-            if(this.syncAmmo) this.syncAmmo();
+        if (item && item.type === 'ammo') {
+            this.addAmmoStock(entry.id, amount);
+            if(Game.syncAmmo) Game.syncAmmo();
         }
         else {
              if (!Game.state.shop.stock[entry.id]) Game.state.shop.stock[entry.id] = 0;

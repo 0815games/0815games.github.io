@@ -5,11 +5,9 @@
     <div id="quest-list" class="w-full space-y-3">
         </div>
 
-    <div id="quest-detail" class="w-full hidden flex flex-col h-full">
-        <div id="quest-content" class="flex-grow border border-green-900 bg-green-900/10 p-4 font-mono text-lg whitespace-pre-wrap break-words">
-            </div>
-        <button class="action-button w-full mt-4" onclick="UI.closeQuestDetail()">ZURÜCK ZUR LISTE</button>
-    </div>
+    <!-- Der frühere Detail-Block (quest-detail/quest-content) war nie erreichbar:
+         renderQuests befüllt nur #quest-list, und closeQuestDetail existierte
+         nicht. Die Details stehen jetzt in der Karte selbst. -->
 
     <button class="action-button w-full mt-4 shrink-0" onclick="UI.switchView('map')">SCHLIESSEN</button>
 </div>

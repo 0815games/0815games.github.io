@@ -452,8 +452,16 @@ Object.assign(UI, {
         container.innerHTML = '';
 
         const stock = Game.state.shop.stock || {};
-        const ammoStock = (Game.state.shop.ammoStock !== undefined) ? Game.state.shop.ammoStock : 0;
         const myCaps = Game.state.caps;
+
+        // Alle Munitionsarten mit Bestand, teuerste zuletzt. Vorher stand hier
+        // nur eine Zeile "10x MUNITION"; mit sechs Sorten faellt sonst der
+        // Großteil des Sortiments unsichtbar aus dem Regal (BEFUNDE.md, 4).
+        const ammoRows = Object.keys(Game.items)
+            .filter(id => Game.items[id] && Game.items[id].type === 'ammo')
+            .map(id => ({ id, qty: Game.ammoStockOf ? Game.ammoStockOf(id) : 0, item: Game.items[id] }))
+            .filter(entry => entry.qty > 0)
+            .sort((a, b) => (a.item.cost || 1) - (b.item.cost || 1));
 
         const createRow = (icon, name, qty, price, key, isAmmo = false) => {
             const canBuy = myCaps >= price;
@@ -499,8 +507,11 @@ Object.assign(UI, {
             return row;
         };
 
-        if(ammoStock > 0) {
-            container.appendChild(createRow("🧨", "10x MUNITION", ammoStock, 10, 'ammo', true));
+        if(ammoRows.length > 0) {
+            ammoRows.forEach(entry => {
+                container.appendChild(createRow("🧨", "10x " + entry.item.name.toUpperCase(),
+                    entry.qty, (entry.item.cost || 1) * 10, entry.id, true));
+            });
             container.innerHTML += `<div class="h-px bg-yellow-900/50 my-4 mx-2"></div>`;
         }
 
