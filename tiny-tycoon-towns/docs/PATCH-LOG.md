@@ -235,3 +235,16 @@ Ereignis ergänzt.
 - Veröffentlichung: Code liegt auf dem Branch, nicht auf `main`. Kein Merge ohne Freigabe.
 - Offen: Browser-Test der neuen Welle, Entscheidung zum Offline-Start, Regeln veröffentlichen
   (`docs/FIREBASE.md`), geräteübergreifende Sitzungssperre.
+
+### Nachtrag TTT-0006 (vor Merge, Welle `20261124-welt1` unverändert)
+
+- Zeit / Quelle: Sitzung 2026-11-24 (UTC). Auftrag des Betreibers: kein Offline-Start, Datenbankregeln
+  bereitstellen, IronPath-Verweise aus den Spieltexten entfernen.
+- Änderungen (Commit 304d798):
+  - `src/main.js`: Ist der Cloud-Stand nicht lesbar, bleibt das Spiel gesperrt (Wiederholen-Knopf). Der
+    lokale Stand wird nicht mehr gespielt, bleibt aber als Sicherung erhalten.
+  - `src/patch-notes.mjs`, `index.html`, `style.css`, Kommentare: Verweise auf IronPath entfernt, die
+    Spieltexte nennen IronPath nicht mehr.
+  - Regeln (`firebase/database.rules.json`) unverändert. Geprüft: alle Felder des Spielstands sind erlaubt.
+- Prüfungen: 57 Tests grün, `check --fast` ohne Fehler, `rules:check` ohne Live-Export: Struktur OK.
+- Offen: Regeln in der Konsole oder per CLI veröffentlichen (`docs/FIREBASE.md`, Schritte 1 bis 5).
