@@ -112,14 +112,22 @@ test('Munition lässt sich kaufen, auch die teure Sorte', () => {
 });
 
 test('ein Schuss mit Munition trifft und verbraucht genau eine Patrone', () => {
-  const fig = freshGame();
-  const {game, combat, state} = fig;
+  const {window, game, combat, state} = freshGame();
   state.equip.weapon = {id: 'pistol_10mm'};
   state.inventory = [{id: 'ammo_10mm', count: 10}];
   combat.enemy = {name: 'Rad-Kakerlake', hp: 100, maxHp: 100, dmg: 1, xp: [1, 2], loot: 0, drops: []};
   combat.log = () => {};
 
-  combat.playerAttack(0);
+  // playerAttack würfelt den Treffer aus. Ohne festen Wurf scheitert der
+  // Treffer-Teil je nach Glück in etwa jedem zehnten Lauf - ein Test, der
+  // zufällig rot wird, ist wertlos.
+  const originalRandom = window.Math.random;
+  window.Math.random = () => 0;
+  try {
+    combat.playerAttack(0);
+  } finally {
+    window.Math.random = originalRandom;
+  }
 
   const uebrig = state.inventory.find(i => i.id === 'ammo_10mm');
   assert.equal(uebrig.count, 9, 'Munition wurde nicht verbraucht');
