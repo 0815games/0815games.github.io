@@ -2,7 +2,7 @@
 // No game rules live here. Firebase is only touched through ./cloud.js.
 import {
   createTown, newSeed, chooseBiome, placeBuilding, upgradeBuilding,
-  toggleSell, buyOffer, advance, hydrateTown,
+  toggleSell, buyOffer, advance, hydrateTown, setTutorialStep,
 } from './domain/engine.js?v=20261124-konto2';
 import {
   productionMultiplier, ratePerMin, buildCost, storageCap, classOf,
@@ -13,6 +13,7 @@ import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261124-konto
 import { withTimeout } from './async-util.js?v=20261124-konto2';
 import { createBoard } from './world/board.js?v=20261124-konto2';
 import { createLoginScene } from './world/login-scene.js?v=20261124-konto2';
+import { TUTORIAL_STEPS, HELP_SECTIONS } from './tutorial.js?v=20261124-konto2';
 import { createVersionUI } from './version-ui.mjs?v=20261124-konto2';
 
 const BUILD = '20261124-konto2';
@@ -164,6 +165,7 @@ async function enterAccount(user) {
     state = null;
     remoteLoaded = false;
     activeUid = null;
+    endTutorial();
     renderSignedOut();
     showLoginScreen('login');
     return;
@@ -465,6 +467,7 @@ function bindStatic() {
   });
   $('#feld-btn').addEventListener('click', showFieldNotes);
   $('#logout-btn').addEventListener('click', askLogout);
+  $('#help-btn').addEventListener('click', showHelp);
   $('#reset-btn').addEventListener('click', () => {
     if (!state || !uid) return;
     if (!confirm('Die aktuelle Stadt wird gelöscht, auch in der Cloud. Wirklich neu beginnen?')) return;
@@ -492,6 +495,7 @@ function onPanelClick(e) {
 
 function startGame() {
   versionGate?.afterGame();
+  endTutorial();
   const before = state.lastTick;
   const now = Date.now();
   const r = advance(state, now, ctx());
@@ -504,6 +508,8 @@ function startGame() {
   if (state.townXp === 0) {
     toast('Tipp: Wähle eine Wiese und baue deinen ersten Hof.');
   }
+  // Einmal pro Konto: der Fortschritt steht im Spielstand und wandert mit der Cloud.
+  if ((state.tutorialStep ?? 0) < TUTORIAL_STEPS.length) showTutorialStep(state.tutorialStep ?? 0);
 }
 
 function tick() {
@@ -768,6 +774,69 @@ async function claimSession(sessionUid) {
   if (busy) return false;
   activeUid = sessionUid;
   return true;
+}
+
+// ---------- Tutorial und Hilfe ----------
+
+/** Zeigt einen Tutorial-Schritt als Karte unten. Der Zielbereich wird hervorgehoben. */
+function showTutorialStep(i) {
+  const step = TUTORIAL_STEPS[i];
+  if (!step || !state) return endTutorial();
+  const last = i === TUTORIAL_STEPS.length - 1;
+  const box = $('#tutorial');
+  highlightTarget(step.target);
+  box.hidden = false;
+  box.innerHTML = `<div class="tut-card" role="region" aria-label="Tutorial">
+    <p class="small muted">Schritt ${i + 1} von ${TUTORIAL_STEPS.length}</p>
+    <h2>${esc(step.title)}</h2>
+    <p>${esc(step.text)}</p>
+    <p class="row">
+      <button type="button" id="tut-skip" class="ghost">Überspringen</button>
+      <button type="button" id="tut-next" class="primary">${last ? 'Fertig' : 'Weiter'}</button>
+    </p>
+  </div>`;
+  $('#tut-next').addEventListener('click', () => advanceTutorial(i + 1));
+  $('#tut-skip').addEventListener('click', () => advanceTutorial(TUTORIAL_STEPS.length));
+  $('#tut-next').focus({ preventScroll: true });
+}
+
+function advanceTutorial(next) {
+  if (!state) return;
+  dispatch(setTutorialStep(state, next));
+  if (next >= TUTORIAL_STEPS.length) endTutorial();
+  else showTutorialStep(next);
+}
+
+function endTutorial() {
+  const box = $('#tutorial');
+  if (box) { box.hidden = true; box.innerHTML = ''; }
+  highlightTarget(null);
+}
+
+function highlightTarget(selector) {
+  document.querySelectorAll('.tut-target').forEach((el) => el.classList.remove('tut-target'));
+  if (selector) $(selector)?.classList.add('tut-target');
+}
+
+function showHelp() {
+  const sections = HELP_SECTIONS.map((sec) =>
+    `<section><h3>${esc(sec.title)}</h3>${sec.paragraphs.map((p) => `<p>${esc(p)}</p>`).join('')}</section>`).join('');
+  openDialog(`<div class="dlg-body help">
+    <h2 id="dlg-title">Hilfe</h2>
+    ${sections}
+    <p class="row">
+      <button type="button" id="help-tut">Tutorial wiederholen</button>
+      <button type="button" id="help-close" class="primary">Schließen</button>
+    </p>
+    <p class="small muted">Build ${esc(BUILD)}</p>
+  </div>`);
+  $('#help-close').addEventListener('click', closeDialog);
+  $('#help-tut').addEventListener('click', () => {
+    closeDialog();
+    if (!state) return;
+    dispatch(setTutorialStep(state, 0));
+    showTutorialStep(0);
+  });
 }
 
 function openDialog(html) {

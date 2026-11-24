@@ -160,6 +160,14 @@ export function toggleSell(state, { resource }) {
   return { state: s, events: [] };
 }
 
+/** Tutorial-Fortschritt pro Konto (wird mit dem Spielstand gespeichert). Reine Zustandsänderung. */
+export function setTutorialStep(state, step) {
+  if (!Number.isInteger(step) || step < 0 || step > 99) return fail(state, 'invalidStep');
+  const s = clone(state);
+  s.tutorialStep = step;
+  return { state: s, events: [] };
+}
+
 export function buyOffer(state, { index }, ctx) {
   const { data, dateKey } = ctx;
   const s = clone(state);
