@@ -461,3 +461,18 @@ Ereignis ergänzt.
 - Grenzen: Der Bot ist ein idealer Spieler. Echte Spieler sind langsamer. Händlerpreis und Perk-Punkte in 2 bis 4 Wochen sind nicht simuliert. Am Ende der 30 Tage war das Gitter mit 99 Gebäuden voll. Wann genau, ist nicht gemessen.
 - Git / PR / Veröffentlichung: noch nicht committet, Stand dieser Eintrag.
 - Offen / nächster Schritt: Einheit festlegen (Nutzer), dann Werte anpassen (Agent).
+
+### TTT-0027 – Stadtlevel 5 auf 4 bis 8 h aktiver Spielzeit: Messung, keine Werte geändert
+
+- Zeit / Quelle: Nutzerentscheidung im Chat: „4 bis 8 Stunden aktive Spielzeit bis Level fünf finde ich fair“.
+- Block / Ziel: P1 Balance (GAME_PLAN 4.17).
+- Änderungen / Dateien: keine im Spiel. `data/economy.json` bleibt unverändert. Die Experimente liefen in einer Kopie unter `/tmp`.
+- Messung: XP-Schwellen (`townLevelThresholds`) gleichmäßig mit einem Faktor skaliert, 60 Tage, 4 Biome, Bot wie TTT-0026.
+  - Ausgangslage (Faktor 1): Stadtlevel 5 nach 0,37 bis 0,40 h aktiv.
+  - Faktor 10: 1,5 bis 1,8 h aktiv. Faktor 20: 2,3 bis 3,3 h aktiv.
+  - Faktor 35: 3,2 bis 6,0 h aktiv. Stadtlevel 8 in 60 Tagen nicht erreicht.
+  - Faktor 40: 4,1 bis 8,5 h aktiv (riverlands 7,0; deepwoods 4,1; highlands 4,8; coast 8,5). Stadtlevel 8 in 60 Tagen nicht erreicht.
+- Folge: Der Freibrief hängt an Stadtlevel 8 (GAME_PLAN 4.11). Damit wird er um Wochen bis Monate später. Das ist eine Designentscheidung, keine Einstellung.
+- Prüfungen: keine neuen Tests. `npm run simulate` bleibt mit Exit 1, bis die Werte gesetzt sind.
+- Offen / nächster Schritt: Nutzer entscheidet die Kurve (Jetzt 5). Danach setzt der Agent die Werte und belegt sie mit `npm run simulate`.
+

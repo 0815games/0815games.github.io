@@ -21,8 +21,8 @@ Zuständig: **N** = Nutzer (Geräte, Konsole, Entscheidungen), **A** = Agent (Co
 1. **[N]** Regeln `charters/$uid` aus `tiny-tycoon-towns/firebase/database.rules.json` veröffentlichen. Ohne das speichern Freibriefe nicht. (TTT-0024)
 2. **[N]** Gerätetest Freunde auf zwei Geräten: Anfrage, Annahme, Besuch, Name und Code. (TTT-0018, TTT-0019)
 3. **[N]** Gerätetest Freibriefe, Münzpille und Symbolkosten beim Bauen. (TTT-0024)
-4. **[N]** Balance: Einheit der Meilensteine festlegen. Gemeint ist „Stadtlevel 5 in 4 bis 8 h“ als aktive Spielzeit oder als Kalenderzeit. Die Simulation misst beides (TTT-0026). Danach entscheiden wir die Zahlen.
-5. **[A]** Balance-Werte anpassen, sobald Punkt 4 geklärt ist: Stadtlevel 5 (bot: 22 min aktiv, zu schnell), erster Freibrief (67 bis 129 h, Ziel 36 bis 72 h, Engpass ist Stadtlevel 8). Jede Änderung mit `npm run simulate` belegen.
+4. **[A]** Balance: Stadtlevel 5 auf 4 bis 8 h aktive Spielzeit. Entschieden am 2026-11-24. Die Werte fehlen noch (siehe Punkt 5).
+5. **[N]** Balance-Kurve wählen. Alle XP-Schwellen gleichmäßig mit einem Faktor skalieren: Faktor 40 bringt Stadtlevel 5 auf 4,1 bis 8,5 h aktiver Zeit. Die Folge: Stadtlevel 8 und der erste Freibrief rücken in den Bereich von Monaten. Wir brauchen eine Entscheidung, ob der Freibrief dann anders gebaut wird. Messung: TTT-0027.
 6. **[A]** Service Worker für schnelleres Laden, ohne Offline-Spiel (Entscheidung vom 2026-11-24, siehe Entscheidungen). Das Versions-Gate bleibt unverändert.
 7. **[A]** Einstellungen: Sprache DE und EN, Ton, Bewegung reduzieren, Zahlenformat. (B4)
 8. **[A]** Emulator-Tests für die Regeln einrichten. Braucht Java und `firebase-tools`. Vorher prüfen, ob die Umgebung das kann. (B2)
@@ -67,6 +67,7 @@ Zuständig: **N** = Nutzer (Geräte, Konsole, Entscheidungen), **A** = Agent (Co
 
 ## Entscheidungen
 
+- Stadtlevel 5: 4 bis 8 h aktive Spielzeit. (2026-11-24, Nutzerentscheidung. Die Werte sind noch nicht angepasst.)
 - Offline-Start: Nein. Das Spiel startet nur mit Bestätigung vom Server (Netz nötig). Das Versions-Gate bleibt wie in ADR-update-gate. (2026-11-24, Nutzerentscheidung)
 - Dialoge schließen beim Klick daneben. Ausnahmen: Sitzungsübernahme und Stadtgründung (erzwungene Entscheidungen).
 - Keine browsernativen Popups. Alle Meldungen, Rückfragen und Scrollbars sind im Spiel. (TTT-0016)
