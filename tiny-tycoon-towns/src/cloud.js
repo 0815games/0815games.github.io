@@ -5,8 +5,8 @@ import {
   getAuth, onAuthStateChanged, createUserWithEmailAndPassword,
   signInWithEmailAndPassword, signOut,
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
-import { getDatabase, ref, get, set } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
-import { firebaseConfig } from './firebase-config.js?v=20261124-konto1';
+import { getDatabase, ref, get, set, onValue } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
+import { firebaseConfig } from './firebase-config.js?v=20261124-konto2';
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -18,6 +18,9 @@ export const onUser = (cb) => onAuthStateChanged(auth, cb);
 export const register = (email, password) => createUserWithEmailAndPassword(auth, email, password);
 export const login = (email, password) => signInWithEmailAndPassword(auth, email, password);
 export const logout = () => signOut(auth);
+
+/** Calls cb(true | false) whenever the Realtime Database connection changes. */
+export const onConnected = (cb) => onValue(ref(db, '.info/connected'), (snap) => cb(snap.val() === true));
 
 const townRef = (uid) => ref(db, `saves/${uid}/town`);
 
@@ -47,6 +50,7 @@ const AUTH_DE = {
   'auth/too-many-requests': 'Zu viele Versuche. Bitte später erneut probieren.',
   'auth/network-request-failed': 'Keine Verbindung zum Server.',
   'auth/operation-not-allowed': 'Die Anmeldung per E-Mail ist im Projekt nicht aktiviert.',
+  'auth/unauthorized-domain': 'Diese Seitenadresse ist in Firebase nicht autorisiert. Unter Authentication → Settings → Authorized domains eintragen.',
 };
 
 export function authErrorDe(err) {

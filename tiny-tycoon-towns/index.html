@@ -4,14 +4,39 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#FFF6E5">
-  <meta name="ttt-build" content="20261124-konto1">
+  <meta name="ttt-build" content="20261124-konto2">
   <title>Tiny Tycoon Towns</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="style.css?v=20261124-konto1">
+  <link rel="stylesheet" href="style.css?v=20261124-konto2">
 </head>
 <body>
   <a class="skip" href="#board">Zum Spielfeld springen</a>
 
+  <!-- Versionsprüfung beim Start (wie IronPath). Wird vom Versions-Gate gesteuert. -->
+  <div id="releaseCheck" class="release-check" role="status" aria-live="polite" hidden>
+    <div class="release-check-card">
+      <h2 id="releaseCheckTitle">Spielversion wird geprüft…</h2>
+      <p id="releaseCheckDetail" class="hint"></p>
+      <button id="releaseCheckRetry" type="button" class="primary" hidden>ERNEUT PRÜFEN</button>
+    </div>
+  </div>
+
+  <!-- Hinweis bei neuer Version; nach dem Neuladen mit Bestätigung. -->
+  <div id="versionNotice" class="version-notice" role="status" aria-live="polite" hidden>
+    <span id="versionNoticeText"></span>
+    <button id="versionNoticeRetry" type="button" hidden>ERNEUT PRÜFEN</button>
+    <button id="versionNoticeDismiss" type="button" hidden>SCHLIESSEN</button>
+  </div>
+
+  <!-- Anmeldung: erster Bildschirm. Das Spiel erscheint erst danach. -->
+  <section id="authScreen" class="auth-screen" aria-labelledby="auth-title" hidden>
+    <canvas id="authCanvas" class="auth-canvas" aria-hidden="true"></canvas>
+    <div class="auth-shade" aria-hidden="true"></div>
+    <div class="auth-card" id="auth-card"></div>
+    <p class="auth-foot small">Tiny Tycoon Towns · BUILD 20261124-konto2</p>
+  </section>
+
+  <div id="loading" class="app-shell" hidden>
   <header class="hud">
     <div class="town">
       <h1 id="town-name">Tiny Tycoon Towns</h1>
@@ -39,7 +64,8 @@
       <div id="board" class="board" tabindex="0" aria-describedby="board-hint"></div>
       <p id="board-hint" class="muted small">Pfeiltasten bewegen die Auswahl, Enter wählt ein Feld.</p>
 
-      <section class="stock" aria-labelledby="stock-title">
+      <p id="resultsVersionStatus" class="warn small" role="status" hidden></p>
+        <section class="stock" aria-labelledby="stock-title">
         <h2 id="stock-title">Lager und Verkauf</h2>
         <ul id="stock"></ul>
         <p class="muted small">Das Rathaus verkauft automatisch. Je Ressource bleiben 20 Einheiten als Reserve.</p>
@@ -49,12 +75,14 @@
     <aside id="panel" class="panel" aria-live="polite"></aside>
   </main>
 
+  </div>
+
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <p class="build-stamp" aria-hidden="true">BUILD 20261124-konto1</p>
+  <p class="build-stamp" aria-hidden="true">BUILD 20261124-konto2</p>
 
   <dialog id="dlg" aria-labelledby="dlg-title"></dialog>
 
-  <script type="module" src="src/main.js?v=20261124-konto1"></script>
+  <script type="module" src="src/main.js?v=20261124-konto2"></script>
 </body>
 </html>

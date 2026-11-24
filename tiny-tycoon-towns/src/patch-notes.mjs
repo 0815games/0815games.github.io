@@ -4,6 +4,24 @@
 
 export const RELEASED_PATCHES = [
   {
+    build: '20261124-konto2',
+    date: '2026-11-24',
+    items: [
+      {
+        de: 'Ladeproblem: Hängt die Cloud, bleibt das Spiel nicht mehr auf „Stadt wird geladen“ stehen. Nach 10 Sekunden gibt es einen Knopf „Erneut versuchen“, und mit lokalem Stand wird weitergespielt.',
+        en: 'Loading fix: if the cloud hangs, the game no longer stays on "Loading town". After 10 seconds a "Try again" button appears, and a local copy keeps you playing.',
+      },
+      {
+        de: 'Verbindungsanzeige unter dem Spielfeld: Cloud nicht erreichbar oder Stand noch nicht gelesen steht dort jetzt ausdrücklich.',
+        en: 'Connection status under the board now says explicitly when the cloud is unreachable or the save is not read yet.',
+      },
+      {
+        de: 'Stand: im Code geprüft (Zeitlimit mit Tests), im Browser noch nicht gegen das Live-Projekt getestet.',
+        en: 'Status: checked in code (time limit with tests), not yet tested in a browser against the live project.',
+      },
+    ],
+  },
+  {
     build: '20261124-konto1',
     date: '2026-11-24',
     items: [
