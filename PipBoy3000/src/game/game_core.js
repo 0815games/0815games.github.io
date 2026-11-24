@@ -160,7 +160,63 @@ window.Game = {
         this.state.ammo = t;
         if(typeof UI !== 'undefined' && UI.update) UI.update();
     },
-    getStat: function(key) { if(!this.state)return 5; let v=this.state.stats[key]||5; ['weapon','body','head','legs','feet','arms','back'].forEach(s=>{const i=this.state.equip[s]; if(i){if(i.bonus&&i.bonus[key])v+=i.bonus[key]; if(i.props&&i.props.bonus&&i.props.bonus[key])v+=i.props.bonus[key];}}); return v; },
+    // Summiert einen Bonus-Schlüssel aus der angelegten Ausrüstung.
+    // getStat() taugt dafür nicht: es liefert für jeden Schlüssel, der nicht
+    // in state.stats steht, eine Basis von 5 (die SPECIAL-Vorgabe). Für
+    // RAD oder RAD_RESIST hieße das, jeder trüge schon Schutz.
+    equipBonus: function(key) {
+        if (!this.state || !this.state.equip) return 0;
+        let summe = 0;
+        ['weapon', 'body', 'head', 'legs', 'feet', 'arms', 'back'].forEach(slot => {
+            const teil = this.state.equip[slot];
+            if (!teil) return;
+
+            // Manche Spielstände führen im Slot nur `{id}`. Dann zählt der
+            // Katalogwert - sonst hätte ein alter Spielstand seine Rüstung
+            // behalten, aber keinen Schutz.
+            const katalog = (teil.id && this.items[teil.id]) ? this.items[teil.id] : null;
+            const quelle = (teil.bonus || !katalog) ? teil : katalog;
+
+            if (quelle.bonus && typeof quelle.bonus[key] === 'number') summe += quelle.bonus[key];
+            if (teil.props && teil.props.bonus && typeof teil.props.bonus[key] === 'number') {
+                summe += teil.props.bonus[key];
+            }
+        });
+        return summe;
+    },
+
+    // Rüstungsschutz aus allen Teilen. Der Kampf rechnet damit gegen den
+    // erlittenen Schaden (docs/BALANCE_BEFUNDE.md, B1).
+    equipDef: function() {
+        if (!this.state || !this.state.equip) return 0;
+        let summe = 0;
+        ['body', 'head', 'legs', 'feet', 'arms'].forEach(slot => {
+            const teil = this.state.equip[slot];
+            if (!teil) return;
+            if (typeof teil.def === 'number') summe += teil.def;
+            // Schutz aus dem Katalog nachziehen, falls das angelegte Objekt
+            // nur eine ID ist (alte Spielstände).
+            else if (teil.id && this.items[teil.id] && typeof this.items[teil.id].def === 'number') {
+                summe += this.items[teil.id].def;
+            }
+        });
+        return summe;
+    },
+
+    getStat: function(key) {
+        if(!this.state)return 5;
+        let v = this.state.stats[key] || 5;
+        ['weapon','body','head','legs','feet','arms','back'].forEach(s => {
+            const i = this.state.equip[s];
+            if (!i) return;
+            if (i.bonus && i.bonus[key]) v += i.bonus[key];
+            if (i.props && i.props.bonus && i.props.bonus[key]) v += i.props.bonus[key];
+        });
+        // Laufende Buffs (Buffout, Jet, Stealth Boy). Vorher gab es sie nicht
+        // (docs/BALANCE_BEFUNDE.md, B3).
+        if (typeof this.buffBonus === 'function') v += this.buffBonus(key);
+        return v;
+    },
     expToNextLevel: function(l) { return Math.floor(100 * Math.pow(l, 1.5)); },
     
     gainExp: function(amount) {

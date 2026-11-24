@@ -430,7 +430,7 @@ Object.assign(Game, {
                         this.addRadiation(itemDef.rad * countToUse);
                     }
                     if(itemDef.effect === 'buff') {
-                        UI.log(`${itemDef.name} konsumiert! (Effekte noch WIP)`, "text-pink-400");
+                        this.applyBuff(itemDef);
                     } else {
                          UI.log(`Verwendet: ${countToUse}x ${itemDef.name} (+${totalHeal} HP)`, "text-blue-400"); 
                     }
@@ -592,6 +592,59 @@ Object.assign(Game, {
         // Custom Item hinzufügen
         this.addToInventory(legendaryItem, 1);
         return legendaryItem;
+    },
+
+    // Legt einen Buff aus einem Verbrauchsgut an. Vorher schrieb useItem nur
+    // "(Effekte noch WIP)" ins Log und verbrauchte das Item - Buffout, Jet,
+    // Rad-X und Stealth Boy (zusammen 310 KK Ladenwert) hatten keine Wirkung
+    // (docs/BALANCE_BEFUNDE.md, B3).
+    applyBuff: function(itemDef) {
+        if (!this.state) return false;
+        if (!this.state.buffs) this.state.buffs = [];
+
+        const bonus = itemDef.bonus || {};
+        if (Object.keys(bonus).length === 0) return false;
+
+        // Halbe Stunde, wenn die Daten keine Dauer nennen. Ohne Ablauf wäre
+        // ein 40-KK-Getränk eine dauerhafte Attributserhöhung.
+        const sekunden = itemDef.duration || 1800;
+        const vorhanden = this.state.buffs.find(b => b.id === itemDef.id);
+
+        if (vorhanden) {
+            // Nochmal genommen: die Zeit läuft weiter, der Wert bleibt.
+            vorhanden.expires = Date.now() + sekunden * 1000;
+        } else {
+            this.state.buffs.push({ id: itemDef.id, name: itemDef.name, bonus, expires: Date.now() + sekunden * 1000 });
+        }
+
+        const beschreibung = Object.entries(bonus).map(([k, v]) => `${k}+${v}`).join(', ');
+        const minuten = Math.round(sekunden / 60);
+        UI.log(`${itemDef.name}: ${beschreibung} für ${minuten} Min.`, "text-pink-400 font-bold");
+        this.recalcStats();
+        return true;
+    },
+
+    // Summe aller noch laufenden Buffs für einen Schlüssel.
+    buffBonus: function(key) {
+        if (!this.state || !Array.isArray(this.state.buffs)) return 0;
+        const jetzt = Date.now();
+        let summe = 0;
+        for (const buff of this.state.buffs) {
+            if (!buff || !buff.bonus) continue;
+            if (buff.expires && buff.expires <= jetzt) continue;
+            if (typeof buff.bonus[key] === 'number') summe += buff.bonus[key];
+        }
+        return summe;
+    },
+
+    // Abgelaufene Buffs entfernen. Wird von getStat und recalcStats gerufen,
+    // damit kein Zeitgeber nötig ist.
+    pruneBuffs: function() {
+        if (!this.state || !Array.isArray(this.state.buffs)) return false;
+        const jetzt = Date.now();
+        const vorher = this.state.buffs.length;
+        this.state.buffs = this.state.buffs.filter(b => !b.expires || b.expires > jetzt);
+        return this.state.buffs.length !== vorher;
     },
 
     // Anzeige des zuletzt erzeugten legendären Items

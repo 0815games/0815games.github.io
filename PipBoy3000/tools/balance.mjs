@@ -218,12 +218,34 @@ function analyseMinigames(window, sources) {
     if (istDatenblatt(file)) continue;
     // Aufrufe mit echtem Auslöser. `testMinigames` zählt nicht: das ist ein
     // Debug-Dialog, der an ein Tile '?' hängt, das der Generator nie setzt.
-    const re = /startMinigame\(\s*['"](\w+)['"]/g;
+    // Auch Aufrufe über eine Variable (`const typ = isBomb ? 'defusal' : ...`)
+    // müssen zählen. Deshalb wird zusätzlich nach den Schlüsselnamen in
+    // String-Literalen gesucht, nicht nur im Aufruf selbst.
+    const aufrufRe = /startMinigame\(\s*['"](\w+)['"]/g;
     let m;
-    while ((m = re.exec(src))) {
+    while ((m = aufrufRe.exec(src))) {
       const ziel = file.replace(ROOT + '/', '');
       (erreichbar[m[1]] = erreichbar[m[1]] || []).push(ziel);
       aufrufe.push({key: m[1], datei: ziel});
+    }
+  }
+
+  // Aufrufe über eine Variable finden: der Schlüssel steht dann als
+  // String-Literal in der Datei, aber nicht direkt hinter `startMinigame(`.
+  for (const [file, src] of sources) {
+    if (istDatenblatt(file)) continue;
+    if (!/startMinigame\(/.test(src)) continue;
+    const ziel = file.replace(ROOT + '/', '');
+    for (const key of ALLE) {
+      if ((erreichbar[key] || []).includes(ziel)) continue;
+      const direkt = new RegExp(`startMinigame\\(\\s*['"]${key}['"]`);
+      const variabel = new RegExp(`['"]${key}['"]`);
+      if (direkt.test(src) || (variabel.test(src) && /const\s+\w+\s*=.*['"]/.test(src))) {
+        if (!(erreichbar[key] || []).includes(ziel)) {
+          (erreichbar[key] = erreichbar[key] || []).push(ziel);
+          aufrufe.push({key, datei: ziel});
+        }
+      }
     }
   }
 
@@ -234,7 +256,9 @@ function analyseMinigames(window, sources) {
   const fehlend = aufrufe.filter(a => !vorhanden.has(a.key));
 
   return {
-    liste: ALLE.map(type => ({type, erreicht: erreichbar[type] || []})),
+    // Pro Minispiel und Datei nur ein Eintrag - ein direkter Aufruf und ein
+    // Aufruf über eine Variable stehen oft in derselben Datei.
+    liste: ALLE.map(type => ({type, erreicht: [...new Set(erreichbar[type] || [])]})),
     vorhanden: [...vorhanden],
     fehlend
   };
@@ -474,18 +498,35 @@ export function buildReport() {
   if (armor.zeilen.every(a => a.schutz === '—')) befund.push('Rüstung schützt nicht (kein `def`-Feld).');
   if (tot.length) befund.push(`Minispiele ohne Auslöser: ${tot.map(m => m.type).join(', ')}.`);
   if (minigames.fehlend.length) befund.push(`Minispiel-Aufruf auf unbekannten Schlüssel: ${minigames.fehlend.map(f => f.key).join(', ')}.`);
-  befund.push(consumableWirksam.buffs ? 'Buffs wirken.' : 'Buff-Items wirken nicht (Bonus wird nie angewandt).');
-  befund.push(consumableWirksam.radResist ? 'Strahlungsresistenz wirkt.' : 'Strahlungsresistenz wird ignoriert.');
+  // Nur der Fehlerfall landet unter "Offen"; die Erfolgsmeldungen stehen
+  // schon in der Liste darüber.
+  if (!consumableWirksam.buffs) befund.push('Buff-Items wirken nicht (Bonus wird nie angewandt).');
+  if (!consumableWirksam.radResist) befund.push('Strahlungsresistenz wird ignoriert.');
   const chaLeer = SPECIAL.filter(k => special.leser[k].length === 0);
   if (chaLeer.length) befund.push(`SPECIAL ohne Wirkung: ${chaLeer.join(', ')}.`);
 
   l.push(`Das Spiel hat ${weapons.length} Waffen, ${armor.zeilen.length} Rüstungsteile, ${perks.length} Perks,`);
-  l.push(`${consumables.length} Verbrauchsgüter und ${monster.length} Monster. Die Schadens- und Preiskurve`);
-  l.push('der Waffen ist in Ordnung. Die Lücken liegen bei allem, was *nicht* Schaden ist:');
+  l.push(`${consumables.length} Verbrauchsgüter und ${monster.length} Monster.`);
   l.push('');
-  for (const b of befund) l.push(`- ${b}`);
+
+  // Eine Zeile pro Teilmechanik, die nur erfüllt oder offen sein kann.
+  const gemessen = [
+    ['Rüstung mindert Schaden', armor.zeilen.some(a => a.schutz !== '—' && a.schutz !== '0')],
+    ['Buffs wirken', consumableWirksam.buffs],
+    ['Strahlungsresistenz zählt', consumableWirksam.radResist],
+    ['jedes Minispiel hat einen Auslöser', tot.length === 0],
+    ['kein Aufruf auf unbekannten Minispiel-Schlüssel', minigames.fehlend.length === 0],
+    ['jeder SPECIAL-Wert wird gelesen', chaLeer.length === 0]
+  ];
+  for (const [name, ok] of gemessen) l.push(`- ${ok ? '✓' : '✗'} ${name}`);
   l.push('');
-  l.push('Details und Behebungsvorschläge in `docs/BALANCE_BEFUNDE.md`.');
+  if (befund.length) {
+    l.push('Offen:');
+    l.push('');
+    for (const b of befund) l.push(`- ${b}`);
+    l.push('');
+  }
+  l.push('Details in `docs/BALANCE_BEFUNDE.md`.');
   l.push('');
 
   // Ohne close() hält jsdom den Prozess mit seinen Timern am Leben und das

@@ -6,8 +6,14 @@ window.MiniGames = {
     // --- HACKING ---
     hacking: {
         words: [], password: "", attempts: 4, logs: [],
-        
-        init: function() {
+        onSuccess: null, onFail: null,
+
+        // Wie bei defusal: der Aufrufer (Terminal-Truhe) muss das Ergebnis
+        // erfahren. Ohne Rückruf blieb die Truhe zu und inDialog gesperrt.
+        init: function(onSuccess, onFail) {
+            this.onSuccess = (typeof onSuccess === 'function') ? onSuccess : null;
+            this.onFail = (typeof onFail === 'function') ? onFail : null;
+
             const int = Game.getStat('INT') || 1; 
             const diff = 12 - Math.min(8, int);
             const wordList = ["PASS", "FAIL", "DATA", "CODE", "HACK", "BIOS", "BOOT", "USER", "ROOT", "WIFI", "LINK", "NODE", "CORE", "DISK", "FILE", "SAVE", "LOAD", "EXIT"];
@@ -56,7 +62,12 @@ window.MiniGames = {
             } else {
                 UI.log("Zugriff verweigert.", "text-red-500");
             }
-            UI.stopMinigame();
+
+            const rueckruf = success ? this.onSuccess : this.onFail;
+            this.onSuccess = null;
+            this.onFail = null;
+            if (rueckruf) setTimeout(rueckruf, 800);
+            else UI.stopMinigame();
         }
     },
 
@@ -156,8 +167,16 @@ window.MiniGames = {
     defusal: {
         round: 1, maxRounds: 3, cursor: 50, direction: 1, speed: 1.5, zoneStart: 40, zoneWidth: 20,
         gameLoop: null, isRunning: false,
+        onSuccess: null, onFail: null,
 
-        init: function() {
+        // Die Truhe ruft das Minispiel mit ihren Rückrufen auf. Vorher nahm
+        // init() keine Argumente - der Aufrufer erfuhr deshalb nie, wie es
+        // ausging, und die Truhe blieb für immer zu (docs/BALANCE_BEFUNDE.md,
+        // B2). `memory` macht es seit jeher so.
+        init: function(onSuccess, onFail) {
+            this.onSuccess = (typeof onSuccess === 'function') ? onSuccess : null;
+            this.onFail = (typeof onFail === 'function') ? onFail : null;
+
             this.round = 1; this.maxRounds = 3; this.isRunning = true;
             this.setupRound();
             
@@ -231,10 +250,16 @@ window.MiniGames = {
                 Game.state.hp = Math.max(0, Game.state.hp - 30); 
                 if(typeof UI.update === 'function') UI.update(); 
             }
-            
-            setTimeout(() => {
-                UI.stopMinigame();
-            }, 1500);
+
+            // Der Aufrufer (Truhe) muss erfahren, wie es ausging - sonst bleibt
+            // sein Zustand auf "Dialog offen" stehen und die Truhe ist tot.
+            // Der Rückruf kommt nach den Effekten, damit die Meldung des
+            // Minispiels nicht überschrieben wird.
+            const rueckruf = success ? this.onSuccess : this.onFail;
+            this.onSuccess = null;
+            this.onFail = null;
+            if (rueckruf) setTimeout(rueckruf, 1500);
+            else setTimeout(() => UI.stopMinigame(), 1500);
         }
     },
 

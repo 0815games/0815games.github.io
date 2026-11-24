@@ -315,16 +315,10 @@ window.Combat = {
 
         if(roll <= enemyHitChance) {
             let dmg = this.enemy.dmg;
-            let armor = 0;
-            const slots = ['body', 'head', 'legs', 'feet', 'arms'];
-            slots.forEach(s => {
-                if(Game.state.equip[s]) {
-                    if (Game.state.equip[s].def) armor += Game.state.equip[s].def;
-                    if (Game.state.equip[s].props && Game.state.equip[s].props.bonus && Game.state.equip[s].props.bonus.DEF) {
-                        armor += Game.state.equip[s].props.bonus.DEF;
-                    }
-                }
-            });
+            // Rüstungsschutz aus allen fünf Slots. Vorher las dieser Block
+            // `equip[slot].def` - ein Feld, das kein Rüstungsteil besaß.
+            // Rüstung schützte damit gar nicht (docs/BALANCE_BEFUNDE.md, B1).
+            const armor = (typeof Game.equipDef === 'function') ? Game.equipDef() : 0;
             
             let dmgTaken = Math.max(1, dmg - Math.floor(armor / 2));
             Game.state.hp -= dmgTaken;
