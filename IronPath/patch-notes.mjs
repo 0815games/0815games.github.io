@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see docs/PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261123-aim5';
+import {getLanguage} from './language.mjs?v=20261123-aim6';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,23 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'aim6',build:'20261123-aim6',pr:405,
+    title:{en:'Living Field VI · Powder, Scars and a Breathing Field',de:'Lebendiges Feld VI · Pulver, Spuren und ein atmendes Feld'},
+    shipped:[
+      {en:'The muzzle now breathes powder smoke whenever the recoil is fresh, and shells throw dirt where they land - both keyed to values every viewer already has.',de:'Die Mündung atmet jetzt Pulverrauch, sobald der Rückstoß frisch ist, und Einschläge werfen Erde auf - beides an Werten, die jede Ansicht ohnehin hat.'},
+      {en:'A struck unit flares up and wobbles where the tracer lands, and impacts leave dark battle scars that fade after fourteen seconds - derived from the shot list, nothing new on the wire.',de:'Die getroffene Einheit flammt auf und wackelt, wo der Tracer landet, und Einschläge hinterlassen dunkle Schlachtspuren, die nach vierzehn Sekunden verblasst - abgeleitet aus der Schussliste, nichts Neues auf dem Draht.'},
+      {en:'Vehicles kick dust only while they actually drove - read from the tread marks - so a parked column between waves stays still.',de:'Fahrzeuge kicken nur dann Staub, wenn sie wirklich gefahren sind - gelesen aus den Kettenabdrücken - eine geparkte Kolonne zwischen den Wellen bleibt ruhig.'},
+      {en:'A running repair throws sparks from its work piece, and a landing upgrade blooms out of its pad so the level-up reads as an event.',de:'Ein laufender Reparatur wirft Funken vom Werkstück, und ein landendes Upgrade blüht aus dem Pad - der Levelaufstieg liest sich als Ereignis.'},
+      {en:'Between waves the field breathes: a thin wisp from the bunker stack, a flag waving on the roof, and a soldier glancing and stretching during the quiet.',de:'Zwischen den Wellen atmet das Feld: ein dünner Wölkchen aus dem Bunker-Schlot, eine wehende Fahne auf dem Dach und ein Soldat, der in der Ruhe umschaut und streckt.'},
+      {en:'Rain threads and puddles with a sliding glint show on marsh and forest, and the marsh gets a brief double flash of lightning - weather from the painter’s clock, behind the weather switch.',de:'Regenfäden und Pfützen mit wanderndem Schein gibt es auf Marsch und Wald, dazu ein kurzes Doppelfenster Blitz über der Marsch - Wetter aus der Maler-Uhr, hinter dem Wetter-Schalter.'},
+      {en:'The prestige halo is now amethyst (#b48ce0) instead of the upgrade’s gold - the operator’s call: same colour as the upgrade made no sense.',de:'Der Prestige-Halo ist jetzt Amethyst (#b48ce0) statt des Upgrade-Golds - Betreiber-Entscheid: „selbe Farbe wie Upgrade ist schwachsinnig“.'},
+      {en:'Raised the cache wave to 20261123-aim6, because the field gained new layers: no device should fight with yesterday’s eyes.',de:'Die Cache-Welle auf 20261123-aim6 erhöht, weil das Feld neue Ebenen bekam: Kein Gerät soll mit den Augen von gestern kämpfen.'},
+    ],
+    open:[
+      {en:'The Living Field series has shipped its eighth package. Acceptance of this wave is the operator’s own run in the game - device checks stay with the operator. What comes next is the operator’s call.',de:'Das achte Paket der Reihe Lebendiges Feld ist live. Die Sichtung dieser Welle macht der Betreiber selbst im Spiel - Geräteabnahmen bleiben Betreiber-Sache. Was als Nächstes kommt, entscheidet der Betreiber.'},
+    ]
+  },
   {
     id:'aim5',build:'20261123-aim5',pr:388,
     title:{en:'Living Field V · Clouds, Wind and a Frightened Flock',de:'Lebendiges Feld V · Wolken, Wind und eine erschrockene Schar'},

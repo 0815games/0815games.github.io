@@ -1,11 +1,11 @@
-import {translateText as tr,getLanguage} from '../language.mjs?v=20261123-aim5';
+import {translateText as tr,getLanguage} from '../language.mjs?v=20261123-aim6';
 import {towerDisplay} from './progression.mjs?v=20261105-prestige1';
-import {specializationRank} from './tower-specialization.mjs?v=20261123-aim5';
-import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261123-aim5';
-import {ENEMY_INTEL,SOLDIER_MAX_HP} from './combat.mjs?v=20261123-aim5';
+import {specializationRank} from './tower-specialization.mjs?v=20261123-aim6';
+import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261123-aim6';
+import {ENEMY_INTEL,SOLDIER_MAX_HP} from './combat.mjs?v=20261123-aim6';
 import {bossPhase} from './boss-mechanics.mjs?v=20261031-finale1';
 import {shotTrace,shotsToDraw} from './shot-tracers.mjs?v=20261117-shots1';
-import {buildRoadPath} from './road-geometry.mjs?v=20261123-aim5';
+import {buildRoadPath} from './road-geometry.mjs?v=20261123-aim6';
 // Drawing only: the simulation, coordinates and hit areas stay unchanged.
 const ink='#1d3028',paper='#f1e7c4';
 function line(ctx,points,color=ink,width=3){ctx.beginPath();points.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();}
@@ -395,7 +395,7 @@ function sprite(ctx,name,notify){
 // follows. Images that failed to load stay on the vector fallback instead of asking
 // for a redraw every frame.
 export function spritesPending(){for(const entry of spriteImages.values())if(!entry.ready&&!entry.failed)return true;return false;}
-function bunker(ctx,state,notify,approach=0){
+function bunker(ctx,state,notify,approach=0,time=0,motion=true){
   const damage=state.hp/Math.max(1,state.maxHp||100),plating=state.plating||0;
   // Everything is drawn around the bunker centre (0,0) and the caller
   // translates to the map's bunker coordinates: the sprite finally stands
@@ -421,6 +421,16 @@ function bunker(ctx,state,notify,approach=0){
     oval(ctx,q.x,q.y-21,3,3,'#6b563c',null);
   }
   line(ctx,[[p1.x,p1.y-17],[p2.x,p2.y-17]],'#6b563c',4);
+  // IPL-0128 Fahnen-Wellung: a flag on the bunker roof. It waves only in the
+  // wave lull and only when motion is allowed; in battle and under reduced
+  // motion it hangs still - the same pennant either way, never a new state.
+  const flagLull=!state.running&&!state.ended&&(state.hp??100)>0;
+  const wave=flagLull&&motion?1:0;
+  const fph=Number.isFinite(time)?time*2.4:0;
+  const d1=wave?Math.sin(fph)*4:0,d2=wave?Math.sin(fph+1.2)*4:0;
+  line(ctx,[[-50,-38],[-50,-76]],'#5c4a33',2.5);
+  oval(ctx,-50,-77.5,2.5,2.5,'#6b563c',null);
+  shape(ctx,[[-50,-74],[-26,-71+d1],[-32,-63+d2],[-50,-61]],'#c9553f',ink,1.6);
   ctx.fillStyle='#344231';ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText('BUNKER',0,-44);ctx.textAlign='start';
 }
 // The layered turrets: the painted pit stays the ground truth of the
@@ -440,6 +450,17 @@ function muzzleFx(ctx,recoil,muzzles,port,arc){
   if(recoil<=0)return;
   const cx=port[0]+(1-recoil)*arc[0],cy=port[1]+(1-recoil)*arc[1];
   ctx.save();ctx.globalAlpha=recoil;oval(ctx,cx,cy,2.2,1.4,'#d9c08a','#8a6f3c',.8);ctx.restore();
+  // IPL-0128 Rueckstossrauch: das Fach atmet Pulver - klein und dicht an
+  // der Muedung, wenn der Schuss frisch ist, breiter und faeber wenn sich
+  // der Lauf setzt. Dasselbe Fenster wie die Huelle (recoil > 0), also
+  // sieht reduzierte Bewegung (Rueckstoss 0) keinen Rauch.
+  ctx.save();
+  for(const [mx,my,r] of muzzles){
+    const spread=1-recoil;
+    ctx.globalAlpha=recoil*.5;
+    oval(ctx,mx-spread*2.5,my-1-spread*4,r*.75+spread*3,r*.55+spread*2.4,'#8f968b',null);
+  }
+  ctx.restore();
   if(recoil<=.5)return;
   const f=(recoil-.5)*2;
   for(const [mx,my,r] of muzzles){
@@ -558,7 +579,7 @@ function sniperTurret(ctx,x,y,aim){
   muzzleFx(ctx,recoil,[[40.5,-1.5,5]],[-4,3],[-3,-7]);
   ctx.restore();
 }
-function pad(ctx,p,tower,selected,types,notify,pulse=1,aim=null){
+function pad(ctx,p,tower,selected,types,notify,pulse=1,aim=null,levelFx=null){
   const x=p.x,y=p.y;
   // V2 field art: the build plate is a painted concrete weapons emplacement -
   // part of the ground, in the same rendered look as the buildings. The
@@ -582,14 +603,16 @@ function pad(ctx,p,tower,selected,types,notify,pulse=1,aim=null){
   // Everything here is painted BEFORE the tower itself (the artwork lands at
   // the end of this function), so the glow can be strong without covering the
   // tower it belongs to - a glow that hides its own tower is worse than none.
-  // A static gold halo remains visible even when reduced motion is enabled.
+  // A static amethyst halo remains visible even when reduced motion is enabled.
+  // IPL-0128: Prestige wears amethyst (#b48ce0), not the upgrade's gold - the
+  // same colour for both was called out by the operator as nonsense.
   if(display.prestige){
     const pool=radial(ctx,x,y-6,2,x,y-6,58);
-    if(pool){pool.addColorStop(0,'rgba(255,214,110,.36)');pool.addColorStop(.5,'rgba(255,196,72,.18)');pool.addColorStop(1,'rgba(255,196,72,0)');
+    if(pool){pool.addColorStop(0,'rgba(180,140,224,.36)');pool.addColorStop(.5,'rgba(165,120,230,.18)');pool.addColorStop(1,'rgba(165,120,230,0)');
       ctx.save();ctx.beginPath();ctx.ellipse(x,y-6,58,46,0,0,Math.PI*2);ctx.fillStyle=pool;ctx.fill();ctx.restore();}
-    ctx.save();ctx.shadowColor='#ffd75c';ctx.shadowBlur=26;oval(ctx,x,y-4,30,26,'rgba(255,207,79,.20)','#f8d572',2.5);ctx.restore();
-    ctx.save();ctx.strokeStyle='rgba(255,228,156,.5)';ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(x,y-4,37,32,0,0,Math.PI*2);ctx.stroke();ctx.restore();
-    ctx.fillStyle='#ffe59a';ctx.font='bold 9px Arial';ctx.textAlign='center';ctx.fillText(`★${display.prestige}`,x,y-28);ctx.textAlign='start';}
+    ctx.save();ctx.shadowColor='#b48ce0';ctx.shadowBlur=26;oval(ctx,x,y-4,30,26,'rgba(180,140,224,.20)','#c9a8f2',2.5);ctx.restore();
+    ctx.save();ctx.strokeStyle='rgba(214,196,255,.5)';ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(x,y-4,37,32,0,0,Math.PI*2);ctx.stroke();ctx.restore();
+    ctx.fillStyle='#efe4ff';ctx.font='bold 9px Arial';ctx.textAlign='center';ctx.fillText(`★${display.prestige}`,x,y-28);ctx.textAlign='start';}
   // Specialization rank chevrons under the plate: one small gold wedge per
   // earned rank (level 4/5; prestige keeps three forever).
   const kitRank=specializationRank(tower);
@@ -636,6 +659,16 @@ function pad(ctx,p,tower,selected,types,notify,pulse=1,aim=null){
     if(tower.classTier>=2){oval(ctx,mx+4,my-8,3,3,'#f0d68a','#172720',1);oval(ctx,mx-4,my-8,3,3,'#f0d68a','#172720',1);}
   }
   oval(ctx,x+18,y+13,9,9,paper);ctx.fillStyle=ink;ctx.font='bold 11px Georgia';ctx.textAlign='center';ctx.fillText(String(display.level),x+18,y+17);ctx.textAlign='start';
+  // IPL-0128 Level-Up-Sichtbarkeit: das Abzeichen pocht, wenn der Turm
+  // aufsteigt - ein Emblem-Blitz rund um die Zahl, die sich eben drehete.
+  // Nur ein Wert, den der Effekt ohnehin mitbringt; keine Uhr, kein Zustand.
+  if(Number.isFinite(levelFx)){
+    const t=Math.max(0,Math.min(1,levelFx));
+    ctx.save();ctx.globalAlpha=Math.max(0,1-t);
+    ctx.beginPath();ctx.arc(x+18,y+13,10+16*t,0,Math.PI*2);ctx.strokeStyle='#fff6d8';ctx.lineWidth=2.6-2*t;ctx.stroke();
+    star(ctx,x+18,y+13,2+(1-t)*6);ctx.fillStyle='#fdf6e0';ctx.fill();
+    ctx.restore();
+  }
 }
 function soldier(ctx,p,own,pose={},notify){
   const x=p.x,y=p.y,artwork=sprite(ctx,'hero2',notify);
@@ -655,7 +688,7 @@ function soldier(ctx,p,own,pose={},notify){
   ctx.restore();
   ctx.font='bold 11px Georgia';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle=ink;ctx.strokeText(p.name||tr('HERO'),x,y+29);ctx.fillStyle=paper;ctx.fillText(p.name||tr('HERO'),x,y+29);ctx.textAlign='start';
 }
-function enemy(ctx,e,reducedMotion,notify,heading=0,bank=0,time=0,rail=false){
+function enemy(ctx,e,reducedMotion,notify,heading=0,bank=0,time=0,rail=false,dust=1,hit=0){
   const x=e.x,y=e.y;
   // V3 movement: the vehicles fly and drive where they are going. The heading
   // comes from the road geometry (the caller reads it off the next path
@@ -692,8 +725,6 @@ function enemy(ctx,e,reducedMotion,notify,heading=0,bank=0,time=0,rail=false){
     if(train)ctx.drawImage(train,-26,-12,52,24);
     else ctx.drawImage(artwork,-(e.boss?30:20),-(e.boss?22:13),e.boss?60:40,e.boss?38:25);
     ctx.restore();
-    if(!reducedMotion&&e.hp>0){for(let i=0;i<2;i++){const back=angle+Math.PI,side=angle+Math.PI/2*(i?1:-1),ph=((t0*.9+i*.5+x*.01)%1+1)%1;
-      ctx.save();ctx.globalAlpha=.16*(1-ph);oval(ctx,x+Math.cos(back)*(20+ph*14)+Math.cos(side)*6,y+Math.sin(back)*(20+ph*14)+Math.sin(side)*4+8,4+ph*5,2.5+ph*3,train?'#9aa39b':'#b7a67e',null);ctx.restore();}}
   }
   else if(flies){
     // The plane flies nose-first and banks into the coming bend.
@@ -712,6 +743,11 @@ function enemy(ctx,e,reducedMotion,notify,heading=0,bank=0,time=0,rail=false){
     if(!reducedMotion&&e.hp>0){const ph=(((t0*(e.kind==='runner'?2.4:1.6)+(x+y)*.021)%1)+1)%1;
       ctx.save();ctx.globalAlpha=.13*(1-ph);oval(ctx,x-ph*7,y+12,3+ph*4.5,1.6+ph*1.8,'#b7a67e',null);ctx.restore();}
   }
+  // IPL-0128 Fahrzeug-Staub: land machines kick dust from what they actually
+  // drove - the tread marks - and the puff draws even when the hull falls
+  // back to a marker, because dust belongs to the ground, not the artwork.
+  if(!reducedMotion&&e.hp>0&&dust>0&&drives){for(let i=0;i<2;i++){const back=angle+Math.PI,side=angle+Math.PI/2*(i?1:-1),ph=((t0*.9+i*.5+x*.01)%1+1)%1;
+    ctx.save();ctx.globalAlpha=0.16*dust*(1-ph);oval(ctx,x+Math.cos(back)*(20+ph*14)+Math.cos(side)*6,y+Math.sin(back)*(20+ph*14)+Math.sin(side)*4+8,4+ph*5,2.5+ph*3,train?'#9aa39b':'#b7a67e',null);ctx.restore();}}
   // A vehicle shot to pieces tells you so: dark smoke boils off it in a
   // slow loop, the same visual sentence the bunker already speaks. It is
   // read off the life fraction alone, so every viewer paints the same
@@ -721,6 +757,14 @@ function enemy(ctx,e,reducedMotion,notify,heading=0,bank=0,time=0,rail=false){
     for(let i=0;i<3;i++){const phase=(((t0*.5+i/3+(x+y)*.013)%1)+1)%1;
       ctx.globalAlpha=.3*(1-phase*.65);
       oval(ctx,x+Math.sin(t0*1.4+i*2.1)*3+phase*5,y-14-phase*24,3+phase*6.5,2.2+phase*4.5,'#3d4740',null);}
+    ctx.restore();
+  }
+  // IPL-0128 Treffer-Feedback: the struck unit flares up - a bright emblem
+  // star on the body, and on a machine two light dents across the plating.
+  if(hit>0){
+    ctx.save();ctx.globalAlpha=Math.min(1,hit*1.2);
+    star(ctx,x,y-11,5+7*hit);ctx.fillStyle='#fdf6e0';ctx.fill();
+    if(drives){line(ctx,[[x-8,y-4],[x+7,y]],'#fdf6e0',1.7);line(ctx,[[x-5,y+2],[x+6,y-3]],'#ffe9a0',1.3);}
     ctx.restore();
   }
   if(!e.boss&&ENEMY_INTEL[e.kind]){const bx=x+(e.kind==='tank'?18:15),by=y+10;oval(ctx,bx,by,7,7,'#344a3b','#f7e5b5',1);ctx.fillStyle='#fff3d2';ctx.font='bold 9px Arial';ctx.textAlign='center';ctx.fillText(ENEMY_INTEL[e.kind].symbol,bx,by+3);ctx.textAlign='start';}
@@ -735,6 +779,24 @@ function ambient(ctx,theme,time,width,height){
   else if(theme==='marsh'){for(let i=0;i<22;i++){const x=(i*83+t*60)%width,y=(i*127+t*125)%height;line(ctx,[[x,y],[x-4,y+9]],'#d7e7d6',1);}}
   else if(theme==='urban'||theme==='outpost'||theme==='scrub'||theme==='junction'){for(let i=0;i<22;i++){const x=(i*109+t*6)%width,y=((i*83-t*14)%height+height)%height;oval(ctx,x,y,1.4,1.4,'#f3d092',null);}}
   else{for(let i=0;i<4;i++){const x=((i*270+t*7)%(width+220))-110;oval(ctx,x,80+i*(height/4),85,13,'#d9ddbd',null);}}
+  // IPL-0128 Wettergefuehl: rain threads (dense on the marsh, light in the
+  // forest) and puddle discs with a glint sliding across - all from the same
+  // painter's clock the existing particles already use.
+  if(theme==='marsh'||theme==='forest'){
+    const dense=theme==='marsh',threads=dense?16:10,fall=dense?260:150,drift=dense?140:70,len=dense?14:9;
+    ctx.globalAlpha=dense?0.3:0.18;ctx.strokeStyle=dense?'#cfe4ea':'#c9e4de';ctx.lineWidth=1;
+    for(let i=0;i<threads;i++){
+      const x=((i*97+t*drift)%(width+40))-20,y=((i*151+t*fall)%height);
+      ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-5,y+len);ctx.stroke();
+    }
+    for(let i=0;i<3;i++){
+      const px=width*(0.2+0.27*i),py=height*(0.68+0.06*(i%2));
+      ctx.globalAlpha=0.3;oval(ctx,px,py,16+i*5,4.5+i*1.4,'#577379',null);
+      const gx=px-14+((t*(20+i*4)+i*40)%28);
+      ctx.globalAlpha=0.5;ctx.strokeStyle='#cfe9ee';ctx.lineWidth=1.8;
+      ctx.beginPath();ctx.moveTo(gx,py-1.5);ctx.lineTo(gx+7,py-1.5);ctx.stroke();
+    }
+  }
   ctx.restore();
 }
 // How startled the birds are: read off the shot list every viewer already
@@ -1218,15 +1280,63 @@ function lifeBar(ctx,x,y,width,fraction){
   ctx.restore();
 }
 export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,theme='road',shotAge=0,effects=[],reducedMotion=false,weatherEffects=true,combatTracers=true,soldierPoses={},towerAims={},groundTracks=[],paths=[path],width=960,height=540,bunkerPosition={x:900,y:400},storyMission=null,storyStage=null,storyTime=0,renderScale=1,artVersion=0,deco=[],zones=[],torches=[],onSpritesReady=null,groundSeed=0}){
-  ctx.save();ctx.lineCap='round';ctx.lineJoin='round';const storyArt=storyMission?prepareStoryArt(ctx.canvas?.ownerDocument):null;drawTerrain(ctx,path,theme,{paths,width,height,storyMission,pads,storyArt,renderScale,artVersion,deco,zones,notify:onSpritesReady,groundSeed});drawZoneStates(ctx,zones,state);fieldZone(ctx,path,state,theme);brokenIce(ctx,path,state,theme);drawGroundTracks(ctx,groundTracks,theme);if(storyMission){if(weatherEffects)drawStoryAtmosphere(ctx,storyMission,storyTime,reducedMotion,width,height,path,pads);drawStoryObjective(ctx,storyMission,storyStage,storyTime,reducedMotion,storyArt);}else if(!reducedMotion&&weatherEffects)ambient(ctx,theme,storyTime,width,height);if(!reducedMotion&&weatherEffects)ambientLife(ctx,theme,storyTime,width,height,state.shots,shotAge);const approach=path.length>1?Math.atan2(bunkerPosition.y-path[path.length-2].y,bunkerPosition.x-path[path.length-2].x):0;
+  ctx.save();ctx.lineCap='round';ctx.lineJoin='round';const storyArt=storyMission?prepareStoryArt(ctx.canvas?.ownerDocument):null;drawTerrain(ctx,path,theme,{paths,width,height,storyMission,pads,storyArt,renderScale,artVersion,deco,zones,notify:onSpritesReady,groundSeed});drawZoneStates(ctx,zones,state);fieldZone(ctx,path,state,theme);brokenIce(ctx,path,state,theme);drawGroundTracks(ctx,groundTracks,theme);
+  // IPL-0128 Schlacht-Spuren: a painted list of impacts, derived from the
+  // shots every viewer already receives. Stored against the canvas per field,
+  // capped and pruned by the painter's own clock - painted state only.
+  if(!reducedMotion&&combatTracers&&!state.ended){
+    const scars=scarList(ctx,me),now=Number.isFinite(storyTime)?storyTime:0;
+    for(const s of shotsToDraw(state.shots)){
+      const tr=shotTrace(s,shotAge,{renderScale,reducedMotion:false});
+      if(!tr||!tr.impact)continue;
+      const dup=scars.some(m=>(Number.isInteger(s.id)&&m.sid===s.id)||(Math.abs(m.x-tr.tx)<6&&Math.abs(m.y-tr.ty)<6&&now-m.born<0.5));
+      if(dup)continue;
+      scars.push({x:tr.tx,y:tr.ty,style:tr.style,sid:Number.isInteger(s.id)?s.id:null,born:now});
+      if(scars.length>30)scars.shift();
+    }
+    for(let i=scars.length-1;i>=0;i--)if(now-scars[i].born>14)scars.splice(i,1);
+    ctx.save();
+    for(const m of scars){
+      const age=Math.max(0,now-m.born);
+      ctx.globalAlpha=Math.max(0.15,0.6-age*0.03);
+      const r=m.style==='cannon'?9:m.style==='sniper'?4.5:6;
+      oval(ctx,m.x,m.y,r,r*.62,'#463c2a',null);
+      if(m.style==='cannon'){for(let k=0;k<4;k++){const ang=k*(Math.PI/2)+0.4+m.x*.01;
+        line(ctx,[[m.x+Math.cos(ang)*r*.5,m.y+Math.sin(ang)*r*.35],[m.x+Math.cos(ang)*r*1.5,m.y+Math.sin(ang)*r*1.05]],'#3a3226',1.4);}}
+    }
+    ctx.restore();
+  }
+  if(storyMission){if(weatherEffects)drawStoryAtmosphere(ctx,storyMission,storyTime,reducedMotion,width,height,path,pads);drawStoryObjective(ctx,storyMission,storyStage,storyTime,reducedMotion,storyArt);}else if(!reducedMotion&&weatherEffects)ambient(ctx,theme,storyTime,width,height);if(!reducedMotion&&weatherEffects)ambientLife(ctx,theme,storyTime,width,height,state.shots,shotAge);const approach=path.length>1?Math.atan2(bunkerPosition.y-path[path.length-2].y,bunkerPosition.x-path[path.length-2].x):0;
+  // IPL-0128 Wellen-Ruhe: between waves, while the field is not ended and the
+  // bunker lives, the painting is allowed to breathe (chimney, flag, soldier).
+  const lull=!state.running&&!state.ended&&(state.hp??100)>0;
+  const nowSec=Number.isFinite(storyTime)?storyTime:0;
+  // IPL-0128 Treffer-Feedback: fresh impacts from the same shot list the
+  // tracers paint - position based, no enemy ids, nothing new on the wire.
+  const hitMarks=[];
+  if(!reducedMotion&&combatTracers&&!state.ended){
+    for(const s of shotsToDraw(state.shots)){
+      const tr=shotTrace(s,shotAge,{renderScale,reducedMotion:false});
+      if(tr&&tr.impact&&tr.impact.alpha>0)hitMarks.push(tr);
+    }
+  }
   // The bunker flinches when it takes a hit - the impact effect carries the
   // timing, the shake is a decaying wobble around the flinch.
   const hit=!reducedMotion&&(effects||[]).find(f=>f&&f.kind==='bunkerHit');
   const flinch=hit?Math.max(0,1-(hit.progress||0))*3.2:0;
   const fx=flinch?flinch*Math.sin((hit.progress||0)*34):0,fy=flinch?flinch*Math.cos((hit.progress||0)*29):0;
-  ctx.save();ctx.translate(bunkerPosition.x+fx,bunkerPosition.y+fy);bunker(ctx,state,onSpritesReady,approach);ctx.restore();
+  ctx.save();ctx.translate(bunkerPosition.x+fx,bunkerPosition.y+fy);bunker(ctx,state,onSpritesReady,approach,Number.isFinite(storyTime)?storyTime:0,!reducedMotion);ctx.restore();
   drawTorches(ctx,torches,theme,storyTime,reducedMotion,onSpritesReady);
   if(!reducedMotion&&weatherEffects&&state.hp>0&&state.hp/Math.max(1,state.maxHp||100)<.35){const t=Number.isFinite(storyTime)?storyTime:0;ctx.save();ctx.globalAlpha=.28;for(let i=0;i<3;i++){const phase=((t*.3+i/3)%1+1)%1;oval(ctx,bunkerPosition.x+20+Math.sin(t+i)*3,bunkerPosition.y-18-phase*25,3+phase*5,2+phase*3,'#465447',null);}ctx.restore();}
+  // IPL-0128: between waves the stack breathes a thin, calm wisp - lighter
+  // than the damage smoke and on only when the field itself is at rest.
+  if(lull&&!reducedMotion&&weatherEffects){
+    const ct=Number.isFinite(storyTime)?storyTime:0;
+    ctx.save();ctx.globalAlpha=.2;
+    for(let i=0;i<3;i++){const phase=((ct*.12+i/3)%1+1)%1;
+      oval(ctx,bunkerPosition.x+20+Math.sin(ct*.6+i*2.1)*2.5,bunkerPosition.y-18-phase*30,2.6+phase*4,2+phase*3,'#a8b0a3',null);}
+    ctx.restore();
+  }
   // Enemy entries live where the roads actually cross the border - any of
   // the four edges - instead of two fixed labels on the left rim.
   ctx.font='bold 12px Georgia';
@@ -1244,16 +1354,60 @@ export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,th
   const selected=state.towers.find(t=>t.pad===state.selectedPad);if(selected&&!state.ended){const p=pads[selected.pad];ctx.save();ctx.beginPath();ctx.arc(p.x,p.y,getTowerRange(selected),0,Math.PI*2);ctx.fillStyle='rgba(139,190,173,.14)';ctx.fill();ctx.globalAlpha=reducedMotion?1:.88+.12*Math.sin(storyTime/.42);ctx.strokeStyle='#c2dfd2';ctx.lineWidth=2.2;ctx.setLineDash([6,5]);ctx.stroke();ctx.restore();}
   if(!reducedMotion)for(const tower of state.towers){const owner=state.players[tower.ownerId],p=pads[tower.pad];if(p&&owner?.active!==false&&owner?.overdrive>0){ctx.beginPath();ctx.ellipse(p.x,p.y,31,27,0,0,Math.PI*2);ctx.strokeStyle='#fff1a3';ctx.lineWidth=3;ctx.setLineDash([5,5]);ctx.stroke();ctx.setLineDash([]);}}
   const selectionPulse=reducedMotion?1:.85+.15*Math.sin(storyTime/.3);
-  pads.forEach((p,i)=>pad(ctx,p,state.towers.find(t=>t.pad===i),state.selectedPad===i,types,onSpritesReady,selectionPulse,towerAims?towerAims[i]:null));
+  // IPL-0128: an upgrade effect landing on this pad pulses its level badge.
+  // The caller only forwards the effect's own progress - presentation only.
+  pads.forEach((p,i)=>{
+    let levelFx=null;
+    if(!reducedMotion&&combatTracers)for(const ef of effects){
+      if(!ef||(ef.kind!=='upgrade'&&ef.kind!=='classUpgrade'&&ef.kind!=='build'))continue;
+      if(Math.abs(ef.x-p.x)<26&&Math.abs(ef.y-p.y)<26){levelFx=Number.isFinite(ef.progress)?ef.progress:null;break;}
+    }
+    pad(ctx,p,state.towers.find(t=>t.pad===i),state.selectedPad===i,types,onSpritesReady,selectionPulse,towerAims?towerAims[i]:null,levelFx);
+  });
   // Block E: a damaged tower carries its life above the pad; at zero it sits
   // dark on its pad until repaired, and a running repair shows its mark.
-  for(const tower of state.towers){const p=pads[tower.pad],maxHp=tower.maxHp;if(!p||!maxHp)continue;const hp=tower.hp??maxHp;if(hp<=0){ctx.save();ctx.globalAlpha=.45;ctx.beginPath();ctx.ellipse(p.x,p.y,26,22,0,0,Math.PI*2);ctx.fillStyle='#101a15';ctx.fill();ctx.restore();}if(hp>0)lifeBar(ctx,p.x,p.y-34,36,hp/maxHp);if(tower.repairing>0)oval(ctx,p.x+15,p.y-31,4,4,'#ffe3a8','#192b23',1);}
+  for(const tower of state.towers){const p=pads[tower.pad],maxHp=tower.maxHp;if(!p||!maxHp)continue;const hp=tower.hp??maxHp;if(hp<=0){ctx.save();ctx.globalAlpha=.45;ctx.beginPath();ctx.ellipse(p.x,p.y,26,22,0,0,Math.PI*2);ctx.fillStyle='#101a15';ctx.fill();ctx.restore();}if(hp>0)lifeBar(ctx,p.x,p.y-34,36,hp/maxHp);if(tower.repairing>0){
+      oval(ctx,p.x+15,p.y-31,4,4,'#ffe3a8','#192b23',1);
+      // IPL-0128 Reparatur-Funken: kleine Funken spruehen vom Werkstueck -
+      // Phase aus der Maler-Uhr, keine Uhr und kein Zustand auf dem Draht.
+      if(!reducedMotion){
+        const rt=Number.isFinite(storyTime)?storyTime:0;
+        ctx.save();
+        for(let i=0;i<3;i++){
+          const ph=(((rt*2.6+i/3+tower.pad*.17)%1)+1)%1;
+          const a=ph*Math.PI*1.6+tower.pad*.9,r=5+ph*13;
+          ctx.globalAlpha=(1-ph)*.85;
+          oval(ctx,p.x+15+Math.cos(a)*r,p.y-31-Math.sin(ph*Math.PI)*9+Math.sin(a)*3,1.7,1.3,'#ffe9a0',null);
+        }
+        ctx.restore();
+      }
+    }}
   // The soldier is drawn from the first frame, not from wave one. He used to appear
   // only while `state.wave>0`, and since the movement order itself was accepted
   // before the first deploy (the simulation walks him there), the hero moved
   // invisibly: the newest player tapped the ground, got "Hero moving to position",
   // and watched nothing happen. A hero you cannot see is a hero you cannot command.
-  for(const p of Object.values(state.players))if(p.active!==false){if(state.wave>0&&p.mobileSupply?.remaining>0){ctx.save();ctx.beginPath();ctx.arc(p.x,p.y,22,0,Math.PI*2);ctx.strokeStyle='#89d9ed';ctx.lineWidth=3;ctx.stroke();ctx.restore();}soldier(ctx,p,p.id===me,soldierPoses[p.id],undefined,onSpritesReady);if(Number.isFinite(p.hp))lifeBar(ctx,p.x,p.y-30,30,p.hp/SOLDIER_MAX_HP);if(p.downed>0){ctx.save();ctx.fillStyle='#ffd9c2';ctx.font='bold 11px Georgia';ctx.textAlign='center';ctx.fillText(String(Math.ceil(p.downed)),p.x,p.y-36);ctx.restore();}}
+  for(const p of Object.values(state.players))if(p.active!==false){if(state.wave>0&&p.mobileSupply?.remaining>0){ctx.save();ctx.beginPath();ctx.arc(p.x,p.y,22,0,Math.PI*2);ctx.strokeStyle='#89d9ed';ctx.lineWidth=3;ctx.stroke();ctx.restore();}soldier(ctx,p,p.id===me,soldierPoses[p.id],undefined,onSpritesReady);
+    // IPL-0128 Wellen-Ruhe: zwischen den Wellen blickt der Held sich um
+    // und prueft sein Gewehr - zwei kleine Maler-Zeichen aus derselben
+    // Uhr wie das Ambient, kein Zustand, kein Pose-Eingriff.
+    if(lull&&!reducedMotion&&!(p.downed>0)&&!(soldierPoses[p.id]||{}).moving){
+      const it=Number.isFinite(storyTime)?storyTime:0;
+      const cyc=(((it*.42+(p.x*.013+p.y*.017))%1)+1)%1;
+      if(cyc<.16){
+        const g=Math.sin(cyc/.16*Math.PI);
+        ctx.save();ctx.globalAlpha=.7*g;
+        line(ctx,[[p.x-11,p.y-26],[p.x-6,p.y-30]],paper,1.6);
+        line(ctx,[[p.x-13,p.y-21],[p.x-8,p.y-24]],paper,1.4);
+        ctx.restore();
+      }else if(cyc>.5&&cyc<.62){
+        const g=Math.sin((cyc-.5)/.12*Math.PI);
+        ctx.save();ctx.globalAlpha=.9*g;
+        star(ctx,p.x+8*(((soldierPoses[p.id]||{}).facing||1)),p.y-12,3.2);ctx.fillStyle='#fdf6e0';ctx.fill();
+        ctx.restore();
+      }
+    }
+    if(Number.isFinite(p.hp))lifeBar(ctx,p.x,p.y-30,30,p.hp/SOLDIER_MAX_HP);if(p.downed>0){ctx.save();ctx.fillStyle='#ffd9c2';ctx.font='bold 11px Georgia';ctx.textAlign='center';ctx.fillText(String(Math.ceil(p.downed)),p.x,p.y-36);ctx.restore();}}
   if(theme==='scrub'&&path.length===10)for(const cloud of state.dustClouds||[]){
     ctx.save();ctx.beginPath();ctx.arc(cloud.x,cloud.y,75,0,Math.PI*2);ctx.fillStyle='rgba(210,168,119,.12)';ctx.fill();ctx.strokeStyle='rgba(133,88,57,.45)';ctx.lineWidth=2;ctx.setLineDash(reducedMotion?[]:[4,9]);ctx.stroke();ctx.restore();
   }
@@ -1275,7 +1429,24 @@ export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,th
     }
     if(e.boss==='bossBomber'&&e.bossFlash>0&&!reducedMotion)burst(ctx,bunkerPosition.x,bunkerPosition.y,20+(1-e.bossFlash)*12,'#ef9e68');
     if(e.boss==='bossJuggernaut'&&e.bossFlash>0&&!reducedMotion)burst(ctx,e.x,e.y-20,15,'#cce7a2');
-    ctx.save();if(state.running&&!reducedMotion){const offset=Math.sin((Number.isFinite(storyTime)?storyTime:0)*5+(e.x+e.y)*.035)*(e.kind==='plane'?.8:1.2);ctx.translate(0,offset);}// Where is this unit going? The next path point gives the heading, the
+    let hit=0;
+    for(const tr of hitMarks){const d=Math.hypot(tr.tx-e.x,tr.ty-e.y);if(d<(e.boss?30:17)&&tr.impact.alpha>hit)hit=tr.impact.alpha;}
+    // IPL-0128: dust reads the tread marks the sampler stamped - actual
+    // movement, so a standing column stops puffing between waves.
+    let dust=state.running?0.7:0;
+    if(Array.isArray(groundTracks)&&groundTracks.length){
+      let fresh=0;
+      for(const m of groundTracks){
+        if(!m||(m.kind!=='tread'&&m.kind!=='rail'))continue;
+        const age=nowSec-(Number.isFinite(m.bornAt)?m.bornAt:-99);
+        if(age<0||age>2.2)continue;
+        if(Math.abs(m.x-e.x)<60&&Math.abs(m.y-e.y)<44)fresh++;
+      }
+      dust=Math.min(1,fresh/2);
+    }
+    ctx.save();if(state.running&&!reducedMotion){const offset=Math.sin((Number.isFinite(storyTime)?storyTime:0)*5+(e.x+e.y)*.035)*(e.kind==='plane'?.8:1.2);ctx.translate(0,offset);}
+    // The struck unit wobbles with the same freshness the impact draws with.
+    if(hit>0)ctx.translate(Math.sin(hit*51+e.x)*2.6*hit,Math.cos(hit*37+e.y)*1.4*hit);// Where is this unit going? The next path point gives the heading, the
     // bend after it gives the bank - read from geometry, never stored.
     const road=paths[e.road]||paths[0];let heading=0,bank=0;
     if(road&&Array.isArray(road)&&road.length>1&&Number.isFinite(e.segment)){
@@ -1284,7 +1455,7 @@ export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,th
       if(Math.hypot(dx,dy)>1)heading=Math.atan2(dy,dx);
       if(Math.hypot(nd,ny)>1){let turn=Math.atan2(ny,nd)-heading;while(turn>Math.PI)turn-=Math.PI*2;while(turn<-Math.PI)turn+=Math.PI*2;bank=turn;}
     }
-    enemy(ctx,e,reducedMotion,onSpritesReady,heading,bank,Number.isFinite(storyTime)?storyTime:0,theme==='junction');ctx.restore();
+    enemy(ctx,e,reducedMotion,onSpritesReady,heading,bank,Number.isFinite(storyTime)?storyTime:0,theme==='junction',Math.min(1,dust),hit);ctx.restore();
   }
   // A busy field fires more shots than it can show. The oldest are left out of
   // the paint - they still happened, they still hit, they simply do not lie
@@ -1299,9 +1470,30 @@ export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,th
     oval(ctx,pop.x+Math.sin(age*7)*2,pop.y-8-age*16,5+age*7,4+age*5,`rgba(78,84,78,${(.34*(1-age)).toFixed(3)})`,null);
     ctx.restore();}}
   if(!reducedMotion&&combatTracers)for(const effect of effects)drawAbility(ctx,effect);
+  // IPL-0128 Blitz: a short double flash over the marsh, hard-timed from the
+  // painter's own clock - a weather feeling, not a weather state.
+  if(!reducedMotion&&weatherEffects&&!storyMission&&theme==='marsh'){
+    const lt=Number.isFinite(storyTime)?storyTime:0,ph=lt%19;
+    let glow=0;
+    if(ph<0.09)glow=0.16*(1-ph/0.09);
+    else if(ph>0.16&&ph<0.24)glow=0.09*(1-Math.abs(ph-0.2)/0.04);
+    if(glow>0){ctx.save();ctx.globalAlpha=glow;ctx.fillStyle='#eef4ff';ctx.fillRect(0,0,width,height);ctx.restore();}
+  }
   ctx.restore();
 }
 
+// IPL-0128 Schlacht-Spuren: the painter's own list of impacts, keyed by the
+// canvas and the field's `me` so own and rival lanes keep separate ground.
+// Capped, pruned by the painter's clock, never touching simulation state.
+const scarField=new WeakMap();
+function scarList(ctx,me){
+  let byMe=scarField.get(ctx);
+  if(!byMe){byMe=new Map();scarField.set(ctx,byMe);}
+  const key=String(me??'');
+  let list=byMe.get(key);
+  if(!list){list=[];byMe.set(key,list);}
+  return list;
+}
 function burst(ctx,x,y,r,fill){
   const points=[];for(let i=0;i<16;i++){const a=Math.PI*i/8,d=i%2?r*.52:r;points.push([x+Math.cos(a)*d,y+Math.sin(a)*d]);}
   // V3: the emblem language - every flash carries the polished silver rim.
@@ -1445,6 +1637,15 @@ function drawAbility(ctx,e){
   }else if(e.kind==='build'||e.kind==='upgrade'||e.kind==='classUpgrade'){
     // V3: a stamp in the emblem's metal - silver ring, iron smoke for a new
     // emplacement, the gold star for a level gained.
+    // IPL-0128 Level-Up-Blitz: a bright bloom punches out of the pad while
+    // the effect is fresh, under the ring - the upgrade reads as an event.
+    if(t<0.5){
+      const bt=1-t*2;
+      const g=radial(ctx,e.x,e.y-6,2,e.x,e.y-6,12+46*t);
+      if(g){g.addColorStop(0,`rgba(255,246,214,${(0.85*bt).toFixed(3)})`);g.addColorStop(1,'rgba(255,246,214,0)');ctx.fillStyle=g;}
+      else ctx.fillStyle='#fff6d8';
+      ctx.save();ctx.globalAlpha=bt*0.7;ctx.beginPath();ctx.arc(e.x,e.y-6,10+44*t,0,Math.PI*2);ctx.fill();ctx.restore();
+    }
     ctx.beginPath();ctx.arc(e.x,e.y-12,12+14*t,0,Math.PI*2);ctx.strokeStyle=e.kind==='classUpgrade'?'#f0c478':'#d9dde1';ctx.lineWidth=3-2*t;ctx.stroke();
     if(e.kind==='build'){burst(ctx,e.x,e.y-12,9+8*t,'#b8d69d');for(let i=0;i<2;i++)oval(ctx,e.x+(i?7:-7),e.y-22-t*16,4+2*t,3+2*t,`rgba(78,84,78,${(.35*fade).toFixed(3)})`,null);}
     else{star(ctx,e.x,e.y-12,8+6*t);ctx.fillStyle=e.kind==='classUpgrade'?'#f39db8':'#f0d68a';ctx.fill();ctx.strokeStyle='#1d3028';ctx.lineWidth=1.5;ctx.stroke();}
