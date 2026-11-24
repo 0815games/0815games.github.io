@@ -39,11 +39,12 @@
       Beide löschen oder Einstieg bauen — siehe BEFUNDE.md Punkt 2.
 - [ ] Munition: usesAmmo wird nie gelesen, der ganze Zweig ist unerreichbar
       (BEFUNDE.md Punkt 4, verschärft B9).
-- [ ] Supermutant droppt caps als Item, das es nicht gibt (BEFUNDE.md Punkt 5).
-- [ ] Dynamische Tailwind-Klassen (text-${themeColor}-…) fehlen im CSS
+- [x] Kronkorken-Drops landen als Guthaben statt als Phantom-Item: Combat.win
+      nutzt jetzt safeGiveItem (BEFUNDE.md Punkt 5).
+- [x] Dynamische Tailwind-Klassen durch vollständige Paletten ersetzt
       (BEFUNDE.md Punkt 6).
-- [ ] renderCharStats/renderCharPerks in ui_view_inv.js sind toter Code
-      (BEFUNDE.md Punkt 3).
+- [x] renderCharStats/renderCharPerks in ui_view_inv.js waren toter Code —
+      205 Zeilen entfernt, Aufrufer umgestellt (BEFUNDE.md Punkt 3).
 - [ ] Spielstand verkleinern: 'explored' wächst um ~45 kB pro Sektor.
 - [x] CI: `.github/workflows/pipboy-verify.yml` baut, testet und prüft, dass der
       eingecheckte Build zum Quellstand passt; dazu der Portal-Test.

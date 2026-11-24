@@ -261,7 +261,9 @@ const UI = {
                 this.logout("AFK: ZEITÜBERSCHREITUNG");
             }
         }
-        if(typeof this.renderChar === 'function' && this.charTab === 'status') this.renderChar();
+        // Hier stand früher ein renderChar()-Aufruf. Die Funktion ist entfernt
+        // (BEFUNDE.md, 3); diese update()-Fassung wird ohnehin von
+        // ui_render_core.js überschrieben.
     },
 
     init: function() {

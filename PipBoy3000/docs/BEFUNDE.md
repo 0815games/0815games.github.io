@@ -49,7 +49,7 @@ aber jeder beim Suchen verwirren. Kein Spielverhalten ändert sich.
 
 ---
 
-## 3. Sechs `gambleLegendaryLoot`-Nachbarn: `renderCharStats`/`renderCharPerks` sind toter Code
+## 3. Toter Char-Code in `ui_view_inv.js` *(behoben)*
 
 `ui_view_inv.js` enthält zwei Render-Funktionen für S.P.E.C.I.A.L. und Perks,
 die auf `#special-list` und `#perks-list` zugreifen — **beide IDs existieren
@@ -64,8 +64,15 @@ Dasselbe Muster bei `char-sheet-name`, `char-sheet-lvl`, `sheet-stat-points`,
 `sheet-perk-points` und `status-points-alert`: fünf IDs, die `renderChar`,
 `renderCharStats` und `renderCharStatus` erwarten, aber kein Template liefert.
 
-→ **Empfehlung:** den Block in `ui_view_inv.js` löschen, sobald jemand die
-Char-Ansicht anfasst. Vorher lohnt es nicht: er tut nichts und stört nichts.
+**Behoben:** die vier Funktionen (`renderChar`, `renderCharStatus`,
+`renderCharStats`, `renderCharPerks`) sind entfernt — 205 Zeilen. Die Aufrufer
+zeichnen jetzt den aktiven Screen neu (`UI.renderStats`) bzw. aktualisieren das
+HUD (`UI.update`). Das Bündel ist dadurch 8 kB kleiner.
+
+Der Vollständigkeitsnachweis: `renderChar` wurde aus `game_inv_logic.js`,
+`ui_input.js` und `ui_core.js` gerufen — ein Aufruf in der `update()`-Fassung
+von `ui_core.js`, die von `ui_render_core.js` überschrieben wird, also selbst
+nie lief. **Keine der vier Funktionen hatte je eine Wirkung.**
 
 ---
 
@@ -93,7 +100,7 @@ wird sonst alles gleich.
 
 ---
 
-## 5. Supermutanten lassen Kronkorken als *Item* fallen
+## 5. Supermutanten ließen Kronkorken als *Item* fallen *(behoben)*
 
 `data_monsters.js:67`:
 
@@ -113,11 +120,25 @@ Definition, siehe B4), das Guthaben bleibt bei null. Der Supermutant lässt also
 sichtbar nichts fallen — dabei ist er mit `loot: 30` ohnehin der beste
 Kronkorken-Lieferant. Der Eintrag ist reine Verschwendung einer Drop-Chance.
 
-→ **Empfehlung:** den Eintrag entfernen. `loot` deckt Kronkorken bereits ab.
+**Behoben an der Wurzel, nicht am Symptom:** `Combat.win` vergab Drops über
+`addToInventory` statt über die vorhandene Abstraktion `Game.safeGiveItem`, die
+Kronkorken als Währung verbucht. Jetzt läuft der ganze Loot-Pfad darüber. Der
+Fallback (falls `safeGiveItem` fehlt) verbucht `caps` ebenfalls korrekt.
+
+Dass es nicht nur der Supermutant war, zeigt der Vergleich: `generateScaledLoot`
+und `safeGiveItem` in `game_map.js` machten es schon richtig — nur der
+Kampf-Pfad nicht.
+
+Ende-zu-Ende geprüft: Supermutant besiegt → Guthaben 0 → 15, Inventar enthält
+`ammo`, kein `caps`-Eintrag mehr.
+
+**Warum der bestehende Test das nicht fand:** er übersprang `caps` mit dem
+Kommentar „wird gesondert verbucht" — das war die Annahme, die nicht stimmte.
+Die Ausnahme ist entfernt und durch zwei Tests ersetzt.
 
 ---
 
-## 6. Farbklassen, die der Build nicht erzeugt
+## 6. Farbklassen, die der Build nicht erzeugt *(behoben)*
 
 Der Wechsel von Tailwind-CDN auf Build-Zeit hat eine Schwäche, die bei
 dynamisch zusammengesetzten Klassennamen zuschlägt. Tailwind sammelt Klassen
@@ -137,10 +158,14 @@ Sichtbare Folge: Beim Überfahren der Stadtkacheln wechseln nur die grünen und
 gelben Titel die Farbe; rote und blaue bleiben stumm, und der Lichtstreifen im
 Hintergrund fehlt ganz. Es sieht nicht kaputt aus, nur unfertig.
 
-→ **Empfehlung:** eine `safelist` in der Tailwind-Konfiguration in
-`build.mjs` oder — besser — die vier Farbvarianten als vollständige Klassennamen
-hinschreiben. Beides ist ein kleiner Eingriff; er ist nicht gemacht, weil er
-das Aussehen ändert und dafür ein Auge gebraucht wird.
+**Behoben durch vollständige Klassennamen.** Die Stadtkacheln haben jetzt eine
+Palettentabelle mit allen vier Farben (`title`, `sub`, `glow`), der Kampfkopf
+eine Zuordnung für legendär/normal. Alle 20 Klassen sind im gebauten CSS
+nachweisbar; `app.css` wächst dadurch um 1,2 kB.
+
+Zwei Tests sichern das ab: einer verbietet zusammengesetzte Klassennamen im
+Quelltext, der andere prüft die vier Paletten gegen das gebaute CSS. Eine neue
+Farbe braucht damit einen bewussten Eintrag — und fällt auf, wenn sie fehlt.
 
 ---
 

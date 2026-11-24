@@ -380,10 +380,20 @@ window.Combat = {
             if(this.enemy && this.enemy.drops) {
                 let dropsArr = Array.isArray(this.enemy.drops) ? this.enemy.drops : [this.enemy.drops];
                 dropsArr.forEach(d => {
-                    if (d && d.id && typeof Game.addToInventory === 'function') {
-                        let chance = (d.c !== undefined) ? Number(d.c) : 1;
-                        if(Math.random() < chance) Game.addToInventory(d.id, 1);
-                    }
+                    if (!d || !d.id) return;
+                    let chance = (d.c !== undefined) ? Number(d.c) : 1;
+                    if (Math.random() >= chance) return;
+                    // Kronkorken sind kein Item, sondern die Währung. Roh ins
+                    // Inventar gelegt landeten sie als unsichtbarer Eintrag ohne
+                    // Item-Definition und das Guthaben blieb unverändert
+                    // (docs/BEFUNDE.md, 5). safeGiveItem verbucht sie richtig.
+                    const give = (typeof Game.safeGiveItem === 'function')
+                        ? Game.safeGiveItem.bind(Game)
+                        : (id, n) => {
+                            if (id === 'caps') Game.state.caps = (Game.state.caps || 0) + n;
+                            else Game.addToInventory(id, n);
+                        };
+                    give(d.id, 1);
                 });
             }
 
