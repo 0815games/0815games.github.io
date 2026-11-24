@@ -10,6 +10,10 @@ import {
 import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261124-sitz18';
 import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261124-sitz18';
 import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261124-sitz18';
+import {
+  PERKS, canFoundCharter, grantCharters, buyPerk, perkEffect, perkLevel, availableCharters, emptyCharter,
+  applyCharterToData,
+} from './domain/charters.js?v=20261124-sitz18';
 const SEEN_NOTES_KEY = 'ttt:notes-seen';
 import { withTimeout } from './async-util.js?v=20261124-sitz18';
 import { checkTownName } from './town-names.js?v=20261124-sitz18';
@@ -59,6 +63,7 @@ const fmt0 = (n) => nf0.format(Math.floor(n));
 const fmtRate = (n) => nf2.format(n);
 
 let data = null;
+let baseData = null; // Spieldaten ohne Freibrief-Perks, z. B. für Besuche
 let cloud = null;          // ./cloud.js, loaded after the data
 let uid = null;            // signed-in user, null when signed out
 let state = null;          // current town, null until loaded or founded
@@ -97,9 +102,9 @@ async function loadData() {
   return Object.fromEntries(names.map((n, i) => [n, parts[i]]));
 }
 
-function ctx() {
+function ctx(d = data) {
   return {
-    data,
+    data: d,
     dateKey: localDateKey(),
     maxElapsedSec: data.economy.offline.baseCapHours * 3600,
   };
@@ -121,7 +126,8 @@ async function boot() {
   }
   await versionGate.start();
   try {
-    data = await loadData();
+    baseData = await loadData();
+    refreshData();
   } catch (e) {
     showFatal(`Spieldaten konnten nicht geladen werden. Bitte über einen Webserver öffnen. (${e.message})`);
     return;
@@ -173,6 +179,9 @@ async function onUser(user) {
 
 async function enterAccount(user) {
   if (!user) {
+    charter = null;
+    charterLoaded = false;
+    refreshData();
     if (adminUnwatch) adminUnwatch();
     adminUnwatch = null;
     adminChanged = false;
@@ -215,6 +224,7 @@ async function enterAccount(user) {
   remoteLoaded = true;
   const remote = res.remote;
   watchAdminChanges(uid, remote?.adminEditedAt);
+  loadCharterFor(uid);
   const candidates = [remote, local].filter(Boolean).sort((a, b) => b.lastTick - a.lastTick);
   if (!candidates.length) {
     state = null;
@@ -576,6 +586,7 @@ function bindStatic() {
   $('#logout-btn').addEventListener('click', askLogout);
   $('#help-btn').addEventListener('click', showHelp);
   $('#friends-btn').addEventListener('click', openFriends);
+  $('#charter-btn').addEventListener('click', openCharters);
   $('#visit-exit').addEventListener('click', endVisit);
   window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && visit) endVisit(); });
   // Menü oben rechts: öffnet und schließt die Schaltflächen Hilfe, Feldnotizen, Neu beginnen, Abmelden.
@@ -784,6 +795,7 @@ function renderHud() {
   $('#town-name').textContent = t.name;
   $('#town-meta').textContent = `${biome} · Raster ${gridSize(t.townLevel, data)} × ${gridSize(t.townLevel, data)}`;
   $('#coins').textContent = fmt0(t.coins);
+  $('#hud-coins').textContent = fmt0(t.coins);
   $('#level-label').textContent = `Stadtlevel ${t.townLevel}`;
 
   const th = data.economy.townLevelThresholds;
@@ -891,6 +903,32 @@ function multiplierText(m) {
   return `×${nf2.format(m)}`;
 }
 
+/**
+ * Kosten als Symbole mit Vorrat („Vorrat / Bedarf“). Grün = genug, rot = zu wenig.
+ */
+function costChips(c) {
+  const mat = data.resources[c.material.resource];
+  const coins = Math.floor(state.coins);
+  const stock = Math.floor(state.stock[c.material.resource] ?? 0);
+  const chip = (icon, name, have, need) => {
+    const ok = have >= need;
+    const label = `${name}: ${fmt0(have)} von ${fmt0(need)}, ${ok ? 'genug' : 'zu wenig'}`;
+    return `<span class="cost-chip ${ok ? 'ok' : 'short'}" aria-label="${esc(label)}"><span aria-hidden="true">${icon}</span> ${fmt0(have)} / ${fmt0(need)}</span>`;
+  };
+  return `<div class="cost-row">${chip('🪙', 'Münzen', coins, c.coins)}${chip(mat.icon, mat.name.de, stock, c.material.amount)}</div>`;
+}
+
+/** Sagt, was genau fehlt. Leer, wenn alles reicht. */
+function missingText(c) {
+  const mat = data.resources[c.material.resource];
+  const miss = [];
+  const coins = Math.ceil(c.coins - state.coins);
+  const units = Math.ceil(c.material.amount - (state.stock[c.material.resource] ?? 0));
+  if (coins > 0) miss.push(`${fmt0(coins)} 🪙`);
+  if (units > 0) miss.push(`${fmt0(units)} ${esc(mat.name.de)}`);
+  return miss.length ? `Dir fehlen: ${miss.join(' und ')}` : '';
+}
+
 function buildingDetails(b, x, y) {
   const def = data.buildings[b.id];
   const m = productionMultiplier(state, x, y, b.id, data);
@@ -904,11 +942,10 @@ function buildingDetails(b, x, y) {
   }
   if (b.level < def.maxLevel) {
     const c = buildCost(b.id, b.level, data);
-    const matName = data.resources[c.material.resource].name.de;
     const ok = state.coins >= c.coins && state.stock[c.material.resource] >= c.material.amount;
-    html += `<p class="small">Upgrade: ${fmt0(c.coins)} 🪙 und ${c.material.amount} ${esc(matName)}</p>`;
+    html += `<p class="small">Upgrade:</p>${costChips(c)}`;
     html += `<button type="button" class="primary" data-action="upgrade" ${ok ? '' : 'disabled'}>Auf Stufe ${b.level + 1} ausbauen</button>`;
-    if (!ok) html += '<p class="small warn">Dir fehlen Münzen oder Material.</p>';
+    if (!ok) html += `<p class="small warn">${missingText(c)}</p>`;
   } else {
     html += '<p class="small ok">Maximalstufe erreicht.</p>';
   }
@@ -921,7 +958,6 @@ function buildMenu(x, y) {
   if (buildIdx >= entries.length) buildIdx = 0;
   const [id, d] = entries[buildIdx];
   const c = buildCost(id, 0, data);
-  const matName = data.resources[c.material.resource].name.de;
   const locked = d.unlockTownLevel > state.townLevel;
   const affordable = state.coins >= c.coins && state.stock[c.material.resource] >= c.material.amount;
   let meta;
@@ -937,10 +973,10 @@ function buildMenu(x, y) {
       <button type="button" data-action="cycle" data-dir="-1" data-cycle aria-label="Vorherige Option">‹</button>
       <div class="opt">
         <div><strong>${d.icon} ${esc(d.name.de)}</strong> <span class="muted small">${buildIdx + 1} / ${entries.length}</span>
-          <div class="meta">${fmt0(c.coins)} 🪙 · ${c.material.amount} ${esc(matName)}</div>
+          ${costChips(c)}
           <div class="meta">${meta}</div>
           ${locked ? `<div class="locked-note">Ab Stadtlevel ${d.unlockTownLevel}</div>` : ''}
-          ${!locked && !affordable ? '<div class="locked-note">Dir fehlen Münzen oder Material</div>' : ''}
+          ${!locked && !affordable ? `<div class="locked-note">${missingText(c)}</div>` : ''}
         </div>
         <button type="button" data-action="build" data-id="${id}" ${locked || !affordable ? 'disabled' : ''}>Bauen</button>
       </div>
@@ -1279,7 +1315,7 @@ async function startVisit(friendUid, friendName) {
   }
   endVisit();
   const town = hydrateTown(raw);
-  const model = { state: advance(town, Date.now(), ctx()).state };
+  const model = { state: advance(town, Date.now(), ctx(baseData)).state };
   visit = { uid: friendUid, model, board: null, timer: null };
   $('#visit-name').textContent = town.name;
   $('#visit').hidden = false;
@@ -1289,14 +1325,14 @@ async function startVisit(friendUid, friendName) {
     describe: (x, y) => describeIn(model.state, x, y),
     getModel: () => ({
       state: model.state,
-      data,
+      data: baseData,
       unlocked: (x, y) => isUnlocked(x, y, model.state.townLevel, data),
     }),
   });
   updateVisitInfo();
   visit.timer = setInterval(() => {
     if (!visit || visit.model !== model) return;
-    model.state = advance(model.state, Date.now(), ctx()).state;
+    model.state = advance(model.state, Date.now(), ctx(baseData)).state;
     visit.board?.redraw();
     updateVisitInfo();
   }, 1000);
@@ -1321,7 +1357,7 @@ function describeIn(st, x, y) {
   const tile = st?.tiles[keyOf(x, y)];
   if (!tile) return '';
   const b = tile.building;
-  return [`Feld ${x + 1}, ${y + 1}`, TERRAIN_DE[tile.terrain], b ? data.buildings[b.id].name.de : 'frei'].join(' · ');
+  return [`Feld ${x + 1}, ${y + 1}`, TERRAIN_DE[tile.terrain], b ? baseData.buildings[b.id].name.de : 'frei'].join(' · ');
 }
 
 /**
@@ -1336,6 +1372,130 @@ function claimExistingName(forUid, town) {
 }
 
 /** Freunde-Fenster: eigene Stadt, Code, Einladung, Anfragen, klappbare Liste. */
+// ---------- Freibriefe (Prestige), Regeln in src/domain/charters.js ----------
+// Der Stand liegt unter charters/{uid} und bleibt beim Neubeginn erhalten.
+// Solange er nicht geladen ist, wird nichts geschrieben, damit ein leerer Stand nicht den echten überschreibt.
+let charter = null;
+let charterLoaded = false;
+// Nur diese Perks wirken schon. „Eilpost“ kommt mit den Konvois (P2) und ist bis dahin markiert.
+const WIRED_PERKS = new Set(['startCoins', 'yield', 'storage', 'market', 'memory']);
+
+/** Spieldaten mit den Perk-Wirkungen dieses Kontos neu berechnen. */
+function refreshData() {
+  if (baseData) data = applyCharterToData(baseData, charter);
+}
+
+async function loadCharterFor(forUid) {
+  charter = null;
+  charterLoaded = false;
+  try {
+    const raw = await cloud.loadCharter(forUid);
+    const base = emptyCharter();
+    charter = raw ? { ...base, ...raw, perks: raw.perks ?? {}, founded: raw.founded ?? {} } : base;
+    charterLoaded = true;
+    refreshData();
+  } catch (err) {
+    console.error('Freibriefe nicht geladen:', err);
+  }
+}
+
+function openCharters() {
+  if (!state || !uid) {
+    toast('Melde dich an und lade deine Stadt, dann öffnen sich die Freibriefe.', 'error');
+    return;
+  }
+  const dlg = openDialog('');
+  const paint = () => {
+    dlg.innerHTML = charterHtml();
+    dlg.querySelector('#found-charter')?.addEventListener('click', foundCharter);
+    dlg.querySelectorAll('button[data-perk]').forEach((b) => {
+      b.addEventListener('click', () => buyPerkUi(b.dataset.perk, paint));
+    });
+  };
+  paint();
+}
+
+function charterHtml() {
+  const c = charter ?? emptyCharter();
+  const f = state && charterLoaded ? canFoundCharter(state, c) : { ok: false, reason: 'Keine Stadt geladen.' };
+  const avail = availableCharters(c);
+  const status = !charterLoaded
+    ? 'Freibriefe konnten nicht geladen werden. Prüfe deine Verbindung.'
+    : f.ok ? `Du kannst jetzt einen Freibrief gründen: +${f.gain}.` : f.reason;
+  const rows = PERKS.map((p) => {
+    const lvl = perkLevel(c, p.id);
+    const canBuy = charterLoaded && lvl < p.max && avail >= 1;
+    const note = WIRED_PERKS.has(p.id) ? '' : ' · Wirkung folgt (Konvois, ab P2)';
+    return `<li class="friend-card">
+      <div><strong>${esc(p.label)}</strong> <span class="small">Stufe ${lvl}/${p.max}</span>
+        <div class="small">${esc(p.effect)}${note}</div></div>
+      <button type="button" class="${canBuy ? 'primary' : 'ghost'}" data-perk="${p.id}" ${canBuy ? '' : 'disabled'}>+1</button>
+    </li>`;
+  }).join('');
+  return `<div class="dlg-body charters">
+    <h2 id="dlg-title">Freibriefe</h2>
+    <p>Verfügbar: <strong>${avail}</strong> · Insgesamt gewonnen: ${c.earned}</p>
+    <section class="friends-me charter-box">
+      <p>${esc(status)}</p>
+      <button type="button" class="primary" id="found-charter" ${charterLoaded && f.ok ? '' : 'disabled'}>Freibrief gründen</button>
+      <p class="small">Die Stadt startet neu: Münzen, Gebäude, Lager, Level und Biom. Name und Freunde bleiben. Freibriefe und Perks bleiben erhalten.</p>
+    </section>
+    <h3>Perk-Baum</h3>
+    <ul class="friend-list">${rows}</ul>
+  </div>`;
+}
+
+async function foundCharter() {
+  if (!state || !uid || !charterLoaded || !charter) return;
+  const check = canFoundCharter(state, charter);
+  if (!check.ok) return toast(check.reason, 'error');
+  const n = check.gain;
+  const yes = await askConfirm(
+    'Freibrief gründen?',
+    `Deine Stadt startet neu. Du bekommst ${n} Freibrief${n === 1 ? '' : 'e'}. Name und Freunde bleiben, Freibriefe und Perks bleiben.`,
+    { ok: 'Ja, gründen' },
+  );
+  if (!yes || !state || !uid || !charterLoaded) return;
+  // Zuerst den Gewinn sichern, dann erst die Stadt neu starten.
+  const next = grantCharters(charter, state);
+  try {
+    await cloud.saveCharter(uid, next);
+  } catch (err) {
+    toast(cloud.dbErrorDe(err), 'error');
+    return;
+  }
+  charter = next;
+  const biome = chooseBiome(Math.random, state.biome);
+  const fresh = createTown({ name: state.name, biome, seed: newSeed(), now: Date.now(), data });
+  fresh.coins += perkEffect(charter, 'startCoins');
+  state = fresh;
+  selected = { x: 4, y: 4 };
+  cloudDirty = true;
+  lastCloudAt = 0;
+  saveLocal();
+  renderAll();
+  cloudSave();
+  closeDialog();
+  toast(`Neuer Start! +${n} Freibrief${n === 1 ? '' : 'e'} gutgeschrieben.`);
+}
+
+async function buyPerkUi(id, repaint) {
+  if (!uid || !charterLoaded || !charter) return;
+  const r = buyPerk(charter, id);
+  if (!r.ok) return toast(r.reason, 'error');
+  try {
+    await cloud.saveCharter(uid, r.charter);
+  } catch (err) {
+    toast(cloud.dbErrorDe(err), 'error');
+    return;
+  }
+  charter = r.charter;
+  refreshData();
+  renderAll();
+  repaint();
+  toast('Perk gekauft.');
+}
+
 function openFriends() {
   if (!state || !uid) {
     toast('Melde dich an und lade deine Stadt, dann öffnen sich die Freunde.', 'error');

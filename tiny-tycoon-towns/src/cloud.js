@@ -95,6 +95,19 @@ export async function loadProfile(uid) {
   return snap.exists() ? snap.val() : null;
 }
 
+// ---------- Freibriefe: ein Eintrag pro Konto, bleibt beim Neubeginn erhalten ----------
+
+const charterRef = (uid) => ref(db, `charters/${uid}`);
+
+export async function loadCharter(uid) {
+  const snap = await get(charterRef(uid));
+  return snap.exists() ? snap.val() : null;
+}
+
+export function saveCharter(uid, charter) {
+  return set(charterRef(uid), JSON.parse(JSON.stringify(charter)));
+}
+
 // ---------- Freundescode und Einladungen ----------
 
 const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';

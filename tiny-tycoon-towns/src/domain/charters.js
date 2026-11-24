@@ -1,5 +1,6 @@
 // Freibriefe (Prestige) nach docs/GAME_PLAN.md, Abschnitt 4.11.
-// Reine Rechenregeln: keine Oberfläche, kein Speichern. Die Anbindung an Stand und Spiel folgt später.
+// Reine Rechenregeln. Oberfläche und Speichern in main.js und cloud.js.
+// Die Perk-Wirkung geht über applyCharterToData() in die Spieldaten, die Wirtschaft liest sie dort.
 
 export const CHARTER_MIN_LEVEL = 8;
 export const CHARTER_MIN_LIFETIME = 100000;
@@ -18,7 +19,7 @@ export const PERKS = [
 export const TOTAL_PERK_POINTS = PERKS.reduce((sum, p) => sum + p.max, 0);
 
 export function emptyCharter() {
-  return { earned: 0, spent: 0, perks: {} };
+  return { earned: 0, spent: 0, perks: {}, founded: {} };
 }
 
 /** Freibriefe, die gerade gebraucht werden können (gewonnen minus ausgegeben). */
@@ -35,8 +36,14 @@ export function charterGain(lifetimeCoinsThisTown) {
   return Math.floor(Math.sqrt(Math.max(0, lifetimeCoinsThisTown) / CHARTER_UNIT));
 }
 
-/** Darf eine Stadt jetzt einen Freibrief gründen? Liefert { ok, reason?, gain? }. */
-export function canFoundCharter(town) {
+/**
+ * Darf diese Stadt jetzt einen Freibrief gründen? Liefert { ok, reason?, gain? }.
+ * Jede Stadt bringt nur einmal einen Freibrief, auch wenn der Speicher erneut lädt.
+ */
+export function canFoundCharter(town, charter) {
+  if (charter.founded?.[town.id]) {
+    return { ok: false, reason: 'Diese Stadt hat schon einen Freibrief gebracht.' };
+  }
   if (town.townLevel < CHARTER_MIN_LEVEL) {
     return { ok: false, reason: `Stadtlevel ${CHARTER_MIN_LEVEL} nötig.` };
   }
@@ -46,9 +53,13 @@ export function canFoundCharter(town) {
   return { ok: true, gain: charterGain(town.lifetimeCoins) };
 }
 
-/** Schreibt den Gewinn einer Gründung gut. Gibt einen neuen Stand zurück. */
-export function grantCharters(charter, lifetimeCoinsThisTown) {
-  return { ...charter, earned: charter.earned + charterGain(lifetimeCoinsThisTown) };
+/** Schreibt den Gewinn einer Gründung gut und merkt sich die Stadt. Gibt einen neuen Stand zurück. */
+export function grantCharters(charter, town) {
+  return {
+    ...charter,
+    earned: charter.earned + charterGain(town.lifetimeCoins),
+    founded: { ...(charter.founded ?? {}), [town.id]: true },
+  };
 }
 
 /** Kauft eine Perk-Stufe. Liefert { ok, reason?, charter? }. */
@@ -65,6 +76,26 @@ export function buyPerk(charter, id) {
 }
 
 /** Wirkung eines Perks bei der aktuellen Stufe, z. B. 0.10 für +10 % oder 500 für Startmünzen. */
+/**
+ * Kopie der Spieldaten mit den Perk-Wirkungen dieses Kontos. Die Originaldaten bleiben unverändert.
+ * Faktoren: yieldMultiplier (Ertrag), storageMultiplier (Lager), priceMultiplier (Verkaufspreis),
+ * offline.baseCapHours (Offline-Obergrenze, +Stunden).
+ */
+export function applyCharterToData(data, charter) {
+  const c = charter ?? emptyCharter();
+  const e = data.economy;
+  return {
+    ...data,
+    economy: {
+      ...e,
+      yieldMultiplier: 1 + perkEffect(c, 'yield'),
+      storageMultiplier: 1 + perkEffect(c, 'storage'),
+      priceMultiplier: 1 + perkEffect(c, 'market'),
+      offline: { ...e.offline, baseCapHours: e.offline.baseCapHours + perkEffect(c, 'memory') },
+    },
+  };
+}
+
 export function perkEffect(charter, id) {
   const def = PERKS.find((p) => p.id === id);
   return def ? perkLevel(charter, id) * def.per : 0;

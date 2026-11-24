@@ -102,7 +102,7 @@ function ancestorModes(live,path){
 // Felder einer Stadt, die jeder angemeldete Spieler lesen darf (Ansicht fremder Städte).
 export const PUBLIC_VIEW=['name','biome','townLevel','tiles'];
 // Erlaubte Hauptzweige. Neue Zweige müssen hier bewusst eingetragen werden.
-export const BRANCHES=['saves','sessions','admins','profiles','friendCodes','ownCodes','friendRequests','friends','townNames'];
+export const BRANCHES=['saves','sessions','admins','profiles','friendCodes','ownCodes','friendRequests','friends','townNames','charters'];
 export function checkRules(raw){
   const errors=[];
   const rules=unwrapRules(raw);
@@ -171,6 +171,16 @@ export function checkRules(raw){
     const tn=rules.townNames.$name;
     if(!tn)errors.push('townNames/$name fehlt');
     else if(!String(tn['.write']??'').includes('auth.uid'))errors.push('townNames/$name: .write ohne Eigentümerprüfung');
+  }
+  // Freibriefe: nur das Konto selbst liest und schreibt. Sonst kann niemand die Perks anderer ändern.
+  if(rules.charters){
+    const ch=rules.charters.$uid;
+    if(!ch)errors.push('charters/$uid fehlt');
+    else{
+      if(!String(ch['.read']??'').includes('auth.uid === $uid'))errors.push('charters/$uid: .read ohne Eigentümerprüfung');
+      if(!String(ch['.write']??'').includes('auth.uid === $uid'))errors.push('charters/$uid: .write ohne Eigentümerprüfung');
+      if(ch.$other?.['.validate']!==false)errors.push('charters/$uid: $other muss .validate false haben');
+    }
   }
   // Betreiber: admins/{uid} nur für das Konto selbst lesbar, nie von Clients schreibbar.
   const adm=rules.admins?.$uid;

@@ -51,6 +51,7 @@ export function productionMultiplier(state, x, y, buildingId, data) {
     );
     if (hit) m *= multiplier;
   }
+  m *= data.economy.yieldMultiplier ?? 1; // Freibrief-Perk „Ertrag“
   return m;
 }
 
@@ -97,7 +98,8 @@ export const marketLevels = (state) => sumBuildingLevels(state, 'marketSquare');
 
 export function storageCap(state, data) {
   const s = data.economy.storage;
-  return s.base + s.perWarehouseLevel * warehouseLevels(state);
+  // Freibrief-Perk „Lagerhaus“ wirkt als Faktor (1 = ohne Perk).
+  return Math.floor((s.base + s.perWarehouseLevel * warehouseLevels(state)) * (data.economy.storageMultiplier ?? 1));
 }
 
 export function throughputPerMin(state, data) {
@@ -106,6 +108,7 @@ export function throughputPerMin(state, data) {
 }
 
 export function sellPrice(resource, data) {
-  return data.resources[resource].basePrice;
+  // Freibrief-Perk „Warenkenner“ wirkt als Faktor (1 = ohne Perk).
+  return data.resources[resource].basePrice * (data.economy.priceMultiplier ?? 1);
 }
 
