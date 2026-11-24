@@ -23,10 +23,10 @@ Waffen: `pistol_10mm` `revolver_44` `shotgun` `combat_shotgun` `smg`
 `assault_rifle` `minigun` `laser_pistol` `laser_rifle` `plasma_pistol` `plasma_rifle`
 Rüstung: `power_armor`
 
-## Ausschuss in Block 4
+## Ausschuss in Block 4 — erledigt
 
-`greaves_metal` (14,9 % weiss) und `helmet_combat` (80,5 % weiss) — beide
-vom Pruefskript abgefangen, neu zeichnen.
+`greaves_metal` und `helmet_combat` wurden vom Pruefskript abgefangen
+(14,9 % und 80,5 % weisse Pixel) und neu gezeichnet. Beide sind jetzt im Set.
 
 ## Bildfehler-Prüfung
 
@@ -72,18 +72,18 @@ Nahkampf:
 | `power_fist` | angetriebene Powerfaust mit Hydraulik |
 | `deathclaw_gauntlet` | Handschuh aus Todeskrallen-Klauen |
 
-## Block 4 — Rüstung (25)  ← laeuft, Raider und Leder fertig
+## Block 4 — Rüstung (25) — KOMPLETT
 
 | Stufe | ids |
 |---|---|
 | Raider ✓ | `raider_armor` `raider_helm` `raider_arm_l` `raider_leg_r` |
 | Leder ✓ | `leather_armor` `leather_helm` `bracers_leather` `pants_leather` `boots_leather` |
-| Metall (3/4) | `metal_armor` `helmet_metal` `metal_arms` `greaves_metal` |
-| Kampf (4/5) | `combat_armor` `helmet_combat` `combat_arms` `combat_legs` `boots_combat` |
-| Synth (1/2) | `synth_armor` `synth_helmet` |
-| Sonstiges | `vault_suit` `hazmat_suit` `cap_baseball` `helmet_mining` `gas_mask` `jeans` `boots_worn` |
+| Metall ✓ | `metal_armor` `helmet_metal` `metal_arms` `greaves_metal` |
+| Kampf ✓ | `combat_armor` `helmet_combat` `combat_arms` `combat_legs` `boots_combat` |
+| Synth ✓ | `synth_armor` `synth_helmet` |
+| Sonstiges ✓ | `vault_suit` `hazmat_suit` `cap_baseball` `helmet_mining` `gas_mask` `jeans` `boots_worn` |
 
-## Block 5 — Handwerk, Rohstoffe, Rucksäcke (42)
+## Block 5 — Handwerk, Rohstoffe, Rucksäcke (42)  ← naechster Block
 
 Rucksäcke: `backpack_frame` `backpack_leather` `backpack_metal`
 `backpack_military` `backpack_cargo`
