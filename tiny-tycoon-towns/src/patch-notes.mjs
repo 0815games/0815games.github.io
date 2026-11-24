@@ -4,6 +4,16 @@
 
 export const RELEASED_PATCHES = [
   {
+    build: '20261124-sitz17',
+    date: '2026-11-24',
+    items: [
+      {
+        de: 'Freunde können dich jetzt auch finden, wenn du seit dem Update nichts an deiner Stadt geändert hast.',
+        en: 'Friends can find you now even if you have not changed your town since the update.',
+      },
+    ],
+  },
+  {
     build: '20261124-sitz16',
     date: '2026-11-24',
     items: [

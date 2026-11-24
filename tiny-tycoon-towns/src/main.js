@@ -3,23 +3,23 @@
 import {
   createTown, newSeed, chooseBiome, placeBuilding, upgradeBuilding,
   toggleSell, buyOffer, advance, hydrateTown, setTutorialStep,
-} from './domain/engine.js?v=20261124-sitz16';
+} from './domain/engine.js?v=20261124-sitz17';
 import {
   productionMultiplier, ratePerMin, buildCost, storageCap, classOf,
-} from './domain/economy.js?v=20261124-sitz16';
-import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261124-sitz16';
-import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261124-sitz16';
-import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261124-sitz16';
+} from './domain/economy.js?v=20261124-sitz17';
+import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261124-sitz17';
+import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261124-sitz17';
+import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261124-sitz17';
 const SEEN_NOTES_KEY = 'ttt:notes-seen';
-import { withTimeout } from './async-util.js?v=20261124-sitz16';
-import { checkTownName } from './town-names.js?v=20261124-sitz16';
-import { friendsShell, mountFriends } from './friends-ui.js?v=20261124-sitz16';
-import { createBoard } from './world/board.js?v=20261124-sitz16';
-import { createLoginScene } from './world/login-scene.js?v=20261124-sitz16';
-import { TUTORIAL_STEPS, HELP_SECTIONS } from './tutorial.js?v=20261124-sitz16';
-import { createVersionUI } from './version-ui.mjs?v=20261124-sitz16';
+import { withTimeout } from './async-util.js?v=20261124-sitz17';
+import { checkTownName } from './town-names.js?v=20261124-sitz17';
+import { friendsShell, mountFriends } from './friends-ui.js?v=20261124-sitz17';
+import { createBoard } from './world/board.js?v=20261124-sitz17';
+import { createLoginScene } from './world/login-scene.js?v=20261124-sitz17';
+import { TUTORIAL_STEPS, HELP_SECTIONS } from './tutorial.js?v=20261124-sitz17';
+import { createVersionUI } from './version-ui.mjs?v=20261124-sitz17';
 
-const BUILD = '20261124-sitz16';
+const BUILD = '20261124-sitz17';
 console.info(`Tiny Tycoon Towns ${BUILD}`);
 const LAST_BIOME_KEY = 'ttt.lastBiome';
 const LOCAL_KEY = (uid) => `ttt.save.v1.${uid}`;
@@ -90,7 +90,7 @@ const REMOTE_TIMEOUT_MS = 10_000;
 async function loadData() {
   const names = ['resources', 'biomes', 'buildings', 'economy', 'merchant'];
   const parts = await Promise.all(names.map((n) =>
-    fetch(`data/${n}.json?v=20261124-sitz16`).then((r) => {
+    fetch(`data/${n}.json?v=20261124-sitz17`).then((r) => {
       if (!r.ok) throw new Error(`data/${n}.json: HTTP ${r.status}`);
       return r.json();
     })));
@@ -135,7 +135,7 @@ async function boot() {
   window.addEventListener('offline', updateSync);
 
   try {
-    cloud = await import('./cloud.js?v=20261124-sitz16');
+    cloud = await import('./cloud.js?v=20261124-sitz17');
   } catch {
     showFatal('Das Konto-System konnte nicht geladen werden. Ohne Anmeldung lässt sich nicht spielen. Bitte Verbindung prüfen und neu laden.');
     return;
@@ -223,7 +223,7 @@ async function enterAccount(user) {
     return;
   }
   state = candidates[0];
-  claimExistingName(uid, state.name);
+  claimExistingName(uid, state);
   // A newer local copy that the cloud does not have yet must be pushed.
   cloudDirty = state === local && (!remote || local.lastTick > remote.lastTick);
   lastCloudAt = 0;
@@ -1324,11 +1324,15 @@ function describeIn(st, x, y) {
   return [`Feld ${x + 1}, ${y + 1}`, TERRAIN_DE[tile.terrain], b ? data.buildings[b.id].name.de : 'frei'].join(' · ');
 }
 
-/** Altbestand: Stadtnamen, die noch niemand beansprucht hat, für dieses Konto sichern. Vergebene bleiben unverändert. */
-function claimExistingName(forUid, name) {
-  const check = checkTownName(name);
-  if (!check.ok) return;
-  cloud.claimTownName(forUid, check.key).catch(() => {});
+/**
+ * Beim Laden: Name sichern und Profil schreiben. Ohne Profil findet dich kein Freund,
+ * und Stände, die nicht mehr gespeichert werden, würden es nie bekommen.
+ * Vergebene Namen bleiben unverändert.
+ */
+function claimExistingName(forUid, town) {
+  const check = checkTownName(town.name);
+  if (check.ok) cloud.claimTownName(forUid, check.key).catch(() => {});
+  cloud.saveProfile(forUid, { townName: town.name, townLevel: town.townLevel }).catch(() => {});
 }
 
 /** Freunde-Fenster: eigene Stadt, Code, Einladung, Anfragen, klappbare Liste. */
