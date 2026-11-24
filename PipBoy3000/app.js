@@ -449,15 +449,23 @@
     "bat_spiked",
     "boots_combat",
     "boots_leather",
+    "boots_worn",
     "bracers_leather",
     "buffout",
+    "cap_baseball",
     "combat_armor",
     "combat_arms",
     "combat_legs",
     "combat_shotgun",
     "deathclaw_gauntlet",
+    "gas_mask",
+    "greaves_metal",
+    "hazmat_suit",
+    "helmet_combat",
     "helmet_metal",
+    "helmet_mining",
     "hunting_rifle",
+    "jeans",
     "jet",
     "knife",
     "knuckles",
@@ -496,7 +504,9 @@
     "stealth_boy",
     "stimpack",
     "switchblade",
-    "synth_armor"
+    "synth_armor",
+    "synth_helmet",
+    "vault_suit"
   ];
 
   // src/data/data_recipes.js
