@@ -3,7 +3,7 @@
 Erzeugt von `node tools/balance.mjs --write`. Nicht von Hand ändern —
 die Zahlen kommen aus dem gebauten Bündel und dem Quelltext.
 
-Stand: Version 14.0.1
+Stand: Version 14.0.2
 
 ## 1. Waffen
 
@@ -122,7 +122,7 @@ Alle 10 Perks werden im Code gelesen.
 | STR | `src/game/game_combat.js:253` | 1 | 11 |
 | PER | `src/data/data_minigames.js:191`<br>`src/game/game_combat.js:193` | 2 | 3 |
 | END | `src/game/game_core.js:141` | 1 | 44 |
-| CHA | `src/game/game_world_logic.js:240` | 1 | 0 |
+| CHA | `src/game/game_world_logic.js:321` | 1 | 0 |
 | INT | `src/data/data_minigames.js:17`<br>`src/data/data_minigames.js:277` | 2 | 4 |
 | AGI | `src/data/data_minigames.js:190`<br>`src/game/game_combat.js:311` | 2 | -2 |
 | LUC | `src/data/data_minigames.js:144`<br>`src/game/game_core.js:147`<br>`src/ui/ui_render_minigames.js:276` | 3 | 0 |
@@ -133,11 +133,13 @@ Alle 10 Perks werden im Code gelesen.
 |---|---|---:|---:|---:|---:|
 | Gegrillte Kakerlake | heal_rad | 15 | 2 | 10 | 1.50 |
 | Gegrillte Fliege | heal_rad | 15 | 2 | 10 | 1.50 |
+| Hunde-Steak | heal_rad | 28 | 3 | 22 | 1.27 |
 | Ratten-Steak | heal_rad | 25 | 3 | 20 | 1.25 |
 | Mirelurk-Happen | heal_rad | 35 | 4 | 30 | 1.17 |
 | Skorpion-Überraschung | heal_rad | 45 | 5 | 40 | 1.13 |
 | Nuka Cola | heal | 10 | 0 | 10 | 1.00 |
 | Nuka Quantum | heal | 100 | 0 | 100 | 1.00 |
+| Yao Guai Steak | heal_rad | 50 | 6 | 55 | 0.91 |
 | Super-Stimpack | heal | 100 | 0 | 120 | 0.83 |
 | Stimpack | heal | 40 | 0 | 50 | 0.80 |
 | Stealth Boy | buff {"AGI":10} | — | 0 | 200 | — |
@@ -148,9 +150,23 @@ Alle 10 Perks werden im Code gelesen.
 
 ### Wirken die Effekte?
 
-- **Heilung** (`heal`, `heal_rad`): wirkt. 9 Items heilen, der Sanitäter-Perk verstärkt sie.
-- **Buffs** (`buff`, 4 Items: Stealth Boy, Rad-X, Jet, Buffout): werden angewandt. `useItem` schreibt nur „Effekte noch WIP" ins Log und verbraucht das Item.
-- **Strahlungsresistenz** (`RAD_RESIST` aus Rad-X und Strahlenschutzanzug): wird gelesen. `addRadiation` kennt nur den Rad-Resistenz-Perk.
+- **Heilung** (`heal`, `heal_rad`): wirkt. 11 Items heilen, der Sanitäter-Perk verstärkt sie.
+- **Buffs** (`buff`, 4 Items: Stealth Boy, Rad-X, Jet, Buffout): werden angewandt, mit Ablaufzeit.
+- **Strahlungsresistenz** (`RAD_RESIST` aus Rad-X und Strahlenschutzanzug): wird gelesen.
+
+### Roh oder gebraten
+
+| Roh | +HP | +RAD | Gebraten | +HP | +RAD |
+|---|---:|---:|---|---:|---:|
+| Kakerlakenfleisch | 8 | 6 | Gegrillte Kakerlake | 15 | 2 |
+| Fliegenfleisch | 8 | 6 | Gegrillte Fliege | 15 | 2 |
+| Rattenfleisch | 12 | 9 | Ratten-Steak | 25 | 3 |
+| Hundefleisch | 15 | 10 | Hunde-Steak | 28 | 3 |
+| Mirelurk-Fleisch | 18 | 12 | Mirelurk-Happen | 35 | 4 |
+| Skorpiondrüse | 22 | 14 | Skorpion-Überraschung | 45 | 5 |
+| Yao Guai Rippchen | 30 | 16 | Yao Guai Steak | 50 | 6 |
+
+Roh essen heilt weniger und verstrahlt mehr — das ist die Entscheidung zwischen „jetzt essen" und „erst am Lagerfeuer braten".
 
 ## 6. Minispiele
 
@@ -188,7 +204,7 @@ Treffer bis zum Kill bei 50 % Trefferchance (die Grundchance liegt bei 50 + PER�
 ## 9. Fazit
 
 Das Spiel hat 34 Waffen, 33 Rüstungsteile, 10 Perks,
-14 Verbrauchsgüter und 9 Monster.
+16 Verbrauchsgüter und 9 Monster.
 
 - ✓ Rüstung mindert Schaden
 - ✓ Buffs wirken

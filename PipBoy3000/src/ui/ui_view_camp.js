@@ -47,7 +47,8 @@ Object.assign(UI, {
                 ${rows}
             </div>
             <div class="text-[10px] text-gray-500 text-center italic">
-                Höhere Stufen heilen effektiver.<br>Strahlung (+5) beim Kochen bleibt konstant.
+                Höhere Stufen heilen effektiver und vergrößern den Lagerschrank<br>
+                (10 Plätze auf Stufe 1, +5 je Stufe). Strahlung (+5) beim Schlafen bleibt konstant.
             </div>
         `;
 
@@ -62,6 +63,8 @@ Object.assign(UI, {
 
         const cookingView = document.getElementById('camp-cooking-view');
         const mainActions = document.getElementById('camp-main-actions');
+        const storageView = document.getElementById('camp-storage-view');
+        if(storageView) storageView.classList.add('hidden');
         
         // FIX: Referenzen auf Elemente holen, die stören könnten
         const statusBox = document.getElementById('camp-status-box');
@@ -109,6 +112,9 @@ Object.assign(UI, {
         if(lvl >= 10) healPct = 100;
         if(healPct > 100) healPct = 100;
 
+        const schrankHint = document.getElementById('camp-storage-hint');
+        if(schrankHint) schrankHint.textContent = `${Game.getCampStorageUsed()} / ${Game.getCampStorageSlots()} Plätze`;
+
         // statusBox reference already defined above, reusing it if visible
         if(statusBox) {
             let comfort = (lvl === 1) ? "Basis-Zelt" : (lvl >= 10 ? "Luxus-Bunker" : "Komfort-Zelt");
@@ -155,6 +161,82 @@ Object.assign(UI, {
                     <span class="text-xs opacity-70">${upgradeSub}</span>
                 </button>
             `;
+        }
+    },
+
+    renderCampStorage: function() {
+        this.campMode = 'storage';
+        const storageView = document.getElementById('camp-storage-view');
+        const cookingView = document.getElementById('camp-cooking-view');
+        const mainActions = document.getElementById('camp-main-actions');
+        const statusBox = document.getElementById('camp-status-box');
+        const upgradeCont = document.getElementById('camp-upgrade-container');
+
+        if(storageView) { storageView.classList.remove('hidden'); storageView.classList.add('bg-gray-900', 'z-50'); }
+        if(cookingView) cookingView.classList.add('hidden');
+        if(mainActions) mainActions.classList.add('hidden');
+        if(statusBox) statusBox.classList.add('hidden');
+        if(upgradeCont) upgradeCont.classList.add('hidden');
+
+        const liste = document.getElementById('camp-storage-list');
+        const kopf = document.getElementById('camp-storage-head');
+        if(!liste) return;
+
+        const belegt = Game.getCampStorageUsed();
+        const plaetze = Game.getCampStorageSlots();
+        if(kopf) kopf.textContent = `Belegt: ${belegt} / ${plaetze} Plätze · Schrank wächst mit der Lagerstufe`;
+
+        liste.innerHTML = '';
+
+        // --- Schrank ---
+        const lager = Game.getCampStorage();
+        if(lager.length === 0) {
+            liste.innerHTML = '<div class="text-gray-500 italic text-center mt-6">Der Schrank ist leer.</div>';
+        } else {
+            lager.forEach((eintrag, i) => {
+                const def = Game.items[eintrag.id] || {};
+                const div = document.createElement('div');
+                div.className = "border border-cyan-900 bg-cyan-900/10 p-2 mb-2 flex justify-between items-center";
+                div.innerHTML = `
+                    <div class="flex flex-col">
+                        <span class="font-bold text-cyan-300">${eintrag.name || def.name || eintrag.id}</span>
+                        <span class="text-xs text-cyan-600">${eintrag.count}x</span>
+                    </div>
+                    <button class="border border-cyan-500 text-cyan-400 px-3 py-1 text-sm font-bold hover:bg-cyan-900/40">ENTNEHMEN</button>
+                `;
+                div.querySelector('button').onclick = () => { Game.takeFromCamp(i); this.renderCampStorage(); };
+                liste.appendChild(div);
+            });
+        }
+
+        // --- Rucksack: was kann rein ---
+        const trenner = document.createElement('div');
+        trenner.className = "text-xs text-gray-500 uppercase tracking-widest mt-4 mb-2 border-t border-gray-800 pt-2";
+        trenner.textContent = "Aus dem Rucksack einlagern";
+        liste.appendChild(trenner);
+
+        const rucksack = Game.state.inventory || [];
+        let etwasDa = false;
+        rucksack.forEach((item, i) => {
+            const def = Game.items[item.id] || {};
+            const div = document.createElement('div');
+            div.className = "border border-gray-800 bg-black/40 p-2 mb-1 flex justify-between items-center";
+            div.innerHTML = `
+                <div class="flex flex-col">
+                    <span class="text-green-300">${item.name || def.name || item.id}</span>
+                    <span class="text-xs text-gray-500">${item.count}x</span>
+                </div>
+                <button class="border border-green-700 text-green-500 px-3 py-1 text-sm font-bold hover:bg-green-900/40">EINLAGERN</button>
+            `;
+            div.querySelector('button').onclick = () => { Game.storeInCamp(i); this.renderCampStorage(); };
+            liste.appendChild(div);
+            etwasDa = true;
+        });
+        if(!etwasDa) {
+            const leer = document.createElement('div');
+            leer.className = "text-gray-600 italic text-center text-sm";
+            leer.textContent = "Rucksack ist leer.";
+            liste.appendChild(leer);
         }
     },
 

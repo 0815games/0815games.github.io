@@ -369,6 +369,32 @@ Object.assign(Game, {
 
         if(invItem.id === 'camp_kit') { this.deployCamp(index); return; }
 
+        // Rohfleisch ist ein Bauteil, aber essbar. Der Unterschied zum
+        // gebratenen Stueck ist der Punkt: roh heilt weniger und verstrahlt
+        // deutlich mehr. Damit gibt es zum ersten Mal eine Entscheidung
+        // zwischen "jetzt essen" und "erst am Lagerfeuer braten"
+        // (docs/BALANCE_BEFUNDE.md, Nachtrag ROHE NAHRUNG).
+        if(itemDef.raw) {
+            const healAmt = itemDef.raw.heal || 0;
+            const radAmt = itemDef.raw.rad || 0;
+            const effectiveMax = this.state.maxHp - (this.state.rads || 0);
+
+            if(this.state.hp >= effectiveMax && radAmt > 0) {
+                UI.log("Du bist satt - roh essen wuerde nur verstrahlen.", "text-gray-500");
+                return;
+            }
+
+            this.state.hp = Math.min(effectiveMax, this.state.hp + healAmt);
+            UI.log(`Roh gegessen: ${itemDef.name} (+${healAmt} HP, +${radAmt} RAD)`, "text-orange-300");
+            this.removeFromInventory(invItem.id, 1);
+            this.addRadiation(radAmt);
+            this.updateWeight();
+            UI.update();
+            if(this.state.view === 'inventory') UI.renderInventory();
+            this.saveGame();
+            return;
+        }
+
         if(invItem.id === 'nuka_cola') {
             const effectiveMax = this.state.maxHp - (this.state.rads || 0);
             this.state.hp = Math.min(this.state.hp + 15, effectiveMax);

@@ -59,7 +59,9 @@ window.GameData.recipes = [
     { id: 'cook_fly', type: 'cooking', out: 'cooked_fly', count: 1, req: { 'meat_fly': 1 }, lvl: 1 },
     { id: 'cook_mole', type: 'cooking', out: 'cooked_mole', count: 1, req: { 'meat_mole': 1 }, lvl: 1 },
     { id: 'cook_lurk', type: 'cooking', out: 'cooked_lurk', count: 1, req: { 'meat_lurk': 1 }, lvl: 2 },
-    { id: 'cook_scorp', type: 'cooking', out: 'cooked_scorp', count: 1, req: { 'meat_scorp': 1 }, lvl: 3 }
+    { id: 'cook_scorp', type: 'cooking', out: 'cooked_scorp', count: 1, req: { 'meat_scorp': 1 }, lvl: 3 },
+    { id: 'cook_dog', type: 'cooking', out: 'cooked_dog', count: 1, req: { 'meat_dog': 1 }, lvl: 2 },
+    { id: 'cook_yao', type: 'cooking', out: 'cooked_yao', count: 1, req: { 'meat_yao': 1 }, lvl: 4 }
 ];
 
 if(typeof Game !== 'undefined') Game.recipes = window.GameData.recipes;

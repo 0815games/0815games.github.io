@@ -188,6 +188,29 @@ function analyseConsumables(window) {
     .sort((a, b) => (b.heilungProKronkorken || 0) - (a.heilungProKronkorken || 0));
 }
 
+// Rohfleisch gegen gebraten: welches Stueck hat welches Gegenstueck?
+// Pendants werden ueber die Kochrezepte gefunden, nicht ueber Namensraten.
+function analyseRohware(window) {
+  const {Game} = window;
+  const rezepte = (Game.recipes || []).filter(r => r.type === 'cooking');
+  return Object.entries(Game.items)
+    .filter(([, d]) => d.raw)
+    .map(([id, d]) => {
+      const rezept = rezepte.find(r => r.req && Object.keys(r.req).includes(id));
+      const gebraten = rezept ? Game.items[rezept.out] : null;
+      return {
+        id,
+        rohName: d.name,
+        rohHeil: d.raw.heal,
+        rohRad: d.raw.rad,
+        gebratenName: gebraten ? gebraten.name : null,
+        gebratenHeil: gebraten ? gebraten.val : null,
+        gebratenRad: gebraten ? (gebraten.rad || 0) : null
+      };
+    })
+    .sort((a, b) => a.rohRad - b.rohRad);
+}
+
 // ===========================================================================
 // 6. Monster gegen Waffen
 // ===========================================================================
@@ -311,6 +334,7 @@ export function buildReport() {
   const perks = analysePerks(window);
   const special = analyseSpecial(window, sources);
   const consumables = analyseConsumables(window);
+  const rohware = analyseRohware(window);
   const {monster, treffer, referenz} = analyseMonsters(window, weapons);
   const economy = analyseEconomy(window, weapons);
   const minigames = analyseMinigames(window, sources);
@@ -435,9 +459,21 @@ export function buildReport() {
   l.push('');
   const buffItems = consumables.filter(c => c.effekt === 'buff');
   l.push(`- **Heilung** (\`heal\`, \`heal_rad\`): wirkt. ${consumables.filter(c => c.heilungProKronkorken).length} Items heilen, der Sanitäter-Perk verstärkt sie.`);
-  l.push(`- **Buffs** (\`buff\`, ${buffItems.length} Items: ${buffItems.map(c => c.name).join(', ')}): ${consumableWirksam.buffs ? 'werden angewandt' : '**wirken nicht**'}. \`useItem\` schreibt nur „Effekte noch WIP" ins Log und verbraucht das Item.` + (consumableWirksam.buffs ? '' : ' Kein Code legt den Bonus je auf \`state.stats\` oder führt eine Dauer.'));
-  l.push(`- **Strahlungsresistenz** (\`RAD_RESIST\` aus Rad-X und Strahlenschutzanzug): ${consumableWirksam.radResist ? 'wird gelesen' : '**wird nirgends gelesen**'}. \`addRadiation\` kennt nur den Rad-Resistenz-Perk.`);
+  l.push(`- **Buffs** (\`buff\`, ${buffItems.length} Items: ${buffItems.map(c => c.name).join(', ')}): ${consumableWirksam.buffs ? 'werden angewandt, mit Ablaufzeit' : '**wirken nicht**'}.`);
+  l.push(`- **Strahlungsresistenz** (\`RAD_RESIST\` aus Rad-X und Strahlenschutzanzug): ${consumableWirksam.radResist ? 'wird gelesen' : '**wird nirgends gelesen**'}.`);
   l.push('');
+  if (rohware.length) {
+    l.push('### Roh oder gebraten');
+    l.push('');
+    l.push('| Roh | +HP | +RAD | Gebraten | +HP | +RAD |');
+    l.push('|---|---:|---:|---|---:|---:|');
+    for (const r of rohware) {
+      l.push(`| ${r.rohName} | ${r.rohHeil} | ${r.rohRad} | ${r.gebratenName || '—'} | ${r.gebratenHeil ?? '—'} | ${r.gebratenRad ?? '—'} |`);
+    }
+    l.push('');
+    l.push('Roh essen heilt weniger und verstrahlt mehr — das ist die Entscheidung zwischen „jetzt essen" und „erst am Lagerfeuer braten".');
+    l.push('');
+  }
 
   // --- Minispiele ---
   l.push('## 6. Minispiele');
@@ -535,7 +571,7 @@ export function buildReport() {
 
   return {
     text: l.join('\n'),
-    daten: {weapons, armor, perks, special, consumables, monster, economy, minigames}
+    daten: {weapons, armor, perks, special, consumables, rohware, monster, economy, minigames}
   };
 }
 

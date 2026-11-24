@@ -280,3 +280,49 @@ B1 bis B7 sind behoben. Aus B8 bleiben die Punkte, die reine Datenpflege sind:
 
 Die Wächter decken die behobenen Befunde ab. Für die drei Punkte oben gibt es
 noch keinen Test, weil sie Geschmacksfragen sind und keinen Fehler darstellen.
+
+## Nachtrag — ROHE NAHRUNG
+
+Beim Durchsehen der Strahlungsquellen fiel auf: Rohfleisch war kein
+Verbrauchsgut. Sieben Fleischsorten lagen als `component` im Katalog, waren
+aber ungenießbar — nur zum Braten zu gebrauchen.
+
+Damit fehlte die Entscheidung, um die es bei RAD eigentlich geht: **jetzt
+essen oder erst braten?** Seit Version 14.0.2 trägt jedes rohe Stück ein
+`raw`-Feld (`heal`, `rad`):
+
+| Roh | +HP | +RAD | Gebraten | +HP | +RAD |
+|---|---:|---:|---|---:|---:|
+| Kakerlakenfleisch | 8 | 6 | Gegrillte Kakerlake | 15 | 2 |
+| Fliegenfleisch | 8 | 6 | Gegrillte Fliege | 15 | 2 |
+| Rattenfleisch | 12 | 9 | Ratten-Steak | 25 | 3 |
+| Hundefleisch | 15 | 10 | Hunde-Steak | 28 | 3 |
+| Mirelurk-Fleisch | 18 | 12 | Mirelurk-Happen | 35 | 4 |
+| Skorpiondrüse | 22 | 14 | Skorpion-Überraschung | 45 | 5 |
+| Yao Guai Rippchen | 30 | 16 | Yao Guai Steak | 50 | 6 |
+
+Die Regel: roh heilt knapp die Hälfte und verstrahlt das Drei- bis Vierfache.
+Bei vollen HP wird das Essen verweigert, statt unnötig zu verstrahlen.
+
+Hundefleisch und Yao-Guai-Rippchen hatten zusätzlich **kein Kochrezept** — roh
+essbar, gebraten unerreichbar. Beide Rezepte sind ergänzt (`cook_dog` Stufe 2,
+`cook_yao` Stufe 4). `tests/proviant.test.mjs` prüft, dass jede Rohware ein
+Gegenstück hat.
+
+## Noch offen: RAD als Ortsphänomen
+
+RAD kommt derzeit aus Schlafen, Kochware, einem Minispiel und RadAway.
+**Keine Zone und kein Wetter erzeugt Strahlung.** Die Glühende See ist reine
+Optik, der Strahlungssturm in `game_render.js` bewegt nur Partikel.
+
+Das ist der nächste sinnvolle Schritt: RAD als Eigenschaft von Biom und Wetter
+(`game_map.js` setzt `state.zone`, `game_core.js` kennt die Biome). Vorschlag:
+
+| Quelle | RAD |
+|---|---|
+| Glühende See, Betreten eines neuen Sektors | +5 |
+| Strahlungssturm (Wetter) | +2 pro Sektorwechsel |
+| Dungeon ab Ebene 3 | +1 pro Zug |
+
+Damit wäre RAD ein Ortsphänomen und nicht nur ein Getränkewert. Noch nicht
+umgesetzt.
