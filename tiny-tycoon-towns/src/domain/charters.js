@@ -2,7 +2,7 @@
 // Reine Rechenregeln. Oberfläche und Speichern in main.js und cloud.js.
 // Die Perk-Wirkung geht über applyCharterToData() in die Spieldaten, die Wirtschaft liest sie dort.
 
-export const CHARTER_MIN_LEVEL = 8;
+export const CHARTER_MIN_LEVEL = 10;
 export const CHARTER_MIN_LIFETIME = 100000;
 export const CHARTER_UNIT = 100000;
 

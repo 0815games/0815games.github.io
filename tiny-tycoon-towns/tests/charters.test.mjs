@@ -19,17 +19,17 @@ test('charter gain is floor(sqrt(lifetime / 100000)) per the plan', () => {
   assert.equal(charterGain(-5), 0);
 });
 
-test('founding needs town level 8 and 100,000 lifetime coins in that town', () => {
+test('founding needs town level 10 and 100,000 lifetime coins in that town', () => {
   const c = emptyCharter();
-  assert.equal(canFoundCharter({ id: 'a', townLevel: 7, lifetimeCoins: 500000 }, c).ok, false);
-  assert.equal(canFoundCharter({ id: 'a', townLevel: 8, lifetimeCoins: 99999 }, c).ok, false);
-  const ok = canFoundCharter({ id: 'a', townLevel: 8, lifetimeCoins: 100000 }, c);
+  assert.equal(canFoundCharter({ id: 'a', townLevel: 9, lifetimeCoins: 500000 }, c).ok, false);
+  assert.equal(canFoundCharter({ id: 'a', townLevel: 10, lifetimeCoins: 99999 }, c).ok, false);
+  const ok = canFoundCharter({ id: 'a', townLevel: 10, lifetimeCoins: 100000 }, c);
   assert.equal(ok.ok, true);
   assert.equal(ok.gain, 1);
 });
 
 test('granting adds the gain and marks the town, so the same town cannot found twice', () => {
-  const town = { id: 'town-a', townLevel: 8, lifetimeCoins: 400000 };
+  const town = { id: 'town-a', townLevel: 10, lifetimeCoins: 400000 };
   const c = grantCharters(emptyCharter(), town);
   assert.equal(c.earned, 2);
   assert.equal(availableCharters(c), 2);

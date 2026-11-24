@@ -87,9 +87,10 @@ test('grid unlock is centered and grows with town level', () => {
 test('town level thresholds', () => {
   const th = data.economy.townLevelThresholds;
   assert.equal(townLevelFor(0, th), 1);
-  assert.equal(townLevelFor(49, th), 1);
-  assert.equal(townLevelFor(50, th), 2);
-  assert.equal(townLevelFor(24000, th), 12);
+  assert.equal(townLevelFor(1999, th), 1);
+  assert.equal(townLevelFor(2000, th), 2);
+  assert.equal(townLevelFor(161999, th), 4);
+  assert.equal(townLevelFor(162000, th), 5);
 });
 
 test('build and upgrade costs use the growth formulas (ceil)', () => {
@@ -127,7 +128,7 @@ test('upgrade pays the level-based cost and grants XP', () => {
   const r = upgradeBuilding(t, { x: 2, y: 2 }, ctx());
   assert.equal(r.state.tiles['2,2'].building.level, 2);
   assert.equal(r.state.coins, 1000 - 46);
-  assert.equal(r.state.townXp, 10); // 5 * new level 2
+  assert.equal(r.state.townXp, 20); // 5 * new level² (2 × 2)
 });
 
 test('town hall cannot be upgraded', () => {
@@ -309,7 +310,7 @@ test('local date key uses calendar fields', () => {
 
 test('levelUp is reported when XP crosses a threshold', () => {
   const t = townFor();
-  t.townXp = 45;
+  t.townXp = 1990;
   t.coins = 1000;
   const r = placeBuilding(t, { x: 2, y: 2, buildingId: 'farm' }, ctx());
   const lu = r.events.find((e) => e.type === 'levelUp');

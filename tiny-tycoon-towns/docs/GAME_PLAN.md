@@ -223,7 +223,7 @@ Gesperrte Felder sind im Nebel sichtbar, aber nicht bebaubar. Bei einer Erweiter
 
 ### 4.11 Freibriefe (Prestige)
 
-**Gründung:** ab Stadtlevel 8 und mindestens 100.000 Lifetime-Münzen in dieser Stadt.
+**Gründung:** ab Stadtlevel 10 und mindestens 100.000 Lifetime-Münzen in dieser Stadt.
 **Gewinn:** `floor(sqrt(lifetimeCoinsThisTown / 100000))` Freibriefe.
 **Effekt:** Die Stadt wird zurückgesetzt: Münzen, Gebäude, Lager, Stadtlevel, Raster und Biom (neu gewürfelt). Freibriefe, Perks, Kronen, Kosmetik und Lifetime-Statistiken bleiben erhalten, sie gelten account-weit.
 
@@ -1133,6 +1133,8 @@ jobs:
 ---
 
 ## 12. Roadmap und Arbeitspakete
+
+> **Hinweis (2026-11-24):** Dieser Abschnitt ist überholt. Er beschreibt einen Technikstack (TypeScript, Pixi, Firestore), der nicht gebaut wurde. Den laufenden Fahrplan führt [`ROADMAP.md`](ROADMAP.md).
 
 ### Phase 1: Solo-Kern (4 Wochen)
 

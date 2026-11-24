@@ -422,3 +422,107 @@ Ereignis ergänzt.
   `floor(sqrt(Ertrag / 100000))`, Perk-Baum (28 Punkte) und Kaufregeln. Quelle: `docs/GAME_PLAN.md`, Abschnitt 4.11.
 - Noch nicht im Spiel: kein Stand-Feld, keine Oberfläche, keine Regeländerung. Offen: Zurücksetzen der Stadt, Anbindung der Perk-Wirkungen an die Produktion.
 - Prüfungen: 71 Tests grün, `check` ohne Fehler.
+
+### TTT-0024 – Freibriefe im Spiel, Münzanzeige, Symbolkosten (PR #424, ohne eigene Welle)
+
+- Zeit / Quelle: PR #424 gemergt am 2026-11-24 16:09:10 UTC (GitHub-Angabe), Merge-Commit `12d7a2d`.
+- Block / Ziel: B3 Fortschritt (Freibrief und Perks). Nutzerwunsch: Freibriefe im Spiel, Perk-Wirkung, Münzen und Material beim Bauen sichtbar.
+- Branch / Basis: `arena/a6f5f272-0815games-github-io`, Basis `5ea8a17`.
+- Commits: `f25cd03` (Menüeintrag, Gründung, Perk-Baum, Speichern unter `charters/{uid}`), `a0356d3` (Perk-Wirkung über `applyCharterToData`), `39eb534` (Münzpille auf der Karte, Kosten als Symbole mit Vorrat).
+- Dateien: `src/main.js`, `src/cloud.js`, `src/domain/charters.js`, `src/domain/economy.js`, `index.html`, `style.css`, `firebase/database.rules.json`, `tests/charters.test.mjs`, `tests/rules.test.mjs`, `scripts/rules-publish-dry-run.mjs`.
+- Prüfungen: `npm test` 74 pass, 0 fail. `npm run check` ohne Fehler. Nachweis: Unit-Tests und Strukturprüfung der Regeln. Nicht geprüft: Emulator, Browser mit Anmeldung (in der Sandbox nicht möglich), echtes Gerät.
+- Git / PR / Veröffentlichung: PR #424 gemergt. Die Regeln `charters/$uid` sind **nicht veröffentlicht**. Der Code ging auf `main`, bevor es dafür einen Patch-Notes-Eintrag und eine eigene Welle gab. Das holt TTT-0025 nach.
+- Offen / nächster Schritt: Regeln `charters/$uid` veröffentlichen (Nutzer). Gerätetest für Freibriefe, Münzpille und Symbolkosten (Nutzer). „Eilpost“ bleibt bis P2 markiert.
+
+### TTT-0025 – Fahrplan und Umbenennung „Feldnotizen“ zu „Stadtchronik“ (Welle `20261124-chronik`)
+
+- Zeit / Quelle: Nutzerwunsch im Chat: zuerst das Log nachtragen, dann eine Datei mit dem langfristigen Plan, offene Punkte herausnehmen, sobald sie fertig und im Spiel sind. Der Name „Feldnotizen“ klingt nach Notizblock und passt nicht zur Stadt.
+- Block / Ziel: Fahrplan als Arbeitsgrundlage, Ablauf. Keine Spielmechanik.
+- Änderungen: neu `docs/ROADMAP.md` (Fahrplan, Entscheidungen, Erledigt). Hinweis in `docs/GAME_PLAN.md` Abschnitt 12, dass dessen Technikplan überholt ist. `AGENTS.md` und `docs/PATCH-ABLAUF.md` verweisen auf den Fahrplan und nennen die Chronik. `index.html`, `src/main.js`: Knopf und Fenster heißen „Stadtchronik“. `src/patch-notes.mjs`: neuer Eintrag oben. Historische Log-Einträge bleiben unverändert.
+- Welle: `node scripts/patch.mjs bump 20261124-chronik --apply` (Cache-Token in allen Dateien).
+- Prüfungen: `npm test` 74 pass, 0 fail, Exit 0. `npm run check:suite` ohne Fehler (Serienlauf 11 Dateien, 74 Tests grün). Nachweis: Unit und Strukturprüfung. Nicht geprüft: Browser mit Anmeldung, Gerät.
+- Git / PR / Veröffentlichung: Commit und PR folgen; Merge erst nach Nutzerfreigabe. Die Welle wird mit dem Merge auf `main` ausgeliefert.
+- Offen / nächster Schritt: siehe `docs/ROADMAP.md`, Abschnitt „Jetzt“.
+
+### TTT-0026 – Balance-Simulation nach GAME_PLAN 8.2 (ohne Welle, nur Werkzeug)
+
+- Zeit / Quelle: Nutzerwunsch im Chat: Balance prüfen, Schritt für Schritt. Keine Spielmechanik geändert.
+- Block / Ziel: P1 Balance (GAME_PLAN 4.17, 8.2). Offen bleibt die Einheit „4 bis 8 h“ bei Stadtlevel 5.
+- Branch / Basis: `arena/3a30c5d7-0815games-github-io`, Basis `12d7a2d`.
+- Änderungen / Dateien: neu `scripts/simulate-balance.mjs` (Bot, 2 × 15 min aktiv pro Tag, Offline-Obergrenze 8 h, echte `advance`, `placeBuilding`, `upgradeBuilding`), neu `tests/simulate-balance.test.mjs`, `package.json` (Skript `simulate`), `docs/ROADMAP.md`.
+- Ergebnis, 30 Tage, alle vier Biome (Spielzeit ist Kalenderzeit, inklusive Offline):
+  - Erster Verkauf nach erstem Gebäude: 1 bis 3 min (Korridor ≤ 3, ok).
+  - 5 Gebäude: 4 bis 8 min aktiv (Korridor ≤ 15, ok).
+  - Stadtlevel 5: nach 0,37 bis 0,40 h aktiver Zeit, Kalenderzeit 19,1 h (Korridor 4 bis 8 h, nicht erfüllt). Die Einheit ist offen.
+  - Stadtlevel 8: 43 bis 57 h Kalenderzeit. Engpass für den Freibrief.
+  - Erster Freibrief: 67 bis 129 h (Korridor 36 bis 72 h, in zwei von vier Biomen außerhalb). Gesamtertrag 100.000 wird erst nach Stadtlevel 8 relevant.
+  - Invarianten (Münzen, Lager nicht negativ, Lager nicht über Kapazität): 0 Verletzungen.
+- Prüfungen: `npm test` 76 pass, 0 fail, Exit 0. `npm run simulate` Exit 1, weil 7 Meilensteine außerhalb liegen. Das ist beabsichtigt, bis die Einheit geklärt ist.
+- Grenzen: Der Bot ist ein idealer Spieler. Echte Spieler sind langsamer. Händlerpreis und Perk-Punkte in 2 bis 4 Wochen sind nicht simuliert. Am Ende der 30 Tage war das Gitter mit 99 Gebäuden voll. Wann genau, ist nicht gemessen.
+- Git / PR / Veröffentlichung: noch nicht committet, Stand dieser Eintrag.
+- Offen / nächster Schritt: Einheit festlegen (Nutzer), dann Werte anpassen (Agent).
+
+### TTT-0027 – Stadtlevel 5 auf 4 bis 8 h aktiver Spielzeit: Messung, keine Werte geändert
+
+- Zeit / Quelle: Nutzerentscheidung im Chat: „4 bis 8 Stunden aktive Spielzeit bis Level fünf finde ich fair“.
+- Block / Ziel: P1 Balance (GAME_PLAN 4.17).
+- Änderungen / Dateien: keine im Spiel. `data/economy.json` bleibt unverändert. Die Experimente liefen in einer Kopie unter `/tmp`.
+- Messung: XP-Schwellen (`townLevelThresholds`) gleichmäßig mit einem Faktor skaliert, 60 Tage, 4 Biome, Bot wie TTT-0026.
+  - Ausgangslage (Faktor 1): Stadtlevel 5 nach 0,37 bis 0,40 h aktiv.
+  - Faktor 10: 1,5 bis 1,8 h aktiv. Faktor 20: 2,3 bis 3,3 h aktiv.
+  - Faktor 35: 3,2 bis 6,0 h aktiv. Stadtlevel 8 in 60 Tagen nicht erreicht.
+  - Faktor 40: 4,1 bis 8,5 h aktiv (riverlands 7,0; deepwoods 4,1; highlands 4,8; coast 8,5). Stadtlevel 8 in 60 Tagen nicht erreicht.
+- Folge: Der Freibrief hängt an Stadtlevel 8 (GAME_PLAN 4.11). Damit wird er um Wochen bis Monate später. Das ist eine Designentscheidung, keine Einstellung.
+- Prüfungen: keine neuen Tests. `npm run simulate` bleibt mit Exit 1, bis die Werte gesetzt sind.
+- Offen / nächster Schritt: Nutzer entscheidet die Kurve (Jetzt 5). Danach setzt der Agent die Werte und belegt sie mit `npm run simulate`.
+
+### TTT-0028 – Balance: Simulation korrigiert, Kurve bis Stadtlevel 10 gemessen (keine Spielwerte geändert)
+
+- Zeit / Quelle: Nutzerentscheidung im Chat: Freibrief erst ab Stadtlevel 10, bis Stadtlevel 10 zwölf aktive Stunden, davor flexibel.
+- Änderungen / Dateien: `scripts/simulate-balance.mjs` (Bot: Wert je Produktion mit Preis und Lagerdruck statt reiner Kosten; Begrenzung auf 2 Aktionen je aktiver Minute; Zeiten je Stadtstufe). Keine Änderung an `data/`, `src/`.
+- Befunde:
+  1. Der erste Bot baute nur Getreide-Farmen. Das Gitter war bei 63 Gebäuden voll, und der Bot blieb bei Stufe 7 stehen. Ursache: der Bot, nicht das Spiel. Korrigiert.
+  2. Mit 5 Aktionen je Minute erreicht der Bot Stufe 10 nach etwa 1,6 h. Mit 2 Aktionen je Minute nach etwa 3,4 h. 2 Aktionen sind eine Annahme für einen Menschen. Sie ist nicht belegt.
+  3. Ziel Stadtlevel 5 (4 bis 8 h aktiv): Faktor 22 auf die Schwellen 2 bis 5 ergibt 3,6 bis 4,6 h. Also knapp unter dem Ziel in Riverlands.
+  4. Ziel Stadtlevel 10 (12 h aktiv): nicht erreicht. Das Gitter ist ab Stufe 8 bei 80 Gebäuden voll. Danach kommen XP nur aus Ausbauten, deren Münzkosten (1,15 hoch Stufe) stärker steigen als die Einnahmen. Der Bot bleibt bei Stufe 9 (etwa 10 h aktiv) stehen. Auch mit einer Schwelle von 100.000 XP für Stufe 10 wurde sie in 150 Tagen nicht erreicht.
+  5. Bei zu hohem Faktor für die Stufen 6 bis 10 (ab etwa 15) bleibt der Bot schon bei Stufe 7 oder 8 stehen, aus demselben Grund.
+- Fehler im Experiment, korrigiert: Eine Schwellenliste mit nicht aufsteigenden Werten erzeugt Sprünge. Die Ergebnisse dieser Läufe wurden verworfen. Kontrolle eingebaut (aufsteigend).
+- Prüfungen: `npm test` 76 pass, 0 fail. `npm run simulate` (30 Tage): Exit 1, Stufe 5 bei 0,5 h aktiv und Stufe 10 bei 2,9 h aktiv, beides mit Standardwerten.
+- Grenzen: Modell mit idealem Bot, Annahme 2 Aktionen je Minute, keine Lagerverwaltung durch den Spieler. Die Zahlen sind eine Richtung, keine Abnahme.
+- Offen / nächster Schritt: Entscheidung des Nutzers, wie Stufe 10 erreichbar wird (Jetzt 5 in ROADMAP.md). Danach Werte setzen und Tests anpassen. Der Freibrief-Gate auf Stufe 10 ist noch nicht im Code (CHARTER_MIN_LEVEL steht noch auf 8).
+
+### TTT-0029 – Balance: XP aus Ausbauten (Messung in Kopie, Spiel unverändert)
+
+- Zeit / Quelle: Nutzerentscheidung im Chat: Stadtlevel 10 über mehr XP aus Ausbauten erreichen.
+- Änderungen im Repo: keine am Spiel. `data/economy.json` und `src/domain/engine.js` unverändert. Die Varianten liefen nur in einer Kopie unter `/tmp`.
+- Befunde:
+  1. XP je Ausbau linear (5 × neue Stufe): Alles wird schneller. Stufe 10 bei 1,3 bis 1,9 h, je nach Schwelle.
+  2. XP je Ausbau quadratisch (1 × Stufe²): Das Verhältnis Stufe 10 zu Stufe 5 sinkt auf etwa 2. Das ist das Verhältnis, das die Ziele brauchen (12 h zu 6 h). Lineare Varianten hatten etwa 3.
+  3. Bester Kandidat (Schwellen 2 bis 5 × 40, Schwellen 6 bis 11 × 34, XP = Stufe²): Stufe 5 bei 3,2 bis 4,6 h, Stufe 10 bei 9,6 bis 10,6 h in Deepwoods, Highlands und Coast. Stufe 5 in Riverlands bei 3,2 h, unter dem Ziel.
+  4. Riverlands bleibt in allen Varianten ab Stufe 9 stehen. Das Gitter ist bei 80 Gebäuden voll, und die XP reichen nicht mehr. Das ist eine Wirtschaftsfrage von Riverlands, keine Schwellenfrage.
+  5. Ergebnis: Die Ziele (Stufe 5 bei 4 bis 8 h, Stufe 10 bei 12 h) sind mit diesen Stellschrauben in drei Bioms nahe, in Riverlands nicht erreichbar. Noch offen ist, ob Riverlands mehr Einnahmen braucht oder ob das Gitter später wächst.
+- Prüfungen: keine neuen Tests, Stand von TTT-0028 (76 pass, 0 fail).
+- Grenzen: Bot mit 2 Aktionen je aktiver Minute (Annahme), Gitter-Erweiterung nur an Stufen gebunden, 150 Tage Simulation.
+- Offen / nächster Schritt: Nutzer entscheidet über Riverlands (mehr Einnahmen, Gitterwachstum oder Ziel anpassen) und die Formel für XP je Ausbau. Danach Umsetzung im Spiel, Tests, Freibrief-Gate auf Stufe 10 (CHARTER_MIN_LEVEL).
+
+
+### TTT-0030 – Balance umgesetzt, Klick zentriert die Karte nicht mehr, Freibrief ab Stadtlevel 10 (Stempel 20261124-zentrieren)
+
+- Zeit / Quelle: Nutzerentscheidung im Chat: Option 1 (mehr Einnahmen für Riverlands), danach „mach wie du denkst“. Nutzerbericht: Klick auf ein Feld verschiebt die Karte und nervt. Der Nutzer will die Testversion online.
+- Änderungen / Dateien:
+  - `data/biomes.json`: Riverlands `scarce` = `["stone"]` (Holz nicht mehr knapp).
+  - `data/economy.json`: `townLevelThresholds` ab Stufe 5 neu (Stufe 5 bei 162.000 XP, Stufe 10 bei 1.938.000 XP); `gridSizeByTownLevel` mit `"10": 10` statt `"12": 10`.
+  - `src/domain/engine.js`: XP je Ausbau = `upgradePerNewLevel × Stufe²`.
+  - `src/domain/charters.js`: `CHARTER_MIN_LEVEL` = 10 (vorher 8).
+  - `src/main.js`: `selectTile` ruft kein `focusTile` mehr auf. Klick und Tipp verschieben die Karte nicht.
+  - `src/world/board.js`: Die Pfeiltasten zentrieren weiter die Auswahl (`focusOn`).
+  - `src/patch-notes.mjs`: neuer Eintrag `20261124-zentrieren` (DE/EN). Der Eintrag `20261124-chronik` bleibt unverändert.
+  - `tests/charters.test.mjs`, `tests/domain.test.mjs`: Werte an Stufe 10 und an die neue XP-Formel angepasst.
+  - `scripts/simulate-balance.mjs`: Freibrief-Meilenstein auf Stufe 10.
+  - `docs/GAME_PLAN.md`: Gründung ab Stadtlevel 10.
+  - Stempel `20261124-chronik` → `20261124-zentrieren` in 17 Dateien (`bump --apply`).
+- Messung (`npm run simulate`, 30 Tage, Bot wie TTT-0028): Stadtlevel 5 bei Tiefwald 4,4 h, Hochland 4,5 h, Küste 4,1 h, Riverlands 3,6 h (unter 4 h). Stadtlevel 10 bei Tiefwald 11,3 h; Hochland 10,9 h (knapp unter 11); Küste und Riverlands bleiben bei Stufe 9 stehen. Exit 1 mit 4 Meilensteinen außerhalb des Korridors.
+- Prüfungen: `npm test` 76 pass, 0 fail. `npm run check:suite` Exit 0, 76 Tests grün.
+- Nachweisgrad: Unit-Test und Bot-Simulation. Der Klick-Fix ist nicht automatisch getestet. Browser-Test auf dem Preview steht aus.
+- Grenzen: Der Bot füllt das Raster mit Lagern und baut keine Eisenmine. Ob der Stillstand bei Stufe 9 im echten Spiel auftritt, ist offen. Stufe 5 in Riverlands liegt unter dem Ziel.
+- Offen / nächster Schritt: Betreiber testet den Klick auf dem Preview. Danach Entscheidung über Riverlands (Stillstand auf Stufe 9) und über das Raster ab Stufe 10.

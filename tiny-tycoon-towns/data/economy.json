@@ -11,8 +11,8 @@
     "throughputPerMarketLevel": 40
   },
   "storage": { "base": 500, "perWarehouseLevel": 250, "maxWarehouseLevel": 20 },
-  "townLevelThresholds": [0, 50, 150, 400, 900, 1500, 2400, 3800, 6000, 9500, 15000, 24000],
-  "gridSizeByTownLevel": { "1": 6, "3": 7, "5": 8, "8": 9, "12": 10 },
+  "townLevelThresholds": [0, 2000, 6000, 16000, 162000, 243092, 411982, 690937, 1155563, 1938000, 3060000, 4896000],
+  "gridSizeByTownLevel": { "1": 6, "3": 7, "5": 8, "8": 9, "10": 10 },
   "xp": { "buildingPlaced": 20, "upgradePerNewLevel": 5, "merchantPurchase": 2 },
   "offline": { "baseCapHours": 8, "maxCapHours": 16, "adBonusHours": 4 },
   "save": { "debounceSeconds": 60 }

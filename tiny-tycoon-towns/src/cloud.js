@@ -6,8 +6,8 @@ import {
   signInWithEmailAndPassword, signOut,
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import { getDatabase, ref, get, set, update, onValue, runTransaction } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
-import { firebaseConfig } from './firebase-config.js?v=20261124-sitz18';
-import { townKey } from './town-names.js?v=20261124-sitz18';
+import { firebaseConfig } from './firebase-config.js?v=20261124-zentrieren';
+import { townKey } from './town-names.js?v=20261124-zentrieren';
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
