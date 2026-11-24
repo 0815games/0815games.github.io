@@ -399,6 +399,43 @@ const UI = {
         if(this.els.playerList) this.els.playerList.style.display = 'none';
     },
 
+    // Startet das Spiel ohne Firebase.
+    //
+    // Es gibt genau einen Spielstand im localStorage (`pipboy_save`), und
+    // Game.init/saveGame kommen ohne Netz aus. Der Offline-Weg ist damit
+    // schon vorhanden - er war nur nicht erreichbar, wenn die drei
+    // Firebase-Skripte vom CDN nicht kamen. Dann blieb der Login stehen,
+    // weil Network.init() `active` auf false setzt und jeder
+    // Anmeldeversuch mit "Verbindung unterbrochen" endet.
+    startOffline: async function() {
+        this.isSystemReady = true;
+
+        let save = null;
+        try {
+            const roh = localStorage.getItem('pipboy_save');
+            if(roh) save = JSON.parse(roh);
+        } catch(e) { save = null; }
+
+        this.selectedSlot = 0;
+        this.loginBusy = false;
+
+        // Fehler hier duerfen nicht still verschwinden: ein Start, der nichts
+        // tut, sieht fuer den Spieler aus wie der Absturz, den dieser Weg
+        // gerade verhindern soll.
+        try {
+            await this.startGame(save, 0, save ? null : 'SURVIVOR');
+        } catch(e) {
+            console.error("Offline-Start fehlgeschlagen:", e);
+            this.isSystemReady = true;
+            if(this.els.gameScreen) this.els.gameScreen.classList.add('hidden');
+            if(this.els.loginScreen) this.els.loginScreen.style.display = 'flex';
+            showCrashReport("OFFLINE_START_FAILED", {
+                msg: (e && e.message) || String(e),
+                stack: (e && e.stack) || 'N/A'
+            });
+        }
+    },
+
     attemptLogin: async function() {
         if(!this.isSystemReady) {
             this.els.loginStatus.textContent = "SYSTEM INITIALIZING... PLEASE WAIT";
