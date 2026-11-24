@@ -23,6 +23,19 @@ Waffen: `pistol_10mm` `revolver_44` `shotgun` `combat_shotgun` `smg`
 `assault_rifle` `minigun` `laser_pistol` `laser_rifle` `plasma_pistol` `plasma_rifle`
 Rüstung: `power_armor`
 
+## Inhaltsfehler: Tiere statt Fleisch
+
+`meat_roach` `meat_fly` `meat_mole` zeigen das ganze Tier (Kakerlake,
+Fliege, Ratte) statt eines Fleischstuecks. Das Pruefskript kann das nicht
+fangen - die Bilder sind technisch einwandfrei, nur inhaltlich falsch.
+
+Ursache: "a lump of raw insect meat with legs attached" wurde als ganzes
+Insekt gelesen. Richtig ist: das Fleischstueck ist die Hauptform, die
+Herkunft nur ein kleines Detail.
+
+Regel: bei Fleisch zuerst die FORM nennen (Steak, Rippchen, Klaue,
+Braten), die Herkunft nur als Beigabe.
+
 ## Ausschuss in Block 5
 
 `bp_stimpack` und `gears` hatten weissen Hintergrund (85,6 % / 36,3 %) —
@@ -120,13 +133,13 @@ Rohstoffe (11/12): `junk_metal` `cloth` `screws` `glue` `springs` `plastic` `lea
 Selten (4/8): `nuclear_mat` `legendary_part` `titanium` `bone`
 Offen: `deathclaw_hand` `acid` `poison_gland` `gunpowder`
 
-Nahrung (roh): `meat_roach` `meat_fly` `meat_mole` `meat_dog`
-`meat_scorp` `meat_yao` `meat_lurk` `hide_yao`
+Nahrung (roh) 5/8: `meat_dog` `meat_scorp` `meat_yao` `meat_lurk` `hide_yao`
+Falsch, neu: `meat_roach` `meat_fly` `meat_mole`
 
 Nahrung (gebraten): `cooked_roach` `cooked_mole` `cooked_fly`
 `cooked_scorp` `cooked_lurk` `cooked_dog` `cooked_yao`
 
-Verbrauchsgut: `super_stimpack`
+Verbrauchsgut ✓: `super_stimpack`
 
 ## Regel für die Rohstoffe
 
