@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { checkRules, missingPaths, CANDIDATE } from '../scripts/check-rules.mjs';
+import { checkRules, missingPaths, CANDIDATE } from '../scripts/rules-publish-dry-run.mjs';
 
 const candidate = JSON.parse(readFileSync(CANDIDATE, 'utf8'));
 

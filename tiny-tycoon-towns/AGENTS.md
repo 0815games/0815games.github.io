@@ -1,7 +1,7 @@
 # Arbeitsanweisung für Tiny Tycoon Towns
 
 Gilt für alle Änderungen in `tiny-tycoon-towns/`, einschließlich Firebase-Regeln,
-Tests und Patches. Sie folgt dem Muster von `IronPath/AGENTS.md`. Der Ablauf steht
+Tests und Patches. Sie folgt dem Muster von IronPath (`IronPath/scripts/patch.mjs`, `rules-publish-dry-run.mjs`). Der Ablauf steht
 in [`docs/PATCH-ABLAUF.md`](docs/PATCH-ABLAUF.md).
 
 1. Vor der Arbeit `docs/PATCH-LOG.md` lesen, danach bei Bedarf `docs/PATCH-BLOECKE.md`
@@ -17,7 +17,7 @@ in [`docs/PATCH-ABLAUF.md`](docs/PATCH-ABLAUF.md).
    echtes Gerät, produktiver Test. Keine Zugangsdaten, Tokens, UIDs oder
    privaten Schlüssel in Log, Doku oder Code.
 5. Reihenfolge der Blöcke in `docs/PATCH-BLOECKE.md` einhalten. Regeln nur mit
-   Dry-Run (`npm run rules:check -- --live <export.json>`) und Backup veröffentlichen.
+   Dry-Run (`npm run rules:check -- <export.json>`) und Backup veröffentlichen.
 6. Nach jeder Veröffentlichung eine verständliche Liste für den Betreiber schreiben:
    was geändert wurde, welche Schritte er testen soll, welches Ergebnis erwartet
    wird, offene Punkte und der tatsächliche Live-Status. Die Feldnotizen in

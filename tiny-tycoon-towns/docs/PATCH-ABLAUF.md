@@ -2,7 +2,7 @@
 
 Wie ein Update in `tiny-tycoon-towns/` läuft. Verbindlich ist
 [`../AGENTS.md`](../AGENTS.md). Das Werkzeug ist `scripts/patch.mjs`, die Regeln
-`scripts/check-rules.mjs`.
+`scripts/rules-publish-dry-run.mjs`.
 
 ## Begriffe und Status
 
@@ -67,7 +67,7 @@ Firebase-Schlüsseln im Log.
 Vollständige Anleitung mit Konsolenlink: [`FIREBASE.md`](FIREBASE.md). Kurz:
 
 1. Backup der Live-Regeln exportieren (lokal, nicht ins Repo).
-2. `npm run rules:check -- --live <backup.json>`. Rot heißt: nicht veröffentlichen.
+2. `npm run rules:check -- <backup.json>`. Rot heißt: nicht veröffentlichen.
 3. Veröffentlichen über die Konsole oder `npx firebase-tools deploy --only database`.
 4. Den Test in FIREBASE.md durchführen und das Ergebnis ins Log eintragen.
 
@@ -85,6 +85,6 @@ Vollständige Anleitung mit Konsolenlink: [`FIREBASE.md`](FIREBASE.md). Kurz:
 
 ## Was die Werkzeuge nicht tun
 
-`check` liest und meldet. `bump` schreibt nur mit `--apply`. `check-rules` veröffentlicht
+`check` liest und meldet. `bump` schreibt nur mit `--apply`. `rules-publish-dry-run` veröffentlicht
 nichts und verbindet sich nicht mit Firebase. Kein Git-Hook erzwingt etwas: Ereignisse
 außerhalb dieses Ablaufs muss man selbst nachtragen.

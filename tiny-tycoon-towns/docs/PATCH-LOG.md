@@ -79,3 +79,61 @@ Ereignis ergänzt.
 - Commit: lokaler Checkpoint-Commit auf `arena/7efbfaa5-0815games-github-io` (Hash siehe
   `git log -1`, wird nach dem Commit nicht im Log selbst eingetragen).
 - Push, PR, Regelveröffentlichung: nicht erfolgt.
+
+## TTT-0003 – Patch-Werkzeug nach IronPath-Muster nachgebaut (Welle `20261124-konto1`)
+
+- Zeit / Quelle: Sitzung 2026-11-24 (UTC). Vorlage: `IronPath/scripts/patch.mjs` (617 Zeilen)
+  und `IronPath/scripts/rules-publish-dry-run.mjs` (132 Zeilen), nur gelesen.
+- Block / Ziel: Nutzerwunsch: Den IronPath-Ablauf „passend für dieses Projekt“ nachbauen.
+  Gleiche Gliederung, gleiche Befehle (`check`, `check --fast`, `check --suite`, `bump`,
+  Regel-Dry-Run), gleiche Prüfblöcke. Anker, Pfade und Kennungen sind die dieses Projekts.
+  Bewusste Unterschiede:
+  - Kennungen `TTT-NNNN` statt `IPL-NNNN`, Log-Archiv gleich (`docs/PATCH-LOG-ARCHIV.md`, 20 Einträge).
+  - Keine Emulator-Suite wie bei IronPath (Java fehlt hier). Die Regeln bekommen dafür eine
+    Sperrmodus-Prüfung im Dry-Run.
+  - Die Regeldatei bleibt reines JSON, ohne Kommentare und ohne eingebetteten Link. Der
+    Publish-Link steht in `docs/FIREBASE.md`, gleich wie bei IronPath, wo die Regel-JSONs
+    ebenfalls keine Kommentare haben.
+  - Anker: `release-version.json` (`build`), `index.html` (`ttt-build`-Meta und `build-stamp`),
+    `src/main.js` (`BUILD`), `src/patch-notes.mjs` (`RELEASED_PATCHES[0].build`).
+- Branch / Basis: `arena/7efbfaa5-0815games-github-io`, Basis `ee9daa4`. `origin/main` steht
+  inzwischen bei `aa6bfb9`. Der Vergleich der Geheimnisse läuft gegen den Abzweigpunkt, nicht
+  gegen die bewegliche Spitze von `main`.
+- Änderungen / Dateien:
+  - `scripts/patch.mjs` (neu, Nachbau), `scripts/rules-publish-dry-run.mjs` (neu, Nachbau mit
+    Sperrmodus-Prüfung); `scripts/check-rules.mjs` entfernt.
+  - `.github/workflows/tiny-tycoon-towns-patch.yml` (neu): `npm run check:suite` und
+    `npm run rules:check` bei Änderungen unter `tiny-tycoon-towns/**`.
+  - `release-version.json` (Schlüssel `build`), `index.html` (Meta und Build-Stempel),
+    `src/main.js` (`BUILD`-Konstante), `src/patch-notes.mjs` (`token` → `build`), `style.css`.
+  - `tests/patch-tooling.test.mjs` (2 Tests dazu: Bump auf einer Kopie, Bissfestigkeit).
+  - `tests/rules.test.mjs` (Import umgestellt), `tests/patch-notes.test.mjs` (`build`).
+  - `package.json` (`rules:check` zeigt auf den Dry-Run), `AGENTS.md`, `docs/PATCH-ABLAUF.md`,
+    `docs/FIREBASE.md`.
+- Fehler, die beim Nachbau gefunden und behoben wurden:
+  1. `scripts/patch.mjs`: `await` in einer nicht-async Funktion (Syntaxfehler, Exit 1).
+  2. Geheimnis-Scan: Suchmuster standen wörtlich im Werkzeug, der Scan fand sich selbst.
+  3. Geheimnis-Scan: Ausgabe des Diffs über 1 MB ließ `execFileSync` abbrechen. Die Prüfung
+     meldete dann „kein Diff“ statt zu prüfen. `maxBuffer` auf 512 MB gesetzt.
+  4. Geheimnis-Scan lief gegen die bewegliche Spitze `origin/main`. Dateien, die `main` seit der
+     Abzweigung entfernt hat, erschienen als neu. Jetzt Abzweigpunkt (`git merge-base`).
+  5. Bump-Test prüfte den Anker zu früh: Die Feldnotizen-Zeile ist absichtlich erst nach dem
+     neuen Eintrag grün. Der Test bildet das jetzt ab.
+- Prüfungen (lokal, Node 22.22.3):
+  - `npm test`: 44 Tests, 44 pass, 0 fail, Exit 0 (Unit, Vertrag, Werkzeug, Kopie-Bump).
+  - `npm run check:suite`: Exit 0, „Kein Fehler, 1 Hinweis“ (der Hinweis: unkommittierte Änderungen).
+  - Bump-Probe auf einer Kopie (`20261201-probe1`): Alle 5 Anker wandern; bleibt nur die
+    Feldnotizen-Zeile zurück, schlägt die Prüfung korrekt fehl, bis der neue Eintrag steht.
+  - `npm run rules:check` (ohne Export): „Regeln: OK“, Exit 0. Mit ungültiger Datei: Exit 2.
+  - Nicht geprüft: die Workflow-Datei auf GitHub (sie ist nur als YAML-Struktur gesichtet, Lauf steht aus).
+    Der Live-Vergleich der Regeln (`rules:check -- <export>`) ist nicht gelaufen, weil kein Export vorliegt.
+  - Grenzen: Die Regeln sind nicht im Emulator getestet. Die Anmeldung ist nicht auf einem
+    Gerät geprüft. Die Sandbox erreicht Firebase nicht.
+- Git / PR / Veröffentlichung: Commit siehe Ereignis-Nachtrag unten. Kein PR. Nicht veröffentlicht.
+  Die Abweichung „eigene Werkzeuge“ aus TTT-0002 ist damit behoben.
+- Offen / nächster Schritt:
+  1. Betreiber: Regeln veröffentlichen (`docs/FIREBASE.md`, Schritte 1 bis 5).
+  2. Betreiber: Autorisierte Domains in Firebase Auth prüfen.
+  3. Anmeldung auf einem Gerät prüfen, Ergebnis als Nachtrag.
+  4. Entscheidung Standort RTDB (`europe-west1` angelegt, ADR-005 nannte Frankfurt).
+  5. Emulator-Tests für die Regeln einrichten, sobald Java verfügbar ist.

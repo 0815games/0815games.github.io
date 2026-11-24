@@ -4,7 +4,7 @@
 
 export const RELEASED_PATCHES = [
   {
-    token: '20261124-konto1',
+    build: '20261124-konto1',
     date: '2026-11-24',
     items: [
       {

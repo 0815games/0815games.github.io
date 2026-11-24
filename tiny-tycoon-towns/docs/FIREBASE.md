@@ -43,7 +43,7 @@ der Betreiber, nicht der Agent.
    `firebase/backup/live-rules.json` speichern. Der Ordner ist in `.gitignore`.
 2. **Trockenlauf.** Im Projektordner:
    ```sh
-   npm run rules:check -- --live firebase/backup/live-rules.json
+   npm run rules:check -- firebase/backup/live-rules.json
    ```
    Ergebnis `Regeln: OK` heißt: Nichts, was live existiert, fällt weg. Bei
    `würde entfernt: …` nicht veröffentlichen, sondern klären.

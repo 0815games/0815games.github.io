@@ -11,6 +11,8 @@ import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261124-k
 import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261124-konto1';
 import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261124-konto1';
 
+const BUILD = '20261124-konto1';
+console.info(`Tiny Tycoon Towns ${BUILD}`);
 const LAST_BIOME_KEY = 'ttt.lastBiome';
 const LOCAL_KEY = (uid) => `ttt.save.v1.${uid}`;
 const OFFLINE_DIALOG_MS = 60_000;
@@ -662,7 +664,7 @@ function showOfflineReport(r, awaySec) {
 
 function showFieldNotes() {
   const list = (items) => items.map((it) => `<li>${esc(it.de)}<br><span class="small muted">${esc(it.en)}</span></li>`).join('');
-  const patches = RELEASED_PATCHES.map((p) => `<h3>${esc(p.token)} · ${esc(p.date)}</h3><ul>${list(p.items)}</ul>`).join('');
+  const patches = RELEASED_PATCHES.map((p) => `<h3>${esc(p.build)} · ${esc(p.date)}</h3><ul>${list(p.items)}</ul>`).join('');
   openDialog(`<form method="dialog" class="dlg-body">
     <h2 id="dlg-title">Feldnotizen</h2>
     <h3>Stand dieser Welle</h3>
