@@ -457,7 +457,14 @@
     },
     init: function() {
       this.active = true;
-      if (typeof firebase !== "undefined" && !this.db) {
+      if (typeof firebase === "undefined") {
+        this.active = false;
+        if (typeof window !== "undefined" && typeof window.pruefeNetzwerk === "function") {
+          window.pruefeNetzwerk();
+        }
+        return;
+      }
+      if (!this.db) {
         try {
           if (!firebase.apps.length) firebase.initializeApp(this.config);
           this.db = firebase.database();
@@ -478,19 +485,46 @@
       }
     },
     register: async function(email, password, name) {
+      this.init();
       if (!this.active) throw new Error("Netzwerk nicht aktiv (Init Failed)");
       const isFree = await this.checkNameAvailability(name);
       if (!isFree) throw new Error("Dieser Name ist bereits vergeben (Charakter lebt noch).");
-      const userCredential = await this.auth.createUserWithEmailAndPassword(email, password);
-      const user = userCredential.user;
-      await user.updateProfile({ displayName: name });
-      this.myId = user.uid;
-      this.myDisplayName = name;
-      return {};
+      try {
+        const userCredential = await this.auth.createUserWithEmailAndPassword(email, password);
+        const user = userCredential.user;
+        await user.updateProfile({ displayName: name });
+        this.myId = user.uid;
+        this.myDisplayName = name;
+        return {};
+      } catch (e) {
+        throw new Error(this.fehlerText(e));
+      }
+    },
+    // Firebase-Fehlercodes in verständliche Sätze. Bewusst hier gebündelt:
+    // der Login zeigt nur noch `error.message`, und die stammte vorher
+    // ungefiltert aus dem fremden Skript.
+    fehlerText: function(e) {
+      const code = e && e.code || "";
+      const tabelle = {
+        "auth/network-request-failed": "Kein Netz. Bitte Verbindung prüfen.",
+        "auth/invalid-email": "Die E-Mail-Adresse ist ungültig.",
+        "auth/user-not-found": "Kein Account mit dieser E-Mail.",
+        "auth/wrong-password": "Passwort falsch.",
+        "auth/invalid-credential": "E-Mail oder Passwort falsch.",
+        "auth/too-many-requests": "Zu viele Versuche. Bitte kurz warten.",
+        "auth/email-already-in-use": "Diese E-Mail ist schon registriert.",
+        "auth/weak-password": "Das Passwort ist zu kurz (min. 6 Zeichen).",
+        "auth/operation-not-allowed": "Anmeldung ist für dieses Projekt gesperrt."
+      };
+      if (tabelle[code]) return tabelle[code];
+      const roh = e && e.message || String(e);
+      return `Anmeldung fehlgeschlagen (${code || "unbekannt"}).`;
     },
     login: async function(email, password) {
       this.init();
-      if (!this.active) throw new Error("Verbindung zu Vault-Tec unterbrochen.");
+      if (!this.active) {
+        throw new Error("Verbindung zu Vault-Tec unterbrochen. Spiel ohne Anmeldung möglich.");
+      }
       try {
         const userCredential = await this.auth.signInWithEmailAndPassword(email, password);
         const user = userCredential.user;
@@ -512,7 +546,7 @@
         if (e.message === "SESSION_ACTIVE") {
           throw new Error("Account ist aktiv! Bitte anderen Tab schließen oder warten.");
         }
-        throw e;
+        throw new Error(this.fehlerText(e));
       }
     },
     checkNameAvailability: async function(charName) {

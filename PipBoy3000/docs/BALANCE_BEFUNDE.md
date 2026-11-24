@@ -363,3 +363,43 @@ Die großen Dosen bleiben unverändert: 50 RAD mit Gasmaske sind weiterhin 40.
 - **Kachel `'M'`** (Monster) wird gezeichnet und blockiert, aber vom Generator
   nie gesetzt. Kämpfe starten nur über einen 3-%-Würfel beim Bewegen. Die
   Schublade für „bewegliches Hindernis auf der Karte" ist da und leer.
+
+## Nachtrag — ABSTURZ (behoben in v14.0.4)
+
+Meldung vom iPhone, 2026-11-24: `Script error.`, LOCATION `Internal : ?:?`,
+kein Stack, leerer Log-Puffer.
+
+### Was „Script error." bedeutet
+
+Der Browser gibt bei Fehlern aus Skripten einer **anderen Domain** keine
+Details heraus — das ist CORS, kein Fehler im Spiel. Bei uns kommen genau drei
+Skripte von fremden Servern: `firebase-app.js`, `firebase-auth.js` und
+`firebase-database.js` von `gstatic.com`. Der Bericht zeigte davon nichts,
+sondern nur „Script error." — deshalb war er wertlos.
+
+### Was daran kaputt war
+
+| Problem | Wirkung |
+|---|---|
+| `scriptsLoaded` wurde erst im `fetch`-Erfolgspfad gesetzt | Scheitert der Versionsabruf (mobiles Netz), wartet die Boot-Sequenz **endlos** und der Login erscheint nie |
+| Kein Offline-Weg | Ohne Firebase endet jeder Login in „Verbindung zu Vault-Tec unterbrochen" — Sackgasse |
+| Firebase-Fehlercodes roh im Login | `auth/network-request-failed` statt eines Satzes |
+| CDN-Skripte ohne `onerror` | Ein Ausfall blieb unsichtbar |
+
+### Was jetzt gilt
+
+1. Der Boot hängt nur am Bündel. Die Versionsnummer wird parallel geholt und
+   nachgetragen; sie blockiert nichts. Nach 15 Sekunden greift ein
+   Notausstieg, falls `app.js` selbst nicht ankommt.
+2. „Ohne Anmeldung spielen" startet den localStorage-Spielstand — der Offline-
+   Pfad war schon im Code, nur nicht erreichbar.
+3. Der Crash-Bericht nennt fremde Skripte, listet fehlende CDNs und zeigt den
+   Online-Zustand.
+
+**Nebenbei korrigiert:** Beim Einbau hatte ich den Tailwind-Play-CDN wieder
+hereingeholt, den der Umbau bewusst entfernt hatte (Build-Zeit statt CDN).
+Zwei bestehende Tests haben das sofort gemeldet — der CDN ist wieder raus.
+
+**Offen:** Ein Test, der die Seite *ohne* Canvas-Attrappe lädt, wäre näher am
+echten Gerät. Für den Absturz war das nicht nötig; die drei Ursachen oben sind
+unabhängig von der Zeichenfläche.

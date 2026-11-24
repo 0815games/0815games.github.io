@@ -7,13 +7,22 @@
     
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%23000%22/><text x=%2250%25%22 y=%2250%25%22 font-size=%2280%22 font-family=%22monospace%22 font-weight=%22bold%22 fill=%22%231aff1a%22 dy=%22.35em%22 text-anchor=%22middle%22>P</text></svg>">
     
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <!-- Die drei Firebase-Skripte sind die einzige verbliebene Abhaengigkeit
+         im Netz (Tailwind laeuft seit dem Umbau zur Buildzeit). Faellt das CDN
+         aus - mobiles Netz, Proxy, Firewall -, ist der Login nicht moeglich,
+         aber das Spiel laeuft offline weiter. Das onerror meldet den Ausfall,
+         statt still zu scheitern; genau dieser Fall erzeugte am 2026-11-24 auf
+         einem iPhone ein "Script error." ohne jede Spur. -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js" crossorigin="anonymous"
+            onerror="window.scriptLoadError='firebase-app.js';"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js" crossorigin="anonymous"
+            onerror="window.scriptLoadError='firebase-auth.js';"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js" crossorigin="anonymous"
+            onerror="window.scriptLoadError='firebase-database.js';"></script>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="app.css?v=14.0.3">
-    <link rel="stylesheet" href="style.css?v=14.0.3">
+    <link rel="stylesheet" href="app.css?v=14.0.4">
+    <link rel="stylesheet" href="style.css?v=14.0.4">
     
     <style>
         @keyframes spin-reverse { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
@@ -37,15 +46,37 @@
             console.log(line);
         }
 
+        // Fremde Skripte melden Fehler ohne Details: der Browser gibt aus
+        // Sicherheitsgruenden "Script error." und keine Zeile/Stack, wenn das
+        // Skript von einer anderen Domain kommt (Firebase, Tailwind-CDNs).
+        // Diese Regel heisst CORS. Ohne crossOrigin-Attribut war der
+        // Crash-Bericht damit nutzlos - genau das passierte auf dem iPhone.
+        //
+        // Zwei Massnahmen:
+        //   1. Der Bericht sagt, DASS es ein fremdes Skript war, statt nur
+        //      "Internal : ?:?" zu zeigen.
+        //   2. Fehlgeschlagene CDN-Skripte werden erkannt (onerror am Tag),
+        //      damit der Bericht den Ausfall benennen kann.
+        window.fremdSkriptFehler = false;
+
+        function istFremd(msg, url) {
+            return msg === 'Script error.' ||
+                   (typeof url === 'string' && url.length > 0 && url.indexOf(location.origin) !== 0);
+        }
+
         window.onerror = function(msg, url, lineNo, columnNo, error) {
+            const fremd = istFremd(msg, url);
             const errorDetails = {
                 msg: msg,
                 url: url,
                 line: lineNo,
                 col: columnNo,
-                stack: error ? error.stack : 'N/A'
+                stack: error ? error.stack : 'N/A',
+                fremd: fremd,
+                cdns: fehlendeCdns()
             };
-            showCrashReport("RUNTIME_ERROR", errorDetails);
+            if (fremd) window.fremdSkriptFehler = true;
+            showCrashReport(fremd ? "RUNTIME_ERROR (fremdes Skript)" : "RUNTIME_ERROR", errorDetails);
             return false;
         };
 
@@ -55,6 +86,20 @@
                 stack: event.reason ? event.reason.stack : 'N/A'
             });
         };
+
+        // Welche der drei CDN-Skripte sind nicht angekommen?
+        // firebase.app/auth/database sind die einzigen Fremdabhaengigkeiten,
+        // die fuer den Login gebraucht werden.
+        function fehlendeCdns() {
+            const fehlt = [];
+            if (typeof firebase === 'undefined') {
+                fehlt.push('Firebase komplett (gstatic.com)');
+            } else {
+                if (!firebase.auth) fehlt.push('firebase-auth.js');
+                if (!firebase.database) fehlt.push('firebase-database.js');
+            }
+            return fehlt;
+        }
 
         function showCrashReport(type, details) {
             const overlay = document.getElementById('crash-overlay');
@@ -73,12 +118,18 @@ SCREEN: ${window.innerWidth}x${window.innerHeight}
 
 ERROR MESSAGE:
 ${details.msg}
-
+${details.fremd ? '\nHINWEIS: Der Fehler kam aus einem fremden Skript (' + (details.url || 'ohne URL') + ').\nDer Browser gibt dafuer keine Zeile und keinen Stack heraus (CORS).\nDas ist meistens ein CDN-Problem: Firebase oder Tailwind nicht geladen.' : ''}
+${(details.cdns && details.cdns.length) ? '\nNICHT GELADENE SKRIPTE:\n' + details.cdns.map(c => '  - ' + c).join('\n') + '\n' : ''}
 LOCATION:
 ${details.url || 'Internal'} : ${details.line || '?'}:${details.col || '?'}
 
 STACK TRACE:
 ${details.stack}
+
+=== UMGEBUNG ===
+Online: ${navigator.onLine ? 'ja' : 'NEIN'}
+firebase: ${typeof firebase === 'undefined' ? 'NICHT GELADEN' : 'geladen'}
+Netzwerk aktiv: ${(typeof Network !== 'undefined' && Network.active) ? 'ja' : 'nein / nicht initialisiert'}
 
 === LOG BUFFER (LAST 10) ===
 ${window.logBuffer.slice(-10).join('\n')}
@@ -86,6 +137,18 @@ ${window.logBuffer.slice(-10).join('\n')}
 
             if(reportBox) reportBox.value = fullReport;
         }
+
+        // Wenn die Firebase-Skripte nicht geladen werden konnten (CDN-Ausfall,
+        // mobiles Netz), zeigt der Login keinen Fehler, sondern bietet den
+        // Offline-Weg an. Vorher blieb nur "Verbindung unterbrochen" - das
+        // Spiel war damit unbenutzbar.
+        window.pruefeNetzwerk = function() {
+            const hinweis = document.getElementById('offline-hinweis');
+            if (!hinweis) return;
+            const inaktiv = (typeof Network !== 'undefined') && Network.active === false
+                && (typeof Game === 'undefined' || !Game.state);
+            if (inaktiv) hinweis.classList.remove('hidden');
+        };
 
         function copyCrashReport() {
             const text = document.getElementById('crash-report-text');
@@ -139,6 +202,7 @@ ${window.logBuffer.slice(-10).join('\n')}
                 </form>
                 <button id="btn-login" class="action-button w-full py-3 font-bold text-xl mb-2 mt-4">LOGIN</button>
                 <button id="btn-toggle-register" class="text-sm text-yellow-400 hover:text-yellow-200 cursor-pointer mb-4 underline bg-transparent border-none">Noch kein Account? Hier registrieren</button>
+                <button id="btn-offline" class="text-sm text-green-400 hover:text-green-200 cursor-pointer mb-4 underline bg-transparent border-none" onclick="UI.startOffline()">Ohne Anmeldung spielen</button>
                 <div class="flex gap-2 w-full">
                     <button id="btn-manual-login" class="action-button flex-1 py-2 font-bold text-lg border-yellow-400 text-yellow-400" onclick="UI.showManualOverlay()">ANLEITUNG</button>
                     <button id="btn-changelog" class="action-button flex-1 py-2 font-bold text-lg border-blue-400 text-blue-400" onclick="UI.showChangelogOverlay()">LOGS</button>
@@ -149,6 +213,10 @@ ${window.logBuffer.slice(-10).join('\n')}
                 </button>
 
                 <div id="login-status" class="mt-4 text-yellow-400 min-h-[1.5em] text-sm font-mono break-words"></div>
+                <div id="offline-hinweis" class="hidden mt-2 p-2 border border-yellow-600 bg-yellow-900/20 text-yellow-300 text-xs">
+                    Die Verbindung zu Vault-Tec kam nicht zustande (Firebase-Skripte nicht geladen).
+                    Du kannst trotzdem spielen — der Fortschritt liegt auf diesem Gerät.
+                </div>
                 <div class="mt-4 text-xs text-[#1aff1a] opacity-50 border-t border-[#1aff1a]/30 pt-2 w-full">VERSION <span id="login-version-display">LOADING...</span></div>
             </div>
         </div>
@@ -273,11 +341,17 @@ ${window.logBuffer.slice(-10).join('\n')}
     
     let scriptsLoaded = false;
 
+    // Die Versionsnummer wird parallel zur Boot-Sequenz geholt. Sie ist nur
+    // Schmuck: der Boot wartet nicht darauf. Damit die Zeile trotzdem die
+    // Nummer zeigt, wird sie beim Zeichnen eingesetzt - kommt der Abruf
+    // spaeter, bleibt es bei "DETECTING...".
+    window.bekannteVersion = null;
+
     function addBootLine(text, color = "boot-line") {
         const log = document.getElementById('boot-log');
         const div = document.createElement('div');
         div.className = color;
-        div.textContent = "> " + text;
+        div.textContent = "> " + String(text).replace('@@VER@@', window.bekannteVersion || 'DETECTING...');
         log.appendChild(div);
     }
 
@@ -290,7 +364,9 @@ ${window.logBuffer.slice(-10).join('\n')}
             "ROBCO INDUSTRIES UNIFIED OPERATING SYSTEM",
             "COPYRIGHT 2075-2077 ROBCO INDUSTRIES",
             "SERVER: ONLINE",
-            `LOADING SYSTEM VERSION ${ver || 'DETECTING...'}`,
+            // @@VER@@ wird beim Zeichnen ersetzt, damit die Nummer auch dann
+            // erscheint, wenn sie erst waehrend der Sequenz eintrifft.
+            `LOADING SYSTEM VERSION @@VER@@`,
             "MEMORY: 64KB OK"
         ];
 
@@ -301,6 +377,42 @@ ${window.logBuffer.slice(-10).join('\n')}
 
         addBootLine("INITIALIZING PIP-BOY 3003 INTERFACE...");
 
+        // Auf das gebuendelte app.js warten. Das Skript steht am Ende der
+        // Seite, laeuft also nach diesem Block - ohne die Warteschleife
+        // startet runBootSequence, bevor `UI` existiert.
+        //
+        // Vorher lief das ueber setInterval auf ein Flag, das erst im
+        // onload-Handler gesetzt wurde. Schlug der Versionsabruf fehl
+        // (schlechtes Netz, wie auf dem Handy), wurde das Flag nie gesetzt:
+        // die Warteschleife lief endlos, der Login blieb unsichtbar.
+        // Jetzt wird das Flag VOR dem fetch gesetzt und zusaetzlich nach
+        // 15 Sekunden hart abgeschlossen. Der Boot darf nie haengen.
+        let bootBeendet = false;
+
+        function finishBoot() {
+            if (bootBeendet) return;
+            bootBeendet = true;
+
+            const log = document.getElementById('boot-log');
+            if (log) log.innerHTML = '';
+
+            setTimeout(() => {
+                addBootLine("SYSTEM READY.", "text-green-400 font-bold animate-pulse text-lg");
+
+                setTimeout(() => {
+                    if (bootSeq) bootSeq.style.display = 'none';
+                    if (loginContent) {
+                        loginContent.classList.remove('hidden');
+                        loginContent.classList.add('flex');
+                    }
+
+                    if (typeof UI !== 'undefined') {
+                        UI.isSystemReady = true;
+                    }
+                }, 1000);
+            }, 300);
+        }
+
         const checkReady = setInterval(() => {
             if (scriptsLoaded) {
                 clearInterval(checkReady);
@@ -308,25 +420,16 @@ ${window.logBuffer.slice(-10).join('\n')}
             }
         }, 500);
 
-        function finishBoot() {
-            const log = document.getElementById('boot-log');
-            log.innerHTML = ''; // Clear for dramatic effect
-            
-            setTimeout(() => {
-                addBootLine("SYSTEM READY.", "text-green-400 font-bold animate-pulse text-lg");
-                
-                setTimeout(() => {
-                    bootSeq.style.display = 'none';
-                    loginContent.classList.remove('hidden');
-                    loginContent.classList.add('flex');
-                    
-                    if(typeof UI !== 'undefined') {
-                        UI.isSystemReady = true; 
-                        console.log("Boot finished. System is now ready for interaction.");
-                    }
-                }, 1000); 
-            }, 300);
-        }
+        // Notausstieg: falls app.js gar nicht ankommt (Abbruch, Proxy,
+        // Firewall), wird der Login trotzdem gezeigt. Die Fehlermeldung
+        // erscheint dann beim Anmeldeversuch, nicht als eingefrorener Bildschirm.
+        setTimeout(() => {
+            if (!bootBeendet) {
+                clearInterval(checkReady);
+                console.warn("app.js nicht bereit - Boot wird hart abgeschlossen.");
+                finishBoot();
+            }
+        }, 15000);
     }
 
     window.onload = function() {
@@ -334,27 +437,58 @@ ${window.logBuffer.slice(-10).join('\n')}
         const loginVerDisplay = document.getElementById('login-version-display'); 
         const devVer = Date.now();
 
+        function zeigeVersion(v) {
+            if(verDisplay) verDisplay.textContent = v;
+            if(loginVerDisplay) loginVerDisplay.textContent = v;
+        }
+
+        // Der Boot haengt NUR am Buendel, nicht an der Versionsdatei.
+        // Reihenfolge deshalb:
+        //   1. Buendel ist schon gelaufen (Skript am Seitenende) -> UI.init()
+        //   2. Flag setzen, damit die Boot-Sequenz weiterlaeuft
+        //   3. Versionsnummer holen; sie schmueckt nur, sie blockiert nicht
+        // Vorher hing der Boot am fetch: ein Netzwerkfehler beim Abruf einer
+        // Textdatei liess die Login-Seite unsichtbar (iPhone, Mobilfunk).
+                if (typeof UI !== 'undefined') UI.init();
+                scriptsLoaded = true;
+
+        // Anzeigename fuer den Fall, dass der Abruf scheitert.
+        zeigeVersion('UNBEKANNT');
+
         fetch('Version?t=' + devVer)
             .then(res => res.text())
             .then(v => {
-                const displayVer = v.trim(); 
-                runBootSequence(displayVer);
-
-                if(verDisplay) verDisplay.textContent = displayVer;
-                if(loginVerDisplay) loginVerDisplay.textContent = displayVer;
-
-                if (typeof UI !== 'undefined') UI.init();
-                scriptsLoaded = true;
+                const displayVer = v.trim();
+                zeigeVersion(displayVer);
+                aktualisiereBootZeilen(displayVer);
             })
             .catch(err => {
-                showCrashReport("VERSION_CHECK_FAILED", {
-                    msg: "Could not fetch version file. Server might be offline.",
-                    stack: err.stack || err
-                });
+                // Kein Crash-Bildschirm für eine fehlende Versionsdatei: die
+                // Seite ist benutzbar, nur die Nummer fehlt.
+                console.warn("Versionsabruf fehlgeschlagen:", err && err.message);
+                aktualisiereBootZeilen(null);
             });
+
+        // Die Boot-Sequenz startet sofort und laeuft parallel zum Abruf. Sie
+        // zeigt zuerst "DETECTING..." und wird nachtraeglich ergaenzt.
+        runBootSequence(null);
+    };
+
+    // Setzt die Versionsnummer, sobald sie da ist. Laeuft die Boot-Ausgabe
+    // noch, wird die vorhandene Zeile ergaenzt; sonst bleibt es bei
+    // "DETECTING..." - das ist harmlos.
+    function aktualisiereBootZeilen(ver) {
+        if(ver) window.bekannteVersion = ver;
+        const log = document.getElementById('boot-log');
+        if(!log || !ver) return;
+        for(const zeile of log.children) {
+            if(zeile.textContent.startsWith('> LOADING SYSTEM VERSION')) {
+                zeile.textContent = `> LOADING SYSTEM VERSION ${ver}`;
+            }
+        }
     };
 </script>
 
-    <script src="app.js?v=14.0.3"></script>
+    <script src="app.js?v=14.0.4"></script>
 </body>
 </html>

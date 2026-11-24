@@ -1,5 +1,30 @@
 # CHANGELOG
 
+## v14.0.4 (Absturz auf dem iPhone, 2026-11-24)
+Bericht: „Script error.", LOCATION `Internal : ?:?`, kein Stack, leerer
+Log-Puffer. Der Bericht selbst war die erste Baustelle — er verschwieg die
+Ursache.
+
+- [BUGFIX] **Der Crash-Bericht nennt fremde Skripte:** „Script error." ohne
+  Zeile und Stack bedeutet, dass der Fehler aus einem Skript einer anderen
+  Domain kam (CORS) — bei uns Firebase vom gstatic-CDN. Der Bericht sagt das
+  jetzt, listet die nicht geladenen Skripte und zeigt, ob das Gerät online ist.
+- [BUGFIX] **Der Boot hängt nicht mehr am Versionsabruf:** `scriptsLoaded`
+  wurde erst im `fetch`-Erfolgspfad gesetzt. Schlug der Abruf fehl (mobiles
+  Netz), wartete die Boot-Sequenz endlos und der Login erschien nie. Jetzt
+  hängt der Boot nur am Bündel, die Versionsnummer ist Schmuck — und nach
+  15 Sekunden gibt es einen Notausstieg.
+- [FEATURE] **Spiel ohne Anmeldung:** Fällt das Firebase-CDN aus, war der
+  Login eine Sackgasse („Verbindung zu Vault-Tec unterbrochen"). Neu:
+  „Ohne Anmeldung spielen" startet den localStorage-Spielstand; ein Hinweis
+  erklärt den Ausfall.
+- [BUGFIX] **Fehlercodes lesbar:** `auth/network-request-failed` und
+  Verwandte werden übersetzt, statt roh im Login zu stehen.
+- [BUGFIX] **CDN-Ausfälle sichtbar:** Die drei Firebase-Skripte tragen
+  `crossorigin` und `onerror` — ein Ausfall fällt auf, statt still zu bleiben.
+- [TESTS] 8 neue Tests (129 gesamt), darunter der ausgelieferte Boot mit
+  fehlgeschlagenem Versionsabruf.
+
 ## v14.0.3 (Wandernde RAD-Wolken, 2026-11-24)
 RAD war bis hierher ein Getränkewert: Schlafen, gebratenes Fleisch, ein
 Minispiel. Keine Zone und kein Wetter hat gestrahlt — die Glühende See war
