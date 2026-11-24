@@ -1,6 +1,6 @@
 import {equipmentForPlayer} from '../workshop/workshop-combat.mjs?v=20261112-tagless1';
-import {webBonuses} from './skills.mjs?v=20261123-aim3';
-import {getMap} from './maps.mjs?v=20261123-aim3';
+import {webBonuses} from './skills.mjs?v=20261123-aim4';
+import {getMap} from './maps.mjs?v=20261123-aim4';
 import {terrainFor,soldierSpeedFactor,enemySpeedFactor} from './terrain.mjs?v=20261124-zones1';
 import {bossPhase} from './boss-mechanics.mjs?v=20261031-finale1';
 

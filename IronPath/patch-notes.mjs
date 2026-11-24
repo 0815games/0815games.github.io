@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see docs/PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261123-aim3';
+import {getLanguage} from './language.mjs?v=20261123-aim4';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,19 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'aim4',build:'20261123-aim4',pr:387,
+    title:{en:'Living Field IV · Flashes at the Muzzle, Casings in the Air',de:'Lebendiges Feld IV · Blitze an der Mündung, Hülsen in der Luft'},
+    shipped:[
+      {en:'Every shot now announces itself: a flash blooms at the muzzle in the game’s emblem colors while the kick is fresh, and a brass casing spins out of the ejection port as the recoil fades away.',de:'Jeder Schuss meldet sich jetzt: Ein Blitz blüht an der Mündung in den Emblemfarben, solange der Tritt frisch ist, und eine Messinghülse trudelt aus der Auswurföffnung, während der Rückstoß verblasst.'},
+      {en:'The flak flashes from both barrels at once - one trigger pull, two reports.',de:'Die Flak blitzt aus beiden Rohren zugleich - ein Auslöser, zwei Schläge.'},
+      {en:'Honest note: the flash and the casing are drawn from the recoil the guns already make - no new state, no clock, nothing new crosses the network, and devices with reduced motion see none of it.',de:'Ehrlicher Hinweis: Blitz und Hülse werden aus dem Rückstoß gezeichnet, den die Waffen ohnehin machen - kein neuer Zustand, keine Uhr, nichts Neues übers Netz, und Geräte mit reduzierter Bewegung sehen nichts davon.'},
+      {en:'Raised the cache wave to 20261123-aim4, because every gun gained visible effects: no device should fight with yesterday’s eyes.',de:'Die Cache-Welle auf 20261123-aim4 erhöht, weil jede Waffe sichtbare Effekte bekam: Kein Gerät soll mit den Augen von gestern kämpfen.'},
+    ],
+    open:[
+      {en:'The Living Field series is complete: spinning heads, fine polish, flashes and casings. What comes next is the operator’s call.',de:'Die Reihe Lebendiges Feld ist vollständig: drehende Köpfe, Feinschliff, Blitze und Hülsen. Was als Nächstes kommt, entscheidet der Betreiber.'},
+    ]
+  },
   {
     id:'aim3',build:'20261123-aim3',pr:386,
     title:{en:'Living Field III · The Guns Settle, the Barrels Kick',de:'Lebendiges Feld III · Die Waffen rasten ein, die Rohre stoßen'},
