@@ -146,3 +146,22 @@ Ereignis ergänzt.
   `3399cef9..c5ddda63` (Fast-forward, Exit 0). Branch auf GitHub zeigt `c5ddda63`.
 - PR: nicht erstellt. Veröffentlichung der Regeln: nicht erfolgt.
 - CI-Lauf des neuen Workflows: noch nicht beobachtet.
+
+## TTT-0004 – Branch mit `main` abgeglichen, veraltete Ordner entfernt (Welle `20261124-konto1`)
+
+- Zeit / Quelle: Sitzung 2026-11-24 (UTC). Git-Stand vor und nach dem Merge.
+- Block / Ziel: Nutzerfrage: „Was suchen wir im Verzeichnis `ufo/`?“ Antwort: Der Ordner
+  gehört zu einem Spiel, das `main` in `d058e038` („UFO-Jagd und Neon Pong entfernt“) gelöscht
+  hat. Der Branch trug ihn noch aus seiner Basis `ee9daa4`. Dort kamen die Geheimnis-Funde aus
+  TTT-0003 her (Google-API-Schlüssel in alten Backup-Dateien). Ebenso fehlte `vendetta/`.
+- Branch / Basis: `arena/7efbfaa5-0815games-github-io`. Basis war `ee9daa4`, `origin/main` jetzt `e4e2cb9e`.
+- Änderungen: `git merge origin/main` (kein Rebase, keine Umschreibung der Historie). Merge-Commit
+  `3fe9ed27`. Entfernt wurden durch den Merge `ufo/` (111 Dateien) und `vendetta/`. Unsere Dateien
+  unter `tiny-tycoon-towns/` und `.github/workflows/tiny-tycoon-towns-patch.yml` waren von `main` nicht berührt.
+- Prüfungen (lokal, Node 22.22.3):
+  - `npm run check:suite`: Exit 0, „Kein Fehler, 0 Hinweis(e)“.
+  - Geheimnisse: 4765 neue Zeilen gegen den Abzweigpunkt `e4e2cb9e` geprüft, kein Muster.
+  - `npm test`: 44 pass, 0 fail (über die Suite belegt).
+  - `npm run rules:check`: Regeln OK, Exit 0.
+- Git / PR / Veröffentlichung: Push siehe Nachtrag. Kein PR. Nicht veröffentlicht.
+- Offen: wie in TTT-0003 (Regeln veröffentlichen, Domains prüfen, Gerätetest, Standort, Emulator).
