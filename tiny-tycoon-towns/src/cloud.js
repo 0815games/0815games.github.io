@@ -6,7 +6,7 @@ import {
   signInWithEmailAndPassword, signOut,
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import { getDatabase, ref, get, set, onValue, runTransaction } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
-import { firebaseConfig } from './firebase-config.js?v=20261124-sitz5';
+import { firebaseConfig } from './firebase-config.js?v=20261124-sitz8';
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -37,6 +37,24 @@ export function saveTown(uid, town) {
 
 export function deleteTown(uid) {
   return set(townRef(uid), null);
+}
+
+// ---------- Betreiber (Admin) ----------
+// Die Datenbankregeln entscheiden über alle Rechte. Diese Funktionen zeigen nur an, was erlaubt ist.
+
+/** True, wenn die UID unter admins/ freigeschaltet ist. Lesbar nur für das Konto selbst. */
+export async function isAdmin(uid) {
+  const snap = await get(ref(db, `admins/${uid}`));
+  return snap.exists() && snap.val() === true;
+}
+
+/** Alle Stadt-Stände, nur für Admins lesbar. Liefert [{ uid, town }]. */
+export async function listSaves() {
+  const snap = await get(ref(db, 'saves'));
+  const all = snap.val() ?? {};
+  return Object.entries(all)
+    .filter(([, entry]) => entry && entry.town)
+    .map(([uid, entry]) => ({ uid, town: entry.town }));
 }
 
 // ---------- Sitzung: ein offenes Fenster pro Konto, geräteübergreifend ----------

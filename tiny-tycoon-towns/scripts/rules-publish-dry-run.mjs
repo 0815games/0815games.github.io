@@ -105,7 +105,7 @@ export function checkRules(raw){
   if(rules['.read']!==undefined||rules['.write']!==undefined)
     errors.push('Wurzel: .read oder .write gesetzt. Die Wurzel muss geschlossen bleiben.');
   for(const key of Object.keys(rules))
-    if(!key.startsWith('.')&&key!=='saves'&&key!=='sessions')errors.push(`Unbekannter Zweig "${key}"`);
+    if(!key.startsWith('.')&&key!=='saves'&&key!=='sessions'&&key!=='admins')errors.push(`Unbekannter Zweig "${key}"`);
   walk(rules,'',(path,node)=>{
     for(const mode of ['.read','.write'])
       if(node[mode]===true||node[mode]==='true')errors.push(`${path||'/'}: ${mode} ist offen (true)`);
@@ -130,6 +130,13 @@ export function checkRules(raw){
     if(!String(session['.read']??'').includes('auth.uid === $uid'))errors.push('sessions/$uid: .read ohne Eigentümerprüfung');
     if(!String(session['.write']??'').includes('auth.uid === $uid'))errors.push('sessions/$uid: .write ohne Eigentümerprüfung');
     if(session.$other?.['.validate']!==false)errors.push('sessions/$uid: $other muss .validate false haben');
+  }
+  // Betreiber: admins/{uid} nur für das Konto selbst lesbar, nie von Clients schreibbar.
+  const adm=rules.admins?.$uid;
+  if(rules.admins&&!adm)errors.push('admins/$uid fehlt');
+  if(adm){
+    if(!String(adm['.read']??'').includes('auth.uid === $uid'))errors.push('admins/$uid: .read ohne Eigentümerprüfung');
+    if(adm['.write']!==false)errors.push('admins/$uid: .write muss false sein');
   }
   return {errors};
 }

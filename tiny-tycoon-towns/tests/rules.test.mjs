@@ -43,3 +43,12 @@ test('sessions are owner-only and reject unknown fields (bissfest)', () => {
   delete bad2.rules.sessions.$uid.$other;
   assert.ok(checkRules(bad2).errors.some((e) => e.includes('$other')));
 });
+
+test('admins are readable only by their own account and never writable (bissfest)', () => {
+  const bad = structuredClone(candidate);
+  bad.rules.admins = { $uid: { '.read': 'true', '.write': 'auth != null' } };
+  const errs = checkRules(bad).errors;
+  assert.ok(errs.some((e) => e.includes('admins/$uid: .read ohne Eigentümerprüfung')));
+  assert.ok(errs.some((e) => e.includes('admins/$uid: .write muss false sein')));
+  assert.equal(checkRules(candidate).errors.filter((e) => e.includes('admins')).length, 0);
+});

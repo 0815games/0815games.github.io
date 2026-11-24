@@ -319,3 +319,24 @@ Ereignis ergänzt.
   Neu beginnen und Abmelden liegen im Menü oben rechts (`#menu-btn`, `#menu-list`). Die Hilfe-Markierung im Tutorial
   zeigt jetzt auf das Menü.
 - Prüfungen: 58 Tests grün, `check` ohne Fehler, lint `no-undef` ohne Befund. Im Browser noch nicht geprüft.
+
+### TTT-0012 – Vollbild-Karte, Feld-Popup, Lager-Dialog (Welle `20261124-sitz6`)
+
+- Auftrag: Karte füllt den Bildschirm. Lager und Geld raus aus der Karte. Nach dem Feldklick ein kleines Fenster mit
+  durchblätterbaren Bauoptionen.
+- Änderungen: Karte füllt den Container (`board.js` nutzt die volle Höhe). Feld-Popup (`#panel`, unten mittig) mit
+  ‹ › für die Bauoptionen und ✕ zum Schließen, Escape schließt es. Lager, Münzen und Händler im Dialog `#stock-sheet`,
+  geöffnet über `#stock-btn` (unten links). Tutorial-Ziele angepasst.
+- Prüfungen: 58 Tests grün, `check` ohne Fehler, lint `no-undef` ohne Befund, alle statischen IDs in `main.js` vorhanden.
+- Im Browser noch nicht geprüft. Offen: Verhalten auf schmalen Bildschirmen, Lesbarkeit der Pillen über der Karte.
+
+### TTT-0013 – Betreiber-Bereich (Welle `20261124-sitz7`)
+
+- Auftrag: Admin-Panel zum Kontrollieren des Spiels. Einbindung über die Anmeldeseite, eigene Anmeldemaske, Rechte
+  nur für die angegebene UID. Optik wie das Spiel.
+- Änderungen: `admin.html` und `src/admin.js` (Anmeldung, Spielerliste, Stadt-Editor: Stadt, Lager und Verkauf,
+  Zeit vorspulen, Händler-Angebote, Gebäude je Feld, Speichern, Stadt löschen). `src/cloud.js`: `isAdmin`, `listSaves`.
+  Login-Seite: Link „Betreiber-Anmeldung“. Regeln: `admins/{uid}` und Admin-Lese- und Schreibrechte auf `saves`.
+- Regel-Trockenlauf kennt `admins`. Tests für Eigentümerprüfung von `admins` ergänzt. 59 Tests grün.
+- Vor der Nutzung: Regeln veröffentlichen und den `admins`-Eintrag anlegen (siehe `docs/FIREBASE.md`).
+- Im Browser noch nicht geprüft.

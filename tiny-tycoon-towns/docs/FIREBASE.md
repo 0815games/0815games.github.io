@@ -74,3 +74,16 @@ der Betreiber, nicht der Agent.
 
 Das Backup aus Schritt 1 in der Konsole wieder veröffentlichen. Das ist eine
 Betreiberaktion und dauert wenige Minuten.
+
+## Betreiber (Admin-Bereich)
+
+- Regeln: `admins/{uid}` ist nur für das Konto selbst lesbar und nie von Clients schreibbar. Admins
+  (per `root.child('admins').child(auth.uid)`) dürfen alle `saves` lesen und die Stadt-Stände schreiben.
+- Einmalige Freischaltung in der Konsole (Realtime Database → Daten): unter Wurzel einen Knoten
+  `admins` mit dem Kind `f2ZAt1MCFChUBbKKm9Hm3YYn6H43` und dem Wert `true` anlegen. Das ist kein Geheimnis, die
+  Sicherheit liegt in den Regeln. Ohne diesen Eintrag bleibt der Admin-Bereich für alle gesperrt.
+- Admin-Seite: `admin.html` (Link auf der Anmeldeseite „Betreiber-Anmeldung“).
+- Grenze: Ändert der Admin eine fremde Stadt, während der Spieler gerade spielt, überschreibt der nächste
+  Speicherschritt des Spielers den Stand. Die Änderung wirkt also spätestens beim nächsten Laden.
+- Zukunft: andere Spieler sollen Level und Gebäude fremder Städte sehen. Dafür braucht es einen eigenen,
+  schreibgeschützten Lesepfad. Der ist noch nicht gebaut.
