@@ -1,0 +1,26 @@
+name: Tiny Tycoon Towns patch check
+on:
+  push:
+    paths: ['tiny-tycoon-towns/**', '.github/workflows/tiny-tycoon-towns-patch.yml']
+  pull_request:
+    paths: ['tiny-tycoon-towns/**', '.github/workflows/tiny-tycoon-towns-patch.yml']
+permissions:
+  contents: read
+jobs:
+  patch-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: tiny-tycoon-towns
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Patch check (Stempel, Log, Geheimnisse, Verträge, volle Suite)
+        run: npm run check:suite
+      - name: Rules dry run (structure only; live export is compared locally by the operator)
+        run: npm run rules:check

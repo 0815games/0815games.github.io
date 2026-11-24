@@ -1,0 +1,10 @@
+{
+  "grain":   { "name": { "de": "Getreide", "en": "Grain" },  "icon": "🌾", "basePrice": 2 },
+  "fish":    { "name": { "de": "Fisch", "en": "Fish" },      "icon": "🐟", "basePrice": 4 },
+  "lumber":  { "name": { "de": "Holz", "en": "Lumber" },     "icon": "🪵", "basePrice": 3 },
+  "honey":   { "name": { "de": "Honig", "en": "Honey" },     "icon": "🍯", "basePrice": 6 },
+  "stone":   { "name": { "de": "Stein", "en": "Stone" },     "icon": "🪨", "basePrice": 4 },
+  "iron":    { "name": { "de": "Eisen", "en": "Iron" },      "icon": "⛓️", "basePrice": 8 },
+  "salt":    { "name": { "de": "Salz", "en": "Salt" },       "icon": "🧂", "basePrice": 7 },
+  "pearls":  { "name": { "de": "Perlen", "en": "Pearls" },   "icon": "🦪", "basePrice": 15 }
+}
