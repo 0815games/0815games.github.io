@@ -443,3 +443,21 @@ Ereignis ergänzt.
 - Prüfungen: `npm test` 74 pass, 0 fail, Exit 0. `npm run check:suite` ohne Fehler (Serienlauf 11 Dateien, 74 Tests grün). Nachweis: Unit und Strukturprüfung. Nicht geprüft: Browser mit Anmeldung, Gerät.
 - Git / PR / Veröffentlichung: Commit und PR folgen; Merge erst nach Nutzerfreigabe. Die Welle wird mit dem Merge auf `main` ausgeliefert.
 - Offen / nächster Schritt: siehe `docs/ROADMAP.md`, Abschnitt „Jetzt“.
+
+### TTT-0026 – Balance-Simulation nach GAME_PLAN 8.2 (ohne Welle, nur Werkzeug)
+
+- Zeit / Quelle: Nutzerwunsch im Chat: Balance prüfen, Schritt für Schritt. Keine Spielmechanik geändert.
+- Block / Ziel: P1 Balance (GAME_PLAN 4.17, 8.2). Offen bleibt die Einheit „4 bis 8 h“ bei Stadtlevel 5.
+- Branch / Basis: `arena/3a30c5d7-0815games-github-io`, Basis `12d7a2d`.
+- Änderungen / Dateien: neu `scripts/simulate-balance.mjs` (Bot, 2 × 15 min aktiv pro Tag, Offline-Obergrenze 8 h, echte `advance`, `placeBuilding`, `upgradeBuilding`), neu `tests/simulate-balance.test.mjs`, `package.json` (Skript `simulate`), `docs/ROADMAP.md`.
+- Ergebnis, 30 Tage, alle vier Biome (Spielzeit ist Kalenderzeit, inklusive Offline):
+  - Erster Verkauf nach erstem Gebäude: 1 bis 3 min (Korridor ≤ 3, ok).
+  - 5 Gebäude: 4 bis 8 min aktiv (Korridor ≤ 15, ok).
+  - Stadtlevel 5: nach 0,37 bis 0,40 h aktiver Zeit, Kalenderzeit 19,1 h (Korridor 4 bis 8 h, nicht erfüllt). Die Einheit ist offen.
+  - Stadtlevel 8: 43 bis 57 h Kalenderzeit. Engpass für den Freibrief.
+  - Erster Freibrief: 67 bis 129 h (Korridor 36 bis 72 h, in zwei von vier Biomen außerhalb). Gesamtertrag 100.000 wird erst nach Stadtlevel 8 relevant.
+  - Invarianten (Münzen, Lager nicht negativ, Lager nicht über Kapazität): 0 Verletzungen.
+- Prüfungen: `npm test` 76 pass, 0 fail, Exit 0. `npm run simulate` Exit 1, weil 7 Meilensteine außerhalb liegen. Das ist beabsichtigt, bis die Einheit geklärt ist.
+- Grenzen: Der Bot ist ein idealer Spieler. Echte Spieler sind langsamer. Händlerpreis und Perk-Punkte in 2 bis 4 Wochen sind nicht simuliert. Am Ende der 30 Tage war das Gitter mit 99 Gebäuden voll. Wann genau, ist nicht gemessen.
+- Git / PR / Veröffentlichung: noch nicht committet, Stand dieser Eintrag.
+- Offen / nächster Schritt: Einheit festlegen (Nutzer), dann Werte anpassen (Agent).

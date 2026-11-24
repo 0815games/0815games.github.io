@@ -21,11 +21,13 @@ Zuständig: **N** = Nutzer (Geräte, Konsole, Entscheidungen), **A** = Agent (Co
 1. **[N]** Regeln `charters/$uid` aus `tiny-tycoon-towns/firebase/database.rules.json` veröffentlichen. Ohne das speichern Freibriefe nicht. (TTT-0024)
 2. **[N]** Gerätetest Freunde auf zwei Geräten: Anfrage, Annahme, Besuch, Name und Code. (TTT-0018, TTT-0019)
 3. **[N]** Gerätetest Freibriefe, Münzpille und Symbolkosten beim Bauen. (TTT-0024)
-4. **[A]** Service Worker und Offline-Shell für die PWA. Das Manifest existiert, der Service Worker fehlt. (P1, Woche 4)
-5. **[A]** Einstellungen: Sprache DE und EN, Ton, Bewegung reduzieren, Zahlenformat. (B4)
-6. **[A]** Emulator-Tests für die Regeln einrichten. Braucht Java und `firebase-tools`. Vorher prüfen, ob die Umgebung das kann. (B2)
-7. **[N]** Standort entscheiden: RTDB liegt in `europe-west1`, ADR-005 nannte Frankfurt. (B2)
-8. **[N]** Autorisierte Domains in Firebase Auth prüfen. (B2)
+4. **[N]** Balance: Einheit der Meilensteine festlegen. Gemeint ist „Stadtlevel 5 in 4 bis 8 h“ als aktive Spielzeit oder als Kalenderzeit. Die Simulation misst beides (TTT-0026). Danach entscheiden wir die Zahlen.
+5. **[A]** Balance-Werte anpassen, sobald Punkt 4 geklärt ist: Stadtlevel 5 (bot: 22 min aktiv, zu schnell), erster Freibrief (67 bis 129 h, Ziel 36 bis 72 h, Engpass ist Stadtlevel 8). Jede Änderung mit `npm run simulate` belegen.
+6. **[A]** Service Worker für schnelleres Laden, ohne Offline-Spiel (Entscheidung vom 2026-11-24, siehe Entscheidungen). Das Versions-Gate bleibt unverändert.
+7. **[A]** Einstellungen: Sprache DE und EN, Ton, Bewegung reduzieren, Zahlenformat. (B4)
+8. **[A]** Emulator-Tests für die Regeln einrichten. Braucht Java und `firebase-tools`. Vorher prüfen, ob die Umgebung das kann. (B2)
+9. **[N]** Standort entscheiden: RTDB liegt in `europe-west1`, ADR-005 nannte Frankfurt. (B2)
+10. **[N]** Autorisierte Domains in Firebase Auth prüfen. (B2)
 
 ## Offen
 
@@ -36,7 +38,8 @@ Zuständig: **N** = Nutzer (Geräte, Konsole, Entscheidungen), **A** = Agent (Co
 - **[A]** Stadtlevel-Feinschliff. (B3)
 - **[?]** Google-Verknüpfung, Export und Import als JSON. Im Plan für Woche 3 vorgesehen. Bisher nicht geprüft, ob das gebaut ist.
 - **[A]** Ende-zu-Ende-Test für die Anmeldung bis zum Anmeldezustand (Browser). Mehr geht in der Sandbox nicht.
-- **[N]** Balance-Simulation und Playtests. (GAME_PLAN 8.2, 8.3)
+- **[A]** Balance-Simulation steht (`npm run simulate`, TTT-0026). Offen: Werte anpassen (Jetzt 4 und 5), Playtests. (GAME_PLAN 8.2, 8.3)
+- **[N]** Playtests mit 5 Personen. (GAME_PLAN 8.3)
 - **[N]** Onboarding messen: unter 5 Minuten. Das Tutorial mit Schritten existiert (`src/tutorial.js`), die Zeit wurde nie gemessen.
 - **[A]** Ungenutzte Variable `RESOURCE_ORDER` in `src/admin.js` entfernen oder nutzen.
 - **[?]** Im Plan steht „11 Gebäude“, im Spiel sind es 11 (`data/buildings.json`). Plan-Text anpassen oder nicht.
@@ -64,6 +67,7 @@ Zuständig: **N** = Nutzer (Geräte, Konsole, Entscheidungen), **A** = Agent (Co
 
 ## Entscheidungen
 
+- Offline-Start: Nein. Das Spiel startet nur mit Bestätigung vom Server (Netz nötig). Das Versions-Gate bleibt wie in ADR-update-gate. (2026-11-24, Nutzerentscheidung)
 - Dialoge schließen beim Klick daneben. Ausnahmen: Sitzungsübernahme und Stadtgründung (erzwungene Entscheidungen).
 - Keine browsernativen Popups. Alle Meldungen, Rückfragen und Scrollbars sind im Spiel. (TTT-0016)
 - Freundescode: 6 Zeichen, Großbuchstaben und Ziffern, ohne 0, O, 1, I. Zufällig, bei Kollision neu. (TTT-0018)
