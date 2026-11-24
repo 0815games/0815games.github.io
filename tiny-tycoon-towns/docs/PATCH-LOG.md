@@ -384,3 +384,11 @@ Ereignis ergänzt.
 - Ausrollen: erst die Regeln veröffentlichen, dann mergen. Sonst scheitern Gründung und Freunde.
 - Offen: „Besuchen“ (folgt im nächsten Schritt). Alte doppelte Stadtnamen werden nicht automatisch umbenannt.
 - Prüfungen: 65 Tests grün, `check` ohne Fehler, lint ohne Befund. Im Browser nicht gegen Firebase geprüft.
+
+### TTT-0019 – Intro-Logo fliegt zur Anmeldung, Besuch bei Freunden (Welle `20261124-sitz14`)
+
+- Intro: Das Logo mit Spielname fliegt vom Intro an seinen Platz oben auf der Anmeldekarte und bleibt dort (220 px).
+  Die Karte blendet nur ein, ohne sich zu verschieben. Die Zielposition wurde in einer Testseite gemessen: Versatz 0 px.
+- Besuchen: Freunde öffnen die Stadt schreibgeschützt. Der Stand wird im Speicher mit der aktuellen Zeit weitergerechnet
+  (`advance`), nie gespeichert. Auch der eigene Stand bleibt unberührt. Escape oder „Zurück“ beendet den Besuch.
+- Prüfungen: 65 Tests grün, lint ohne Befund, Seiten laden ohne Fehler. Im echten Login und im Besuch mit Firebase nicht geprüft.

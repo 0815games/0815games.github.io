@@ -1,0 +1,31 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="style.css"></head>
+<body style="margin:0"><section id="authScreen" class="auth-screen intro-running" style="position:fixed">
+<div class="auth-intro" id="auth-intro"><img class="auth-intro-logo" src="icons/logo.png" style="animation:none;width:min(62vw,330px)"></div>
+<div class="auth-card" id="auth-card"><img class="auth-card-logo" src="icons/logo.png" width="220"></div></section>
+<script>
+function flyLogo(from, to, screen) {
+  const a = from.getBoundingClientRect();
+  const b = to.getBoundingClientRect();
+  if (!a.width || !b.width) return null;
+  const ghost = from.cloneNode(false);
+  ghost.removeAttribute('class');
+  ghost.removeAttribute('id');
+  ghost.setAttribute('aria-hidden', 'true');
+  ghost.style.cssText = `position:fixed;left:${a.left}px;top:${a.top}px;width:${a.width}px;height:auto;margin:0;transform-origin:0 0;z-index:2;pointer-events:none;filter:drop-shadow(0 12px 24px rgba(0,0,0,.45));`;
+  screen.appendChild(ghost);
+  const scale = b.width / a.width;
+  const dx = b.left - a.left;
+  const dy = b.top - a.top;
+  const anim = ghost.animate(
+    [{ transform: 'translate(0px, 0px) scale(1)' }, { transform: `translate(${dx}px, ${dy}px) scale(${scale})` }],
+    { duration: 900, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)', fill: 'forwards' },
+  );
+  return { ghost, finished: anim.finished };
+}
+const screen=document.getElementById('authScreen');
+const from=document.querySelector('.auth-intro-logo');
+const target=document.querySelector('#auth-card .auth-card-logo');
+const f=flyLogo(from,target,screen);
+if(!f){window.RESULT='no flight';} else f.finished.then(()=>{const g=f.ghost.getBoundingClientRect();const t=target.getBoundingClientRect();
+window.RESULT={dx:+(g.left-t.left).toFixed(2),dy:+(g.top-t.top).toFixed(2),dw:+(g.width-t.width).toFixed(2),tw:t.width};});
+</script></body></html>

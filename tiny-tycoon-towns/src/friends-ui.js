@@ -1,6 +1,6 @@
 // Freunde im Spiel-Design: eigene Stadt mit Code, Einladung per Name oder Code, Anfragen, klappbare Freundesliste.
 // Die Daten kommen aus cloud.js. Dieses Modul zeigt nur an und ruft Aktionen auf.
-import * as cloud from './cloud.js?v=20261124-sitz13';
+import * as cloud from './cloud.js?v=20261124-sitz14';
 
 const esc = (v) => String(v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -161,13 +161,19 @@ export function mountFriends(dlg, ctx) {
       return `<li class="friend-card" data-uid="${esc(id)}">
         <div><strong>${esc(name)}</strong><div class="small">Level ${esc(level)}</div></div>
         <div class="friend-actions">
-          <button type="button" class="ghost" data-act="visit" disabled>Besuchen (folgt)</button>
+          <button type="button" class="primary" data-act="visit">Besuchen</button>
           <button type="button" class="ghost" data-act="remove">Entfernen</button>
         </div></li>`;
     }).join('');
   }
 
   $('#friend-list').addEventListener('click', async (e) => {
+    const visitBtn = e.target.closest('button[data-act="visit"]');
+    if (visitBtn) {
+      const vid = visitBtn.closest('li').dataset.uid;
+      ctx.visit(vid, profiles.get(vid)?.townName ?? 'Freund');
+      return;
+    }
     const btn = e.target.closest('button[data-act="remove"]');
     if (!btn) return;
     const id = btn.closest('li').dataset.uid;

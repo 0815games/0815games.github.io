@@ -4,6 +4,20 @@
 
 export const RELEASED_PATCHES = [
   {
+    build: '20261124-sitz14',
+    date: '2026-11-24',
+    items: [
+      {
+        de: 'Das Intro-Logo fliegt jetzt an seinen Platz oben auf der Anmeldung und bleibt dort. Die Anmeldung baut sich darum auf.',
+        en: 'The intro logo now flies into its place at the top of the sign-in card and stays there. The sign-in builds around it.',
+      },
+      {
+        de: 'Besuchen: Bei einem Freund öffnest du seine Stadt zum Ansehen. Sie wird mit der aktuellen Zeit weitergerechnet. Dabei wird nichts verändert.',
+        en: 'Visit: open a friend\'s town to look at it. It is advanced to the current time. Nothing is changed.',
+      },
+    ],
+  },
+  {
     build: '20261124-sitz13',
     date: '2026-11-24',
     items: [
