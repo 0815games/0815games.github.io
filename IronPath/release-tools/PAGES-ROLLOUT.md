@@ -6,7 +6,7 @@
 > [`FIREBASE-PAGES-ROLLOUT.md`](FIREBASE-PAGES-ROLLOUT.md) heranziehen. Die
 > nachstehenden Schritte gehören zu einem anderen Experiment und dürfen nicht
 > als Anweisung für den neuen Kandidaten ausgeführt oder mit ihm vermischt
-> werden. Kein weiterer Test auf `ironpathtest`.
+> werden. `ironpathtest` ist gelöscht; der Pfad ist entfernt.
 
 **Historischer Stand: vorbereitet, nicht live.** Weder produktive Firebase-Regeln noch der
 Pages-Ursprung wurden durch diese Vorbereitung geändert. Der Dienst
@@ -21,7 +21,8 @@ Das normale Spiel auf GitHub Pages ist derzeit **nicht** durch den Guard
 abgesichert. Die kombinierten Rules allein würden es aussperren. Die folgenden
 Schritte sind ein Ablaufplan, keine Aufforderung, einzelne Rules vorzeitig zu
 veröffentlichen. Ein tatsächlicher Cutover und Rollback wurden nicht auf der
-Produktion erprobt. Keine weiteren Tests auf `ironpathtest` durchführen.
+Produktion erprobt. `ironpathtest` ist gelöscht; der Testpfad wurde am
+2026-11-24 aus dem Repository entfernt.
 
 ## 1. Noch benötigte Einrichtung
 
