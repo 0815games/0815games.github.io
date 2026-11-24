@@ -38,6 +38,12 @@
   <section id="authScreen" class="auth-screen" aria-labelledby="auth-title" hidden>
     <canvas id="authCanvas" class="auth-canvas" aria-hidden="true"></canvas>
     <div class="auth-shade" aria-hidden="true"></div>
+    <!-- Intro: Logo und Titel laufen ein, danach erscheint die Anmeldung. Klick überspringt. -->
+    <div class="auth-intro" id="auth-intro" aria-hidden="true">
+      <img class="auth-intro-logo" src="icons/logo.png" alt="">
+      <h1 class="auth-intro-title"><span>Tiny</span> <span>Tycoon</span> <span>Towns</span></h1>
+      <p class="auth-intro-tag">Baue deine kleine Insel-Stadt</p>
+    </div>
     <div class="auth-card" id="auth-card"></div>
     <p class="auth-foot small">Tiny Tycoon Towns · BUILD 20261124-sitz1</p>
   </section>

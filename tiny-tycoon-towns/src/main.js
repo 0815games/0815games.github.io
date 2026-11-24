@@ -343,6 +343,7 @@ function showLoginScreen(mode, msg = '') {
   $('#loading').inert = true;
   screen.hidden = false;
   $('#auth-card').innerHTML = `<form id="auth-form" class="auth-form" novalidate>
+    <img class="auth-card-logo" src="icons/logo.png" alt="" width="84" height="84">
     <h2 id="auth-title">${isLogin ? 'Anmelden' : 'Konto erstellen'}</h2>
     <p class="small">Deine Stadt wird in der Cloud gespeichert. Mit demselben Konto spielst du auf jedem Gerät weiter.</p>
     <label>E-Mail<input name="email" type="email" autocomplete="email" required></label>
@@ -372,7 +373,31 @@ function showLoginScreen(mode, msg = '') {
   });
   if (!loginScene) loginScene = createLoginScene($('#authCanvas'));
   loginScene.start();
+  playIntro();
   $('#auth-card').querySelector('input[name=email]')?.focus({ preventScroll: true });
+}
+
+/** Intro einmal pro Seitenaufruf: Klick oder Taste überspringt, die Karte erscheint danach. */
+let introStarted = false;
+function playIntro() {
+  if (introStarted) return;
+  introStarted = true;
+  const screen = $('#authScreen');
+  const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+  screen.classList.add('intro-running');
+  screen.classList.remove('intro-done');
+  let timer = null;
+  const finish = () => {
+    clearTimeout(timer);
+    screen.removeEventListener('pointerdown', finish);
+    window.removeEventListener('keydown', finish);
+    screen.classList.remove('intro-running');
+    screen.classList.add('intro-done');
+    $('#auth-intro')?.remove();
+  };
+  screen.addEventListener('pointerdown', finish);
+  window.addEventListener('keydown', finish);
+  timer = setTimeout(finish, reduce ? 300 : 3600);
 }
 
 function hideLoginScreen() {

@@ -16,6 +16,14 @@ export const RELEASED_PATCHES = [
         en: 'Taken-over session: the previous window stops saving and shows that the account was taken over elsewhere.',
       },
       {
+        de: 'Neue Anmeldung: kurzes Intro mit Logo und Titel, danach die Anmeldekarte. Ein Klick überspringt es.',
+        en: 'New sign-in: a short intro with logo and title, then the sign-in card. A click skips it.',
+      },
+      {
+        de: 'Neues Logo der Stadt, auf dem Anmeldebildschirm und in der Karte.',
+        en: 'New town logo on the sign-in screen and card.',
+      },
+      {
         de: 'Neues App-Icon: Inselstadt statt Haus-Symbol. Auf dem Startbildschirm von iPhone und Android, mit eigenem Manifest.',
         en: 'New app icon: an island town instead of the house symbol. On iPhone and Android home screens, with its own manifest.',
       },

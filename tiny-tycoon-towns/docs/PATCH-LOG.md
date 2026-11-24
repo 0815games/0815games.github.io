@@ -276,3 +276,11 @@ Ereignis ergänzt.
   Icon- und Manifest-Verweise plus Apple-Web-App-Angaben in `index.html`. Das Quellbild (1024 px, 1,7 MB)
   liegt nicht im Repo.
 - Prüfungen: 58 Tests grün, `check --fast` ohne Fehler. Auf dem iPhone noch nicht gesehen.
+
+### Nachtrag TTT-0007 – Logo und Intro (vor Merge, Welle `20261124-sitz1`)
+
+- Auftrag: Logo auf der Anmeldeseite und ein Intro (Animation), das bisher fehlte.
+- Änderungen: `icons/logo.png` (512 px, Emblem ohne Schrift, Titel als Text), Intro in `index.html`
+  (`#auth-intro`) und `style.css` (Keyframes, Reduce-Motion-Fallback), `playIntro()` in `src/main.js`
+  (einmal pro Seitenaufruf, Klick oder Taste überspringt, ca. 3,6 s). Logo in der Anmeldekarte.
+- Prüfungen: 58 Tests grün, `check --fast` ohne Fehler. Auf dem Bildschirm noch nicht gesehen.
