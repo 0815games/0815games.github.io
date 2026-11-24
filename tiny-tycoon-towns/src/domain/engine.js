@@ -1,13 +1,13 @@
 // Game engine: state creation, player actions and time advance.
 // Every exported action is (state, input, ctx) -> { state, events, error? }.
 // The input state is never mutated.
-import { generateTerrain } from './terrain.js?v=20261124-sitz14';
-import { GRID, HALL, keyOf, parseKey, inBounds, isUnlocked } from './grid.js?v=20261124-sitz14';
+import { generateTerrain } from './terrain.js?v=20261124-sitz15';
+import { GRID, HALL, keyOf, parseKey, inBounds, isUnlocked } from './grid.js?v=20261124-sitz15';
 import {
   classOf, buildCost, productionMultiplier, townLevelFor,
   storageCap, throughputPerMin, sellPrice,
-} from './economy.js?v=20261124-sitz14';
-import { merchantOffers } from './merchant.js?v=20261124-sitz14';
+} from './economy.js?v=20261124-sitz15';
+import { merchantOffers } from './merchant.js?v=20261124-sitz15';
 
 export const SCHEMA_VERSION = 1;
 export const BIOMES = ['riverlands', 'deepwoods', 'highlands', 'coast'];

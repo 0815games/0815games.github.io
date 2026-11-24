@@ -4,6 +4,16 @@
 
 export const RELEASED_PATCHES = [
   {
+    build: '20261124-sitz15',
+    date: '2026-11-24',
+    items: [
+      {
+        de: 'Flüssigerer Übergang vom Intro zur Anmeldung: Das Logo verschwindet nicht mehr, sondern fliegt sanft an seinen Platz.',
+        en: 'Smoother transition from the intro to sign-in: the logo no longer disappears and glides into its place.',
+      },
+    ],
+  },
+  {
     build: '20261124-sitz14',
     date: '2026-11-24',
     items: [
