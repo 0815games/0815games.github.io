@@ -439,6 +439,7 @@
   // src/data/data_item_icons.js
   if (typeof window.GameData === "undefined") window.GameData = {};
   window.GameData.itemBilder = [
+    "alien_blaster",
     "ammo_10mm",
     "ammo_micro",
     "ammo_shell",
@@ -448,6 +449,8 @@
     "bat_spiked",
     "buffout",
     "combat_shotgun",
+    "deathclaw_gauntlet",
+    "hunting_rifle",
     "jet",
     "knife",
     "knuckles",
@@ -457,6 +460,9 @@
     "minigun",
     "nuka_cola",
     "nuka_quantum",
+    "pipe_pistol",
+    "pipe_revolver",
+    "pipe_rifle",
     "pipe_wrench",
     "pistol_10mm",
     "plasma_pistol",
@@ -469,6 +475,7 @@
     "rolling_pin",
     "shotgun",
     "smg",
+    "sniper_rifle",
     "stealth_boy",
     "stimpack",
     "switchblade"

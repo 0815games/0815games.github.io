@@ -33,4 +33,5 @@ for (const datei of dateien.sort()) {
 }
 console.log(fehler === 0
   ? `\n${dateien.length} Rohbilder geprueft, keine Bildfehler.`
-  : `\n${fehler} von ${dateien.length} Rohbildern sind fehlerhaft.`);
+  : `\n${fehler} von ${dateien.length} Rohbildern sind fehlerhaft - Aufbereitung abgebrochen.`);
+process.exit(fehler === 0 ? 0 : 1);
