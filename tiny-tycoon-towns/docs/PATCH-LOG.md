@@ -406,3 +406,12 @@ Ereignis ergänzt.
 - Die Liste „Offen“ im Spiel nannte die Regeln noch als nicht veröffentlicht. Sie sind jetzt live.
 - Neu aufgeführt: Freunde, Einladungen und Besuche sind noch nicht auf einem Gerät geprüft. Alte gleiche Stadtnamen bleiben bis zur Entscheidung.
 - Prüfungen: 65 Tests grün, `check` ohne Fehler.
+
+### TTT-0022 – Profil beim Laden schreiben (Welle `20261124-sitz17`)
+
+- Befund: Das Profil (Name, Level) wurde nur beim Speichern geschrieben. Wer nach dem Update nichts änderte, war für Freunde nicht
+  auffindbar (Name und Code liefen ins Leere).
+- Behebung: Beim Laden werden Name und Profil geschrieben. Vergebene Namen bleiben unverändert.
+- Entscheidung Altbestand: Variante B (ältere Stadt mit gleichem Namen bekommt eine Nummer, nach Rückfrage). Noch nicht umgesetzt,
+  weil es aktuell nur eine Stadt gibt. Wird umgesetzt, sobald ein Duplikat entsteht.
+- Prüfungen: 65 Tests grün, `check` ohne Fehler.
