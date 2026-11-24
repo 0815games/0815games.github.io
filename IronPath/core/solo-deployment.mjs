@@ -9,15 +9,15 @@
 //
 // A campaign mission is a contract, not a sandbox: it carries a threat level that
 // decides its wave count, enemy scale and bunker health (see campaign-pressure).
-import {createMatch} from './simulation.mjs?v=20261124-aim7';
-import {createWorkshopSoloMatch} from '../workshop/workshop-solo.mjs?v=20261124-aim7';
+import {createMatch} from './simulation.mjs?v=20261124-aim8';
+import {createWorkshopSoloMatch} from '../workshop/workshop-solo.mjs?v=20261124-aim8';
 import {decodeWorkshop} from '../workshop/workshop-wire.mjs?v=20261112-tagless1';
 import {threatFor,campaignUnitScale,campaignBunker,campaignWaves,campaignSurge,campaignPressure,prestigeScale} from './campaign-pressure.mjs?v=20261112-pressure1';
-import {warEffortBonus} from './war-effort.mjs?v=20261124-aim7';
-import {TRAINING_WAVES,TRAINING_UNIT,TRAINING_BUNKER,TRAINING_BOSS_UNIT,TRAINING_BOSS_EVERY,TRAINING_SUPPLIES} from './training-run.mjs?v=20261124-aim7';
+import {warEffortBonus} from './war-effort.mjs?v=20261124-aim8';
+import {TRAINING_WAVES,TRAINING_UNIT,TRAINING_BUNKER,TRAINING_BOSS_UNIT,TRAINING_BOSS_EVERY,TRAINING_SUPPLIES} from './training-run.mjs?v=20261124-aim8';
 import {relicBonus} from './relics.mjs?v=20261112-tagless1';
-import {storyBossKind} from './combat.mjs?v=20261124-aim7';
-import {getMap} from './maps.mjs?v=20261124-aim7';
+import {storyBossKind} from './combat.mjs?v=20261124-aim8';
+import {getMap} from './maps.mjs?v=20261124-aim8';
 
 // Where a soldier stands when a run begins. A story mission starts at its first
 // stage marker ("Soldier starts every time at the bunker!" was the report that

@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see docs/PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261124-aim7';
+import {getLanguage} from './language.mjs?v=20261124-aim8';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,19 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'aim8',build:'20261124-aim8',pr:438,
+    title:{en:'The Map Wears the Towers Style · Depth in the Slow Patches · Dead Life',de:'Die Karte trägt den Turm-Stil · Tiefe in den Verlangsamungen · Totholz'},
+    shipped:[
+      {en:'Every map building - cabins, barns, ruins, walls, factories, gates, all theme variants, the Talwald relics and the campaign landmarks - is painted again in the tower style: ink outlines, saturated colour, standing on its own earthen plinth instead of a sticker.',de:'Jedes Kartengebäude - Hütten, Scheunen, Ruinen, Mauern, Fabriken, Tore, alle Theme-Varianten, die Talwald-Relikte und die Kampagnen-Landmarks - ist im Turm-Stil neu gemalt: Tusche-Konturen, gesättigte Farben, mit eigener Erd-Plinth statt als Aufkleber.'},
+      {en:'The slow patches got depth: freezing water cracks, bog swirls with rising bubbles, rubble joints, leaf litter and dry lakebed cracks, each patch shaded from a soft halo down to a sunken centre - and the road bands sink the same way.',de:'Die Verlangsamungs-Zonen bekamen Tiefe: Frost-Risse im Eiswasser, Schlammtürbel mit aufsteigenden Blasen, Trümmerfugen, Blätter-Litter und Trockenrisse - jede Fläche weich vom Rand in die gesunkene Mitte verlaufend; die Straßen-Bänder sinken ebenso.'},
+      {en:'Barrels, carts, crates, rocks, stumps, log piles, fences and signposts now litter every field - pure dead life, sized to the map, always clear of pads, roads and the bunker.',de:'Fässer, Karren, Kisten, Felsen, Baumstümpfe, Holzstapel, Zäune und Wegweiser liegen jetzt auf jedem Feld - reines Totholz, kartengrößeabhängig, immer frei von Pads, Straße und Bunker.'},
+      {en:'Raised the cache wave to 20261124-aim8, because the whole map changed its paint: no device should fight with yesterdays eyes.',de:'Die Cache-Welle auf 20261124-aim8 erhöht, weil die ganze Karte neue Farbe bekam: Kein Gerät soll mit den Augen von gestern kämpfen.'},
+    ],
+    open:[
+      {en:'Acceptance of this wave is the operators own run in the game - contrast against every ground, depth on ice and bog, clutter density. Device checks stay with the operator.',de:'Die Sichtung dieser Welle macht der Betreiber selbst im Spiel - Kontrast gegen jeden Boden, Tiefe auf Eis und Sumpf, Clutter-Dichte. Geräteabnahmen bleiben Betreiber-Sache.'},
+    ]
+  },
   {
     id:'aim7',build:'20261124-aim7',pr:425,
     title:{en:'Balance at the Sector Edge · The Retreat You Can Rebuild Into',de:'Balancing an der Sektorkante · Der Rückzug, den man wieder aufbauen kann'},
