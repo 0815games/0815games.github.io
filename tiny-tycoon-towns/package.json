@@ -1,1 +1,12 @@
-{"name":"lc","version":"1.0.0","private":true,"dependencies":{"eslint":"^9.39.5","globals":"^15.15.0"}}
+{
+  "name": "tiny-tycoon-towns",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "check": "node scripts/patch.mjs check --fast",
+    "check:suite": "node scripts/patch.mjs check --suite",
+    "rules:check": "node scripts/rules-publish-dry-run.mjs",
+    "bump": "node scripts/patch.mjs bump"
+  }
+}
