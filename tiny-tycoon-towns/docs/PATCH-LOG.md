@@ -129,11 +129,20 @@ Ereignis ergänzt.
     Der Live-Vergleich der Regeln (`rules:check -- <export>`) ist nicht gelaufen, weil kein Export vorliegt.
   - Grenzen: Die Regeln sind nicht im Emulator getestet. Die Anmeldung ist nicht auf einem
     Gerät geprüft. Die Sandbox erreicht Firebase nicht.
-- Git / PR / Veröffentlichung: Commit siehe Ereignis-Nachtrag unten. Kein PR. Nicht veröffentlicht.
-  Die Abweichung „eigene Werkzeuge“ aus TTT-0002 ist damit behoben.
+- Git / PR / Veröffentlichung: Commit `c5ddda63` auf `arena/7efbfaa5-0815games-github-io` (lokal,
+  Push und PR siehe Nachtrag). Nicht veröffentlicht. Die Abweichung „eigene Werkzeuge“ aus
+  TTT-0002 ist damit behoben.
 - Offen / nächster Schritt:
   1. Betreiber: Regeln veröffentlichen (`docs/FIREBASE.md`, Schritte 1 bis 5).
   2. Betreiber: Autorisierte Domains in Firebase Auth prüfen.
   3. Anmeldung auf einem Gerät prüfen, Ergebnis als Nachtrag.
   4. Entscheidung Standort RTDB (`europe-west1` angelegt, ADR-005 nannte Frankfurt).
   5. Emulator-Tests für die Regeln einrichten, sobald Java verfügbar ist.
+
+### Ereignis-Nachtrag zu TTT-0003
+
+- Commit: `c5ddda63` (siehe oben), lokal angelegt.
+- Push: `git push origin arena/7efbfaa5-0815games-github-io` ausgeführt, Ausgabe
+  `3399cef9..c5ddda63` (Fast-forward, Exit 0). Branch auf GitHub zeigt `c5ddda63`.
+- PR: nicht erstellt. Veröffentlichung der Regeln: nicht erfolgt.
+- CI-Lauf des neuen Workflows: noch nicht beobachtet.
