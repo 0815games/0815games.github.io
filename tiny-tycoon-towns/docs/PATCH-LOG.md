@@ -340,3 +340,11 @@ Ereignis ergänzt.
 - Regel-Trockenlauf kennt `admins`. Tests für Eigentümerprüfung von `admins` ergänzt. 59 Tests grün.
 - Vor der Nutzung: Regeln veröffentlichen und den `admins`-Eintrag anlegen (siehe `docs/FIREBASE.md`).
 - Im Browser noch nicht geprüft.
+
+### TTT-0014 – Fenster per Klick daneben schließen (Welle `20261124-sitz9`)
+
+- Auftrag: Lager und Geld und alle anderen Fenster sollen sich per Klick daneben schließen lassen.
+- Änderungen: Klick auf den Hintergrund schließt `#stock-sheet` und `#dlg`. Ausnahme: Sitzung übernommen und Gründung
+  der Stadt (`data-persist`), dort muss entschieden werden. Feld-Popup schließt sich bei Klick auf die Karte neben
+  einem Feld (`onEmpty` in `board.js`). Escape und ✕ bleiben.
+- Prüfungen: 59 Tests grün, `check` ohne Fehler, lint `no-undef` ohne Befund. Im Browser noch nicht geprüft.

@@ -4,6 +4,16 @@
 
 export const RELEASED_PATCHES = [
   {
+    build: '20261124-sitz9',
+    date: '2026-11-24',
+    items: [
+      {
+        de: 'Fenster lassen sich durch einen Klick daneben schließen: Lager und Geld, Hilfe und das Feld-Fenster. Wichtige Entscheidungen bleiben offen, bis du sie triffst.',
+        en: 'Windows close with a click outside them: stock and money, help and the tile window. Important decisions stay open until you make them.',
+      },
+    ],
+  },
+  {
     build: '20261124-sitz8',
     date: '2026-11-24',
     items: [

@@ -1,7 +1,7 @@
 // DOM-Brücke für die Weltansicht: Canvas, Kamera (Ziehen, Zoom), Tastatur, Animation.
 // Der Spielzustand kommt von außen (main.js). Diese Datei verändert ihn nie.
-import { toScreen } from './iso.js?v=20261124-sitz8';
-import { renderWorld, pickTile, makeFx, stepFx, produceIcons, coinGain, dayFactor, GRID_SIZE, HALL } from './scene.js?v=20261124-sitz8';
+import { toScreen } from './iso.js?v=20261124-sitz9';
+import { renderWorld, pickTile, makeFx, stepFx, produceIcons, coinGain, dayFactor, GRID_SIZE, HALL } from './scene.js?v=20261124-sitz9';
 
 const DRAG_PX = 6;
 const K_MIN = 0.45;
@@ -150,6 +150,7 @@ export function createBoard(container, opts) {
     if (!drag.moved && e.type === 'pointerup' && e.target === canvas) {
       const t = screenToTile(e);
       if (t) opts.onSelect(t);
+      else opts.onEmpty?.(); // Klick auf die Karte, aber auf kein Feld
     }
   };
   window.addEventListener('pointerup', endPointer);

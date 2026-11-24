@@ -3,21 +3,21 @@
 import {
   createTown, newSeed, chooseBiome, placeBuilding, upgradeBuilding,
   toggleSell, buyOffer, advance, hydrateTown, setTutorialStep,
-} from './domain/engine.js?v=20261124-sitz8';
+} from './domain/engine.js?v=20261124-sitz9';
 import {
   productionMultiplier, ratePerMin, buildCost, storageCap, classOf,
-} from './domain/economy.js?v=20261124-sitz8';
-import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261124-sitz8';
-import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261124-sitz8';
-import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261124-sitz8';
+} from './domain/economy.js?v=20261124-sitz9';
+import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261124-sitz9';
+import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261124-sitz9';
+import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261124-sitz9';
 const SEEN_NOTES_KEY = 'ttt:notes-seen';
-import { withTimeout } from './async-util.js?v=20261124-sitz8';
-import { createBoard } from './world/board.js?v=20261124-sitz8';
-import { createLoginScene } from './world/login-scene.js?v=20261124-sitz8';
-import { TUTORIAL_STEPS, HELP_SECTIONS } from './tutorial.js?v=20261124-sitz8';
-import { createVersionUI } from './version-ui.mjs?v=20261124-sitz8';
+import { withTimeout } from './async-util.js?v=20261124-sitz9';
+import { createBoard } from './world/board.js?v=20261124-sitz9';
+import { createLoginScene } from './world/login-scene.js?v=20261124-sitz9';
+import { TUTORIAL_STEPS, HELP_SECTIONS } from './tutorial.js?v=20261124-sitz9';
+import { createVersionUI } from './version-ui.mjs?v=20261124-sitz9';
 
-const BUILD = '20261124-sitz8';
+const BUILD = '20261124-sitz9';
 console.info(`Tiny Tycoon Towns ${BUILD}`);
 const LAST_BIOME_KEY = 'ttt.lastBiome';
 const LOCAL_KEY = (uid) => `ttt.save.v1.${uid}`;
@@ -88,7 +88,7 @@ const REMOTE_TIMEOUT_MS = 10_000;
 async function loadData() {
   const names = ['resources', 'biomes', 'buildings', 'economy', 'merchant'];
   const parts = await Promise.all(names.map((n) =>
-    fetch(`data/${n}.json?v=20261124-sitz8`).then((r) => {
+    fetch(`data/${n}.json?v=20261124-sitz9`).then((r) => {
       if (!r.ok) throw new Error(`data/${n}.json: HTTP ${r.status}`);
       return r.json();
     })));
@@ -133,7 +133,7 @@ async function boot() {
   window.addEventListener('offline', updateSync);
 
   try {
-    cloud = await import('./cloud.js?v=20261124-sitz8');
+    cloud = await import('./cloud.js?v=20261124-sitz9');
   } catch {
     showFatal('Das Konto-System konnte nicht geladen werden. Ohne Anmeldung lässt sich nicht spielen. Bitte Verbindung prüfen und neu laden.');
     return;
@@ -476,6 +476,12 @@ function ensureBoard() {
   board = createBoard($('#board'), {
     getSelected: () => selected,
     onSelect: selectTile,
+    // Klick auf die Karte neben einem Feld schließt das Feld-Popup.
+    onEmpty: () => {
+      if (!popupOpen) return;
+      popupOpen = false;
+      renderPanel();
+    },
     describe: describeTile,
     getModel: () => ({
       state,
@@ -497,6 +503,12 @@ function bindStatic() {
   $('#stock-btn').addEventListener('click', openStock);
   $('#stock-close').addEventListener('click', () => $('#stock-sheet').close());
   $('#stock-sheet').addEventListener('click', onPanelClick); // Händler: Kaufen
+  // Klick auf den abgedunkelten Hintergrund schließt Dialoge (außer, wo eine Entscheidung nötig ist).
+  for (const dlg of [$('#stock-sheet'), $('#dlg')]) {
+    dlg.addEventListener('click', (e) => {
+      if (e.target === dlg && dlg.dataset.persist !== '1') dlg.close();
+    });
+  }
   // Escape schließt zuerst den offenen Dialog, sonst das Feld-Popup.
   window.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape' || !popupOpen || $('#dlg')?.open || $('#stock-sheet').open) return;
@@ -1024,6 +1036,7 @@ function onSessionLost(sessionUid) {
     </p>
   </div>`);
   $('#dlg').addEventListener('cancel', (e) => e.preventDefault(), { once: true });
+  $('#dlg').dataset.persist = '1'; // Entscheidung erzwingen: nicht per Klick daneben schließen
   $('#lost-take').addEventListener('click', () => takeOverSession(sessionUid));
   $('#lost-logout').addEventListener('click', async () => {
     closeDialog();
@@ -1062,6 +1075,7 @@ async function takeOverSession(sessionUid) {
 
 function openDialog(html) {
   const dlg = $('#dlg');
+  dlg.dataset.persist = ''; // Standard: Klick daneben schließt
   dlg.innerHTML = html;
   if (!dlg.open) dlg.showModal();
   return dlg;
@@ -1079,6 +1093,7 @@ function randomTownName() {
 function showFounding() {
   let biome = chooseBiome(Math.random, localStorage.getItem(LAST_BIOME_KEY));
   const dlg = openDialog('');
+  dlg.dataset.persist = '1'; // Gründung: die Stadt muss angelegt werden
   const paint = () => {
     const b = data.biomes[biome];
     const names = (ids) => ids.map((r) => `${data.resources[r].icon} ${data.resources[r].name.de}`).join(', ');
