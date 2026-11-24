@@ -4,6 +4,16 @@
 
 export const RELEASED_PATCHES = [
   {
+    build: '20261124-sitz7',
+    date: '2026-11-24',
+    items: [
+      {
+        de: 'Betreiber-Bereich für die Verwaltung der Städte. Erreichbar über die Anmeldeseite.',
+        en: 'Operator area for managing towns. Reachable from the sign-in page.',
+      },
+    ],
+  },
+  {
     build: '20261124-sitz6',
     date: '2026-11-24',
     items: [

@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex">
+  <title>Tiny Tycoon Towns · Betreiber</title>
+  <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="stylesheet" href="style.css?v=20261124-sitz7">
+</head>
+<body>
+  <!-- Betreiber-Anmeldung: gleiche Optik wie das Spiel. Rechte prüfen die Datenbankregeln. -->
+  <section id="adminAuth" class="auth-screen" aria-labelledby="admin-title">
+    <canvas id="authCanvas" class="auth-canvas" aria-hidden="true"></canvas>
+    <div class="auth-shade" aria-hidden="true"></div>
+    <div class="auth-card">
+      <form id="admin-form" class="auth-form" novalidate>
+        <img class="auth-card-logo" src="icons/town.png" alt="" width="96" height="96">
+        <h2 id="admin-title">Betreiber-Anmeldung</h2>
+        <p class="small">Nur für den Betreiber. Der Zugang wird über die Datenbankregeln geprüft.</p>
+        <label>E-Mail<input name="email" type="email" autocomplete="username" required></label>
+        <label>Passwort<input name="password" type="password" autocomplete="current-password" required></label>
+        <p id="admin-msg" class="warn small" role="alert"></p>
+        <button type="submit" class="primary">Anmelden</button>
+        <a class="admin-back" href="index.html">Zurück zum Spiel</a>
+      </form>
+    </div>
+  </section>
+
+  <div id="adminApp" class="admin-app" hidden>
+    <header class="admin-head">
+      <div><strong>Betreiber-Bereich</strong> <span id="admin-who" class="small muted"></span></div>
+      <div class="admin-head-actions">
+        <button id="admin-refresh" type="button" class="ghost">Aktualisieren</button>
+        <a class="admin-back" href="index.html">Zum Spiel</a>
+        <button id="admin-logout" type="button" class="ghost">Abmelden</button>
+      </div>
+    </header>
+    <div id="admin-gate" class="admin-gate" hidden></div>
+    <main class="admin-main">
+      <aside class="admin-players" aria-label="Spieler">
+        <h2>Städte</h2>
+        <ul id="admin-list" class="admin-list"></ul>
+      </aside>
+      <section id="admin-editor" class="admin-editor" aria-live="polite">
+        <p class="muted">Wähle links eine Stadt.</p>
+      </section>
+    </main>
+  </div>
+
+  <script type="module" src="src/admin.js?v=20261124-sitz7"></script>
+</body>
+</html>

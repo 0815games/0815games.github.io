@@ -329,3 +329,14 @@ Ereignis ergänzt.
   geöffnet über `#stock-btn` (unten links). Tutorial-Ziele angepasst.
 - Prüfungen: 58 Tests grün, `check` ohne Fehler, lint `no-undef` ohne Befund, alle statischen IDs in `main.js` vorhanden.
 - Im Browser noch nicht geprüft. Offen: Verhalten auf schmalen Bildschirmen, Lesbarkeit der Pillen über der Karte.
+
+### TTT-0013 – Betreiber-Bereich (Welle `20261124-sitz7`)
+
+- Auftrag: Admin-Panel zum Kontrollieren des Spiels. Einbindung über die Anmeldeseite, eigene Anmeldemaske, Rechte
+  nur für die angegebene UID. Optik wie das Spiel.
+- Änderungen: `admin.html` und `src/admin.js` (Anmeldung, Spielerliste, Stadt-Editor: Stadt, Lager und Verkauf,
+  Zeit vorspulen, Händler-Angebote, Gebäude je Feld, Speichern, Stadt löschen). `src/cloud.js`: `isAdmin`, `listSaves`.
+  Login-Seite: Link „Betreiber-Anmeldung“. Regeln: `admins/{uid}` und Admin-Lese- und Schreibrechte auf `saves`.
+- Regel-Trockenlauf kennt `admins`. Tests für Eigentümerprüfung von `admins` ergänzt. 59 Tests grün.
+- Vor der Nutzung: Regeln veröffentlichen und den `admins`-Eintrag anlegen (siehe `docs/FIREBASE.md`).
+- Im Browser noch nicht geprüft.

@@ -3,21 +3,21 @@
 import {
   createTown, newSeed, chooseBiome, placeBuilding, upgradeBuilding,
   toggleSell, buyOffer, advance, hydrateTown, setTutorialStep,
-} from './domain/engine.js?v=20261124-sitz6';
+} from './domain/engine.js?v=20261124-sitz7';
 import {
   productionMultiplier, ratePerMin, buildCost, storageCap, classOf,
-} from './domain/economy.js?v=20261124-sitz6';
-import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261124-sitz6';
-import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261124-sitz6';
-import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261124-sitz6';
+} from './domain/economy.js?v=20261124-sitz7';
+import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261124-sitz7';
+import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261124-sitz7';
+import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261124-sitz7';
 const SEEN_NOTES_KEY = 'ttt:notes-seen';
-import { withTimeout } from './async-util.js?v=20261124-sitz6';
-import { createBoard } from './world/board.js?v=20261124-sitz6';
-import { createLoginScene } from './world/login-scene.js?v=20261124-sitz6';
-import { TUTORIAL_STEPS, HELP_SECTIONS } from './tutorial.js?v=20261124-sitz6';
-import { createVersionUI } from './version-ui.mjs?v=20261124-sitz6';
+import { withTimeout } from './async-util.js?v=20261124-sitz7';
+import { createBoard } from './world/board.js?v=20261124-sitz7';
+import { createLoginScene } from './world/login-scene.js?v=20261124-sitz7';
+import { TUTORIAL_STEPS, HELP_SECTIONS } from './tutorial.js?v=20261124-sitz7';
+import { createVersionUI } from './version-ui.mjs?v=20261124-sitz7';
 
-const BUILD = '20261124-sitz6';
+const BUILD = '20261124-sitz7';
 console.info(`Tiny Tycoon Towns ${BUILD}`);
 const LAST_BIOME_KEY = 'ttt.lastBiome';
 const LOCAL_KEY = (uid) => `ttt.save.v1.${uid}`;
@@ -88,7 +88,7 @@ const REMOTE_TIMEOUT_MS = 10_000;
 async function loadData() {
   const names = ['resources', 'biomes', 'buildings', 'economy', 'merchant'];
   const parts = await Promise.all(names.map((n) =>
-    fetch(`data/${n}.json?v=20261124-sitz6`).then((r) => {
+    fetch(`data/${n}.json?v=20261124-sitz7`).then((r) => {
       if (!r.ok) throw new Error(`data/${n}.json: HTTP ${r.status}`);
       return r.json();
     })));
@@ -133,7 +133,7 @@ async function boot() {
   window.addEventListener('offline', updateSync);
 
   try {
-    cloud = await import('./cloud.js?v=20261124-sitz6');
+    cloud = await import('./cloud.js?v=20261124-sitz7');
   } catch {
     showFatal('Das Konto-System konnte nicht geladen werden. Ohne Anmeldung lässt sich nicht spielen. Bitte Verbindung prüfen und neu laden.');
     return;
@@ -363,6 +363,7 @@ function showLoginScreen(mode, msg = '') {
     <p id="auth-msg" class="warn small" role="alert">${esc(msg)}</p>
     <button type="submit" class="primary">${isLogin ? 'Anmelden' : 'Konto erstellen'}</button>
     <button type="button" id="auth-switch" class="ghost">${isLogin ? 'Neu hier? Konto erstellen' : 'Schon registriert? Anmelden'}</button>
+    ${isLogin ? '<a class="admin-back small" href="admin.html">Betreiber-Anmeldung</a>' : ''}
   </form>`;
   $('#auth-switch').addEventListener('click', () => showLoginScreen(isLogin ? 'register' : 'login'));
   $('#auth-form').addEventListener('submit', async (e) => {

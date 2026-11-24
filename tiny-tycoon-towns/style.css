@@ -451,3 +451,63 @@ dialog input {
 .coins-line { font-size: 20px; margin: 0; }
 .sheet .stock { max-width: none; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ---------- Betreiber-Bereich (admin.html): gleiche Optik wie das Spiel ---------- */
+.admin-back {
+  display: inline-block;
+  text-align: center;
+  padding: 8px 12px;
+  min-height: 40px;
+  line-height: 24px;
+  color: var(--ink);
+  text-decoration: none;
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  background: transparent;
+}
+.admin-app { min-height: 100vh; background: #14223f; color: var(--ink); padding-bottom: 24px; }
+.admin-head {
+  display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between;
+  padding: 12px 16px; background: var(--paper-2); border-bottom: 3px solid var(--ink);
+}
+.admin-head-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.admin-head-actions .admin-back { min-height: 36px; }
+.admin-gate { margin: 16px; padding: 16px; background: var(--paper); border: 3px solid var(--ink); border-radius: 16px; }
+.admin-main { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; padding: 16px; max-width: 1200px; margin: 0 auto; }
+@media (min-width: 900px) { .admin-main { grid-template-columns: 300px minmax(0, 1fr); align-items: start; } }
+.admin-players, .admin-editor {
+  background: var(--paper); border: 3px solid var(--ink); border-radius: 18px; padding: 14px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+}
+.admin-players h2 { font-size: 18px; margin: 0 0 8px; }
+.admin-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; max-height: 70vh; overflow: auto; }
+.admin-player {
+  width: 100%; text-align: left; display: grid; gap: 2px; min-height: 48px;
+  background: var(--paper-2); border: 2px solid var(--ink); border-radius: 12px;
+}
+.admin-player.is-on { background: var(--gold); }
+.admin-tag { font-size: 12px; background: var(--ink); color: var(--paper); border-radius: 8px; padding: 1px 6px; }
+.admin-editor-head h2 { font-size: 24px; margin: 0; }
+.admin-editor-head p { margin: 2px 0; }
+.admin-box {
+  display: grid; gap: 10px; margin: 12px 0; padding: 12px 14px;
+  border: 2px solid var(--ink); border-radius: 14px; background: #fff;
+}
+.admin-box legend { font-weight: 700; padding: 0 6px; }
+.admin-box label { display: grid; gap: 4px; font-weight: 600; font-size: 14px; }
+.admin-box input, .admin-box select { min-height: 40px; font: inherit; padding: 6px 8px; border: 2px solid var(--ink); border-radius: 10px; background: #fff; color: var(--ink); }
+.admin-check { display: flex !important; align-items: center; gap: 6px; }
+.admin-grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+.admin-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: end; }
+.admin-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.admin-actions button, .admin-savebar button { min-height: 40px; }
+.admin-tiles { display: grid; gap: 3px; }
+.admin-tile {
+  aspect-ratio: 1; min-height: 0; padding: 0; font-size: 18px; line-height: 1;
+  background: #DDEFD0; border: 2px solid rgba(59, 47, 47, 0.45); border-radius: 8px;
+}
+.admin-tile.is-closed { background: #ddd; opacity: 0.6; }
+.admin-tile.is-on { outline: 3px solid var(--gold); outline-offset: 1px; }
+.admin-savebar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 12px; }
+.admin-savebar p { margin: 0; flex-basis: 100%; }
+button.danger { background: #E4837A; border-color: var(--ink); }
