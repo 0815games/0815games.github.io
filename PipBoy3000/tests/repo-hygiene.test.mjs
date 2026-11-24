@@ -98,3 +98,41 @@ test('die Hüllseiten laden keine Einzeldateien mehr', () => {
   assert.ok(!index.includes('cdn.tailwindcss.com'), 'index.html nutzt noch den Tailwind-Play-CDN');
   assert.ok(!admin.includes('cdn.tailwindcss.com'), 'admin.html nutzt noch den Tailwind-Play-CDN');
 });
+
+test('keine zusammengesetzten Tailwind-Klassennamen', () => {
+  // Tailwind liest den Quelltext statisch. `text-${color}-500` sieht es als
+  // Zeichenkette ohne Klasse und erzeugt keine Regel - im Browser bleibt die
+  // Farbe aus (docs/BEFUNDE.md, 6). Dynamische Namen müssen als vollständige
+  // Paare in einer Tabelle stehen.
+  const offenders = [];
+  for (const file of walk(join(ROOT, 'src')).filter(f => f.endsWith('.js'))) {
+    const lines = readFileSync(file, 'utf8').split('\n');
+    lines.forEach((line, index) => {
+      const code = line.trim();
+      // Kommentare dürfen das Muster zitieren, ohne den Test zu wecken.
+      if (code.startsWith('//') || code.startsWith('*') || code.startsWith('/*')) return;
+      // Muster wie text-${x}-500, border-${x}-900/50, via-${x}-900/10
+      if (/[a-z]-(?:\$\{[^}]+\})-(?:\d|\[)/.test(line)) {
+        offenders.push(`${file.replace(ROOT, '')}:${index + 1}  ${code.slice(0, 90)}`);
+      }
+    });
+  }
+  assert.deepEqual(offenders, [], `zusammengesetzte Klassen:\n  ${offenders.join('\n  ')}`);
+});
+
+test('die Stadtkacheln haben für jede Farbe eine Regel', () => {
+  // Gegenprobe zum Vorigen: die Paletten müssen im gebauten CSS ankommen.
+  const css = readFileSync(join(ROOT, 'app.css'), 'utf8');
+  const need = [];
+  for (const color of ['green', 'yellow', 'red', 'blue']) {
+    for (const pattern of ['text-{}-500', 'group-hover:text-{}-300', 'text-{}-700',
+      'group-hover:text-{}-500', 'via-{}-900/10']) {
+      need.push(pattern.replace('{}', color));
+    }
+  }
+  const missing = need.filter(cls => {
+    const escaped = cls.replace(/:/g, '\\:').replace(/\//g, '\\/');
+    return !css.includes(`.${escaped} {`) && !css.includes(`.${escaped},`) && !css.includes(`.${escaped}:`);
+  });
+  assert.deepEqual(missing, [], `Klassen fehlen im CSS: ${missing.join(', ')}`);
+});

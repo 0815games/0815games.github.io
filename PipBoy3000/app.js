@@ -1430,7 +1430,6 @@
           this.logout("AFK: ZEITÜBERSCHREITUNG");
         }
       }
-      if (typeof this.renderChar === "function" && this.charTab === "status") this.renderChar();
     },
     init: function() {
       const toastCont = document.getElementById("game-toast-container");
@@ -4005,7 +4004,7 @@
       this.recalcStats();
       this.updateWeight();
       if (typeof UI !== "undefined") {
-        if (this.state.view === "char") UI.renderChar();
+        if (this.state.view === "char" && typeof UI.renderStats === "function") UI.renderStats(Game.state.charTab || "stats");
         if (this.state.view === "inventory") UI.renderInventory();
       }
       this.saveGame();
@@ -4150,7 +4149,7 @@
         const fists = this.items["fists"] ? { ...this.items["fists"] } : { id: "fists", name: "Fäuste", baseDmg: 2, type: "weapon" };
         this.state.equip.weapon = fists;
         UI.log("Waffe abgelegt. Nutze Fäuste.", "text-red-500 font-bold");
-        if (typeof UI.renderChar === "function") UI.renderChar();
+        if (typeof UI.update === "function") UI.update();
         return;
       }
       let bestWeapon = null;
@@ -4181,7 +4180,7 @@
         this.state.equip.weapon = fists;
         UI.log("Keine Nahkampfwaffe gefunden! Du kämpfst mit Fäusten!", "text-red-500");
       }
-      if (typeof UI.renderChar === "function") UI.renderChar();
+      if (typeof UI.update === "function") UI.update();
     },
     // Die Belohnung des Glücksspiels liegt in game_char_logic.js (dort mit
     // klaren Stufen und ohne Zufalls-Abbruch). Die frühere Fassung an dieser
@@ -4980,10 +4979,14 @@
         if (this.enemy && this.enemy.drops) {
           let dropsArr = Array.isArray(this.enemy.drops) ? this.enemy.drops : [this.enemy.drops];
           dropsArr.forEach((d) => {
-            if (d && d.id && typeof Game.addToInventory === "function") {
-              let chance = d.c !== void 0 ? Number(d.c) : 1;
-              if (Math.random() < chance) Game.addToInventory(d.id, 1);
-            }
+            if (!d || !d.id) return;
+            let chance = d.c !== void 0 ? Number(d.c) : 1;
+            if (Math.random() >= chance) return;
+            const give = typeof Game.safeGiveItem === "function" ? Game.safeGiveItem.bind(Game) : (id, n) => {
+              if (id === "caps") Game.state.caps = (Game.state.caps || 0) + n;
+              else Game.addToInventory(id, n);
+            };
+            give(d.id, 1);
           });
         }
         let mobId = this.enemy && this.enemy.id ? this.enemy.id : null;
@@ -5069,24 +5072,36 @@
       hudContainer.className = "flex-grow relative flex flex-col items-center justify-center z-10 p-4";
       let hpPercent = Combat.enemy.hp / Combat.enemy.maxHp * 100;
       let isLegendary = Combat.enemy.isLegendary;
-      let themeColor = isLegendary ? "yellow" : "red";
+      const theme = isLegendary ? {
+        border: "border-yellow-500/50",
+        title: "text-yellow-500",
+        hp: "text-yellow-300",
+        bar: "border-yellow-900",
+        fill: "bg-yellow-600"
+      } : {
+        border: "border-red-500/50",
+        title: "text-red-500",
+        hp: "text-red-300",
+        bar: "border-red-900",
+        fill: "bg-red-600"
+      };
       let enemyLvl = Combat.enemy.level || Combat.enemy.minLvl || 1;
       const topBar = document.createElement("div");
       topBar.className = "w-full max-w-lg flex flex-col items-center mb-4 relative";
       topBar.innerHTML = `
-            <div class="flex justify-between w-full border-b-2 border-${themeColor}-500/50 pb-1 mb-1 items-end">
+            <div class="flex justify-between w-full border-b-2 ${theme.border} pb-1 mb-1 items-end">
                 <div class="flex items-center gap-3">
-                    <span class="text-2xl font-bold text-${themeColor}-500 font-vt323 tracking-widest uppercase drop-shadow-[0_0_5px_rgba(255,0,0,0.5)] leading-none">
+                    <span class="text-2xl font-bold ${theme.title} font-vt323 tracking-widest uppercase drop-shadow-[0_0_5px_rgba(255,0,0,0.5)] leading-none">
                         ${Combat.enemy.name} ${isLegendary ? "★" : ""}
                     </span>
                     <span class="text-xl font-mono text-yellow-400 font-bold bg-black/80 px-2 py-0.5 border-2 border-yellow-600 rounded shadow-[0_0_10px_orange]">
                         LVL ${enemyLvl}
                     </span>
                 </div>
-                <span class="text-lg font-mono text-${themeColor}-300">${Math.ceil(Combat.enemy.hp)}/${Combat.enemy.maxHp} HP</span>
+                <span class="text-lg font-mono ${theme.hp}">${Math.ceil(Combat.enemy.hp)}/${Combat.enemy.maxHp} HP</span>
             </div>
-            <div class="w-full h-6 bg-black border border-${themeColor}-900 relative skew-x-[-10deg] shadow-[0_0_10px_rgba(0,0,0,0.5)]">
-                <div class="h-full bg-${themeColor}-600 transition-all duration-300 relative overflow-hidden" style="width: ${hpPercent}%">
+            <div class="w-full h-6 bg-black border ${theme.bar} relative skew-x-[-10deg] shadow-[0_0_10px_rgba(0,0,0,0.5)]">
+                <div class="h-full ${theme.fill} transition-all duration-300 relative overflow-hidden" style="width: ${hpPercent}%">
                     <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/30"></div>
                 </div>
             </div>
@@ -5835,178 +5850,6 @@
       if (!hasItems && equippedList.length === 0) {
         list.innerHTML = '<div class="col-span-4 text-center text-gray-500 italic mt-10">Leerer Rucksack...</div>';
       }
-    },
-    // --- CHARAKTER ---
-    renderChar: function(mode) {
-      if (mode) this.charTab = mode;
-      const tab = this.charTab;
-      const elName = document.getElementById("char-sheet-name");
-      const elLvl = document.getElementById("char-sheet-lvl");
-      if (elName) elName.textContent = Game.state.playerName;
-      if (elLvl) elLvl.textContent = Game.state.lvl;
-      ["status", "stats", "perks"].forEach((t) => {
-        const btn = document.getElementById(`tab-btn-${t}`);
-        const view = document.getElementById(`view-${t}`);
-        if (btn && view) {
-          if (t === tab) {
-            btn.classList.add("active");
-            view.classList.remove("hidden");
-          } else {
-            btn.classList.remove("active");
-            view.classList.add("hidden");
-          }
-        }
-      });
-      const btnStats = document.getElementById("tab-btn-stats");
-      if (btnStats) {
-        if (Game.state.statPoints > 0) btnStats.classList.add("alert-glow-yellow");
-        else btnStats.classList.remove("alert-glow-yellow");
-      }
-      const btnPerks = document.getElementById("tab-btn-perks");
-      if (btnPerks) {
-        if (Game.state.perkPoints > 0) btnPerks.classList.add("alert-glow-yellow");
-        else btnPerks.classList.remove("alert-glow-yellow");
-      }
-      if (tab === "status") this.renderCharStatus();
-      else if (tab === "stats") this.renderCharStats();
-      else if (tab === "perks") this.renderCharPerks();
-    },
-    renderCharStatus: function() {
-      const safeSetText = (id, text) => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = text;
-      };
-      safeSetText("sheet-hp", `${Math.floor(Game.state.hp)}/${Game.state.maxHp}`);
-      const nextXp = Game.expToNextLevel(Game.state.lvl);
-      safeSetText("sheet-xp", `${Math.floor(Game.state.xp)}/${nextXp}`);
-      const used = Game.getUsedSlots();
-      const max = Game.getMaxSlots();
-      const loadEl = document.getElementById("sheet-load");
-      if (loadEl) {
-        loadEl.textContent = `${used}/${max}`;
-        loadEl.className = used >= max ? "text-red-500 font-bold animate-pulse" : "text-white font-bold";
-      }
-      safeSetText("sheet-crit", `${Game.state.critChance}%`);
-      const alertBox = document.getElementById("status-points-alert");
-      if (alertBox) {
-        if (Game.state.statPoints > 0 || Game.state.perkPoints > 0) {
-          alertBox.classList.remove("hidden");
-          alertBox.onclick = () => {
-            if (Game.state.statPoints > 0) UI.renderChar("stats");
-            else UI.renderChar("perks");
-          };
-        } else {
-          alertBox.classList.add("hidden");
-        }
-      }
-      const slots = ["head", "back", "weapon", "body", "arms", "legs", "feet"];
-      slots.forEach((slot) => {
-        const el = document.getElementById(`slot-${slot}`);
-        if (!el) return;
-        const item = Game.state.equip[slot];
-        const isEmpty = !item;
-        const nameEl = el.querySelector(".item-name");
-        if (!nameEl) return;
-        if (isEmpty) {
-          el.classList.remove("filled");
-          el.classList.add("empty");
-          nameEl.textContent = "---";
-          nameEl.className = "item-name text-gray-600";
-          el.onclick = null;
-        } else {
-          el.classList.add("filled");
-          el.classList.remove("empty");
-          const name = item.props ? item.props.name : item.name;
-          const color = item.props && item.props.color ? item.props.color : "text-[#39ff14]";
-          nameEl.textContent = name;
-          nameEl.className = `item-name ${color}`;
-          el.onclick = () => UI.showEquippedDialog(slot);
-        }
-      });
-    },
-    renderCharStats: function() {
-      const container = document.getElementById("special-list");
-      const pointsEl = document.getElementById("sheet-stat-points");
-      if (!container) return;
-      container.innerHTML = "";
-      if (pointsEl) pointsEl.textContent = Game.state.statPoints;
-      const statOrder = ["STR", "PER", "END", "INT", "AGI", "LUC"];
-      const canUpgrade = Game.state.statPoints > 0;
-      statOrder.forEach((key) => {
-        const val = Game.getStat(key);
-        const label = window.GameData && window.GameData.statLabels && window.GameData.statLabels[key] ? window.GameData.statLabels[key] : key;
-        let bar = "";
-        for (let i = 1; i <= 10; i++) {
-          bar += i <= val ? '<div class="h-2 w-full bg-[#39ff14] mr-0.5"></div>' : '<div class="h-2 w-full bg-green-900/30 mr-0.5"></div>';
-        }
-        const div = document.createElement("div");
-        div.className = "flex items-center justify-between bg-green-900/10 border border-green-900 p-2";
-        let btnHtml = "";
-        if (canUpgrade && val < 10) {
-          btnHtml = `<button class="w-8 h-8 bg-yellow-500 text-black font-bold flex items-center justify-center hover:bg-yellow-400" onclick="Game.upgradeStat('${key}', event)">+</button>`;
-        } else {
-          btnHtml = `<div class="w-8 h-8 flex items-center justify-center font-bold text-green-700 text-xl">${val}</div>`;
-        }
-        div.innerHTML = `
-                <div class="flex-1">
-                    <div class="flex justify-between mb-1">
-                        <span class="font-bold text-green-400 text-lg">${key}</span>
-                        <span class="text-xs text-green-600 uppercase tracking-widest mt-1">${label}</span>
-                    </div>
-                    <div class="flex w-32">${bar}</div>
-                </div>
-                <div class="ml-4">${btnHtml}</div>
-            `;
-        container.appendChild(div);
-      });
-    },
-    renderCharPerks: function() {
-      const container = document.getElementById("perks-list");
-      const pointsEl = document.getElementById("sheet-perk-points");
-      if (!container) return;
-      const scrollPos = container.parentElement.scrollTop || 0;
-      container.innerHTML = "";
-      if (pointsEl) pointsEl.textContent = Game.state.perkPoints;
-      const points = Game.state.perkPoints;
-      if (Game.perkDefs) {
-        Game.perkDefs.forEach((p) => {
-          const currentLvl = Game.getPerkLevel(p.id);
-          const maxLvl = p.max || 1;
-          const isMaxed = currentLvl >= maxLvl;
-          const canAfford = points > 0 && !isMaxed;
-          let levelBar = "";
-          for (let i = 0; i < maxLvl; i++) {
-            levelBar += i < currentLvl ? '<span class="text-yellow-400 text-sm">●</span>' : '<span class="text-gray-700 text-sm">○</span>';
-          }
-          const div = document.createElement("div");
-          div.className = `border ${isMaxed ? "border-yellow-900 bg-yellow-900/5" : "border-green-800 bg-black"} p-3 flex justify-between items-center transition-all hover:border-green-500`;
-          let actionBtn = "";
-          if (canAfford) {
-            actionBtn = `<button class="bg-yellow-500/20 text-yellow-400 border border-yellow-500 px-3 py-1 text-xs font-bold hover:bg-yellow-500 hover:text-black" onclick="event.stopPropagation(); Game.choosePerk('${p.id}')">LERNEN</button>`;
-          } else if (isMaxed) {
-            actionBtn = `<span class="text-green-700 font-bold text-xs border border-green-900 px-2 py-1">MAX</span>`;
-          }
-          div.innerHTML = `
-                    <div class="flex items-center gap-3 flex-1">
-                        <div class="text-3xl bg-green-900/20 w-12 h-12 flex items-center justify-center rounded border border-green-900">${p.icon}</div>
-                        <div class="flex flex-col">
-                            <span class="font-bold ${isMaxed ? "text-yellow-600" : "text-green-300"} text-lg">${p.name}</span>
-                            <span class="text-xs text-gray-500">${p.desc}</span>
-                            <div class="mt-1 tracking-widest">${levelBar}</div>
-                        </div>
-                    </div>
-                    <div class="ml-2">
-                        ${actionBtn}
-                    </div>
-                `;
-          container.appendChild(div);
-        });
-      }
-      if (scrollPos > 0) {
-        requestAnimationFrame(() => {
-          container.parentElement.scrollTop = scrollPos;
-        });
-      }
     }
   });
 
@@ -6562,37 +6405,51 @@
       const createCard = (conf) => {
         const card = document.createElement("div");
         let baseClass = "relative overflow-hidden group cursor-pointer p-4 flex items-center gap-4 border-2 transition-all duration-200 bg-black/80 hover:bg-[#0a1a0a] shadow-md min-h-[100px]";
-        let themeColor = "green";
+        let baseColor = "border-green-600 hover:border-green-400 shadow-green-900/20";
         if (conf.type === "trader") {
-          themeColor = "yellow";
           baseClass += " md:col-span-2 border-yellow-600 hover:border-yellow-400 shadow-yellow-900/20 h-32";
         } else if (conf.type === "clinic") {
-          themeColor = "red";
           baseClass += " border-red-600 hover:border-red-400 shadow-red-900/20";
         } else if (conf.type === "craft") {
-          themeColor = "blue";
           baseClass += " border-blue-600 hover:border-blue-400 shadow-blue-900/20";
         } else {
-          baseClass += " border-green-600 hover:border-green-400 shadow-green-900/20";
+          baseClass += " " + baseColor;
         }
         card.className = baseClass;
         card.onclick = conf.onClick;
         const iconSize = conf.type === "trader" ? "text-6xl" : "text-5xl";
-        let titleClass = `text-${themeColor}-500 group-hover:text-${themeColor}-300`;
-        let subClass = `text-${themeColor}-700 group-hover:text-${themeColor}-500`;
-        if (conf.type === "trader") {
-          titleClass = "text-yellow-500 group-hover:text-yellow-300";
-          subClass = "text-yellow-700 group-hover:text-yellow-500";
-        }
+        const palettes = {
+          green: {
+            title: "text-green-500 group-hover:text-green-300",
+            sub: "text-green-700 group-hover:text-green-500",
+            glow: "via-green-900/10"
+          },
+          yellow: {
+            title: "text-yellow-500 group-hover:text-yellow-300",
+            sub: "text-yellow-700 group-hover:text-yellow-500",
+            glow: "via-yellow-900/10"
+          },
+          red: {
+            title: "text-red-500 group-hover:text-red-300",
+            sub: "text-red-700 group-hover:text-red-500",
+            glow: "via-red-900/10"
+          },
+          blue: {
+            title: "text-blue-500 group-hover:text-blue-300",
+            sub: "text-blue-700 group-hover:text-blue-500",
+            glow: "via-blue-900/10"
+          }
+        };
+        const palette = palettes[conf.type === "trader" ? "yellow" : conf.type === "clinic" ? "red" : conf.type === "craft" ? "blue" : "green"];
         card.innerHTML = `
-                <div class="absolute inset-0 pointer-events-none bg-gradient-to-r from-transparent via-${themeColor}-900/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity z-0"></div>
+                <div class="absolute inset-0 pointer-events-none bg-gradient-to-r from-transparent ${palette.glow} to-transparent opacity-0 group-hover:opacity-100 transition-opacity z-0"></div>
                 
                 <div class="icon flex-shrink-0 ${iconSize} z-10 relative filter drop-shadow-md">${conf.icon}</div>
                 <div class="flex flex-col z-10 relative">
-                    <span class="text-2xl font-bold ${titleClass} tracking-wider font-vt323 uppercase">${conf.label}</span>
-                    <span class="text-xs ${subClass} font-mono uppercase tracking-widest mt-1">${conf.sub}</span>
+                    <span class="text-2xl font-bold ${palette.title} tracking-wider font-vt323 uppercase">${conf.label}</span>
+                    <span class="text-xs ${palette.sub} font-mono uppercase tracking-widest mt-1">${conf.sub}</span>
                 </div>
-                <div class="absolute right-4 text-2xl opacity-30 group-hover:opacity-100 group-hover:translate-x-1 transition-all ${titleClass}">▶</div>
+                <div class="absolute right-4 text-2xl opacity-30 group-hover:opacity-100 group-hover:translate-x-1 transition-all ${palette.title}">▶</div>
             `;
         return card;
       };

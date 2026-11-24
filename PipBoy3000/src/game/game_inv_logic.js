@@ -316,7 +316,10 @@ Object.assign(Game, {
         this.recalcStats();
         this.updateWeight();
         if(typeof UI !== 'undefined') {
-            if(this.state.view === 'char') UI.renderChar(); 
+            // Der sichtbare Char-Screen ist renderStats (ui_render_views.js).
+            // renderChar() aus ui_view_inv.js war seit dem Redesign tot: es
+            // suchte Elemente, die kein Template liefert (BEFUNDE.md, 3).
+            if(this.state.view === 'char' && typeof UI.renderStats === 'function') UI.renderStats(Game.state.charTab || 'stats');
             if(this.state.view === 'inventory') UI.renderInventory(); 
         }
         this.saveGame();
@@ -487,7 +490,7 @@ Object.assign(Game, {
             const fists = this.items['fists'] ? { ...this.items['fists'] } : { id: 'fists', name: 'Fäuste', baseDmg: 2, type: 'weapon' };
             this.state.equip.weapon = fists;
             UI.log("Waffe abgelegt. Nutze Fäuste.", "text-red-500 font-bold");
-            if(typeof UI.renderChar === 'function') UI.renderChar();
+            if(typeof UI.update === 'function') UI.update();
             return;
         }
 
@@ -525,7 +528,7 @@ Object.assign(Game, {
             this.state.equip.weapon = fists;
             UI.log("Keine Nahkampfwaffe gefunden! Du kämpfst mit Fäusten!", "text-red-500");
         }
-        if(typeof UI.renderChar === 'function') UI.renderChar();
+        if(typeof UI.update === 'function') UI.update();
     },
 
     // Die Belohnung des Glücksspiels liegt in game_char_logic.js (dort mit

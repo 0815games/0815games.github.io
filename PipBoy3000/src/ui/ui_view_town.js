@@ -251,39 +251,63 @@ Object.assign(UI, {
             const card = document.createElement('div');
             let baseClass = "relative overflow-hidden group cursor-pointer p-4 flex items-center gap-4 border-2 transition-all duration-200 bg-black/80 hover:bg-[#0a1a0a] shadow-md min-h-[100px]";
             
-            let themeColor = "green";
+            let baseColor = "border-green-600 hover:border-green-400 shadow-green-900/20";
             if(conf.type === 'trader') {
-                themeColor = "yellow";
                 baseClass += " md:col-span-2 border-yellow-600 hover:border-yellow-400 shadow-yellow-900/20 h-32";
             } else if (conf.type === 'clinic') {
-                themeColor = "red";
                 baseClass += " border-red-600 hover:border-red-400 shadow-red-900/20";
             } else if (conf.type === 'craft') {
-                themeColor = "blue";
                 baseClass += " border-blue-600 hover:border-blue-400 shadow-blue-900/20";
             } else {
-                baseClass += " border-green-600 hover:border-green-400 shadow-green-900/20";
+                baseClass += " " + baseColor;
             }
 
             card.className = baseClass;
             card.onclick = conf.onClick;
 
             const iconSize = conf.type === 'trader' ? 'text-6xl' : 'text-5xl';
-            
-            let titleClass = `text-${themeColor}-500 group-hover:text-${themeColor}-300`;
-            let subClass = `text-${themeColor}-700 group-hover:text-${themeColor}-500`;
-            
-            if(conf.type === 'trader') { titleClass = "text-yellow-500 group-hover:text-yellow-300"; subClass = "text-yellow-700 group-hover:text-yellow-500"; }
+
+            // Die Farbklassen stehen vollständig hier, nicht zusammengesetzt.
+            // Tailwind liest den Quelltext statisch: `text-${color}-500` erzeugt
+            // keine Regel, und die roten/blauen Kacheln reagierten nicht auf
+            // Hover (docs/BEFUNDE.md, 6). Ein neuer Farbton braucht einen
+            // eigenen Eintrag.
+            const palettes = {
+                green: {
+                    title: "text-green-500 group-hover:text-green-300",
+                    sub: "text-green-700 group-hover:text-green-500",
+                    glow: "via-green-900/10"
+                },
+                yellow: {
+                    title: "text-yellow-500 group-hover:text-yellow-300",
+                    sub: "text-yellow-700 group-hover:text-yellow-500",
+                    glow: "via-yellow-900/10"
+                },
+                red: {
+                    title: "text-red-500 group-hover:text-red-300",
+                    sub: "text-red-700 group-hover:text-red-500",
+                    glow: "via-red-900/10"
+                },
+                blue: {
+                    title: "text-blue-500 group-hover:text-blue-300",
+                    sub: "text-blue-700 group-hover:text-blue-500",
+                    glow: "via-blue-900/10"
+                }
+            };
+            const palette = palettes[conf.type === 'trader' ? 'yellow'
+                : conf.type === 'clinic' ? 'red'
+                : conf.type === 'craft' ? 'blue'
+                : 'green'];
 
             card.innerHTML = `
-                <div class="absolute inset-0 pointer-events-none bg-gradient-to-r from-transparent via-${themeColor}-900/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity z-0"></div>
+                <div class="absolute inset-0 pointer-events-none bg-gradient-to-r from-transparent ${palette.glow} to-transparent opacity-0 group-hover:opacity-100 transition-opacity z-0"></div>
                 
                 <div class="icon flex-shrink-0 ${iconSize} z-10 relative filter drop-shadow-md">${conf.icon}</div>
                 <div class="flex flex-col z-10 relative">
-                    <span class="text-2xl font-bold ${titleClass} tracking-wider font-vt323 uppercase">${conf.label}</span>
-                    <span class="text-xs ${subClass} font-mono uppercase tracking-widest mt-1">${conf.sub}</span>
+                    <span class="text-2xl font-bold ${palette.title} tracking-wider font-vt323 uppercase">${conf.label}</span>
+                    <span class="text-xs ${palette.sub} font-mono uppercase tracking-widest mt-1">${conf.sub}</span>
                 </div>
-                <div class="absolute right-4 text-2xl opacity-30 group-hover:opacity-100 group-hover:translate-x-1 transition-all ${titleClass}">▶</div>
+                <div class="absolute right-4 text-2xl opacity-30 group-hover:opacity-100 group-hover:translate-x-1 transition-all ${palette.title}">▶</div>
             `;
             return card;
         };

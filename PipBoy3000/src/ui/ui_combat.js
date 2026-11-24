@@ -51,7 +51,14 @@ Object.assign(UI, {
         // 2. TOP BAR (Gegner Status & LEVEL)
         let hpPercent = (Combat.enemy.hp / Combat.enemy.maxHp) * 100;
         let isLegendary = Combat.enemy.isLegendary;
-        let themeColor = isLegendary ? "yellow" : "red"; 
+        // Vollständige Klassennamen statt zusammengesetzter: Tailwind liest
+        // statisch und erzeugt sonst keine Regel (docs/BEFUNDE.md, 6).
+        // Eine neue Farbe hier als vollständiges Paar ergänzen.
+        const theme = isLegendary
+            ? { border: "border-yellow-500/50", title: "text-yellow-500",
+                hp: "text-yellow-300", bar: "border-yellow-900", fill: "bg-yellow-600" }
+            : { border: "border-red-500/50", title: "text-red-500",
+                hp: "text-red-300", bar: "border-red-900", fill: "bg-red-600" };
         
         // [FIX] Level sicher ermitteln
         let enemyLvl = Combat.enemy.level || Combat.enemy.minLvl || 1;
@@ -59,19 +66,19 @@ Object.assign(UI, {
         const topBar = document.createElement('div');
         topBar.className = "w-full max-w-lg flex flex-col items-center mb-4 relative";
         topBar.innerHTML = `
-            <div class="flex justify-between w-full border-b-2 border-${themeColor}-500/50 pb-1 mb-1 items-end">
+            <div class="flex justify-between w-full border-b-2 ${theme.border} pb-1 mb-1 items-end">
                 <div class="flex items-center gap-3">
-                    <span class="text-2xl font-bold text-${themeColor}-500 font-vt323 tracking-widest uppercase drop-shadow-[0_0_5px_rgba(255,0,0,0.5)] leading-none">
+                    <span class="text-2xl font-bold ${theme.title} font-vt323 tracking-widest uppercase drop-shadow-[0_0_5px_rgba(255,0,0,0.5)] leading-none">
                         ${Combat.enemy.name} ${isLegendary ? '★' : ''}
                     </span>
                     <span class="text-xl font-mono text-yellow-400 font-bold bg-black/80 px-2 py-0.5 border-2 border-yellow-600 rounded shadow-[0_0_10px_orange]">
                         LVL ${enemyLvl}
                     </span>
                 </div>
-                <span class="text-lg font-mono text-${themeColor}-300">${Math.ceil(Combat.enemy.hp)}/${Combat.enemy.maxHp} HP</span>
+                <span class="text-lg font-mono ${theme.hp}">${Math.ceil(Combat.enemy.hp)}/${Combat.enemy.maxHp} HP</span>
             </div>
-            <div class="w-full h-6 bg-black border border-${themeColor}-900 relative skew-x-[-10deg] shadow-[0_0_10px_rgba(0,0,0,0.5)]">
-                <div class="h-full bg-${themeColor}-600 transition-all duration-300 relative overflow-hidden" style="width: ${hpPercent}%">
+            <div class="w-full h-6 bg-black border ${theme.bar} relative skew-x-[-10deg] shadow-[0_0_10px_rgba(0,0,0,0.5)]">
+                <div class="h-full ${theme.fill} transition-all duration-300 relative overflow-hidden" style="width: ${hpPercent}%">
                     <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/30"></div>
                 </div>
             </div>

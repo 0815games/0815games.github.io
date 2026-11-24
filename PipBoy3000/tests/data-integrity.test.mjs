@@ -25,7 +25,10 @@ test('jede Monster-Drop-ID ist im Item-Katalog definiert', () => {
   const missing = [];
   for (const [key, monster] of Object.entries(window.Game.monsters)) {
     for (const drop of monster.drops || []) {
-      // 'caps' ist kein Item, sondern die Währung und wird gesondert verbucht.
+      // Die frühere Ausnahme für 'caps' war falsch: sie hat genau den Fehler
+      // verdeckt, den dieser Test finden soll. Kronkorken sind keine
+      // Item-Definition, dürfen aber als Drop auftauchen, weil safeGiveItem sie
+      // verbucht (docs/BEFUNDE.md, 5).
       if (drop.id === 'caps') continue;
       if (!items.has(drop.id)) missing.push(`${key} -> ${drop.id}`);
     }
@@ -145,4 +148,31 @@ test('Game.deleteSave und Game.getMaxHp existieren', () => {
   const {window} = loadBundle(join(ROOT, 'app.js'));
   assert.equal(typeof window.Game.deleteSave, 'function', 'Game.deleteSave fehlt');
   assert.equal(typeof window.Game.getMaxHp, 'function', 'Game.getMaxHp fehlt');
+});
+
+// --- BEFUNDE 5: Kronkorken-Drops ------------------------------------------
+// Der Supermutant hat {id:'caps'} in seinen Drops. addToInventory kennt keinen
+// Sonderfall dafür: der Eintrag landete unsichtbar im Inventar (keine
+// Item-Definition, die Anzeige überspringt ihn) und das Guthaben blieb bei 0.
+test('Kronkorken aus Drops landen als Guthaben, nicht im Inventar', () => {
+  const {window} = loadBundle(join(ROOT, 'app.js'));
+  const game = window.Game;
+  game.state = {
+    inventory: [], caps: 0, equip: {}, perks: {}, special: {},
+    playerName: 'Test', lvl: 5, saveSlot: 0, maxHp: 100, maxSlots: 50
+  };
+
+  game.safeGiveItem('caps', 30);
+
+  assert.equal(game.state.caps, 30, 'Kronkorken wurden nicht als Guthaben verbucht');
+  const capsItems = game.state.inventory.filter(entry => entry.id === 'caps');
+  assert.deepEqual(capsItems, [], 'Kronkorken liegen als Item im Inventar');
+});
+
+test('Kampf-Loot vergibt Kronkorken über die Währung', () => {
+  const source = read('src', 'game', 'game_combat.js');
+  const lootBlock = source.slice(source.indexOf('this.enemy.drops'));
+  const block = lootBlock.slice(0, lootBlock.indexOf('let mobId'));
+  assert.match(block, /safeGiveItem/, 'Combat.win vergibt Drops nicht über safeGiveItem');
+  assert.doesNotMatch(block, /addToInventory\(d\.id/, 'Combat.win legt Drops roh ins Inventar');
 });
