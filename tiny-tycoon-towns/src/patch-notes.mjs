@@ -4,6 +4,16 @@
 
 export const RELEASED_PATCHES = [
   {
+    build: '20261124-sitz18',
+    date: '2026-11-24',
+    items: [
+      {
+        de: 'Vorbereitung der Freibriefe (Prestige): Die Rechenregeln und der Perk-Baum stehen. Im Spiel ändert sich noch nichts.',
+        en: 'Preparing charters (prestige): the rules and the perk tree are in place. Nothing changes in the game yet.',
+      },
+    ],
+  },
+  {
     build: '20261124-sitz17',
     date: '2026-11-24',
     items: [
