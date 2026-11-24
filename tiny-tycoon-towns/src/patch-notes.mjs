@@ -4,6 +4,16 @@
 
 export const RELEASED_PATCHES = [
   {
+    build: '20261124-sitz11',
+    date: '2026-11-24',
+    items: [
+      {
+        de: 'Alle Rückfragen und Hinweise laufen jetzt im Spiel-Design: „Neu beginnen“, Stadt löschen, Stadtname. Auch die Scrollbalken passen zum Spiel.',
+        en: 'All confirmations and notices now use the game design: "start over", delete town, town name. Scrollbars match the game too.',
+      },
+    ],
+  },
+  {
     build: '20261124-sitz10',
     date: '2026-11-24',
     items: [

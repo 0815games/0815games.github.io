@@ -355,3 +355,11 @@ Ereignis ergänzt.
   und hob damit die Zentrierung per `translateX(-50%)` auf.
 - Behebung: Zentrierung über `left`/`right` und auto-Ränder. Gestaltung überarbeitet (Karte, runde Blätter-Pfeile, Bau-Option als Karte).
 - Prüfungen: 59 Tests grün, `check` ohne Fehler, lint `no-undef` ohne Befund. Im Browser noch nicht geprüft.
+
+### TTT-0016 – Keine Browser-Dialoge mehr (Welle `20261124-sitz11`)
+
+- Befund: „Neu beginnen“ zeigte den Browser-Dialog `confirm()`. Dazu kamen Browser-Sprechblasen bei Pflichtfeldern,
+  ein nativer Tooltip über der Karte und Standard-Scrollbalken.
+- Behebung: gemeinsame In-Game-Rückfrage `askConfirm` (Spiel und Betreiber-Seite). Gründung ohne Browser-Pflichtfeld,
+  eigene Meldung. Karten-Tooltip durch `aria-label` ersetzt. Scrollbalken im Spiel-Stil.
+- Prüfungen: 59 Tests grün, `check` ohne Fehler, lint `no-undef` ohne Befund. Im Browser nicht geprüft (keine Browser-Umgebung in der Sandbox).

@@ -1,7 +1,7 @@
 // DOM-Brücke für die Weltansicht: Canvas, Kamera (Ziehen, Zoom), Tastatur, Animation.
 // Der Spielzustand kommt von außen (main.js). Diese Datei verändert ihn nie.
-import { toScreen } from './iso.js?v=20261124-sitz10';
-import { renderWorld, pickTile, makeFx, stepFx, produceIcons, coinGain, dayFactor, GRID_SIZE, HALL } from './scene.js?v=20261124-sitz10';
+import { toScreen } from './iso.js?v=20261124-sitz11';
+import { renderWorld, pickTile, makeFx, stepFx, produceIcons, coinGain, dayFactor, GRID_SIZE, HALL } from './scene.js?v=20261124-sitz11';
 
 const DRAG_PX = 6;
 const K_MIN = 0.45;
@@ -134,7 +134,7 @@ export function createBoard(container, opts) {
     const next = t && opts.getModel().unlocked(t.x, t.y) ? t : null;
     if (JSON.stringify(next) !== JSON.stringify(hover)) {
       hover = next;
-      canvas.title = next ? opts.describe(next.x, next.y) : '';
+      canvas.setAttribute('aria-label', next ? opts.describe(next.x, next.y) : 'Karte');
       dirty = true;
     }
   });
