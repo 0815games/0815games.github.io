@@ -4,6 +4,16 @@
 
 export const RELEASED_PATCHES = [
   {
+    build: '20261124-sitz4',
+    date: '2026-11-24',
+    items: [
+      {
+        de: 'Neues Logo ohne Kasten: die Stadt freigestellt, der Spielname darüber.',
+        en: 'New logo without a box: the town cut out, the game name above it.',
+      },
+    ],
+  },
+  {
     build: '20261124-sitz3',
     date: '2026-11-24',
     items: [
