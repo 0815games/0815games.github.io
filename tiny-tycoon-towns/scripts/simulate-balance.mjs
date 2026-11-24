@@ -34,19 +34,21 @@ const DAY_MIN = 24 * 60;
 // Sitzungen: 9:00 bis 9:15 und 19:00 bis 19:15, je 15 Minuten aktiv.
 const SESSIONS = [540, 1140];
 const SESSION_MIN = 15;
+// Aktionen je aktiver Minute. Ein Mensch tippt nicht so schnell wie ein Bot. Annahme, ändert die Zeiten stark.
+const ACTIONS_PER_MINUTE = 2;
 
 // Korridore aus GAME_PLAN 4.17 (kumuliert). Die Einheit steht bei jedem Meilenstein.
 const CORRIDOR = {
   firstSaleAfterBuildMin: { max: 3, label: 'Erster automatischer Verkauf (min nach erstem Gebäude)' },
   fiveBuildingsActiveMin: { max: 15, label: '5 Gebäude (min aktive Spielzeit)' },
-  level5Hours: { min: 4, max: 8, label: 'Stadtlevel 5 (Stunden Spielzeit)' },
-  firstCharterHours: { min: 36, max: 72, label: 'Erster Freibrief (Stunden Spielzeit)' },
+  level5ActiveHours: { min: 4, max: 8, label: 'Stadtlevel 5 (aktive Stunden)' },
+  level10ActiveHours: { min: 11, max: 13, label: 'Stadtlevel 10 (aktive Stunden, Ziel 12)' },
 };
 
-/** Bot: kauft pro Minute bis zu fünf Dinge, immer das mit der besten Amortisation. */
+/** Bot: kauft pro aktiver Minute bis zu ACTIONS_PER_MINUTE Dinge, immer das mit dem besten Wert. */
 function botAct(state, ctx) {
   let s = state;
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < ACTIONS_PER_MINUTE; i++) {
     const best = bestAction(s, ctx);
     if (!best) break;
     const r = best.kind === 'build'
@@ -56,6 +58,18 @@ function botAct(state, ctx) {
     s = r.state;
   }
   return s;
+}
+
+/**
+ * Wert einer Produktion: Ertrag × Verkaufspreis, weniger wenn schon viel davon auf Lager liegt
+ * (dann verkauft das Rathaus nicht mehr, siehe Reserve), geteilt durch die Münzkosten.
+ * Ohne diese Regel baut der Bot nur Getreide und bleibt bei 63 Gebäuden stehen.
+ */
+function producerScore(s, d, def, rate, cost) {
+  const price = d.resources[def.resource].basePrice;
+  const have = s.stock[def.resource] ?? 0;
+  const demand = 1 / (1 + have / 50);
+  return (rate * price * demand) / cost.coins;
 }
 
 function bestAction(s, ctx) {
@@ -74,7 +88,7 @@ function bestAction(s, ctx) {
       const tile = s.tiles[keyOf(x, y)];
       if (!tile || tile.building) continue;
       const rate = def.baseRatePerMin * productionMultiplier(s, x, y, id, d);
-      consider(rate / cost.coins, { kind: 'build', id, x, y });
+      consider(producerScore(s, d, def, rate, cost), { kind: 'build', id, x, y });
     }
   }
 
@@ -87,7 +101,7 @@ function bestAction(s, ctx) {
     const cost = buildCost(b.id, b.level, d);
     if (s.coins < cost.coins || (s.stock[cost.material.resource] ?? 0) < cost.material.amount) continue;
     const gain = def.baseRatePerMin * productionMultiplier(s, x, y, b.id, d);
-    consider(gain / cost.coins, { kind: 'upgrade', x, y });
+    consider(producerScore(s, d, def, gain, cost), { kind: 'upgrade', x, y });
   }
 
   // Lager, wenn die Vorräte fast die Kapazität erreichen.
@@ -124,11 +138,15 @@ export function simulate({ biome, days }) {
     level8Wall: null,
     coins100kWall: null,
     violations: 0,
+    levels: {}, // Stadtstufe -> { activeH, wallH }
   };
   let activeMin = 0;
 
   const countBuildings = (s) => Object.values(s.tiles).filter((t) => t.building && t.building.id !== 'townHall').length;
   const checkMilestones = (s, wallMs, events) => {
+    for (let l = 2; l <= s.townLevel; l++) {
+      if (!m.levels[l]) m.levels[l] = { activeH: activeMin / 60, wallH: wallMs / HOUR };
+    }
     // Invarianten (GAME_PLAN 8.1, Property-Tests): nichts negativ, Lager nie über Kapazität.
     const cap = storageCap(s, data);
     if (s.coins < 0 || Object.values(s.stock).some((v) => v < 0 || v > cap)) m.violations++;
@@ -179,14 +197,16 @@ export function simulate({ biome, days }) {
     firstSaleAfterBuildMin: m.firstSaleWall !== null && m.firstBuildWall !== null
       ? (m.firstSaleWall - m.firstBuildWall) / MIN : null,
     fiveBuildingsActiveMin: m.fiveBuildingsActive,
-    level5Hours: wallH(m.level5Wall),
     level5ActiveHours: m.level5Active === null ? null : m.level5Active / 60,
+    level10ActiveHours: m.levels[10]?.activeH ?? null,
+    level10WallHours: m.levels[10]?.wallH ?? null,
     firstCharterHours: wallH(m.firstCharterWall),
     level8Hours: wallH(m.level8Wall),
     coins100kHours: wallH(m.coins100kWall),
     firstBuildHours: wallH(m.firstBuildWall),
     capHours: data.economy.offline.baseCapHours,
     violations: m.violations,
+    levels: m.levels,
   };
 }
 
@@ -223,7 +243,7 @@ function main() {
       if (!ok) failed++;
       console.log(`  ${ok ? 'ok ' : 'AUS'}  ${CORRIDOR[key].label}: ${fmt(v)}  (Korridor ${CORRIDOR[key].min ?? 0} bis ${CORRIDOR[key].max})`);
     }
-    console.log(`  --   Diagnose: Stadtlevel 8 nach ${fmt(r.level8Hours)} h, 100.000 Gesamtertrag nach ${fmt(r.coins100kHours)} h`);
+    console.log(`  --   Diagnose: Stadtlevel 10 nach ${fmt(r.level10ActiveHours)} h aktiv (Kalender ${fmt(r.level10WallHours)} h), 100.000 Gesamtertrag nach ${fmt(r.coins100kHours)} h Kalenderzeit`);
   }
   for (const r of rows) if (r.violations) console.log(`Invariante verletzt in ${r.biome}: ${r.violations} Mal`);
   console.log('\nNicht simuliert: Händlerpreis (4.17), Perk-Punkte in 2 bis 4 Wochen, Offline-Obergrenze als Spürbarkeit.');

@@ -22,7 +22,7 @@ Zuständig: **N** = Nutzer (Geräte, Konsole, Entscheidungen), **A** = Agent (Co
 2. **[N]** Gerätetest Freunde auf zwei Geräten: Anfrage, Annahme, Besuch, Name und Code. (TTT-0018, TTT-0019)
 3. **[N]** Gerätetest Freibriefe, Münzpille und Symbolkosten beim Bauen. (TTT-0024)
 4. **[A]** Balance: Stadtlevel 5 auf 4 bis 8 h aktive Spielzeit. Entschieden am 2026-11-24. Die Werte fehlen noch (siehe Punkt 5).
-5. **[N]** Balance-Kurve wählen. Alle XP-Schwellen gleichmäßig mit einem Faktor skalieren: Faktor 40 bringt Stadtlevel 5 auf 4,1 bis 8,5 h aktiver Zeit. Die Folge: Stadtlevel 8 und der erste Freibrief rücken in den Bereich von Monaten. Wir brauchen eine Entscheidung, ob der Freibrief dann anders gebaut wird. Messung: TTT-0027.
+5. **[N]** Balance-Kurve: Freibrief erst ab Stadtlevel 10, Stadtlevel 10 nach 12 aktiven Stunden, Stadtlevel 5 nach 4 bis 8 h. Die Simulation erreicht Stadtlevel 5 (mit Faktor 22 auf die Schwellen 2 bis 5), aber Stadtlevel 10 nicht: Der Bot bleibt ab Stadtlevel 9 stehen, weil das Gitter voll ist und Ausbauten zu teuer werden. Entscheidung nötig, siehe TTT-0028.
 6. **[A]** Service Worker für schnelleres Laden, ohne Offline-Spiel (Entscheidung vom 2026-11-24, siehe Entscheidungen). Das Versions-Gate bleibt unverändert.
 7. **[A]** Einstellungen: Sprache DE und EN, Ton, Bewegung reduzieren, Zahlenformat. (B4)
 8. **[A]** Emulator-Tests für die Regeln einrichten. Braucht Java und `firebase-tools`. Vorher prüfen, ob die Umgebung das kann. (B2)
@@ -67,7 +67,7 @@ Zuständig: **N** = Nutzer (Geräte, Konsole, Entscheidungen), **A** = Agent (Co
 
 ## Entscheidungen
 
-- Stadtlevel 5: 4 bis 8 h aktive Spielzeit. (2026-11-24, Nutzerentscheidung. Die Werte sind noch nicht angepasst.)
+- Stadtlevel 5: 4 bis 8 h aktive Spielzeit. Freibrief erst ab Stadtlevel 10, Stadtlevel 10 nach 12 aktiven Stunden. (2026-11-24, Nutzerentscheidung. Die Werte sind noch nicht angepasst.)
 - Offline-Start: Nein. Das Spiel startet nur mit Bestätigung vom Server (Netz nötig). Das Versions-Gate bleibt wie in ADR-update-gate. (2026-11-24, Nutzerentscheidung)
 - Dialoge schließen beim Klick daneben. Ausnahmen: Sitzungsübernahme und Stadtgründung (erzwungene Entscheidungen).
 - Keine browsernativen Popups. Alle Meldungen, Rückfragen und Scrollbars sind im Spiel. (TTT-0016)

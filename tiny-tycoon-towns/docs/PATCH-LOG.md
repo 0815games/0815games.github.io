@@ -476,3 +476,18 @@ Ereignis ergänzt.
 - Prüfungen: keine neuen Tests. `npm run simulate` bleibt mit Exit 1, bis die Werte gesetzt sind.
 - Offen / nächster Schritt: Nutzer entscheidet die Kurve (Jetzt 5). Danach setzt der Agent die Werte und belegt sie mit `npm run simulate`.
 
+### TTT-0028 – Balance: Simulation korrigiert, Kurve bis Stadtlevel 10 gemessen (keine Spielwerte geändert)
+
+- Zeit / Quelle: Nutzerentscheidung im Chat: Freibrief erst ab Stadtlevel 10, bis Stadtlevel 10 zwölf aktive Stunden, davor flexibel.
+- Änderungen / Dateien: `scripts/simulate-balance.mjs` (Bot: Wert je Produktion mit Preis und Lagerdruck statt reiner Kosten; Begrenzung auf 2 Aktionen je aktiver Minute; Zeiten je Stadtstufe). Keine Änderung an `data/`, `src/`.
+- Befunde:
+  1. Der erste Bot baute nur Getreide-Farmen. Das Gitter war bei 63 Gebäuden voll, und der Bot blieb bei Stufe 7 stehen. Ursache: der Bot, nicht das Spiel. Korrigiert.
+  2. Mit 5 Aktionen je Minute erreicht der Bot Stufe 10 nach etwa 1,6 h. Mit 2 Aktionen je Minute nach etwa 3,4 h. 2 Aktionen sind eine Annahme für einen Menschen. Sie ist nicht belegt.
+  3. Ziel Stadtlevel 5 (4 bis 8 h aktiv): Faktor 22 auf die Schwellen 2 bis 5 ergibt 3,6 bis 4,6 h. Also knapp unter dem Ziel in Riverlands.
+  4. Ziel Stadtlevel 10 (12 h aktiv): nicht erreicht. Das Gitter ist ab Stufe 8 bei 80 Gebäuden voll. Danach kommen XP nur aus Ausbauten, deren Münzkosten (1,15 hoch Stufe) stärker steigen als die Einnahmen. Der Bot bleibt bei Stufe 9 (etwa 10 h aktiv) stehen. Auch mit einer Schwelle von 100.000 XP für Stufe 10 wurde sie in 150 Tagen nicht erreicht.
+  5. Bei zu hohem Faktor für die Stufen 6 bis 10 (ab etwa 15) bleibt der Bot schon bei Stufe 7 oder 8 stehen, aus demselben Grund.
+- Fehler im Experiment, korrigiert: Eine Schwellenliste mit nicht aufsteigenden Werten erzeugt Sprünge. Die Ergebnisse dieser Läufe wurden verworfen. Kontrolle eingebaut (aufsteigend).
+- Prüfungen: `npm test` 76 pass, 0 fail. `npm run simulate` (30 Tage): Exit 1, Stufe 5 bei 0,5 h aktiv und Stufe 10 bei 2,9 h aktiv, beides mit Standardwerten.
+- Grenzen: Modell mit idealem Bot, Annahme 2 Aktionen je Minute, keine Lagerverwaltung durch den Spieler. Die Zahlen sind eine Richtung, keine Abnahme.
+- Offen / nächster Schritt: Entscheidung des Nutzers, wie Stufe 10 erreichbar wird (Jetzt 5 in ROADMAP.md). Danach Werte setzen und Tests anpassen. Der Freibrief-Gate auf Stufe 10 ist noch nicht im Code (CHARTER_MIN_LEVEL steht noch auf 8).
+
