@@ -49,6 +49,11 @@
       (BEFUNDE.md Punkt 6).
 - [x] renderCharStats/renderCharPerks in ui_view_inv.js waren toter Code —
       205 Zeilen entfernt, Aufrufer umgestellt (BEFUNDE.md Punkt 3).
+- [ ] Balancing: sieben offene Punkte aus docs/BALANCE_BEFUNDE.md. Rüstung
+      schützt nicht, Buff-Items wirken nicht, Strahlungsresistenz wird
+      ignoriert, CHA ohne Wirkung, zwei Minispiele unerreichbar, 30 % der
+      Truhen gehen auf einen falschen Minigame-Schlüssel. Wächter:
+      tests/balance.test.mjs (dort stehen sie als Fehlschlag).
 - [ ] Spielstand verkleinern: 'explored' wächst um ~45 kB pro Sektor.
 - [x] CI: `.github/workflows/pipboy-verify.yml` baut, testet und prüft, dass der
       eingecheckte Build zum Quellstand passt; dazu der Portal-Test.
