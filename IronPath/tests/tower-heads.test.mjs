@@ -45,8 +45,10 @@ test('each head kicks back along its own barrel line',()=>{
     f.draw({towerAims:{0:{angle:.7,recoil:1}}});
     const at=f.log.findIndex(call=>call[0]==='rotate'&&call[1]===.7);
     assert.ok(at>=0,`type ${type} head traverses`);
-    const next=f.log[at+1];
-    assert.equal(next[0],'translate',`type ${type} head translates right after the swing`);
+    // The mount is drawn first and stays planted; the recoil translate is
+    // the first one after the swing, on the barrel group only.
+    const next=f.log.slice(at+1).find(call=>call[0]==='translate');
+    assert.ok(next,`type ${type} head translates after the swing`);
     assert.equal(next[1],kick[type],`type ${type} recoil travel is ${kick[type]}`);
     assert.equal(next[2],0,'the kick runs along the barrel, not sideways');
   }
@@ -56,5 +58,6 @@ test('a head at rest does not translate sideways',()=>{
   const f=field([{pad:0,type:1,level:1,hp:100}]);
   f.draw({towerAims:{0:{angle:.7,recoil:0}}});
   const at=f.log.findIndex(call=>call[0]==='rotate'&&call[1]===.7);
-  assert.ok(f.log[at+1][1]===0,'no recoil, no travel');
+  const next=f.log.slice(at+1).find(call=>call[0]==='translate');
+  assert.ok(next&&next[1]===0,'no recoil, no travel');
 });

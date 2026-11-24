@@ -9,9 +9,11 @@
 //
 // The swing is rate-limited like a real traverse: a turret that teleports
 // between targets reads as a glitch, a turret that sweeps reads as a
-// machine. Recoil is keyed to the shot sequence ids the simulation already
+// machine. The last stretch eases: full rate across the field, then a soft
+// landing on the target instead of a slam. Recoil is keyed to the shot
+// sequence ids the simulation already
 // stamps on every shot, so a kick lands on the frame the shot leaves.
-export function createTowerAim({turnRate=3.4,recoilSeconds=.13}={}={}){
+export function createTowerAim({turnRate=3.0,recoilSeconds=.16}={}={}){
   const tracks=new Map();
   const wrap=angle=>{while(angle>Math.PI)angle-=Math.PI*2;while(angle<-Math.PI)angle+=Math.PI*2;return angle;};
   function sample(field,now,{reducedMotion=false,paused=false}={}={}){
@@ -46,7 +48,10 @@ export function createTowerAim({turnRate=3.4,recoilSeconds=.13}={}={}){
         if(!previous||reducedMotion)angle=desired;
         else if(validFrame){
           const diff=wrap(desired-angle),step=turnRate*dt;
-          angle=wrap(angle+(Math.abs(diff)<=step?diff:Math.sign(diff)*step));
+          // Ease the last stretch: full rate while far, then the swing
+          // slows as it closes in - a traverse settles, it does not slam.
+          const ease=Math.min(1,Math.abs(diff)/.45);
+          angle=wrap(angle+(Math.abs(diff)<=step?diff:Math.sign(diff)*step*ease));
         }
       }
       // Recoil: a shot whose sequence id is newer than the last one seen

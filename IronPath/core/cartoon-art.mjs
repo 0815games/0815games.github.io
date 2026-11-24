@@ -1,11 +1,11 @@
-import {translateText as tr,getLanguage} from '../language.mjs?v=20261123-aim2';
+import {translateText as tr,getLanguage} from '../language.mjs?v=20261123-aim3';
 import {towerDisplay} from './progression.mjs?v=20261105-prestige1';
-import {specializationRank} from './tower-specialization.mjs?v=20261123-aim2';
-import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261123-aim2';
-import {ENEMY_INTEL,SOLDIER_MAX_HP} from './combat.mjs?v=20261123-aim2';
+import {specializationRank} from './tower-specialization.mjs?v=20261123-aim3';
+import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261123-aim3';
+import {ENEMY_INTEL,SOLDIER_MAX_HP} from './combat.mjs?v=20261123-aim3';
 import {bossPhase} from './boss-mechanics.mjs?v=20261031-finale1';
 import {shotTrace,shotsToDraw} from './shot-tracers.mjs?v=20261117-shots1';
-import {buildRoadPath} from './road-geometry.mjs?v=20261123-aim2';
+import {buildRoadPath} from './road-geometry.mjs?v=20261123-aim3';
 // Drawing only: the simulation, coordinates and hit areas stay unchanged.
 const ink='#1d3028',paper='#f1e7c4';
 function line(ctx,points,color=ink,width=3){ctx.beginPath();points.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();}
@@ -438,10 +438,13 @@ function mgTurret(ctx,x,y,aim){
     oval(ctx,bx,by,7.6,5,k%2?'#bfa87c':'#cbb384','#8f7a52',1);}
   oval(ctx,x,y+3,13,5,'rgba(24,32,26,.28)',null);
   const angle=Number.isFinite(aim?.angle)?aim.angle:0,recoil=Math.max(0,Math.min(1,aim?.recoil||0));
-  ctx.save();ctx.translate(x,y-3);ctx.rotate(angle);ctx.translate(-recoil*3.5,0);
+  ctx.save();ctx.translate(x,y-3);ctx.rotate(angle);
   // Tripod and mount first: the legs stay planted while the top works.
   line(ctx,[[-1,0],[-10,10]],'#33402f',3.4);line(ctx,[[1,0],[10,10]],'#33402f',3.4);line(ctx,[[0,1],[0,11]],'#33402f',3.4);
   shape(ctx,[[-3,-4],[3,-4],[3,5],[-3,5]],'#46523f');
+  // Only the barrel group kicks: receiver, barrel and belt slide back
+  // inside the mount, the mount itself never moves.
+  ctx.translate(-recoil*3.5,0);
   // Receiver with top cover, rear grip and sight post.
   shape(ctx,[[-12,-7],[5,-7],[7,-4],[7,1],[-10,2],[-12,-2]],'#55624c');
   line(ctx,[[-11,-7],[4,-7]],'#6d7c60',2);line(ctx,[[-12,-2],[-16,1]],ink,2.6);
@@ -462,19 +465,22 @@ function cannonTurret(ctx,x,y,aim){
     oval(ctx,bx,by,8.4,5.4,k%2?'#9aa39b':'#8b948c','#6f7a70',1);}
   oval(ctx,x,y+4,14,5,'rgba(24,32,26,.28)',null);
   const angle=Number.isFinite(aim?.angle)?aim.angle:0,recoil=Math.max(0,Math.min(1,aim?.recoil||0));
-  ctx.save();ctx.translate(x,y-3);ctx.rotate(angle);ctx.translate(-recoil*5,0);
+  ctx.save();ctx.translate(x,y-3);ctx.rotate(angle);
   // Box trail: two legs splayed back from the pedestal, spades at the ends.
   line(ctx,[[-3,3],[-17,12]],'#33402f',4);line(ctx,[[-3,-3],[-17,-12]],'#33402f',4);
   shape(ctx,[[-20,10],[-14,10],[-14,15],[-20,15]],'#2b352c');shape(ctx,[[-20,-15],[-14,-15],[-14,-10],[-20,-10]],'#2b352c');
   shape(ctx,[[-6,-6],[4,-6],[4,8],[-6,8]],'#46523f');
+  // Elevation wheel rides on the pedestal, so it stays with the mount.
+  oval(ctx,-2,9,3.2,3.2,'#6b7256','#2b352c',1.4);line(ctx,[[-2,6],[-2,12]],'#2b352c',1.4);
+  // Only the breech and barrel kick back inside the mount.
+  ctx.translate(-recoil*5,0);
   // Breech block and the thick barrel with its muzzle brake.
   shape(ctx,[[-8,-7],[6,-7],[8,-4],[8,2],[-6,3],[-8,-2]],'#55624c');
   line(ctx,[[-7,-7],[5,-7]],'#6d7c60',2);
   shape(ctx,[[6,-5],[30,-4],[30,0],[6,1]],'#39443a');
   shape(ctx,[[30,-5.5],[34,-5.5],[34,.5],[30,.5]],'#2b352c');
   line(ctx,[[31,-5.5],[31,.5]],'#55624c',1.6);line(ctx,[[33,-5.5],[33,.5]],'#55624c',1.6);
-  // Elevation wheel and sight post.
-  oval(ctx,-2,9,3.2,3.2,'#6b7256','#2b352c',1.4);line(ctx,[[-2,6],[-2,12]],'#2b352c',1.4);
+  // Sight post rides on the breech, so it kicks with the barrel.
   line(ctx,[[-4,-7],[-4,-10]],ink,1.8);oval(ctx,-4,-10.6,1.4,1.4,'#d9c08a',null);
   ctx.restore();
 }
@@ -489,12 +495,14 @@ function flakTurret(ctx,x,y,aim){
   shape(ctx,[[x+20,y+11],[x+29,y+11],[x+29,y+18],[x+20,y+18]],'#5d6449','#4a5138',1.4);
   oval(ctx,x,y+3,13,5,'rgba(24,32,26,.28)',null);
   const angle=Number.isFinite(aim?.angle)?aim.angle:0,recoil=Math.max(0,Math.min(1,aim?.recoil||0));
-  ctx.save();ctx.translate(x,y-3);ctx.rotate(angle);ctx.translate(-recoil*2,0);
+  ctx.save();ctx.translate(x,y-3);ctx.rotate(angle);
   // Pedestal and yoke, then the shield plate the barrels poke through.
   shape(ctx,[[-5,-5],[3,-5],[3,7],[-5,7]],'#46523f');
   line(ctx,[[-2,-5],[-2,-9]],'#33402f',3);line(ctx,[[-2,5],[-2,9]],'#33402f',3);
   shape(ctx,[[-3,-11],[3,-11],[3,11],[-3,11]],'#3d4a3c','#2b352c',1.6);
   line(ctx,[[-3,-6],[3,-6]],'#55624c',1.4);line(ctx,[[-3,6],[3,6]],'#55624c',1.4);
+  // Only the twin barrels and their drum kick back behind the shield.
+  ctx.translate(-recoil*2,0);
   // Twin barrels with muzzle rings.
   shape(ctx,[[3,-4.6],[28,-4.2],[28,-2.8],[3,-2.2]],'#39443a');
   shape(ctx,[[3,2.2],[28,2.8],[28,4.2],[3,4.6]],'#39443a');
@@ -512,9 +520,10 @@ function sniperTurret(ctx,x,y,aim){
   for(const [gx,gy] of [[-20,10],[16,12],[0,16]])line(ctx,[[x+gx,y+gy],[x+gx+2,y+gy-5]],'#4a6136',1.6);
   oval(ctx,x,y+3,13,5,'rgba(24,32,26,.28)',null);
   const angle=Number.isFinite(aim?.angle)?aim.angle:0,recoil=Math.max(0,Math.min(1,aim?.recoil||0));
-  ctx.save();ctx.translate(x,y-3);ctx.rotate(angle);ctx.translate(-recoil*1.5,0);
-  // Bipod legs splayed forward, then the long thin rifle.
+  ctx.save();ctx.translate(x,y-3);ctx.rotate(angle);
+  // Bipod legs splayed forward: they stay planted while the rifle kicks.
   line(ctx,[[4,1],[12,11]],'#33402f',2.6);line(ctx,[[4,-1],[12,-11]],'#33402f',2.6);
+  ctx.translate(-recoil*1.5,0);
   shape(ctx,[[-12,-4],[6,-4],[8,-1],[8,2],[-10,3],[-12,0]],'#4a5545');
   line(ctx,[[-11,-4],[5,-4]],'#6d7c60',1.6);
   shape(ctx,[[7,-2.6],[36,-2],[36,-.6],[7,-.4]],'#39443a');

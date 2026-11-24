@@ -6,7 +6,7 @@ aber ersetzt weder Git noch die GitHub-PR-Historie. Die dazugehörige
 [Arbeitsanweisung](../../AGENTS.md) verlangt, dieses Log vor der Arbeit zu lesen
 und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
 
-Die Einträge IPL-0001 bis IPL-0103 stehen im
+Die Einträge IPL-0001 bis IPL-0104 stehen im
 [Archiv](PATCH-LOG-ARCHIV.md); hier stehen die neuesten 20. Beide Dateien
 zusammen sind lückenlos und doppelfrei - `../scripts/patch.mjs` (Unterbefehl `check`) und
 `../tests/patch-log-archive.test.mjs` prüfen das.
@@ -54,23 +54,6 @@ jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderl
 
 
 
-## IPL-0104 – Boss-Banner: mittige Ankündigung im Spiel-Design (eigene Cache-Welle folgt im selben PR)
-
-- **Zeit / Quelle:** Von den nach dem Rückbau offenen Punkten gab der Betreiber nur die Boss-Ankündigung aus PR `#338` frei („vergiss bitte die restlichen offenen Punkte bis auf die Boss Ankündigung“) und legte die Form fest: „ein passendes zum Spiel Design Banner, welches den Boss angekündigt mittig“. Alle übrigen Rückbau-Punkte (#337, #338-Reste, #339, Mündungsblitz) bleiben damit ausdrücklich liegen.
-- **Block / Ziel:** Ankündigung auf dem Gefechtsfeld. Wenn eine Boss-Welle startet, steht der Boss für wenige Sekunden mit Name und Intel mittig im Spielfeld — als Titelkarte im Rahmen der Karten-Intro, in den Farben der kleinen Boss-Plakette. Die Plakette selbst (ankommend, Phasen, Lebensbalken) bleibt unverändert; Spielregeln und Simulation ändern sich nicht. Weil browsergeladene Dateien (HTML, CSS, `game.js`, ein neues UI-Modul) ihr Verhalten ändern, trägt derselbe PR eine eigene Cache-Welle (`20261123-boss1`, dritter Commit mit Feldnotizen DE+EN, sobald die PR-Nummer existiert).
-- **Branch / Basis:** `arena/68cb4000-0815games-github-io` ab `3025aea930f8d84f05edbbc9357aabb5f6cd85c2` (`main`, Merge von PR `#365`). Erster Commit `487365e` (7 Dateien).
-- **Änderungen / Dateien:**
-  - `IronPath/ui/boss-banner.mjs` (neu): `createBossBanner` nach dem `createMapIntro`-Muster — injizierte Uhr, Zwei-Schritt-Gehen (halten 4 s, ausblenden 600 ms), ein Boss gleich eine Ankündigung (Schlüssel `Welle:Art`; das Angebot jeden Frames ist ein No-op), `reset()` vergisst den Schlüssel fürs nächste Gefecht, fehlende Knoten kosten nur die Dekoration. Das Modul ist DOM und zustandslos gegenüber dem Spiel — ausdrücklich anders als die zurückgenommene `#338`-Fassung (rote Blink-Box oben links im Canvas-Maler, Aufruf ohne Import).
-  - `IronPath/index.html` und `IronPath/field-command.css`: `#bossBanner` im `#gameView`, zentriert wie die Karten-Intro (`left/top 50%`, Messing-Doppelrahmen, `Black Ops One`), in Boss-Farben (`#4a2320`-Verlauf, `#e1bf84`, `#ef9d60`); `pointer-events:none`, `aria-hidden` (die Ansage für Screenreader bleibt die vorhandene `bossAnnouncement`-Live-Region), bei `prefers-reduced-motion` keine Animation.
-  - `IronPath/game.js`: Ankündigung aus dem bestehenden Boss-Block — ankommend `BOSS INCOMING`, auf dem Feld `BOSS ON THE FIELD`, dazu Name und Beschreibung des Bosses; `hide()` am Laufende, `reset()` im `reset()`. Plus der `draw()`-Fang aus der `PATCH-BLOECKE`-Reparaturanweisung zu `#338`: Die Frame-Schleife fängt Zeichenfehler, meldet den ersten und hält die `requestAnimationFrame`-Kette am Leben, statt das Feld einzufrieren.
-  - `IronPath/i18n/localization-battle-de.mjs`: zwei neue Literale (`BOSS INCOMING` → `BOSS IM ANMARSCH`, `BOSS ON THE FIELD` → `BOSS AUF DEM FELD`, im Ton der vorhandenen `BOSS IM ANMARSCH · {name}`-Zeile).
-  - `IronPath/tests/boss-banner.test.mjs` (neu, 7 Tests: einmal pro Boss inkl. Haltezeit ab erster Ankündigung, Ausblenden auf der Uhr, neuer Boss, `reset`, `hide`, fehlende Knoten, Validierung) und `IronPath/tests/cartoon-art.test.mjs`: Echt-Boss-Block — `makeEnemy(bossForWave(5).kind,5)` durch den echten Maler, volle wie reduzierte Bewegung, Spielzustand unverändert. Damit ist die Stub-Lücke geschlossen, hinter der `#338` seinen `ReferenceError` versteckte.
-  - `IronPath/docs/PATCH-LOG.md` und `IronPath/docs/PATCH-LOG-ARCHIV.md`: `IPL-0084` vollständig ins Archiv, Grenzen auf `IPL-0001` bis `IPL-0084`; das Log führt die neuesten 20 (`IPL-0085` bis `IPL-0104`).
-- **Prüfungen:**
-  - `boss-banner.test.mjs` 7/7, `cartoon-art.test.mjs` mit Echt-Boss-Block bestanden („Real catalog boss: drawn at full and reduced motion, state untouched.“), Übersetzungs-Abdeckung grün; `patch.mjs check --fast` am echten Baum: **0 Fehler**.
-  - Cache-Welle als dritter Commit desselben PR: Feldnotizen-Eintrag `boss1` (DE+EN, `pr: 366`) in `patch-notes.mjs` angelegt, danach `patch.mjs bump 20261123-boss1 --apply` (79 Dateien, 277 Token-Vorkommen, alle 7 Anker tragen `20261123-boss1`). Die erste Gesamtsuite auf der Welle zeigte 22 rote Tests in 13 Harness-Dateien: Ihre handgeführten Ersetzungslisten für `game.js`-Importe kannten `./ui/boss-banner.mjs?v=…` noch nicht (`Failed to resolve module specifier` aus dem `data:`-Import). Alle 13 Listen führen jetzt `ui/boss-banner.mjs` neben `ui/map-intro.mjs`; die 13 Dateien laufen danach 40/40 grün, die Gesamtsuite auf der Welle danach **1.270/1.270, Exit 0, 0 ausgelassen** (nach `git fetch --unshallow origin`). Browser-Fahrten laufen in CI, lokal ist kein Chromium verfügbar. Die Betreiber-Sichtprüfung lautet auf `BUILD 20261123-boss1`: Boss-Welle (Welle 5) starten — das Banner muss mittig mit Boss-Namen erscheinen, ~4 s stehen und ausblenden; die kleine Boss-Plakette oben bleibt wie bisher.
-- **Git / PR / Release:** Feature-Commit `487365e` und dieser Log-Commit liegen auf `arena/68cb4000-0815games-github-io`; PR-Nummer, Cache-Welle, CI, Merge und Pages-Auslieferung sind noch nicht erfolgt und werden erst nach dem tatsächlichen Ereignis mit Kennung nachgetragen. Der `PATCH-BLOECKE`-Punkt zur Boss-Ankündigung (`#338`-Reparatur) ist mit dieser Scheibe inhaltlich erledigt; die übrigen Rückbau-Punkte bleiben auf Betreiber-Weisung liegen.
-- **Offen / nächster Schritt:** PR öffnen, Wellen-Commit nachschieben, Gesamtsuite auf `boss1`, CI abwarten, erst nach belegtem Merge/Pages-Stand als ausgeliefert bezeichnen; Ereignis-Nachtrag danach als eigener PR. Auf Betreiber-Auftrag folgt im selben Arbeitsgang eine Bestandsaufnahme aller je aufgeführten offenen Patch-Punkte über alle Dateien; ihr Ergebnis steht im PR-Gespräch und wird hier nicht vorweggenommen. Die Betreiber-Sichtprüfungen (`BUILD 20261122-ring1`, `core1` und ältere Punkte) stehen weiterhin aus.
 
 ## IPL-0105 – Fähigkeits-Abklingzeit pausiert zwischen den Wellen (eigene Cache-Welle folgt im selben PR)
 
@@ -343,3 +326,16 @@ jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderl
 - **Prüfungen:** `tower-heads` 4/4, `tower-aim` 8/8, `soldier-motion` 3/3; Schnelltor „Kein Fehler, 2 Hinweis(e)“; Gesamtsuite **1348 Tests, 1347 bestanden, 0 Fehler, 1 übersprungen**.
 - **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet`. Commit, Push, PR `#385`, danach Cache-Welle `20261123-aim2` mit Feldnotizen `aim2` als zweiter Commit (Muster `IPL-0104`), CI, Merge und Pages-Auslieferung werden als Ereignis nachgetragen. **Betreiber-Sichtung auf `20261123-aim2`:** alle vier Turmtypen auf einer Karte mit Gegnern aus mehreren Richtungen — jeder Kopf muss sichtbar nachführen und beim Feuern zurückstoßen.
 - **Offen / nächster Schritt:** Die Ausbaureihe „Lebendiges Feld“ ist damit vollständig (Scheibe 1 + 2). Neue Punkte beschließt der Betreiber.
+
+## IPL-0124 – Lebendiges Feld, Feinschliff: sanftes Einrasten, Rückstoß nur im Rohr (Cache-Welle folgt im selben PR)
+
+- **Zeit / Quelle:** 2026-11-23 UTC; Betreiber nach Sichtung von Scheibe 2: „Erst Feinschliff, dann mehr Lebendigkeit.“ Dieses Paket ist der Feinschliff an den drehenden Köpfen aus `IPL-0122`/`IPL-0123`.
+- **Block / Ziel:** Kein Spiel-Block; reine Darstellung. Keine Simulations-, Snapshot-, Protokoll- oder Regeländerung — Schwenk- und Rückstoßwerte sind Optik und reisen nie über das Netz.
+- **Branch / Basis:** `arena/3c81a128-0815games-github-io` ab `62eabb03024079b00e613a10910a7b1f8f28b667` (`main`, Merge PR `#385`).
+- **Änderungen / Dateien:**
+  - `IronPath/core/tower-aim.mjs`: Drehgeschwindigkeit 3,4 → 3,0 rad/s (bewusster, weniger nervös), Rückstoß-Fenster 0,13 → 0,16 s (der Tritt ist lesbarer), und die letzte Strecke des Schwenks rastet weich ein (Easing unter 0,45 rad) statt hart zu knallen — volle Rate über das Feld, sanfte Landung aufs Ziel.
+  - `IronPath/core/cartoon-art.mjs`: In allen vier Malern stößt jetzt nur die Waffengruppe zurück (Gehäuse/Lauf/Gurt bzw. Verschluss, Doppellauf, Gewehr) — Dreibein, Kastenschwanz, Sockel, Schild und Zweibein bleiben stehen, wie es eine echte Lafette tut. Das Höhenrad der Kanone bleibt bei der Lafette, das Visier fährt mit dem Rohr.
+  - `IronPath/tests/tower-heads.test.mjs`: Rückstoß-Prüfung sucht jetzt das erste `translate` nach dem Schwenk (Lafette wird zuerst gezeichnet) — pinnt weiterhin Weg je Typ (MG 3,5 / Kanone 5 / Flak 2 / Sniper 1,5). `IronPath/tests/tower-aim.test.mjs`: Easing-Test (Teilweg, dann exaktes Einrasten).
+- **Prüfungen:** `tower-heads` 4/4, `tower-aim` 9/9, `soldier-motion` 3/3; Schnelltor „Kein Fehler, 2 Hinweis(e)“; Gesamtsuite **1349 Tests, 1348 bestanden, 0 Fehler, 1 übersprungen**.
+- **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet`. Commit, Push, PR `#386`, danach Cache-Welle `20261123-aim3` mit Feldnotizen `aim3` als zweiter Commit (Muster `IPL-0104`), CI, Merge und Pages-Auslieferung werden als Ereignis nachgetragen. **Betreiber-Sichtung auf `20261123-aim3`:** Köpfe müssen weich einrasten und nur das Rohr darf zurückstoßen.
+- **Offen / nächster Schritt:** `IPL-0125` „Mehr Lebendigkeit“ (Mündungsfeuer, Hülsen) folgt als eigener Eintrag.
