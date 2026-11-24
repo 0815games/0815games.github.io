@@ -6,7 +6,7 @@ import {
   signInWithEmailAndPassword, signOut,
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import { getDatabase, ref, get, set, onValue, runTransaction } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
-import { firebaseConfig } from './firebase-config.js?v=20261124-sitz11';
+import { firebaseConfig } from './firebase-config.js?v=20261124-sitz12';
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -33,6 +33,14 @@ export async function loadTown(uid) {
 /** Writes the whole town. Plain JSON only: RTDB rejects undefined values. */
 export function saveTown(uid, town) {
   return set(townRef(uid), JSON.parse(JSON.stringify(town)));
+}
+
+/** Meldet jede Änderung des Betreibers an dieser Stadt (Zeitstempel). Liefert die Abmeldefunktion. */
+export function watchAdminEdit(uid, onChange) {
+  return onValue(ref(db, `saves/${uid}/town/adminEditedAt`), (snap) => {
+    const v = snap.val();
+    if (typeof v === 'number') onChange(v);
+  });
 }
 
 export function deleteTown(uid) {

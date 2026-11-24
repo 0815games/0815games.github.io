@@ -52,3 +52,27 @@ test('admins are readable only by their own account and never writable (bissfest
   assert.ok(errs.some((e) => e.includes('admins/$uid: .write muss false sein')));
   assert.equal(checkRules(candidate).errors.filter((e) => e.includes('admins')).length, 0);
 });
+
+test('other towns: only the view fields are readable, never coins, stock or the town node (bissfest)', () => {
+  const bad = structuredClone(candidate);
+  bad.rules.saves.$uid.town.coins['.read'] = 'auth != null';
+  assert.ok(checkRules(bad).errors.some((e) => e.includes('town/coins: .read nur für Ansichtsfelder')));
+  const bad2 = structuredClone(candidate);
+  bad2.rules.saves.$uid.town['.read'] = 'auth != null';
+  assert.ok(checkRules(bad2).errors.some((e) => e.includes('Stadt-Knoten')));
+  // Die Ansicht selbst ist erlaubt.
+  assert.equal(checkRules(candidate).errors.filter((e) => e.includes('Ansichtsfelder') || e.includes('Stadt-Knoten')).length, 0);
+});
+
+test('friends draft passes the lock-mode checks (bissfest)', () => {
+  const draft = JSON.parse(readFileSync(new URL('../firebase/friends-draft.rules.json', import.meta.url), 'utf8'));
+  assert.deepEqual(checkRules(draft).errors, []);
+});
+
+test('friend requests can only be created by the sender (bissfest)', () => {
+  const draft = JSON.parse(readFileSync(new URL('../firebase/friends-draft.rules.json', import.meta.url), 'utf8'));
+  const rule = String(draft.rules.friendRequests.$to.$from['.write']);
+  // Der Empfänger darf nur löschen (annehmen/ablehnen), nie anlegen.
+  assert.ok(rule.includes('auth.uid === $from ||'));
+  assert.ok(rule.includes('auth.uid === $to && !newData.exists()'));
+});

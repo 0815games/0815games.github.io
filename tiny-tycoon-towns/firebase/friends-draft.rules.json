@@ -1,0 +1,168 @@
+{
+  "rules": {
+    "saves": {
+      ".read": "auth != null && root.child('admins').child(auth.uid).val() === true",
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('admins').child(auth.uid).val() === true)",
+        "town": {
+          ".read": "auth != null && root.child('friends').child($uid).child(auth.uid).val() === true",
+          ".write": "auth != null && (auth.uid === $uid || root.child('admins').child(auth.uid).val() === true)",
+          ".validate": "newData.hasChildren(['schemaVersion','id','name','biome','townLevel','coins','stock','tiles','lastTick']) && (!data.exists() || newData.child('schemaVersion').val() >= data.child('schemaVersion').val())",
+          "schemaVersion": {
+            ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 99"
+          },
+          "id": {
+            ".validate": "newData.isString() && newData.val().length <= 64"
+          },
+          "name": {
+            ".read": "auth != null",
+            ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 24"
+          },
+          "biome": {
+            ".read": "auth != null",
+            ".validate": "newData.val() == 'riverlands' || newData.val() == 'deepwoods' || newData.val() == 'highlands' || newData.val() == 'coast'"
+          },
+          "seed": {
+            ".validate": "newData.isNumber()"
+          },
+          "townLevel": {
+            ".read": "auth != null",
+            ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 12"
+          },
+          "townXp": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          },
+          "coins": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          },
+          "lifetimeCoins": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          },
+          "tutorialStep": {
+            ".validate": "newData.isNumber()"
+          },
+          "lastTick": {
+            ".validate": "newData.isNumber()"
+          },
+          "createdAt": {
+            ".validate": "newData.isNumber()"
+          },
+          "stock": {
+            "$resource": {
+              ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 1000000"
+            }
+          },
+          "sellEnabled": {
+            "$resource": {
+              ".validate": "newData.isBoolean()"
+            }
+          },
+          "tiles": {
+            ".read": "auth != null",
+            "$tile": {
+              ".validate": "newData.hasChildren(['terrain']) && (newData.child('terrain').val() == 'meadow' || newData.child('terrain').val() == 'forest' || newData.child('terrain').val() == 'rock' || newData.child('terrain').val() == 'water' || newData.child('terrain').val() == 'sand')"
+            }
+          },
+          "merchant": {
+            "dateKey": {
+              ".validate": "newData.isString()"
+            },
+            "bought": {
+              "$index": {
+                ".validate": "newData.isBoolean()"
+              }
+            },
+            "$other": {
+              ".validate": false
+            }
+          },
+          "adminEditedAt": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      }
+    },
+    "sessions": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid",
+        ".validate": "!newData.exists() || newData.hasChildren(['id','at'])",
+        "id": {
+          ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 64"
+        },
+        "at": {
+          ".validate": "newData.isNumber() && newData.val() >= 0"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    "admins": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": false
+      }
+    },
+    "profiles": {
+      ".indexOn": [
+        "townName"
+      ],
+      "$uid": {
+        ".read": "auth != null",
+        ".write": "auth != null && auth.uid === $uid",
+        ".validate": "newData.hasChildren(['townName']) || !newData.exists()",
+        "townName": {
+          ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 24"
+        },
+        "townLevel": {
+          ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 12"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    "friendCodes": {
+      "$code": {
+        ".read": "auth != null",
+        ".write": "auth != null && ((!data.exists() && newData.val() == auth.uid) || (data.exists() && data.val() == auth.uid))",
+        ".validate": "newData.isString() && newData.val() == auth.uid && $code.matches(/^[A-HJ-NP-Z2-9]{6}$/)"
+      }
+    },
+    "ownCodes": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid",
+        ".validate": "newData.isString() && newData.val().matches(/^[A-HJ-NP-Z2-9]{6}$/)",
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    "friendRequests": {
+      "$to": {
+        "$from": {
+          ".read": "auth != null && (auth.uid === $to || auth.uid === $from)",
+          ".write": "auth != null && (auth.uid === $from || (auth.uid === $to && !newData.exists()))",
+          ".validate": "$from != $to && (!newData.exists() || (newData.hasChildren(['name','at']) && newData.child('name').isString() && newData.child('name').val().length <= 24 && newData.child('at').isNumber()))",
+          "$other": {
+            ".validate": false
+          }
+        }
+      }
+    },
+    "friends": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        "$other": {
+          ".write": "auth != null && (auth.uid === $uid || (auth.uid === $other && root.child('friendRequests').child($other).child($uid).exists()))",
+          ".validate": "newData.val() == true"
+        }
+      }
+    }
+  }
+}

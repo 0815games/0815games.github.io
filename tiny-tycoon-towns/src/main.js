@@ -3,21 +3,21 @@
 import {
   createTown, newSeed, chooseBiome, placeBuilding, upgradeBuilding,
   toggleSell, buyOffer, advance, hydrateTown, setTutorialStep,
-} from './domain/engine.js?v=20261124-sitz11';
+} from './domain/engine.js?v=20261124-sitz12';
 import {
   productionMultiplier, ratePerMin, buildCost, storageCap, classOf,
-} from './domain/economy.js?v=20261124-sitz11';
-import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261124-sitz11';
-import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261124-sitz11';
-import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261124-sitz11';
+} from './domain/economy.js?v=20261124-sitz12';
+import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261124-sitz12';
+import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261124-sitz12';
+import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261124-sitz12';
 const SEEN_NOTES_KEY = 'ttt:notes-seen';
-import { withTimeout } from './async-util.js?v=20261124-sitz11';
-import { createBoard } from './world/board.js?v=20261124-sitz11';
-import { createLoginScene } from './world/login-scene.js?v=20261124-sitz11';
-import { TUTORIAL_STEPS, HELP_SECTIONS } from './tutorial.js?v=20261124-sitz11';
-import { createVersionUI } from './version-ui.mjs?v=20261124-sitz11';
+import { withTimeout } from './async-util.js?v=20261124-sitz12';
+import { createBoard } from './world/board.js?v=20261124-sitz12';
+import { createLoginScene } from './world/login-scene.js?v=20261124-sitz12';
+import { TUTORIAL_STEPS, HELP_SECTIONS } from './tutorial.js?v=20261124-sitz12';
+import { createVersionUI } from './version-ui.mjs?v=20261124-sitz12';
 
-const BUILD = '20261124-sitz11';
+const BUILD = '20261124-sitz12';
 console.info(`Tiny Tycoon Towns ${BUILD}`);
 const LAST_BIOME_KEY = 'ttt.lastBiome';
 const LOCAL_KEY = (uid) => `ttt.save.v1.${uid}`;
@@ -88,7 +88,7 @@ const REMOTE_TIMEOUT_MS = 10_000;
 async function loadData() {
   const names = ['resources', 'biomes', 'buildings', 'economy', 'merchant'];
   const parts = await Promise.all(names.map((n) =>
-    fetch(`data/${n}.json?v=20261124-sitz11`).then((r) => {
+    fetch(`data/${n}.json?v=20261124-sitz12`).then((r) => {
       if (!r.ok) throw new Error(`data/${n}.json: HTTP ${r.status}`);
       return r.json();
     })));
@@ -133,7 +133,7 @@ async function boot() {
   window.addEventListener('offline', updateSync);
 
   try {
-    cloud = await import('./cloud.js?v=20261124-sitz11');
+    cloud = await import('./cloud.js?v=20261124-sitz12');
   } catch {
     showFatal('Das Konto-System konnte nicht geladen werden. Ohne Anmeldung lässt sich nicht spielen. Bitte Verbindung prüfen und neu laden.');
     return;
@@ -171,6 +171,9 @@ async function onUser(user) {
 
 async function enterAccount(user) {
   if (!user) {
+    if (adminUnwatch) adminUnwatch();
+    adminUnwatch = null;
+    adminChanged = false;
     uid = null;
     currentUser = null;
     state = null;
@@ -209,6 +212,7 @@ async function enterAccount(user) {
 
   remoteLoaded = true;
   const remote = res.remote;
+  watchAdminChanges(uid, remote?.adminEditedAt);
   const candidates = [remote, local].filter(Boolean).sort((a, b) => b.lastTick - a.lastTick);
   if (!candidates.length) {
     state = null;
@@ -232,6 +236,7 @@ async function retryRemote() {
   if (!res.ok || !uid || !state) return; // still unreachable, the next tick tries again
   remoteLoaded = true;
   const remote = res.remote;
+  watchAdminChanges(uid, remote?.adminEditedAt);
   if (remote && remote.lastTick > state.lastTick) {
     state = remote;
     cloudDirty = false;
@@ -296,7 +301,7 @@ function loadLocal(u) {
 }
 
 function saveLocal() {
-  if (!state || !uid || sessionLost) return;
+  if (!state || !uid || sessionLost || adminChanged) return;
   try {
     localStorage.setItem(LOCAL_KEY(uid), JSON.stringify(state));
   } catch {
@@ -305,7 +310,7 @@ function saveLocal() {
 }
 
 function cloudSave() {
-  if (!state || !uid || !cloudDirty || cloudPending || !remoteLoaded || sessionLost) return;
+  if (!state || !uid || !cloudDirty || cloudPending || !remoteLoaded || sessionLost || adminChanged) return;
   const sentUid = uid;
   const snapshot = JSON.parse(JSON.stringify(state));
   cloudDirty = false;
@@ -971,6 +976,34 @@ const SESSION_LOST_TEXT = 'Dieses Konto wurde in einem anderen Fenster oder auf 
 let activeUid = null;       // Konto, dessen Sitzung dieses Fenster hält
 let sessionLost = false;    // true, sobald ein anderes Fenster übernommen hat: nichts mehr speichern
 let sessionUnwatch = null;
+// Betreiber-Hinweis: Stadt wurde von außen geändert. Ab dann wird nichts mehr gespeichert, bis neu geladen wurde.
+let adminChanged = false;
+let adminKnownAt = 0;       // Zeitstempel der Betreiber-Änderung, den dieses Gerät kennt
+let adminUnwatch = null;
+
+function watchAdminChanges(forUid, remoteAt) {
+  if (adminUnwatch) adminUnwatch();
+  adminKnownAt = remoteAt ?? 0;
+  adminUnwatch = cloud.watchAdminEdit(forUid, (at) => {
+    if (at > adminKnownAt && !adminChanged) showAdminNotice();
+  });
+}
+
+function showAdminNotice() {
+  adminChanged = true;
+  // Die lokale Sicherung wäre sonst neuer und würde die Änderung beim Neuladen überschreiben.
+  try { localStorage.removeItem(LOCAL_KEY(uid)); } catch { /* ignorieren */ }
+  const dlg = openDialog(`<div class="dlg-body confirm">
+    <h2 id="dlg-title">Deine Stadt wurde geändert</h2>
+    <p>Der Betreiber hat deine Stadt angepasst. Damit nichts überschrieben wird, lade das Spiel neu.</p>
+    <div class="confirm-row">
+      <button type="button" class="primary" id="admin-reload">Neu laden</button>
+    </div>
+  </div>`);
+  dlg.dataset.persist = '1'; // Entscheidung erzwingen: nicht per Klick oder Escape schließen
+  dlg.addEventListener('cancel', (e) => e.preventDefault());
+  dlg.querySelector('#admin-reload').addEventListener('click', () => location.reload());
+}
 let heartbeatTimer = null;
 
 /** Belegt die Sitzung für das Konto. Liefert true, wenn dieses Fenster spielen darf. */

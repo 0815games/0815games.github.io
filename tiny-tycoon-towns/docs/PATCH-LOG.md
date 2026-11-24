@@ -363,3 +363,12 @@ Ereignis ergänzt.
 - Behebung: gemeinsame In-Game-Rückfrage `askConfirm` (Spiel und Betreiber-Seite). Gründung ohne Browser-Pflichtfeld,
   eigene Meldung. Karten-Tooltip durch `aria-label` ersetzt. Scrollbalken im Spiel-Stil.
 - Prüfungen: 59 Tests grün, `check` ohne Fehler, lint `no-undef` ohne Befund. Im Browser nicht geprüft (keine Browser-Umgebung in der Sandbox).
+
+### TTT-0017 – Fremde Städte sehen, Betreiber-Hinweis (Welle `20261124-sitz12`)
+
+- Regeln: `saves/$uid/town/{name,biome,townLevel,tiles}` sind für jeden angemeldeten Spieler lesbar. Münzen, Lager,
+  Verwaltung und der Stadt-Knoten bleiben privat. Neues Feld `adminEditedAt` (Zeitstempel der Betreiber-Änderung).
+- Prüfung: `scripts/rules-publish-dry-run.mjs` lässt `.read` unterhalb der Stadt nur für die Ansichtsfelder zu (`PUBLIC_VIEW`).
+- Spiel: Ändert der Betreiber eine Stadt, zeigt das Spiel „Neu laden“. Speichern stoppt, die lokale Sicherung wird verworfen.
+- Reihenfolge beim Ausrollen: erst die Regeln veröffentlichen, dann den Code. Sonst lehnt die alte Regel den Zeitstempel ab.
+- Prüfungen: 60 Tests grün. Im Browser nicht geprüft (Firebase ist in der Sandbox nicht erreichbar).

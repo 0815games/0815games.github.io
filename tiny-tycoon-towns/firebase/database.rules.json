@@ -14,15 +14,18 @@
             ".validate": "newData.isString() && newData.val().length <= 64"
           },
           "name": {
+            ".read": "auth != null",
             ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 24"
           },
           "biome": {
+            ".read": "auth != null",
             ".validate": "newData.val() == 'riverlands' || newData.val() == 'deepwoods' || newData.val() == 'highlands' || newData.val() == 'coast'"
           },
           "seed": {
             ".validate": "newData.isNumber()"
           },
           "townLevel": {
+            ".read": "auth != null",
             ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 12"
           },
           "townXp": {
@@ -54,6 +57,7 @@
             }
           },
           "tiles": {
+            ".read": "auth != null",
             "$tile": {
               ".validate": "newData.hasChildren(['terrain']) && (newData.child('terrain').val() == 'meadow' || newData.child('terrain').val() == 'forest' || newData.child('terrain').val() == 'rock' || newData.child('terrain').val() == 'water' || newData.child('terrain').val() == 'sand')"
             }
@@ -70,6 +74,9 @@
             "$other": {
               ".validate": false
             }
+          },
+          "adminEditedAt": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
           },
           "$other": {
             ".validate": false
