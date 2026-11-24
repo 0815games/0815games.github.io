@@ -311,3 +311,11 @@ Ereignis ergänzt.
 - Änderungen: `icons/logo.png` (transparent, freigestellte Stadt mit Name darüber), `icons/town.png` (nur die Stadt,
   für die kleine Anmeldekarte). Quelldateien nicht im Repo.
 - Prüfungen: 58 Tests grün, `check` ohne Fehler, lint `no-undef` ohne Befund.
+
+### TTT-0011 – Oberfläche: Werte auf der Karte, Menü (Welle `20261124-sitz5`)
+
+- Auftrag: Die Knöpfe oben stören. Ressourcen sollen als Anzeige auf der Karte stehen.
+- Änderungen: Münzen, Stadtlevel und Stadtname schweben als Pillen auf dem Spielfeld. Hilfe, Feldnotizen,
+  Neu beginnen und Abmelden liegen im Menü oben rechts (`#menu-btn`, `#menu-list`). Die Hilfe-Markierung im Tutorial
+  zeigt jetzt auf das Menü.
+- Prüfungen: 58 Tests grün, `check` ohne Fehler, lint `no-undef` ohne Befund. Im Browser noch nicht geprüft.

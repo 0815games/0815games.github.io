@@ -4,6 +4,16 @@
 
 export const RELEASED_PATCHES = [
   {
+    build: '20261124-sitz5',
+    date: '2026-11-24',
+    items: [
+      {
+        de: 'Neue Oberfläche: Münzen, Stadtlevel und Name schweben auf der Karte. Hilfe, Feldnotizen, Neu beginnen und Abmelden sind im Menü oben rechts.',
+        en: 'New layout: coins, town level and name float on the map. Help, field notes, restart and sign-out are in the menu at the top right.',
+      },
+    ],
+  },
+  {
     build: '20261124-sitz4',
     date: '2026-11-24',
     items: [

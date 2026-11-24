@@ -40,8 +40,8 @@ export const TUTORIAL_STEPS = Object.freeze([
   },
   {
     title: 'Hilfe und Konto',
-    text: 'Alles Wichtige findest du jederzeit unter Hilfe. Dein Stand wird lokal und in der Cloud gespeichert.',
-    target: '#help-btn',
+    text: 'Alles Wichtige findest du jederzeit im Menü unter Hilfe. Dein Stand wird lokal und in der Cloud gespeichert.',
+    target: '#menu-btn',
   },
 ]);
 

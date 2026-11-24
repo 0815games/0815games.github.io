@@ -3,21 +3,21 @@
 import {
   createTown, newSeed, chooseBiome, placeBuilding, upgradeBuilding,
   toggleSell, buyOffer, advance, hydrateTown, setTutorialStep,
-} from './domain/engine.js?v=20261124-sitz4';
+} from './domain/engine.js?v=20261124-sitz5';
 import {
   productionMultiplier, ratePerMin, buildCost, storageCap, classOf,
-} from './domain/economy.js?v=20261124-sitz4';
-import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261124-sitz4';
-import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261124-sitz4';
-import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261124-sitz4';
+} from './domain/economy.js?v=20261124-sitz5';
+import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261124-sitz5';
+import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261124-sitz5';
+import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261124-sitz5';
 const SEEN_NOTES_KEY = 'ttt:notes-seen';
-import { withTimeout } from './async-util.js?v=20261124-sitz4';
-import { createBoard } from './world/board.js?v=20261124-sitz4';
-import { createLoginScene } from './world/login-scene.js?v=20261124-sitz4';
-import { TUTORIAL_STEPS, HELP_SECTIONS } from './tutorial.js?v=20261124-sitz4';
-import { createVersionUI } from './version-ui.mjs?v=20261124-sitz4';
+import { withTimeout } from './async-util.js?v=20261124-sitz5';
+import { createBoard } from './world/board.js?v=20261124-sitz5';
+import { createLoginScene } from './world/login-scene.js?v=20261124-sitz5';
+import { TUTORIAL_STEPS, HELP_SECTIONS } from './tutorial.js?v=20261124-sitz5';
+import { createVersionUI } from './version-ui.mjs?v=20261124-sitz5';
 
-const BUILD = '20261124-sitz4';
+const BUILD = '20261124-sitz5';
 console.info(`Tiny Tycoon Towns ${BUILD}`);
 const LAST_BIOME_KEY = 'ttt.lastBiome';
 const LOCAL_KEY = (uid) => `ttt.save.v1.${uid}`;
@@ -78,7 +78,7 @@ const REMOTE_TIMEOUT_MS = 10_000;
 async function loadData() {
   const names = ['resources', 'biomes', 'buildings', 'economy', 'merchant'];
   const parts = await Promise.all(names.map((n) =>
-    fetch(`data/${n}.json?v=20261124-sitz4`).then((r) => {
+    fetch(`data/${n}.json?v=20261124-sitz5`).then((r) => {
       if (!r.ok) throw new Error(`data/${n}.json: HTTP ${r.status}`);
       return r.json();
     })));
@@ -123,7 +123,7 @@ async function boot() {
   window.addEventListener('offline', updateSync);
 
   try {
-    cloud = await import('./cloud.js?v=20261124-sitz4');
+    cloud = await import('./cloud.js?v=20261124-sitz5');
   } catch {
     showFatal('Das Konto-System konnte nicht geladen werden. Ohne Anmeldung lässt sich nicht spielen. Bitte Verbindung prüfen und neu laden.');
     return;
@@ -483,6 +483,23 @@ function bindStatic() {
   $('#feld-btn').addEventListener('click', showFieldNotes);
   $('#logout-btn').addEventListener('click', askLogout);
   $('#help-btn').addEventListener('click', showHelp);
+  // Menü oben rechts: öffnet und schließt die Schaltflächen Hilfe, Feldnotizen, Neu beginnen, Abmelden.
+  const menuBtn = $('#menu-btn');
+  const menuList = $('#menu-list');
+  const setMenu = (open) => {
+    menuList.hidden = !open;
+    menuBtn.setAttribute('aria-expanded', String(open));
+  };
+  menuBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    setMenu(menuList.hidden);
+  });
+  menuList.addEventListener('click', (e) => {
+    if (e.target.closest('button')) setMenu(false);
+  });
+  document.addEventListener('click', (e) => {
+    if (!menuList.hidden && !e.target.closest('.hud')) setMenu(false);
+  });
   $('#reset-btn').addEventListener('click', () => {
     if (!state || !uid) return;
     if (!confirm('Die aktuelle Stadt wird gelöscht, auch in der Cloud. Wirklich neu beginnen?')) return;

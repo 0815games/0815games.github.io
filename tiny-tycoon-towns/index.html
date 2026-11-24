@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#FFF6E5">
-  <meta name="ttt-build" content="20261124-sitz4">
+  <meta name="ttt-build" content="20261124-sitz5">
   <title>Tiny Tycoon Towns</title>
   <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -13,7 +13,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Tiny Towns">
-  <link rel="stylesheet" href="style.css?v=20261124-sitz4">
+  <link rel="stylesheet" href="style.css?v=20261124-sitz5">
 </head>
 <body>
   <a class="skip" href="#board">Zum Spielfeld springen</a>
@@ -44,26 +44,13 @@
       <p class="auth-intro-tag">Baue deine kleine Insel-Stadt</p>
     </div>
     <div class="auth-card" id="auth-card"></div>
-    <p class="auth-foot small">Tiny Tycoon Towns · BUILD 20261124-sitz4</p>
+    <p class="auth-foot small">Tiny Tycoon Towns · BUILD 20261124-sitz5</p>
   </section>
 
   <div id="loading" class="app-shell" hidden>
   <header class="hud">
-    <div class="town">
-      <h1 id="town-name">Tiny Tycoon Towns</h1>
-      <p id="town-meta" class="muted"></p>
-      <p id="sync" class="small muted" aria-live="polite"></p>
-    </div>
-    <div class="coins" aria-live="off">
-      <span aria-hidden="true">🪙</span>
-      <span class="label">Münzen</span>
-      <strong id="coins">0</strong>
-    </div>
-    <div class="xp">
-      <span id="level-label">Stadtlevel 1</span>
-      <progress id="xp-bar" max="100" value="0" aria-label="Fortschritt zum nächsten Stadtlevel"></progress>
-    </div>
-    <div class="hud-actions">
+    <button type="button" id="menu-btn" class="menu-btn" aria-expanded="false" aria-controls="menu-list">Menü</button>
+    <div id="menu-list" class="menu-list" hidden>
       <button type="button" id="help-btn" class="ghost">Hilfe</button>
       <button type="button" id="feld-btn" class="ghost">Feldnotizen</button>
       <button type="button" id="reset-btn" class="ghost">Neu beginnen</button>
@@ -73,6 +60,22 @@
 
   <main class="layout">
     <section class="board-wrap" aria-label="Spielfeld">
+      <div class="map-hud" aria-label="Stadtwerte">
+    <div class="town map-pill">
+      <h1 id="town-name">Tiny Tycoon Towns</h1>
+      <p id="town-meta" class="muted"></p>
+      <p id="sync" class="small muted" aria-live="polite"></p>
+    </div>
+    <div class="coins map-pill" aria-live="off">
+      <span aria-hidden="true">🪙</span>
+      <span class="label">Münzen</span>
+      <strong id="coins">0</strong>
+    </div>
+    <div class="xp map-pill">
+      <span id="level-label">Stadtlevel 1</span>
+      <progress id="xp-bar" max="100" value="0" aria-label="Fortschritt zum nächsten Stadtlevel"></progress>
+    </div>
+      </div>
       <div id="board" class="board" tabindex="0" aria-describedby="board-hint"></div>
       <p id="board-hint" class="muted small">Pfeiltasten bewegen die Auswahl, Enter wählt ein Feld.</p>
 
@@ -91,12 +94,12 @@
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <p class="build-stamp" aria-hidden="true">BUILD 20261124-sitz4</p>
+  <p class="build-stamp" aria-hidden="true">BUILD 20261124-sitz5</p>
 
   <div id="tutorial" class="tutorial" hidden></div>
 
   <dialog id="dlg" aria-labelledby="dlg-title"></dialog>
 
-  <script type="module" src="src/main.js?v=20261124-sitz4"></script>
+  <script type="module" src="src/main.js?v=20261124-sitz5"></script>
 </body>
 </html>
