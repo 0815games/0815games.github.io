@@ -103,7 +103,7 @@ export const HELP_SECTIONS = Object.freeze([
     paragraphs: [
       'Der Stand wird lokal alle paar Sekunden gesichert und etwa jede Minute in der Cloud.',
       'Beim Abmelden wirst du gefragt, und dein Stand wird vorher gesichert.',
-      'Dasselbe Konto kann in einem Browser nur in einem Fenster gleichzeitig geöffnet sein.',
+      'Dasselbe Konto ist auf allen Geräten nur einmal gleichzeitig offen. Ein zweites Fenster kann die Sitzung übernehmen.',
     ],
   },
 ]);

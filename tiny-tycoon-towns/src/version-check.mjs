@@ -1,6 +1,6 @@
 // Client-side update coordination for the ordinary GitHub Pages build.
 // This is a convenience check, not a security boundary or proof of executed code.
-import {readBoundedJson} from './bounded-json.mjs?v=20261124-welt1';
+import {readBoundedJson} from './bounded-json.mjs?v=20261124-sitz1';
 
 export const BUILD_ID_PATTERN=/^[a-z0-9][a-z0-9-]{0,63}$/;
 

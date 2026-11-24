@@ -21,6 +21,10 @@ Datei: [`../firebase/database.rules.json`](../firebase/database.rules.json)
 
 Zugriffsmodell:
 - `saves/{uid}/town`: nur der angemeldete Nutzer mit dieser UID darf lesen und schreiben.
+- `sessions/{uid}`: eine Anmeldung pro Konto über alle Geräte. Nur der Inhaber darf lesen und
+  schreiben. Felder: `id` (Kennung des Fensters) und `at` (letzter Herzschlag, Millisekunden).
+  Ein Fenster übernimmt die Sitzung, indem es sie per Transaktion belegt. Ohne Herzschlag
+  nach 120 Sekunden gilt sie als verwaist.
 - Schema-Prüfung bei jedem Schreiben: Pflichtfelder, Wertebereiche, Biome, Terrain.
 - Schema-Downgrade wird abgewiesen (`schemaVersion` darf nicht sinken).
 - Unbekannte Felder im Stadtdokument werden abgewiesen.
@@ -34,6 +38,11 @@ Zugriffsmodell:
   steht als offener Punkt in `src/patch-notes.mjs`.
 
 ## Veröffentlichen (Ablauf)
+
+**Wichtig:** Die Version mit Sitzungssperre braucht den Pfad `sessions/{uid}`. Ohne
+veröffentlichte Regeln schlägt die Anmeldung mit einer Berechtigungsfehlermeldung fehl.
+Deshalb: erst die Regeln veröffentlichen, dann die Welle `20261124-sitz1` ausliefern.
+
 
 Die Regeln sind im Repo, aber **noch nicht in Firebase veröffentlicht**. Das macht
 der Betreiber, nicht der Agent.

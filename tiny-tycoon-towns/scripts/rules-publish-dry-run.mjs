@@ -105,7 +105,7 @@ export function checkRules(raw){
   if(rules['.read']!==undefined||rules['.write']!==undefined)
     errors.push('Wurzel: .read oder .write gesetzt. Die Wurzel muss geschlossen bleiben.');
   for(const key of Object.keys(rules))
-    if(!key.startsWith('.')&&key!=='saves')errors.push(`Unbekannter Zweig "${key}"`);
+    if(!key.startsWith('.')&&key!=='saves'&&key!=='sessions')errors.push(`Unbekannter Zweig "${key}"`);
   walk(rules,'',(path,node)=>{
     for(const mode of ['.read','.write'])
       if(node[mode]===true||node[mode]==='true')errors.push(`${path||'/'}: ${mode} ist offen (true)`);
@@ -122,6 +122,14 @@ export function checkRules(raw){
       if(town.$other?.['.validate']!==false)errors.push('town: $other muss .validate false haben (unbekannte Felder abweisen)');
       if(!String(town['.validate']??'').includes('schemaVersion'))errors.push('town: Schema-Downgrade wird nicht geprüft');
     }
+  }
+  // Sitzung je Konto (eine Anmeldung pro Konto, über alle Geräte): nur der Inhaber, nur bekannte Felder.
+  const session=rules.sessions?.$uid;
+  if(rules.sessions&&!session)errors.push('sessions/$uid fehlt');
+  if(session){
+    if(!String(session['.read']??'').includes('auth.uid === $uid'))errors.push('sessions/$uid: .read ohne Eigentümerprüfung');
+    if(!String(session['.write']??'').includes('auth.uid === $uid'))errors.push('sessions/$uid: .write ohne Eigentümerprüfung');
+    if(session.$other?.['.validate']!==false)errors.push('sessions/$uid: $other muss .validate false haben');
   }
   return {errors};
 }

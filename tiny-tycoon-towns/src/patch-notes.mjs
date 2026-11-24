@@ -4,6 +4,24 @@
 
 export const RELEASED_PATCHES = [
   {
+    build: '20261124-sitz1',
+    date: '2026-11-24',
+    items: [
+      {
+        de: 'Ein Konto ist jetzt auf allen Geräten nur einmal gleichzeitig offen. Ein zweites Fenster oder Gerät zeigt einen Hinweis und kann die Sitzung hier übernehmen.',
+        en: 'An account is now open only once at a time across all devices. A second window or device shows a notice and can take over the session.',
+      },
+      {
+        de: 'Übernommene Sitzung: Das bisherige Fenster speichert nichts mehr und zeigt, dass das Konto woanders übernommen wurde.',
+        en: 'Taken-over session: the previous window stops saving and shows that the account was taken over elsewhere.',
+      },
+      {
+        de: 'Stand: im Code und mit dem Regel-Trockenlauf geprüft. Die Regeln müssen vom Betreiber in Firebase veröffentlicht werden, bevor die Sperre greift.',
+        en: 'Status: checked in code and with the rules dry run. The operator must publish the rules in Firebase before the lock takes effect.',
+      },
+    ],
+  },
+  {
     build: '20261124-welt1',
     date: '2026-11-24',
     items: [
