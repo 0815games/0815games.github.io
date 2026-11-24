@@ -366,6 +366,29 @@ function buildGridMap(id,{crossField=false}={}){
       deco.push({kind:kinds[Math.floor(random()*kinds.length)],x:p.x,y:p.y,rot:random()<.5?0:1,shade:random()});
       ruins++;
     }
+    // Totes Leben (reported: "Maps voller wirken lassen, aber nicht aktiv
+    // voll"): barrels, carts, crates, rocks, stumps, log piles, fences and
+    // signposts. Pure set dressing - they sit closer to the road than the
+    // buildings do, but stay clear of pads, roads, bunker and entry.
+    const clutter=['barrels','cart','crates','rocks','stump','logpile','fence','signpost'];
+    const clutterTarget=Math.min(Math.round(spec.width*spec.height/30000),64);
+    const cspots=[];
+    for(let c=0;c<cols;c++)for(let r=1;r<rows-1;r++)cspots.push(centre(c,r));
+    for(let i=cspots.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[cspots[i],cspots[j]]=[cspots[j],cspots[i]];}
+    let clutterPlaced=0;
+    for(const p of cspots){
+      if(clutterPlaced>=clutterTarget)break;
+      const q={x:p.x+(random()-.5)*34,y:p.y+(random()-.5)*34};
+      if(q.x<26||q.x>spec.width-26||q.y<26||q.y>spec.height-26)continue;
+      // Same field rules as the buildings: clear of the tar (40) and of the
+      // pad plates (58) - the maps test enforces both for every deco entry.
+      if(roadDistance(q,paths)<40)continue;
+      if(Math.hypot(q.x-bunker.x,q.y-bunker.y)<95||Math.hypot(q.x-entry.x,q.y-entry.y)<85)continue;
+      if(pads.some(pad=>Math.hypot(q.x-pad.x,q.y-pad.y)<58))continue;
+      if(deco.some(d=>Math.hypot(q.x-d.x,q.y-d.y)<42))continue;
+      deco.push({kind:clutter[Math.floor(random()*clutter.length)],x:q.x,y:q.y,rot:random()<.5?0:1,shade:random()});
+      clutterPlaced++;
+    }
     return deco;
   }
   for(let attempt=0;attempt<80;attempt++){
