@@ -18,7 +18,7 @@ export const PERKS = [
 export const TOTAL_PERK_POINTS = PERKS.reduce((sum, p) => sum + p.max, 0);
 
 export function emptyCharter() {
-  return { earned: 0, spent: 0, perks: {} };
+  return { earned: 0, spent: 0, perks: {}, founded: {} };
 }
 
 /** Freibriefe, die gerade gebraucht werden können (gewonnen minus ausgegeben). */
@@ -35,8 +35,14 @@ export function charterGain(lifetimeCoinsThisTown) {
   return Math.floor(Math.sqrt(Math.max(0, lifetimeCoinsThisTown) / CHARTER_UNIT));
 }
 
-/** Darf eine Stadt jetzt einen Freibrief gründen? Liefert { ok, reason?, gain? }. */
-export function canFoundCharter(town) {
+/**
+ * Darf diese Stadt jetzt einen Freibrief gründen? Liefert { ok, reason?, gain? }.
+ * Jede Stadt bringt nur einmal einen Freibrief, auch wenn der Speicher erneut lädt.
+ */
+export function canFoundCharter(town, charter) {
+  if (charter.founded?.[town.id]) {
+    return { ok: false, reason: 'Diese Stadt hat schon einen Freibrief gebracht.' };
+  }
   if (town.townLevel < CHARTER_MIN_LEVEL) {
     return { ok: false, reason: `Stadtlevel ${CHARTER_MIN_LEVEL} nötig.` };
   }
@@ -46,9 +52,13 @@ export function canFoundCharter(town) {
   return { ok: true, gain: charterGain(town.lifetimeCoins) };
 }
 
-/** Schreibt den Gewinn einer Gründung gut. Gibt einen neuen Stand zurück. */
-export function grantCharters(charter, lifetimeCoinsThisTown) {
-  return { ...charter, earned: charter.earned + charterGain(lifetimeCoinsThisTown) };
+/** Schreibt den Gewinn einer Gründung gut und merkt sich die Stadt. Gibt einen neuen Stand zurück. */
+export function grantCharters(charter, town) {
+  return {
+    ...charter,
+    earned: charter.earned + charterGain(town.lifetimeCoins),
+    founded: { ...(charter.founded ?? {}), [town.id]: true },
+  };
 }
 
 /** Kauft eine Perk-Stufe. Liefert { ok, reason?, charter? }. */

@@ -168,6 +168,32 @@
         ".write": "auth != null && ((!data.exists() && newData.val() == auth.uid) || (data.exists() && data.val() == auth.uid) || root.child('admins').child(auth.uid).val() === true)",
         ".validate": "newData.isString() && (newData.val() == auth.uid || root.child('admins').child(auth.uid).val() === true) && $name.matches(/^[^.#$\\[\\]\\/]{1,24}$/)"
       }
+    },
+    "charters": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid",
+        ".validate": "newData.hasChildren(['earned','spent']) && newData.child('spent').val() <= newData.child('earned').val()",
+        "earned": {
+          ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000"
+        },
+        "spent": {
+          ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000"
+        },
+        "perks": {
+          "$perk": {
+            ".validate": "$perk.matches(/^(yield|storage|market|startCoins|memory|express)$/) && newData.isNumber() && newData.val() >= 0 && newData.val() <= 5"
+          }
+        },
+        "founded": {
+          "$townId": {
+            ".validate": "$townId.length <= 64 && newData.val() == true"
+          }
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
     }
   }
 }

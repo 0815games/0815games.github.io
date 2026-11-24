@@ -20,21 +20,28 @@ test('charter gain is floor(sqrt(lifetime / 100000)) per the plan', () => {
 });
 
 test('founding needs town level 8 and 100,000 lifetime coins in that town', () => {
-  assert.equal(canFoundCharter({ townLevel: 7, lifetimeCoins: 500000 }).ok, false);
-  assert.equal(canFoundCharter({ townLevel: 8, lifetimeCoins: 99999 }).ok, false);
-  const ok = canFoundCharter({ townLevel: 8, lifetimeCoins: 100000 });
+  const c = emptyCharter();
+  assert.equal(canFoundCharter({ id: 'a', townLevel: 7, lifetimeCoins: 500000 }, c).ok, false);
+  assert.equal(canFoundCharter({ id: 'a', townLevel: 8, lifetimeCoins: 99999 }, c).ok, false);
+  const ok = canFoundCharter({ id: 'a', townLevel: 8, lifetimeCoins: 100000 }, c);
   assert.equal(ok.ok, true);
   assert.equal(ok.gain, 1);
 });
 
-test('granting adds the gain once per founding, never more', () => {
-  const c = grantCharters(emptyCharter(), 400000);
+test('granting adds the gain and marks the town, so the same town cannot found twice', () => {
+  const town = { id: 'town-a', townLevel: 8, lifetimeCoins: 400000 };
+  const c = grantCharters(emptyCharter(), town);
   assert.equal(c.earned, 2);
   assert.equal(availableCharters(c), 2);
+  const again = canFoundCharter(town, c);
+  assert.equal(again.ok, false);
+  assert.ok(again.reason.includes('schon einen Freibrief'));
+  // Eine andere Stadt ist davon nicht betroffen.
+  assert.equal(canFoundCharter({ ...town, id: 'town-b' }, c).ok, true);
 });
 
 test('a perk costs one charter and stops at its maximum', () => {
-  let c = grantCharters(emptyCharter(), 900000); // 3 Freibriefe
+  let c = grantCharters(emptyCharter(), { id: 't1', lifetimeCoins: 900000 }); // 3 Freibriefe
   for (let i = 0; i < 3; i++) {
     const r = buyPerk(c, 'memory');
     assert.equal(r.ok, true);
@@ -47,7 +54,7 @@ test('a perk costs one charter and stops at its maximum', () => {
 });
 
 test('perk effects scale with the level', () => {
-  let c = grantCharters(emptyCharter(), 1600000); // 4 Freibriefe
+  let c = grantCharters(emptyCharter(), { id: 't2', lifetimeCoins: 1600000 }); // 4 Freibriefe
   c = buyPerk(c, 'yield').charter;
   c = buyPerk(c, 'yield').charter;
   assert.equal(perkEffect(c, 'yield'), 0.1);

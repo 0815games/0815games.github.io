@@ -10,6 +10,9 @@ import {
 import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261124-sitz18';
 import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261124-sitz18';
 import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261124-sitz18';
+import {
+  PERKS, canFoundCharter, grantCharters, buyPerk, perkEffect, perkLevel, availableCharters, emptyCharter,
+} from './domain/charters.js?v=20261124-sitz18';
 const SEEN_NOTES_KEY = 'ttt:notes-seen';
 import { withTimeout } from './async-util.js?v=20261124-sitz18';
 import { checkTownName } from './town-names.js?v=20261124-sitz18';
@@ -173,6 +176,8 @@ async function onUser(user) {
 
 async function enterAccount(user) {
   if (!user) {
+    charter = null;
+    charterLoaded = false;
     if (adminUnwatch) adminUnwatch();
     adminUnwatch = null;
     adminChanged = false;
@@ -215,6 +220,7 @@ async function enterAccount(user) {
   remoteLoaded = true;
   const remote = res.remote;
   watchAdminChanges(uid, remote?.adminEditedAt);
+  loadCharterFor(uid);
   const candidates = [remote, local].filter(Boolean).sort((a, b) => b.lastTick - a.lastTick);
   if (!candidates.length) {
     state = null;
@@ -576,6 +582,7 @@ function bindStatic() {
   $('#logout-btn').addEventListener('click', askLogout);
   $('#help-btn').addEventListener('click', showHelp);
   $('#friends-btn').addEventListener('click', openFriends);
+  $('#charter-btn').addEventListener('click', openCharters);
   $('#visit-exit').addEventListener('click', endVisit);
   window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && visit) endVisit(); });
   // Menü oben rechts: öffnet und schließt die Schaltflächen Hilfe, Feldnotizen, Neu beginnen, Abmelden.
@@ -1336,6 +1343,122 @@ function claimExistingName(forUid, town) {
 }
 
 /** Freunde-Fenster: eigene Stadt, Code, Einladung, Anfragen, klappbare Liste. */
+// ---------- Freibriefe (Prestige), Regeln in src/domain/charters.js ----------
+// Der Stand liegt unter charters/{uid} und bleibt beim Neubeginn erhalten.
+// Solange er nicht geladen ist, wird nichts geschrieben, damit ein leerer Stand nicht den echten überschreibt.
+let charter = null;
+let charterLoaded = false;
+// Nur diese Perks wirken schon. Die übrigen zeigt das Fenster mit „Wirkung folgt“.
+const WIRED_PERKS = new Set(['startCoins']);
+
+async function loadCharterFor(forUid) {
+  charter = null;
+  charterLoaded = false;
+  try {
+    const raw = await cloud.loadCharter(forUid);
+    const base = emptyCharter();
+    charter = raw ? { ...base, ...raw, perks: raw.perks ?? {}, founded: raw.founded ?? {} } : base;
+    charterLoaded = true;
+  } catch (err) {
+    console.error('Freibriefe nicht geladen:', err);
+  }
+}
+
+function openCharters() {
+  if (!state || !uid) {
+    toast('Melde dich an und lade deine Stadt, dann öffnen sich die Freibriefe.', 'error');
+    return;
+  }
+  const dlg = openDialog('');
+  const paint = () => {
+    dlg.innerHTML = charterHtml();
+    dlg.querySelector('#found-charter')?.addEventListener('click', foundCharter);
+    dlg.querySelectorAll('button[data-perk]').forEach((b) => {
+      b.addEventListener('click', () => buyPerkUi(b.dataset.perk, paint));
+    });
+  };
+  paint();
+}
+
+function charterHtml() {
+  const c = charter ?? emptyCharter();
+  const f = state && charterLoaded ? canFoundCharter(state, c) : { ok: false, reason: 'Keine Stadt geladen.' };
+  const avail = availableCharters(c);
+  const status = !charterLoaded
+    ? 'Freibriefe konnten nicht geladen werden. Prüfe deine Verbindung.'
+    : f.ok ? `Du kannst jetzt einen Freibrief gründen: +${f.gain}.` : f.reason;
+  const rows = PERKS.map((p) => {
+    const lvl = perkLevel(c, p.id);
+    const canBuy = charterLoaded && lvl < p.max && avail >= 1;
+    const note = WIRED_PERKS.has(p.id) ? '' : ' · Wirkung folgt';
+    return `<li class="friend-card">
+      <div><strong>${esc(p.label)}</strong> <span class="small">Stufe ${lvl}/${p.max}</span>
+        <div class="small">${esc(p.effect)}${note}</div></div>
+      <button type="button" class="${canBuy ? 'primary' : 'ghost'}" data-perk="${p.id}" ${canBuy ? '' : 'disabled'}>+1</button>
+    </li>`;
+  }).join('');
+  return `<div class="dlg-body charters">
+    <h2 id="dlg-title">Freibriefe</h2>
+    <p>Verfügbar: <strong>${avail}</strong> · Insgesamt gewonnen: ${c.earned}</p>
+    <section class="friends-me charter-box">
+      <p>${esc(status)}</p>
+      <button type="button" class="primary" id="found-charter" ${charterLoaded && f.ok ? '' : 'disabled'}>Freibrief gründen</button>
+      <p class="small">Die Stadt startet neu: Münzen, Gebäude, Lager, Level und Biom. Name und Freunde bleiben. Freibriefe und Perks bleiben erhalten.</p>
+    </section>
+    <h3>Perk-Baum</h3>
+    <ul class="friend-list">${rows}</ul>
+  </div>`;
+}
+
+async function foundCharter() {
+  if (!state || !uid || !charterLoaded || !charter) return;
+  const check = canFoundCharter(state, charter);
+  if (!check.ok) return toast(check.reason, 'error');
+  const n = check.gain;
+  const yes = await askConfirm(
+    'Freibrief gründen?',
+    `Deine Stadt startet neu. Du bekommst ${n} Freibrief${n === 1 ? '' : 'e'}. Name und Freunde bleiben, Freibriefe und Perks bleiben.`,
+    { ok: 'Ja, gründen' },
+  );
+  if (!yes || !state || !uid || !charterLoaded) return;
+  // Zuerst den Gewinn sichern, dann erst die Stadt neu starten.
+  const next = grantCharters(charter, state);
+  try {
+    await cloud.saveCharter(uid, next);
+  } catch (err) {
+    toast(cloud.dbErrorDe(err), 'error');
+    return;
+  }
+  charter = next;
+  const biome = chooseBiome(Math.random, state.biome);
+  const fresh = createTown({ name: state.name, biome, seed: newSeed(), now: Date.now(), data });
+  fresh.coins += perkEffect(charter, 'startCoins');
+  state = fresh;
+  selected = { x: 4, y: 4 };
+  cloudDirty = true;
+  lastCloudAt = 0;
+  saveLocal();
+  renderAll();
+  cloudSave();
+  closeDialog();
+  toast(`Neuer Start! +${n} Freibrief${n === 1 ? '' : 'e'} gutgeschrieben.`);
+}
+
+async function buyPerkUi(id, repaint) {
+  if (!uid || !charterLoaded || !charter) return;
+  const r = buyPerk(charter, id);
+  if (!r.ok) return toast(r.reason, 'error');
+  try {
+    await cloud.saveCharter(uid, r.charter);
+  } catch (err) {
+    toast(cloud.dbErrorDe(err), 'error');
+    return;
+  }
+  charter = r.charter;
+  repaint();
+  toast('Perk gekauft.');
+}
+
 function openFriends() {
   if (!state || !uid) {
     toast('Melde dich an und lade deine Stadt, dann öffnen sich die Freunde.', 'error');

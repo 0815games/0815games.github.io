@@ -76,3 +76,12 @@ test('friend requests can only be created by the sender (bissfest)', () => {
   assert.ok(rule.includes('auth.uid === $from ||'));
   assert.ok(rule.includes('auth.uid === $to && !newData.exists()'));
 });
+
+test('charters are owner-only and never exceed what was earned (bissfest)', () => {
+  const bad = structuredClone(candidate);
+  bad.rules.charters.$uid['.read'] = 'true';
+  assert.ok(checkRules(bad).errors.some((e) => e.includes('charters/$uid: .read ohne Eigentümerprüfung')));
+  const ok = checkRules(candidate).errors.filter((e) => e.includes('charters'));
+  assert.equal(ok.length, 0);
+  assert.ok(String(candidate.rules.charters.$uid['.validate']).includes("spent"));
+});
