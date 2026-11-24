@@ -165,3 +165,92 @@ dialog input {
 [hidden] { display: none !important; }
 
 .build-stamp { position: fixed; right: 8px; bottom: 4px; margin: 0; font-size: 11px; opacity: .6; pointer-events: none; }
+
+/* ---------- Anmeldung: Vollbild mit animierter Insel ---------- */
+.auth-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: #0b1830;
+}
+.auth-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.auth-shade {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 42%, rgba(11, 24, 48, 0) 0%, rgba(11, 24, 48, 0.55) 70%),
+    linear-gradient(180deg, rgba(11, 24, 48, 0.1), rgba(11, 24, 48, 0.45));
+}
+.auth-card {
+  position: relative;
+  width: min(92vw, 380px);
+  padding: 22px 22px 18px;
+  border-radius: 18px;
+  border: 3px solid var(--ink);
+  background: rgba(255, 246, 229, 0.94);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+  animation: card-in 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.auth-form { display: grid; gap: 10px; }
+.auth-form h2 { font-size: 24px; }
+.auth-form label { display: grid; gap: 4px; font-size: 14px; font-weight: 600; }
+.auth-form input {
+  font: inherit;
+  padding: 10px 12px;
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  background: #fff;
+}
+.auth-form input:focus-visible { outline: 3px solid var(--focus); outline-offset: 1px; }
+.auth-form button.primary { min-height: 46px; font-size: 16px; }
+.auth-form button.ghost { min-height: 40px; }
+.auth-foot { position: absolute; bottom: 10px; left: 0; right: 0; text-align: center; color: #dfe9f7; opacity: 0.8; margin: 0; }
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(16px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+.app-shell[inert] { pointer-events: none; }
+
+/* ---------- Versionsprüfung (wie IronPath) ---------- */
+.release-check {
+  position: fixed;
+  inset: 0;
+  z-index: 800;
+  display: grid;
+  place-items: center;
+  background: var(--paper);
+  padding: 20px;
+}
+.release-check-card {
+  width: min(92vw, 420px);
+  padding: 20px;
+  border: 3px solid var(--ink);
+  border-radius: 16px;
+  background: #fff;
+  text-align: center;
+}
+.version-notice {
+  position: fixed;
+  left: 50%;
+  top: 12px;
+  transform: translateX(-50%);
+  z-index: 700;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: min(94vw, 620px);
+  padding: 10px 14px;
+  border: 3px solid var(--ink);
+  border-radius: 14px;
+  background: #FFF1C9;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  font-weight: 600;
+}
+.version-notice button { min-height: 34px; font-size: 13px; }
+#resultsVersionStatus { margin: 0 0 8px; }

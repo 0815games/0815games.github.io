@@ -12,6 +12,8 @@ import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261124-ko
 import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261124-konto2';
 import { withTimeout } from './async-util.js?v=20261124-konto2';
 import { createBoard } from './world/board.js?v=20261124-konto2';
+import { createLoginScene } from './world/login-scene.js?v=20261124-konto2';
+import { createVersionUI } from './version-ui.mjs?v=20261124-konto2';
 
 const BUILD = '20261124-konto2';
 console.info(`Tiny Tycoon Towns ${BUILD}`);
@@ -64,6 +66,8 @@ let currentUser = null;    // Firebase user object while signed in
 let remoteLoaded = false;  // true once the cloud copy was read successfully; no writes before that
 let remoteRetryPending = false;
 let board = null;          // Weltansicht (canvas), see ./world/board.js
+let loginScene = null;     // animated backdrop of the sign-in screen
+let versionGate = null;    // update gate, ported from IronPath (see ./version-ui.mjs)
 let connected = true;      // Realtime Database connection, from .info/connected
 const REMOTE_TIMEOUT_MS = 10_000;
 
@@ -88,6 +92,20 @@ function ctx() {
 }
 
 async function boot() {
+  // Same rule as IronPath: this build must be confirmed current before the game starts.
+  // While the check runs, or after it failed, the release overlay holds the screen.
+  try {
+    versionGate = createVersionUI({
+      document,
+      window,
+      safety: versionSafety,
+      beforeReload: () => { if (state) saveLocal(); },
+    });
+  } catch (e) {
+    showFatal(`Versionsprüfung nicht möglich (${e.message}). Bitte Seite neu laden.`);
+    return;
+  }
+  await versionGate.start();
   try {
     data = await loadData();
   } catch (e) {
@@ -146,9 +164,10 @@ async function enterAccount(user) {
     state = null;
     remoteLoaded = false;
     renderSignedOut();
-    showAuth('login');
+    showLoginScreen('login');
     return;
   }
+  hideLoginScreen();
   closeDialog();
   if (uid === user.uid && state) return; // token refresh, nothing to load
   currentUser = user;
@@ -313,22 +332,25 @@ function updateSync() {
   el.textContent = text;
 }
 
-function showAuth(mode, msg = '') {
+/** Sign-in screen: the first thing a visitor sees. The game only appears after sign-in. */
+function showLoginScreen(mode, msg = '') {
+  const screen = $('#authScreen');
   const isLogin = mode === 'login';
-  const dlg = openDialog(`<form id="auth-form" class="dlg-body" novalidate>
-    <h2 id="dlg-title">${isLogin ? 'Anmelden' : 'Konto erstellen'}</h2>
+  $('#loading').inert = true;
+  screen.hidden = false;
+  $('#auth-card').innerHTML = `<form id="auth-form" class="auth-form" novalidate>
+    <h2 id="auth-title">${isLogin ? 'Anmelden' : 'Konto erstellen'}</h2>
     <p class="small">Deine Stadt wird in der Cloud gespeichert. Mit demselben Konto spielst du auf jedem Gerät weiter.</p>
-    <label>E-Mail<br><input name="email" type="email" autocomplete="email" required></label>
-    <label>Passwort (mindestens 6 Zeichen)<br>
+    <label>E-Mail<input name="email" type="email" autocomplete="email" required></label>
+    <label>Passwort (mindestens 6 Zeichen)
       <input name="password" type="password" minlength="6" required
         autocomplete="${isLogin ? 'current-password' : 'new-password'}"></label>
     <p id="auth-msg" class="warn small" role="alert">${esc(msg)}</p>
     <button type="submit" class="primary">${isLogin ? 'Anmelden' : 'Konto erstellen'}</button>
-    <button type="button" id="auth-switch">${isLogin ? 'Neu hier? Konto erstellen' : 'Schon registriert? Anmelden'}</button>
-  </form>`);
-  dlg.addEventListener('cancel', (e) => e.preventDefault());
-  dlg.querySelector('#auth-switch').addEventListener('click', () => showAuth(isLogin ? 'register' : 'login'));
-  dlg.querySelector('#auth-form').addEventListener('submit', async (e) => {
+    <button type="button" id="auth-switch" class="ghost">${isLogin ? 'Neu hier? Konto erstellen' : 'Schon registriert? Anmelden'}</button>
+  </form>`;
+  $('#auth-switch').addEventListener('click', () => showLoginScreen(isLogin ? 'register' : 'login'));
+  $('#auth-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const fd = new FormData(e.target);
     const email = String(fd.get('email') ?? '').trim();
@@ -338,12 +360,30 @@ function showAuth(mode, msg = '') {
     try {
       if (isLogin) await cloud.login(email, password);
       else await cloud.register(email, password);
-      // onUser() takes over from here and closes this dialog.
+      // onUser() takes over from here and hides the sign-in screen.
     } catch (err) {
       btn.disabled = false;
-      dlg.querySelector('#auth-msg').textContent = cloud.authErrorDe(err);
+      $('#auth-msg').textContent = cloud.authErrorDe(err);
     }
   });
+  if (!loginScene) loginScene = createLoginScene($('#authCanvas'));
+  loginScene.start();
+  $('#auth-card').querySelector('input[name=email]')?.focus({ preventScroll: true });
+}
+
+function hideLoginScreen() {
+  $('#authScreen').hidden = true;
+  $('#loading').inert = false;
+  loginScene?.stop();
+}
+
+/** Safety check for the update gate: reload only when nothing is lost. Returns 'ready' or a reason. */
+function versionSafety() {
+  const form = $('#auth-form');
+  if (form && [...form.querySelectorAll('input')].some((el) => el.value)) return 'form';
+  if ($('#dlg')?.open) return 'dialog';
+  if (state && (cloudDirty || cloudPending || (uid && !remoteLoaded))) return 'saving';
+  return 'ready';
 }
 
 // ---------- Actions ----------
@@ -441,6 +481,7 @@ function onPanelClick(e) {
 // ---------- Game loop ----------
 
 function startGame() {
+  versionGate?.afterGame();
   const before = state.lastTick;
   const now = Date.now();
   const r = advance(state, now, ctx());
