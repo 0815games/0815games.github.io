@@ -44,6 +44,7 @@ export function createBoard(container, opts) {
   };
 
   function resize() {
+    const prev = { W, H, z: base * cam.k };
     const rect = container.getBoundingClientRect();
     const w = Math.max(280, Math.floor(rect.width));
     // Vollbild: die Karte nimmt die ganze Höhe des Containers. Fallback auf das alte Seitenverhältnis.
@@ -57,6 +58,15 @@ export function createBoard(container, opts) {
     canvas.height = Math.round(h * dpr);
     // Grundgröße so, dass die Insel bei k = 1 ins Bild passt.
     base = Math.min(W / 1400, H / 880);
+    // Ändert sich nur die Größe des Containers (z. B. wenn das Feld-Panel aufgeht), bleibt die Karte
+    // an ihrer Stelle: Zoom gleich halten und die Kamera um die halbe Größenänderung verschieben.
+    // Sonst würde die Mitte springen und das Feld wandern.
+    if (prev.W > 0 && prev.z > 0) {
+      cam.k = prev.z / base;
+      cam.x += (W - prev.W) / (2 * prev.z);
+      cam.y += (H - prev.H) / (2 * prev.z);
+      clampCam();
+    }
     dirty = true;
   }
 
