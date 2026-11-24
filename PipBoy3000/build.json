@@ -2,13 +2,13 @@
   "version": "14.0.5",
   "scripts": 28,
   "bytes": {
-    "js": 480327,
+    "js": 480502,
     "admin": 80787,
     "css": 81615,
     "html": 31151
   },
   "sha256": {
-    "js": "95cc5d0d64118c89",
+    "js": "7f8a8fb82c02047e",
     "css": "b7e32efb1f6742f6"
   }
 }

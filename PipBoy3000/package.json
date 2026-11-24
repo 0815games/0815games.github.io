@@ -13,7 +13,8 @@
     "test": "node --test --test-force-exit tests/*.test.mjs",
     "test:balance": "node --test --test-force-exit tests/balance.test.mjs",
     "verify": "npm run build:check && npm test",
-    "icons": "node tools/icons.mjs"
+    "icons": "node tools/icon-check.mjs && node tools/icons.mjs",
+    "icons:check": "node tools/icon-check.mjs"
   },
   "devDependencies": {
     "esbuild": "^0.24.2",
