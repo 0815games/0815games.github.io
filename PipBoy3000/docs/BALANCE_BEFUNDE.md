@@ -8,6 +8,11 @@ die der Spieler sieht.
 Stand: Version 14.0.0, 34 Waffen, 33 Rüstungsteile, 10 Perks,
 14 Verbrauchsgüter, 9 Monster.
 
+Die Wächter in `tests/balance.test.mjs` laufen im normalen Testlauf als `todo`
+mit. Streng geprüft werden sie mit `BALANCE_STRICT=1 npm run test:balance` —
+dann schlagen genau die Befunde unten fehl. Der CI ruft diesen strengen Lauf
+auf und meldet jeden offenen Punkt als Warnung im Pull Request.
+
 ---
 
 ## Was in Ordnung ist

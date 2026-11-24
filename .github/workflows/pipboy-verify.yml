@@ -43,11 +43,26 @@ jobs:
 
       # Hier wird bewusst echt gebaut (nicht --check): nur so lässt sich prüfen,
       # ob der eingecheckte Stand noch zum Quellstand passt.
-      - name: Bauen und Tests fahren
+      - name: Bauen
         working-directory: PipBoy3000
+        run: npm run build
+
+      # Die Balancing-Wächter laufen im normalen Testlauf als "todo" mit und
+      # blockieren nicht. Hier werden sie streng geprüft: der Schritt ist
+      # nicht blockierend, zeigt aber jeden offenen Befund als Warnung im
+      # Pull Request. So geraten sie nicht in Vergessenheit, ohne dass ein
+      # bekannter Befund jeden Merge blockiert.
+      - name: Offene Balancing-Befunde melden (nicht blockierend)
+        working-directory: PipBoy3000
+        continue-on-error: true
         run: |
-          npm run build
-          npm test
+          if ! BALANCE_STRICT=1 npm run test:balance; then
+            echo "::warning::Offene Balancing-Befunde - siehe PipBoy3000/docs/BALANCE_BEFUNDE.md"
+          fi
+
+      - name: Tests fahren
+        working-directory: PipBoy3000
+        run: npm test
 
       - name: Erzeugte Dateien sind aktuell
         run: |
