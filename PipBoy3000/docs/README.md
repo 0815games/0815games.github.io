@@ -160,6 +160,20 @@ ausverkauft ist. Munition lässt sich an der Werkbank herstellen.
 Ist die Munition leer, klickt die Waffe nur ("WAFFE LEER") und du wechselst
 automatisch auf die beste Nahkampfwaffe, die du dabei hast.
 
+Waffen mit Präfix:
+
+Lässt ein Gegner eine Waffe fallen, kann sie ein Präfix tragen:
+
+  rostig      schwächer und billiger
+  präzise     etwas stärker, +1 Wahrnehmung
+  gehärtet    deutlich stärker
+  verstrahlt  verursacht Strahlung
+  legendär    die stärkste Stufe, 2 % Chance
+
+In Rusty Springs steht jetzt ein Glücksspiel. Drei Würfel, dein Glück-Attribut
+zählt mit. Bei einem hohen Wurf gibt es Kronkorken, Medizin und Schrott, beim
+höchsten zusätzlich eine legendäre Waffe.
+
 Fixes: Ein Fehler wurde behoben, durch den Klicks im Shop-Menü von visuellen Effekten (Scanlines) blockiert wurden. Die Buttons liegen nun technisch auf der obersten Ebene (z-index: 100).
 
 3. 📻 Audio System

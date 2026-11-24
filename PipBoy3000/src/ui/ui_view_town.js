@@ -258,6 +258,8 @@ Object.assign(UI, {
                 baseClass += " border-red-600 hover:border-red-400 shadow-red-900/20";
             } else if (conf.type === 'craft') {
                 baseClass += " border-blue-600 hover:border-blue-400 shadow-blue-900/20";
+            } else if (conf.type === 'gamble') {
+                baseClass += " border-yellow-400 hover:border-yellow-200 shadow-yellow-600/30";
             } else {
                 baseClass += " " + baseColor;
             }
@@ -325,6 +327,15 @@ Object.assign(UI, {
         grid.appendChild(createCard({
             type: 'craft', icon: "🛠️", label: "WERKBANK", sub: "Zerlegen & Bauen",
             onClick: () => { if(UI.renderCrafting) UI.renderCrafting(); }
+        }));
+
+        // MiniGames.dice war vollständig gebaut - drei Würfel, LUC-Bonus,
+        // Jackpot mit legendärer Waffe -, aber startMinigame('dice') wurde
+        // nirgends gerufen. Das Spiel war damit unerreichbar
+        // (docs/BEFUNDE.md, 9).
+        grid.appendChild(createCard({
+            type: 'gamble', icon: "🎲", label: "GLÜCKSSPIEL", sub: "Wasteland Gamble",
+            onClick: () => { if(UI.startMinigame) UI.startMinigame('dice'); }
         }));
 
         wrapper.appendChild(grid);

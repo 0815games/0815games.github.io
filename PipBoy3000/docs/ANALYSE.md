@@ -189,8 +189,12 @@ ein Fund im Browser:
 Eine Nachlese nach dem Umbau steht in [BEFUNDE.md](BEFUNDE.md) — inklusive
 eines Fehlers, den der Umbau selbst verursacht hat (Handbuch/Changelog 404).
 
-B1–B9 behoben und durch Tests abgesichert. B10 ist bewusst offen (Datenpflege
-ohne Absturzfolge).
+B1–B9 behoben und durch Tests abgesichert. B10 (doppelt gepflegte
+Monsterdaten) ist offen — reine Datenpflege ohne Absturzfolge.
+
+Nachträglich gefunden und in [BEFUNDE.md](BEFUNDE.md) als Punkt 9 und 10
+geführt: das Loot-Würfelsystem hatte keinen Aufrufer, und der Katalogschaden
+kam im Kampf nie an (jede Waffe machte 2 Schaden).
 
 ---
 

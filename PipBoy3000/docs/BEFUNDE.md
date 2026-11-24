@@ -245,3 +245,76 @@ Manifest und Auslieferung daraus ab.
   deckt nur `app.css` ab.
 - **`tests/` hat keine Abdeckung für `src/admin.js`.** Die Admin-Seite ist
   die einzige, die schreibt statt nur zu lesen, und der einzige Teil ohne Test.
+
+---
+
+## 9. Das Würfelsystem war gebaut, aber nicht angeschlossen *(behoben)*
+
+Zwei getrennte Würfel-Mechaniken lagen im Code, beide ohne Wirkung:
+
+- **Loot-Präfixe.** `Game.lootPrefixes` (rostig, präzise, gehärtet,
+  verstrahlt, legendär) und `Game.generateLoot(baseId)` waren vollständig
+  vorhanden. `generateLoot` hatte aber **keinen einzigen Aufrufer**. Jede
+  Waffe, die ein Gegner fallen ließ, kam nackt aus dem Kampf. Die 2 %-Chance
+  auf ein legendäres Item bestand nur auf dem Papier.
+- **Würfelspiel.** `MiniGames.dice` (drei W6, LUC-Bonus, Jackpot mit
+  legendärer Waffe) war fertig, `startMinigame` kannte den Typ `dice` und es
+  gab sogar einen Erklärtext „WASTELAND GAMBLE". Gerufen wurde
+  `startMinigame('dice')` aber **nie** — erreichbar waren nur `hacking`,
+  `lockpicking`, `memory` und `bomb`.
+
+Folge: Der gesamte Legendär-Zweig hing an einem Jackpot, der nicht erreichbar
+war. Wer nicht im Code nachsah, konnte nicht wissen, dass es ihn gibt.
+
+**Behoben:** Waffen-Drops laufen jetzt in `Combat.win` durch
+`generateLoot`. Die Wahrscheinlichkeiten stehen als Tabelle (`lootChances`)
+statt als else-if-Kette und sind damit prüfbar: 40 % ohne Präfix, 30 %
+rostig, 15 % präzise, 10 % gehärtet, 3 % verstrahlt, 2 % legendär. Das
+Würfelspiel hat eine Karte in der Stadtansicht („GLÜCKSSPIEL").
+
+## 10. Der Katalogschaden kam im Kampf nie an *(behoben)*
+
+`Combat.getWeaponStats` rechnete:
+
+```js
+const dmg = (item.dmg !== undefined) ? item.dmg : (item.baseDmg || dbItem.dmg || 2);
+```
+
+Der Katalog führt Waffen aber mit **`baseDmg`**. Im Inventar liegt eine Waffe
+als `{id, count}` — ohne `baseDmg`. `dbItem.dmg` existiert in keiner einzigen
+Item-Definition. Damit fiel der Ausdruck **immer** auf `2` zurück.
+
+| Waffe | Katalog | Kampf (vorher) |
+|---|---|---|
+| Alien Blaster | 80 | 2 |
+| Plasmagewehr | 45 | 2 |
+| Kampfmesser | 8 | 2 |
+| Fäuste | 2 | 2 |
+
+**33 von 34 Waffen** machten 2 Schaden. Der Katalogwert wurde nur in drei
+Anzeigen gelesen (Charakterbogen, Inventar, Journal), nie im Kampf. Ein Alien
+Blaster war so stark wie die Fäuste.
+
+Dasselbe Muster steckte in `switchToBestMelee`: `item.dmg || def.dmg || 0`
+ergab für jede Nahkampfwaffe 0, die „beste" war also eine beliebige.
+
+**Behoben:** `getWeaponStats` liest jetzt `baseDmg` aus dem Katalog, wendet
+`props.dmgMult` an (den einzigen Schadens-Modifikator, den es gibt) und
+respektiert einen am Item festgeschriebenen Wert, ohne doppelt zu
+multiplizieren. Alle 34 Waffen liefern ihren Katalogwert.
+
+**Folge fürs Balancing:** Das Spiel ist deutlich schneller geworden, weil
+bisher jede Waffe gleich stark war. Der Katalog ist dabei die einzige
+Vorgabe — es gibt kein Balancing-Dokument und keine Formel im Repo.
+Gemessene Treffer bis zum Kill (Deckung 50 %, ohne Perks):
+
+| Waffe | Raider (60) | Ghoul (80) | Supermutant (200) | Todeskralle (500) |
+|---|---|---|---|---|
+| Fäuste (2) | 30 | 40 | 100 | 250 |
+| Messer (8) | 8 | 10 | 25 | 63 |
+| 10mm (12) | 5 | 7 | 17 | 42 |
+| Jagdgewehr (20) | 3 | 4 | 10 | 25 |
+| Plasmagewehr (45) | 2 | 2 | 5 | 12 |
+
+Wer das alte Tempo will, senkt die `baseDmg`-Werte im Katalog — das ist eine
+Datenänderung, keine Codeänderung.

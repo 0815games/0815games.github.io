@@ -2044,19 +2044,41 @@
         if (typeof UI !== "undefined") UI.log("Händler hat neue Ware.", "text-green-500");
       }
     },
+    // Würfelt beim Fund einer Waffe ein Präfix aus. Die Prozente stehen als
+    // Tabelle da und nicht als Kette von else-if, damit sie sich prüfen lassen.
+    // Diese Funktion hatte bis eben keinen einzigen Aufrufer: Waffen fielen
+    // immer ohne Präfix (docs/BEFUNDE.md, 9).
+    lootChances: [
+      { key: "legendary", bis: 0.02 },
+      { key: "radiated", bis: 0.05 },
+      { key: "hardened", bis: 0.15 },
+      { key: "precise", bis: 0.3 },
+      { key: "rusty", bis: 0.6 }
+    ],
+    rollLootPrefix: function() {
+      const roll = Math.random();
+      const treffer = this.lootChances.find((c) => roll < c.bis);
+      return treffer ? treffer.key : null;
+    },
     generateLoot: function(baseId) {
       const itemDef = this.items[baseId];
       if (!itemDef || itemDef.type !== "weapon") return { id: baseId, count: 1 };
-      const roll = Math.random();
-      let prefixKey = null;
-      if (roll < 0.3) prefixKey = "rusty";
-      else if (roll < 0.45) prefixKey = "precise";
-      else if (roll < 0.55) prefixKey = "hardened";
-      else if (roll < 0.58) prefixKey = "radiated";
-      else if (roll < 0.6) prefixKey = "legendary";
+      const prefixKey = this.rollLootPrefix();
       if (!prefixKey) return { id: baseId, count: 1 };
       const p = this.lootPrefixes[prefixKey];
-      return { id: baseId, count: 1, props: { prefix: prefixKey, name: `${p.name} ${itemDef.name}`, dmgMult: p.dmgMult || 1, valMult: p.valMult || 1, bonus: p.bonus || null, color: p.color } };
+      return {
+        id: baseId,
+        count: 1,
+        props: {
+          prefix: prefixKey,
+          name: `${p.name} ${itemDef.name}`,
+          dmgMult: p.dmgMult || 1,
+          valMult: p.valMult || 1,
+          bonus: p.bonus || null,
+          effect: p.effect || null,
+          color: p.color
+        }
+      };
     },
     init: function(saveData, spawnTarget = null, slotIndex = 0, newName = null) {
       this.worldData = {};
@@ -4187,7 +4209,7 @@
         const isWeaponType = type === "weapon" || type === "melee" || type === "weapon_melee" || type.includes("weapon");
         const needsAmmo = (item.ammoType || def.ammo) && (item.ammoType || def.ammo) !== "none";
         if (isWeaponType && !needsAmmo) {
-          let dmg = item.dmg || def.dmg || 0;
+          let dmg = def.baseDmg || def.dmg || item.dmg || 0;
           if (item.props && item.props.dmgMult) dmg *= item.props.dmgMult;
           if (dmg > bestDmg) {
             bestDmg = dmg;
@@ -4231,9 +4253,11 @@
       legendaryItem.name = `${prefix.name} ${baseItem.name} ★`;
       legendaryItem.isLegendary = true;
       legendaryItem.desc = prefix.desc;
-      legendaryItem.value = (baseItem.value || 10) * 5;
-      if (prefix.dmgMod) legendaryItem.dmg = Math.floor((baseItem.dmg || 1) * prefix.dmgMod);
-      else legendaryItem.dmg = baseItem.dmg;
+      const basisSchaden = baseItem.baseDmg || baseItem.dmg || 1;
+      const basisWert = baseItem.cost || baseItem.value || 10;
+      legendaryItem.value = basisWert * 5;
+      if (prefix.dmgMod) legendaryItem.dmg = Math.floor(basisSchaden * prefix.dmgMod);
+      else delete legendaryItem.dmg;
       legendaryItem.ammoType = baseItem.ammoType;
       if (prefix.ammoMod) legendaryItem.ammoCost = (baseItem.ammoCost || 1) * prefix.ammoMod;
       else legendaryItem.ammoCost = baseItem.ammoCost || 1;
@@ -4846,7 +4870,14 @@
     },
     getWeaponStats: function(item) {
       const dbItem = Game.items[item.id] || {};
-      const dmg = item.dmg !== void 0 ? item.dmg : item.baseDmg || dbItem.dmg || 2;
+      let dmg;
+      if (item.dmg !== void 0 && item.dmg !== null) {
+        dmg = item.dmg;
+      } else {
+        dmg = dbItem.baseDmg || dbItem.dmg || item.baseDmg || 2;
+        const dmgMult = item.props && item.props.dmgMult || 1;
+        dmg = Math.floor(dmg * dmgMult);
+      }
       const ammoType = item.ammoType || dbItem.ammoType || null;
       const ammoCost = item.ammoCost !== void 0 ? item.ammoCost : dbItem.ammoCost || 1;
       return { dmg, ammoType, ammoCost };
@@ -5026,6 +5057,15 @@
               if (id === "caps") Game.state.caps = (Game.state.caps || 0) + n;
               else Game.addToInventory(id, n);
             };
+            const def = Game.items && Game.items[d.id];
+            if (def && def.type === "weapon" && typeof Game.generateLoot === "function") {
+              const loot = Game.generateLoot(d.id);
+              if (loot && loot.props) {
+                Game.addToInventory(loot);
+                this.log(`Besonderer Fund: ${loot.props.name}`, loot.props.color || "text-yellow-300");
+                return;
+              }
+            }
             give(d.id, 1);
           });
         }
@@ -6452,6 +6492,8 @@
           baseClass += " border-red-600 hover:border-red-400 shadow-red-900/20";
         } else if (conf.type === "craft") {
           baseClass += " border-blue-600 hover:border-blue-400 shadow-blue-900/20";
+        } else if (conf.type === "gamble") {
+          baseClass += " border-yellow-400 hover:border-yellow-200 shadow-yellow-600/30";
         } else {
           baseClass += " " + baseColor;
         }
@@ -6518,6 +6560,15 @@
         sub: "Zerlegen & Bauen",
         onClick: () => {
           if (UI.renderCrafting) UI.renderCrafting();
+        }
+      }));
+      grid.appendChild(createCard({
+        type: "gamble",
+        icon: "🎲",
+        label: "GLÜCKSSPIEL",
+        sub: "Wasteland Gamble",
+        onClick: () => {
+          if (UI.startMinigame) UI.startMinigame("dice");
         }
       }));
       wrapper.appendChild(grid);
