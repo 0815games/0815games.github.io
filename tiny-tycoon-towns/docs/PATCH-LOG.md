@@ -170,3 +170,34 @@ Ereignis ergänzt.
 
 - Push: `git push origin arena/7efbfaa5-0815games-github-io`, Ausgabe `2efc81ce..82f7e906` (Fast-forward, Exit 0).
 - PR: nicht erstellt.
+
+## TTT-0005 – „Stadt wird geladen …“ hängt nicht mehr (Welle `20261124-konto2`)
+
+- Zeit / Quelle: Sitzung 2026-11-24 (UTC). Meldung des Betreibers: Spiel startet, Erstellen und Anmelden
+  funktionieren, danach bleibt der Bildschirm auf „Stadt wird geladen …“.
+- Ursache (aus dem Code, nicht im Live-Projekt belegt): `onUser` wartete ohne Zeitlimit auf
+  `cloud.loadTown`. Antwortete die Realtime Database nicht, blieb die Anzeige stehen, und der lokale
+  Stand war nicht spielbar. Fehler beim Anzeigen wurden nur in der Konsole sichtbar.
+- Änderungen:
+  - `src/async-util.js` (neu): `withTimeout`, getestet mit `tests/async-util.test.mjs` (3 Tests).
+  - `src/main.js`: Cloud-Lesen mit 10 s Zeitlimit. Ohne Antwort mit lokalem Stand weiterspielen,
+    Speichern in die Cloud erst nach erfolgreichem Lesen (kein Überschreiben neuerer Stände).
+    Ohne lokalen Stand: Meldung mit Grund und Knopf „Erneut versuchen“. Im Hintergrund wird die Cloud
+    erneut gelesen; ein neuerer Cloud-Stand gewinnt. Fehler beim Anzeigen werden sichtbar.
+    Unbehandelte Fehler erscheinen als Hinweis.
+  - `src/cloud.js`: `onConnected` (`.info/connected`) für die Verbindungsanzeige.
+  - Cache-Welle `20261124-konto2` (`bump --apply`), Feldnotizen-Eintrag ergänzt.
+- Prüfungen (lokal, Node 22.22.3):
+  - `npm test`: 47 Tests, 47 pass, 0 fail.
+  - `npm run check:suite`: Exit 0.
+  - Oberflächentest in jsdom (ad hoc, nicht im Repo): echte `index.html` und `src/main.js` mit
+    `cloud.js`, Firebase-Module durch Stubs ersetzt.
+    - Lesen hängt, kein lokaler Stand: nach 10 s Meldung „Zeitlimit“ und Knopf „Erneut versuchen“.
+    - Lesen hängt, lokaler Stand vorhanden: Spiel läuft mit 100 Feldern weiter.
+    - Lesen liefert nichts: Gründungsdialog erscheint, keine Fehler.
+  - Rundlauf-Test Domäne (ad hoc): Stand mit Gebäuden und Verkaufsschalter durch RTDB-ähnliches
+    Entfernen leerer Werte und `hydrateTown` ergibt 0 Abweichungen.
+  - Grenzen: Die Stubs ersetzen Firebase. Ein echter Browser und das Live-Projekt sind nicht geprüft.
+    Ob die Regeln im Live-Projekt veröffentlicht sind, ist nicht bekannt.
+- Git / PR / Veröffentlichung: siehe Nachtrag. Nicht gemergt, nicht veröffentlicht.
+- Offen: Regeln veröffentlichen (`docs/FIREBASE.md`), Domains prüfen, Test im echten Browser.

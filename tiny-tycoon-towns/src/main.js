@@ -3,15 +3,16 @@
 import {
   createTown, newSeed, chooseBiome, placeBuilding, upgradeBuilding,
   toggleSell, buyOffer, advance, hydrateTown,
-} from './domain/engine.js?v=20261124-konto1';
+} from './domain/engine.js?v=20261124-konto2';
 import {
   productionMultiplier, ratePerMin, buildCost, storageCap, classOf,
-} from './domain/economy.js?v=20261124-konto1';
-import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261124-konto1';
-import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261124-konto1';
-import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261124-konto1';
+} from './domain/economy.js?v=20261124-konto2';
+import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261124-konto2';
+import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261124-konto2';
+import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261124-konto2';
+import { withTimeout } from './async-util.js?v=20261124-konto2';
 
-const BUILD = '20261124-konto1';
+const BUILD = '20261124-konto2';
 console.info(`Tiny Tycoon Towns ${BUILD}`);
 const LAST_BIOME_KEY = 'ttt.lastBiome';
 const LOCAL_KEY = (uid) => `ttt.save.v1.${uid}`;
@@ -58,13 +59,18 @@ let selected = { x: 4, y: 4 };
 let cloudDirty = false;    // local change not yet confirmed by the cloud
 let cloudPending = false;  // a cloud write is in flight
 let lastCloudAt = 0;
+let currentUser = null;    // Firebase user object while signed in
+let remoteLoaded = false;  // true once the cloud copy was read successfully; no writes before that
+let remoteRetryPending = false;
+let connected = true;      // Realtime Database connection, from .info/connected
+const REMOTE_TIMEOUT_MS = 10_000;
 
 // ---------- Boot and account ----------
 
 async function loadData() {
   const names = ['resources', 'biomes', 'buildings', 'economy', 'merchant'];
   const parts = await Promise.all(names.map((n) =>
-    fetch(`data/${n}.json?v=20261124-konto1`).then((r) => {
+    fetch(`data/${n}.json?v=20261124-konto2`).then((r) => {
       if (!r.ok) throw new Error(`data/${n}.json: HTTP ${r.status}`);
       return r.json();
     })));
@@ -95,45 +101,83 @@ async function boot() {
   window.addEventListener('offline', updateSync);
 
   try {
-    cloud = await import('./cloud.js?v=20261124-konto1');
+    cloud = await import('./cloud.js?v=20261124-konto2');
   } catch {
     showFatal('Das Konto-System konnte nicht geladen werden. Ohne Anmeldung lässt sich nicht spielen. Bitte Verbindung prüfen und neu laden.');
     return;
   }
+  cloud.onConnected((on) => { connected = on; updateSync(); });
   cloud.onUser(onUser);
 }
 
+/** Reads the cloud copy with a time limit. Never throws; reports the outcome instead. */
+async function fetchRemote(u) {
+  try {
+    const raw = await withTimeout(cloud.loadTown(u), REMOTE_TIMEOUT_MS, 'Cloud-Lesen');
+    return { ok: true, remote: raw ? hydrateTown(raw) : null };
+  } catch (error) {
+    return { ok: false, error };
+  }
+}
+
+function cloudErrorText(error) {
+  if (error?.code === 'timeout') {
+    return 'Die Cloud antwortet nicht (Zeitlimit). Prüfe deine Verbindung oder Werbeblocker und versuche es erneut.';
+  }
+  return `${cloud.dbErrorDe(error)} (${error?.code ?? error?.message ?? 'unbekannt'})`;
+}
+
+/** Entry point for every sign-in change. Errors while showing the town become a visible message. */
 async function onUser(user) {
+  try {
+    await enterAccount(user);
+  } catch (error) {
+    console.error('Anzeige des Spielstands fehlgeschlagen:', error);
+    showRetry(`Der Spielstand konnte nicht angezeigt werden (${error?.message ?? 'unbekannter Fehler'}).`);
+  }
+}
+
+async function enterAccount(user) {
   if (!user) {
     uid = null;
+    currentUser = null;
     state = null;
+    remoteLoaded = false;
     renderSignedOut();
     showAuth('login');
     return;
   }
   closeDialog();
   if (uid === user.uid && state) return; // token refresh, nothing to load
+  currentUser = user;
   uid = user.uid;
-  showFatal('Stadt wird geladen …', { quiet: true });
+  remoteLoaded = false;
+  showLoading('Verbinde mit deinem Spielstand …');
 
   const local = loadLocal(uid);
-  let remote = null;
-  let remoteOk = true;
-  try {
-    const raw = await cloud.loadTown(uid);
-    remote = raw ? hydrateTown(raw) : null;
-  } catch (e) {
-    remoteOk = false;
-    toast(cloud.dbErrorDe(e), 'error');
-  }
-
-  const candidates = [remote, local].filter(Boolean).sort((a, b) => b.lastTick - a.lastTick);
-  if (!candidates.length) {
-    if (!remoteOk) {
-      showFatal('Dein Spielstand ist gerade nicht erreichbar. Bitte Verbindung prüfen und neu laden.');
+  const res = await fetchRemote(uid);
+  if (!res.ok) {
+    console.error('Spielstand aus der Cloud nicht geladen:', res.error);
+    if (!local) {
+      showRetry(cloudErrorText(res.error));
       return;
     }
+    // Local copy exists: play on it. Writes to the cloud wait until a read succeeds,
+    // so an old local copy cannot overwrite newer progress from another device.
+    state = local;
+    cloudDirty = false;
+    lastCloudAt = 0;
+    startGame();
+    toast('Cloud gerade nicht erreichbar. Du spielst mit dem lokalen Stand und er wird nachgeladen.', 'error');
+    return;
+  }
+
+  remoteLoaded = true;
+  const remote = res.remote;
+  const candidates = [remote, local].filter(Boolean).sort((a, b) => b.lastTick - a.lastTick);
+  if (!candidates.length) {
     state = null;
+    showLoading('Gründe deine Stadt, sobald du bereit bist.');
     showFounding();
     return;
   }
@@ -143,6 +187,50 @@ async function onUser(user) {
   lastCloudAt = 0;
   startGame();
 }
+
+/** Tries the cloud read again after an offline start. The newer copy wins. */
+async function retryRemote() {
+  if (remoteLoaded || remoteRetryPending || !uid || !state) return;
+  remoteRetryPending = true;
+  const res = await fetchRemote(uid);
+  remoteRetryPending = false;
+  if (!res.ok || !uid || !state) return; // still unreachable, the next tick tries again
+  remoteLoaded = true;
+  const remote = res.remote;
+  if (remote && remote.lastTick > state.lastTick) {
+    state = remote;
+    cloudDirty = false;
+    renderAll();
+    toast('Neuerer Stand aus der Cloud übernommen.');
+  } else {
+    cloudDirty = true;
+  }
+  updateSync();
+}
+
+function showLoading(text) {
+  $('#panel').innerHTML = `<p class="muted">${esc(text)}</p>`;
+}
+
+function showRetry(text) {
+  $('#panel').innerHTML = `<p class="warn">${esc(text)}</p>
+    <p><button type="button" id="retry-load" class="primary">Erneut versuchen</button></p>`;
+  $('#retry-load').addEventListener('click', () => {
+    if (!currentUser) return;
+    uid = null;
+    onUser(currentUser);
+  });
+}
+
+// Unhandled errors show up as a message instead of a silent freeze.
+window.addEventListener('error', (e) => {
+  console.error(e.error ?? e.message);
+  toast(`Fehler: ${e.message ?? 'unbekannt'}`, 'error');
+});
+window.addEventListener('unhandledrejection', (e) => {
+  console.error(e.reason);
+  toast(`Fehler: ${e.reason?.message ?? e.reason ?? 'unbekannt'}`, 'error');
+});
 
 function renderSignedOut() {
   $('#logout-btn').hidden = true;
@@ -180,7 +268,7 @@ function saveLocal() {
 }
 
 function cloudSave() {
-  if (!state || !uid || !cloudDirty || cloudPending) return;
+  if (!state || !uid || !cloudDirty || cloudPending || !remoteLoaded) return;
   const sentUid = uid;
   const snapshot = JSON.parse(JSON.stringify(state));
   cloudDirty = false;
@@ -198,6 +286,7 @@ function cloudSave() {
 /** Runs every few seconds: local copy always, cloud copy at most once a minute. */
 function cloudTick() {
   saveLocal();
+  if (!remoteLoaded) retryRemote();
   if (cloudDirty && Date.now() - lastCloudAt >= CLOUD_SAVE_MS) cloudSave();
   updateSync();
 }
@@ -212,6 +301,8 @@ function updateSync() {
   if (!uid) { el.textContent = ''; return; }
   let text;
   if (!navigator.onLine) text = 'Offline · lokal gesichert';
+  else if (!connected) text = 'Keine Verbindung zur Cloud · lokal gesichert';
+  else if (!remoteLoaded) text = 'Cloud noch nicht gelesen · lokal gesichert';
   else if (cloudPending) text = 'Speichert in der Cloud …';
   else if (cloudDirty) text = 'Änderungen warten auf Cloud-Speicherung';
   else text = 'In der Cloud gespeichert';
