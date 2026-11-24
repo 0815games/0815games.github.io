@@ -25,6 +25,7 @@ export const ORDER = [
   'src/ui/ui_core.js',
   'src/game/game_core.js',
   'src/game/game_map.js',
+  'src/game/world_air.js',
   'src/game/game_render.js',
   'src/game/game_world_gen.js',
   'src/game/game_inv_logic.js',

@@ -45,7 +45,7 @@ test('der Balancing-Bericht läuft und enthält alle Kategorien', () => {
   const {text, daten} = buildReport();
 
   for (const abschnitt of ['## 1. Waffen', '## 2. Rüstung', '## 3. Perks', '## 4. SPECIAL',
-    '## 5. Verbrauchsgüter', '## 6. Minispiele', '## 7. Monster', '## 8. Wirtschaft']) {
+    '## 5. Verbrauchsgüter', '## 6. Minispiele', '## 7. Monster', '## 8. Strahlung', '## 9. Wirtschaft']) {
     assert.ok(text.includes(abschnitt), `Abschnitt fehlt: ${abschnitt}`);
   }
 

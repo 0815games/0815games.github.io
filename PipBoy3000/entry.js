@@ -13,6 +13,7 @@ import './src/network.js';
 import './src/ui/ui_core.js';
 import './src/game/game_core.js';
 import './src/game/game_map.js';
+import './src/game/world_air.js';
 import './src/game/game_render.js';
 import './src/game/game_world_gen.js';
 import './src/game/game_inv_logic.js';

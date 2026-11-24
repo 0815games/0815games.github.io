@@ -81,7 +81,12 @@ Object.assign(Game, {
         if(dy===1) this.state.player.rot=Math.PI; if(dy===-1) this.state.player.rot=0;
 
         this.reveal(nx, ny);
-        
+
+        // Wandernde RAD-Wolken: ziehen und pruefen, ob der Spieler drinsteht
+        // (world_air.js). Bewusst hier und nicht im Renderer - sonst haenge
+        // die Strahlung an der Bildrate statt an den Zuegen.
+        if(typeof this.tickRadWolken === 'function') this.tickRadWolken();
+
         if(typeof Network!=='undefined') Network.sendHeartbeat();
 
         if(t==='V') { 
@@ -177,6 +182,12 @@ Object.assign(Game, {
         this.state.zone = `${zn} (${sx},${sy})`; 
         
         this.ensureWalkableSpawn(); 
+
+        // RAD-Wolken dieses Sektors aufbauen (world_air.js). Vorhandene
+        // bleiben stehen, damit ein Wechsel hin und zurueck sie nicht neu
+        // auswuerfelt.
+        if(typeof this.baueRadWolken === 'function') this.baueRadWolken(bd);
+
         if(this.renderStaticMap) this.renderStaticMap(); 
         this.reveal(this.state.player.x, this.state.player.y);
     },

@@ -431,6 +431,48 @@ Object.assign(Game, {
         }
     },
 
+    // RAD-Wolken zeichnen (world_air.js haelt die Daten). Bewusst hier und
+    // nicht in world_air: die Datei bleibt frei von Canvas-Code, damit die
+    // Regeln testbar sind.
+    drawRadClouds: function(ctx, time) {
+        if(typeof this.radWolkenImSektor !== 'function') return;
+        const wolken = this.radWolkenImSektor();
+        if(!wolken.length) return;
+
+        for(const w of wolken) {
+            const cx = (w.x + 0.5) * this.TILE;
+            const cy = (w.y + 0.5) * this.TILE;
+            const r = (w.radius + 0.5) * this.TILE;
+
+            // Pulsieren: die Wolke atmet, damit sie von Gelaende zu
+            // unterscheiden ist.
+            const puls = 1 + Math.sin(time / 700 + w.x) * 0.06;
+            const dichte = (w.dichte === undefined) ? 1 : w.dichte;
+
+            const grad = ctx.createRadialGradient(cx, cy, 2, cx, cy, r * puls);
+            grad.addColorStop(0, `rgba(120, 255, 80, ${0.30 * dichte})`);
+            grad.addColorStop(0.55, `rgba(80, 200, 60, ${0.18 * dichte})`);
+            grad.addColorStop(1, 'rgba(40, 120, 30, 0)');
+
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(cx, cy, r * puls, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Ein paar treibende Schwaeden, damit die Form nicht wie ein
+            // starrer Kreis wirkt.
+            for(let i = 0; i < 3; i++) {
+                const phase = time / 1100 + i * 2.1 + w.x * 0.7;
+                const dx = Math.cos(phase) * r * 0.45;
+                const dy = Math.sin(phase * 1.3) * r * 0.35;
+                ctx.fillStyle = `rgba(150, 255, 110, ${0.10 * dichte})`;
+                ctx.beginPath();
+                ctx.arc(cx + dx, cy + dy, r * 0.45, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+    },
+
     draw: function() { 
         if(!this.ctx || !this.cacheCanvas) return; 
         if(!this.state.currentMap) return;
@@ -493,6 +535,10 @@ Object.assign(Game, {
             if(tile.t === 'M') this.drawMonster(ctx, tile.x, tile.y, time); 
             if(tile.t === 'W') this.drawWanderer(ctx, tile.x, tile.y, time);
         });
+
+        // Wolken unter den Spieler legen: er soll sichtbar bleiben, auch
+        // wenn er drinsteht.
+        this.drawRadClouds(ctx, time);
 
         this.drawPlayer(ctx); 
         this.drawOtherPlayers(ctx);

@@ -2327,6 +2327,7 @@
       if (dy === 1) this.state.player.rot = Math.PI;
       if (dy === -1) this.state.player.rot = 0;
       this.reveal(nx, ny);
+      if (typeof this.tickRadWolken === "function") this.tickRadWolken();
       if (typeof Network !== "undefined") Network.sendHeartbeat();
       if (t === "V") {
         if (typeof UI !== "undefined" && typeof UI.enterVault === "function") {
@@ -2433,6 +2434,7 @@
       if (bd === "jungle") zn = "Überwucherter Dschungel";
       this.state.zone = `${zn} (${sx},${sy})`;
       this.ensureWalkableSpawn();
+      if (typeof this.baueRadWolken === "function") this.baueRadWolken(bd);
       if (this.renderStaticMap) this.renderStaticMap();
       this.reveal(this.state.player.x, this.state.player.y);
     },
@@ -2630,6 +2632,139 @@
         if (item) item.count += count;
         else this.state.inventory.push({ id, count });
       }
+    }
+  });
+
+  // src/game/world_air.js
+  Object.assign(Game, {
+    // Wie viele Wolken je Sektor, nach Biom. Bewusst sparsam: man sieht nur
+    // zehn Felder weit, der Sektor ist 50x50. Zu viele Wolken waeren ein
+    // Nebelmeer und kein Hindernis.
+    RAD_WOLKEN_JE_BIOM: {
+      desert: 5,
+      // Die Glühende See - die Heimat der Wolken
+      swamp: 3,
+      // Todes-Sümpfe
+      forest: 2,
+      // Verstrahlter Wald
+      jungle: 2,
+      wasteland: 1,
+      mountain: 1,
+      city: 0
+      // in der Stadt gibt es Strassen, keine Wolken
+    },
+    // RAD pro Feld, das in der Wolke steht. Ein Sektor ist 50 Felder breit;
+    // wer eine Wolke durchquert, kommt mit 6-8 Feldern durch - das sind bei
+    // einer dichten Wolke grob 20-30 RAD, also ein knappes RadAway.
+    RAD_PRO_FELD: 4,
+    // Ein Wolkenzug pro Sekunde waere zu schnell (der Spieler laeuft bei
+    // jedem Tastendruck ein Feld). Alle 6 Sekunden ein Feld ist sichtbar,
+    // aber umgehbar.
+    RAD_WOLKE_ZUG_MS: 6e3,
+    // --- Lebenszyklus -------------------------------------------------------
+    radWolkenZahlFuerBiom: function(biome) {
+      const zahl = this.RAD_WOLKEN_JE_BIOM[biome];
+      return typeof zahl === "number" ? zahl : 1;
+    },
+    // Wird beim Betreten eines Sektors gerufen. Vorhandene Wolken des Sektors
+    // werden weiterverwendet, damit ein Wechsel hin und zurueck sie nicht neu
+    // auswuerfelt.
+    baueRadWolken: function(biome) {
+      if (!this.state) return [];
+      if (!Array.isArray(this.state.radClouds)) this.state.radClouds = [];
+      const sektor = this.state.sector || { x: 0, y: 0 };
+      const vorhanden = this.state.radClouds.filter((w) => w.sektor.x === sektor.x && w.sektor.y === sektor.y);
+      if (vorhanden.length > 0) return vorhanden;
+      const anzahl = this.radWolkenZahlFuerBiom(biome);
+      for (let i = 0; i < anzahl; i++) {
+        this.state.radClouds.push(this._neueRadWolke(sektor));
+      }
+      return this.state.radClouds.filter((w) => w.sektor.x === sektor.x && w.sektor.y === sektor.y);
+    },
+    _neueRadWolke: function(sektor) {
+      let x, y, versuche = 0;
+      const px = this.state.player && this.state.player.x || 0;
+      const py = this.state.player && this.state.player.y || 0;
+      do {
+        x = 3 + Math.floor(Math.random() * (this.MAP_W - 6));
+        y = 3 + Math.floor(Math.random() * (this.MAP_H - 6));
+        versuche++;
+      } while (versuche < 40 && Math.abs(x - px) + Math.abs(y - py) < 8);
+      return {
+        sektor: { x: sektor.x, y: sektor.y },
+        x,
+        y,
+        radius: 2,
+        // Felder um das Zentrum
+        dichte: 1,
+        // 1 = volle Dichte, sinkt beim Aufloesen
+        zug: Date.now()
+        // Zeitpunkt des letzten Zugs
+      };
+    },
+    // Alle Wolken des aktuellen Sektors.
+    radWolkenImSektor: function() {
+      if (!this.state || !Array.isArray(this.state.radClouds)) return [];
+      const sektor = this.state.sector || { x: 0, y: 0 };
+      return this.state.radClouds.filter((w) => w.sektor.x === sektor.x && w.sektor.y === sektor.y);
+    },
+    // Steht der Spieler in einer Wolke? Gibt die Wolke zurueck oder null.
+    // Der Radius wird euklidisch gemessen, damit die Wolke rund wirkt und
+    // nicht wie ein Kreuz.
+    radWolkeAufFeld: function(fx, fy) {
+      for (const w of this.radWolkenImSektor()) {
+        const dx = w.x - fx, dy = w.y - fy;
+        if (Math.sqrt(dx * dx + dy * dy) <= w.radius) return w;
+      }
+      return null;
+    },
+    // --- Bewegung -----------------------------------------------------------
+    // Wird bei jedem Spielerzug gerufen (aus Game.move heraus, nicht aus dem
+    // Renderer): die Wolken wandern, wenn ihr Zug faellig ist.
+    bewegeRadWolken: function() {
+      if (!this.state || !Array.isArray(this.state.radClouds)) return;
+      const jetzt = Date.now();
+      const sektor = this.state.sector || { x: 0, y: 0 };
+      for (const w of this.state.radClouds) {
+        if (w.sektor.x !== sektor.x || w.sektor.y !== sektor.y) continue;
+        if (jetzt - (w.zug || 0) < this.RAD_WOLKE_ZUG_MS) continue;
+        const richtungen = [[1, 0], [1, 0], [1, 1], [1, -1], [0, 1], [0, -1]];
+        const [dx, dy] = richtungen[Math.floor(Math.random() * richtungen.length)];
+        let nx = w.x + dx, ny = w.y + dy;
+        if (nx < 2 || nx > this.MAP_W - 3) nx = w.x - dx;
+        if (ny < 2 || ny > this.MAP_H - 3) ny = w.y - dy;
+        const feld = this.state.currentMap && this.state.currentMap[ny] ? this.state.currentMap[ny][nx] : ".";
+        if (["#", "^", "Y"].includes(feld)) {
+          w.zug = jetzt;
+          continue;
+        }
+        w.x = nx;
+        w.y = ny;
+        w.zug = jetzt;
+      }
+    },
+    // --- Wirkung ------------------------------------------------------------
+    // Ein Zug des Spielers ist zu Ende: Wolken ziehen, Strahlung pruefen.
+    // Wird aus Game.move gerufen (dort, wo sich der Spieler wirklich bewegt).
+    tickRadWolken: function() {
+      if (!this.state) return;
+      this.bewegeRadWolken();
+      const w = this.radWolkeAufFeld(this.state.player.x, this.state.player.y);
+      if (w) {
+        this.addRadiation(this.RAD_PRO_FELD);
+        if (typeof UI !== "undefined" && UI.log && !this._radWolkenMeldung) {
+          UI.log("Du stehst in einer Strahlungswolke!", "text-green-400 font-bold");
+          this._radWolkenMeldung = true;
+        }
+      } else {
+        this._radWolkenMeldung = false;
+      }
+    },
+    // Strahlungswert eines Feldes - fuer Vorschau und Tests.
+    radWolkenWertAufFeld: function(fx, fy) {
+      const w = this.radWolkeAufFeld(fx, fy);
+      if (!w) return 0;
+      return Math.ceil(this.RAD_PRO_FELD * (w.dichte || 1));
     }
   });
 
@@ -3208,6 +3343,38 @@
         dist++;
       }
     },
+    // RAD-Wolken zeichnen (world_air.js haelt die Daten). Bewusst hier und
+    // nicht in world_air: die Datei bleibt frei von Canvas-Code, damit die
+    // Regeln testbar sind.
+    drawRadClouds: function(ctx, time) {
+      if (typeof this.radWolkenImSektor !== "function") return;
+      const wolken = this.radWolkenImSektor();
+      if (!wolken.length) return;
+      for (const w of wolken) {
+        const cx = (w.x + 0.5) * this.TILE;
+        const cy = (w.y + 0.5) * this.TILE;
+        const r = (w.radius + 0.5) * this.TILE;
+        const puls = 1 + Math.sin(time / 700 + w.x) * 0.06;
+        const dichte = w.dichte === void 0 ? 1 : w.dichte;
+        const grad = ctx.createRadialGradient(cx, cy, 2, cx, cy, r * puls);
+        grad.addColorStop(0, `rgba(120, 255, 80, ${0.3 * dichte})`);
+        grad.addColorStop(0.55, `rgba(80, 200, 60, ${0.18 * dichte})`);
+        grad.addColorStop(1, "rgba(40, 120, 30, 0)");
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(cx, cy, r * puls, 0, Math.PI * 2);
+        ctx.fill();
+        for (let i = 0; i < 3; i++) {
+          const phase = time / 1100 + i * 2.1 + w.x * 0.7;
+          const dx = Math.cos(phase) * r * 0.45;
+          const dy = Math.sin(phase * 1.3) * r * 0.35;
+          ctx.fillStyle = `rgba(150, 255, 110, ${0.1 * dichte})`;
+          ctx.beginPath();
+          ctx.arc(cx + dx, cy + dy, r * 0.45, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+    },
     draw: function() {
       if (!this.ctx || !this.cacheCanvas) return;
       if (!this.state.currentMap) return;
@@ -3263,6 +3430,7 @@
         if (tile.t === "M") this.drawMonster(ctx, tile.x, tile.y, time);
         if (tile.t === "W") this.drawWanderer(ctx, tile.x, tile.y, time);
       });
+      this.drawRadClouds(ctx, time);
       this.drawPlayer(ctx);
       this.drawOtherPlayers(ctx);
       this.updateParticles();
@@ -4622,21 +4790,39 @@
       UI.log("Ausgeruht. HP voll (soweit möglich).", "text-blue-400");
       UI.update();
     },
+    // Strahlungsdosis eines Feldes, mit Schutz verrechnet.
+    //
+    // getrennt von addRadiation, weil kleine Dosen sonst still verschwinden:
+    // 4 RAD minus 20 Prozent Gasmaske sind 3,2, und Math.ceil macht daraus
+    // wieder 4. Der Schutz waere bei jeder kleinen Dosis wirkungslos
+    // (docs/BALANCE_BEFUNDE.md, Nachtrag WOLKEN). Deshalb wird der Rest
+    // gesammelt und erst ab einem ganzen Punkt ausgezahlt.
+    strahlungsDosis: function(amount) {
+      if (!this.state || amount <= 0) return amount;
+      const perkLvl = this.getPerkLevel("rad_resistant");
+      let reduction = perkLvl * 0.1;
+      const resistenz = this.equipBonus("RAD_RESIST") + (typeof this.buffBonus === "function" ? this.buffBonus("RAD_RESIST") : 0);
+      const schutz = this.equipBonus("RAD");
+      reduction += resistenz / 100;
+      reduction += schutz / 100;
+      reduction = Math.min(0.9, reduction);
+      const rest = amount * (1 - reduction);
+      const ganz = Math.floor(rest);
+      if (typeof this.state.radRest === "undefined") this.state.radRest = 0;
+      this.state.radRest += rest - ganz;
+      if (this.state.radRest >= 1) {
+        const extra = Math.floor(this.state.radRest);
+        this.state.radRest -= extra;
+        return ganz + extra;
+      }
+      return ganz;
+    },
     addRadiation: function(amount) {
       if (!this.state) return;
       if (typeof this.state.rads === "undefined") this.state.rads = 0;
       let finalAmount = amount;
-      if (amount > 0) {
-        const perkLvl = this.getPerkLevel("rad_resistant");
-        let reduction = perkLvl * 0.1;
-        const resistenz = this.equipBonus("RAD_RESIST") + (typeof this.buffBonus === "function" ? this.buffBonus("RAD_RESIST") : 0);
-        const schutz = this.equipBonus("RAD");
-        reduction += resistenz / 100;
-        reduction += schutz / 100;
-        reduction = Math.min(0.9, reduction);
-        if (reduction > 0) {
-          finalAmount = Math.ceil(amount * (1 - reduction));
-        }
+      if (amount > 0 && typeof this.strahlungsDosis === "function") {
+        finalAmount = this.strahlungsDosis(amount);
       }
       this.state.rads = Math.min(this.state.maxHp, Math.max(0, this.state.rads + finalAmount));
       if (finalAmount > 0) UI.log(`+${finalAmount} RADS!`, "text-red-500 font-bold animate-pulse");
