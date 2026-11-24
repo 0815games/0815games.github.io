@@ -35,8 +35,15 @@
 - [ ] Monsterdaten zusammenführen: data_monsters.js ersetzt den Katalog
       vollständig statt ihn zu ergänzen (ANALYSE.md B10).
 - [ ] Firebase v9/v10 modular — jetzt möglich, weil ES-Module vorhanden sind.
-- [ ] templates/radio.html hat keinen Button mehr in shell/index.html. Entweder Button
-      zurück oder Template löschen.
+- [ ] templates/radio.html (und vault.html) werden von switchView nie geladen.
+      Beide löschen oder Einstieg bauen — siehe BEFUNDE.md Punkt 2.
+- [ ] Munition: usesAmmo wird nie gelesen, der ganze Zweig ist unerreichbar
+      (BEFUNDE.md Punkt 4, verschärft B9).
+- [ ] Supermutant droppt caps als Item, das es nicht gibt (BEFUNDE.md Punkt 5).
+- [ ] Dynamische Tailwind-Klassen (text-${themeColor}-…) fehlen im CSS
+      (BEFUNDE.md Punkt 6).
+- [ ] renderCharStats/renderCharPerks in ui_view_inv.js sind toter Code
+      (BEFUNDE.md Punkt 3).
 - [ ] Spielstand verkleinern: 'explored' wächst um ~45 kB pro Sektor.
 - [x] CI: `.github/workflows/pipboy-verify.yml` baut, testet und prüft, dass der
       eingecheckte Build zum Quellstand passt; dazu der Portal-Test.

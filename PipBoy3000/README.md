@@ -6,6 +6,7 @@ fertiger Stand ausgeliefert. Dieses Dokument beschreibt die Entwicklung.
 - **Spielerhandbuch:** [docs/README.md](docs/README.md) *(die frühere readme.md,
   inhaltlich unverändert)*
 - **Analyse und Umbau:** [docs/ANALYSE.md](docs/ANALYSE.md)
+- **Weitere Befunde:** [docs/BEFUNDE.md](docs/BEFUNDE.md)
 - **Änderungen:** [docs/change.log](docs/change.log)
 - **Offene Punkte:** [docs/to_do.log](docs/to_do.log)
 

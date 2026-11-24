@@ -1814,7 +1814,7 @@
       this.isDirty = false;
     },
     // Wird von Combat.playerAttack (Vampir-Waffen) aufgerufen. Fehlte bisher,
-    // wodurch der Effekt still wirkungslos blieb (docs/ANALYSE.md, B11).
+    // wodurch der Effekt still wirkungslos blieb (docs/ANALYSE.md, B8).
     getMaxHp: function() {
       return this.state && this.state.maxHp || 100;
     },
@@ -9309,7 +9309,7 @@
         const verDisplay = document.getElementById("version-display");
         const ver = verDisplay ? verDisplay.textContent.trim() : Date.now();
         try {
-          const res = await fetch(`readme.md?v=${ver}`);
+          const res = await fetch(`docs/README.md?v=${ver}`);
           if (!res.ok) throw new Error("Manual not found");
           let text = await res.text();
           text = text.replace(/^# (.*$)/gim, '<h1 class="text-3xl font-bold text-yellow-400 mb-2 border-b border-yellow-500">$1</h1>');
@@ -9334,7 +9334,7 @@
         const verDisplay = document.getElementById("version-display");
         const ver = verDisplay ? verDisplay.textContent.trim() : Date.now();
         try {
-          const res = await fetch(`change.log?v=${ver}`);
+          const res = await fetch(`docs/change.log?v=${ver}`);
           if (!res.ok) throw new Error("Logfile nicht gefunden");
           const text = await res.text();
           content.textContent = text;
