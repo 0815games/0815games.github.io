@@ -1,6 +1,6 @@
 // Update UI for the GitHub Pages build (ported from IronPath ui/version-ui.mjs).
 // No Firebase credentials are used. A matching page stamp is not proof that every cached module or asset matches.
-import {BUILD_ID_PATTERN,createVersionProbe,createVersionCoordinator} from './version-check.mjs?v=20261124-sitz2';
+import {BUILD_ID_PATTERN,createVersionProbe,createVersionCoordinator} from './version-check.mjs?v=20261124-sitz3';
 
 const messages={
   en:{checking:'Checking the game version…',unavailable:'The current version could not be checked. Check your connection and try again before starting a new game.',

@@ -296,3 +296,11 @@ Ereignis ergänzt.
 - Prüfung: eslint `no-undef` über `src/` ohne Befund (vorher 4). 58 Tests grün. `check --fast` ohne Fehler.
 - Lehre: Vor dem Merge alle Funktionsaufrufe mit `no-undef` prüfen. Das deckt diesen Fehler sofort auf.
 - Im Browser noch nicht getestet. Offen für den Betreiber: Test auf dem Handy (Intro, Hilfe, Tutorial).
+
+### TTT-0009 – Neues Logo (Welle `20261124-sitz3`)
+
+- Auftrag: das bisherige Logo (eckiger Block) ersetzen. Gewünscht: Stadt im Hintergrund, Spielname darüber.
+- Änderungen: `icons/logo.png` (640 px, abgerundetes Wappen, Stadtbild, Name „TINY TYCOON / TOWNS“ in DejaVu Sans Bold,
+  erzeugt mit ImageMagick). Intro zeigt Logo und Untertitel, der Titel steht nicht mehr doppelt. Quelldateien
+  nicht im Repo.
+- Prüfungen: 58 Tests grün, `check` ohne Fehler, lint `no-undef` ohne Befund. Auf dem Bildschirm noch nicht gesehen.
