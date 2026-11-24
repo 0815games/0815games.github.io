@@ -38,7 +38,7 @@ Eintrag kennen. Ist die Vorprüfung rot, zuerst klären.
 ## 3. Nach der Änderung
 
 ```sh
-npm test                  # Domain, Regeln, Feldnotizen, Werkzeug
+npm test                  # Domain, Regeln, Stadtchronik, Werkzeug
 npm run check:suite       # Vorprüfung plus alle Tests
 ```
 
@@ -79,7 +79,7 @@ Vollständige Anleitung mit Konsolenlink: [`FIREBASE.md`](FIREBASE.md). Kurz:
 
 ## 8. Nach der Veröffentlichung
 
-1. Feldnotizen in `src/patch-notes.mjs` ergänzen, DE und EN, veröffentlicht und offen getrennt.
+1. Stadtchronik in `src/patch-notes.mjs` ergänzen, DE und EN, veröffentlicht und offen getrennt.
 2. `docs/PATCH-BLOECKE.md` aktualisieren, ohne offene Kriterien zu streichen.
 3. Betreiber-Liste: was zu prüfen ist, mit erwartetem Ergebnis. Keine Geräteabnahme behaupten, die nicht stattfand.
 

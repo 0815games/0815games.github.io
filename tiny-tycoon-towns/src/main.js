@@ -3,27 +3,27 @@
 import {
   createTown, newSeed, chooseBiome, placeBuilding, upgradeBuilding,
   toggleSell, buyOffer, advance, hydrateTown, setTutorialStep,
-} from './domain/engine.js?v=20261124-sitz18';
+} from './domain/engine.js?v=20261124-chronik';
 import {
   productionMultiplier, ratePerMin, buildCost, storageCap, classOf,
-} from './domain/economy.js?v=20261124-sitz18';
-import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261124-sitz18';
-import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261124-sitz18';
-import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261124-sitz18';
+} from './domain/economy.js?v=20261124-chronik';
+import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261124-chronik';
+import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261124-chronik';
+import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261124-chronik';
 import {
   PERKS, canFoundCharter, grantCharters, buyPerk, perkEffect, perkLevel, availableCharters, emptyCharter,
   applyCharterToData,
-} from './domain/charters.js?v=20261124-sitz18';
+} from './domain/charters.js?v=20261124-chronik';
 const SEEN_NOTES_KEY = 'ttt:notes-seen';
-import { withTimeout } from './async-util.js?v=20261124-sitz18';
-import { checkTownName } from './town-names.js?v=20261124-sitz18';
-import { friendsShell, mountFriends } from './friends-ui.js?v=20261124-sitz18';
-import { createBoard } from './world/board.js?v=20261124-sitz18';
-import { createLoginScene } from './world/login-scene.js?v=20261124-sitz18';
-import { TUTORIAL_STEPS, HELP_SECTIONS } from './tutorial.js?v=20261124-sitz18';
-import { createVersionUI } from './version-ui.mjs?v=20261124-sitz18';
+import { withTimeout } from './async-util.js?v=20261124-chronik';
+import { checkTownName } from './town-names.js?v=20261124-chronik';
+import { friendsShell, mountFriends } from './friends-ui.js?v=20261124-chronik';
+import { createBoard } from './world/board.js?v=20261124-chronik';
+import { createLoginScene } from './world/login-scene.js?v=20261124-chronik';
+import { TUTORIAL_STEPS, HELP_SECTIONS } from './tutorial.js?v=20261124-chronik';
+import { createVersionUI } from './version-ui.mjs?v=20261124-chronik';
 
-const BUILD = '20261124-sitz18';
+const BUILD = '20261124-chronik';
 console.info(`Tiny Tycoon Towns ${BUILD}`);
 const LAST_BIOME_KEY = 'ttt.lastBiome';
 const LOCAL_KEY = (uid) => `ttt.save.v1.${uid}`;
@@ -95,7 +95,7 @@ const REMOTE_TIMEOUT_MS = 10_000;
 async function loadData() {
   const names = ['resources', 'biomes', 'buildings', 'economy', 'merchant'];
   const parts = await Promise.all(names.map((n) =>
-    fetch(`data/${n}.json?v=20261124-sitz18`).then((r) => {
+    fetch(`data/${n}.json?v=20261124-chronik`).then((r) => {
       if (!r.ok) throw new Error(`data/${n}.json: HTTP ${r.status}`);
       return r.json();
     })));
@@ -141,7 +141,7 @@ async function boot() {
   window.addEventListener('offline', updateSync);
 
   try {
-    cloud = await import('./cloud.js?v=20261124-sitz18');
+    cloud = await import('./cloud.js?v=20261124-chronik');
   } catch {
     showFatal('Das Konto-System konnte nicht geladen werden. Ohne Anmeldung lässt sich nicht spielen. Bitte Verbindung prüfen und neu laden.');
     return;
@@ -589,7 +589,7 @@ function bindStatic() {
   $('#charter-btn').addEventListener('click', openCharters);
   $('#visit-exit').addEventListener('click', endVisit);
   window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && visit) endVisit(); });
-  // Menü oben rechts: öffnet und schließt die Schaltflächen Hilfe, Feldnotizen, Neu beginnen, Abmelden.
+  // Menü oben rechts: öffnet und schließt die Schaltflächen Hilfe, Stadtchronik, Neu beginnen, Abmelden.
   const menuBtn = $('#menu-btn');
   const menuList = $('#menu-list');
   const setMenu = (open) => {
@@ -1543,7 +1543,7 @@ function showFieldNotes() {
   const list = (items) => items.map((it) => `<li>${esc(it.de)}<br><span class="small muted">${esc(it.en)}</span></li>`).join('');
   const patches = RELEASED_PATCHES.map((p) => `<h3>${esc(p.build)} · ${esc(p.date)}</h3><ul>${list(p.items)}</ul>`).join('');
   openDialog(`<form method="dialog" class="dlg-body">
-    <h2 id="dlg-title">Feldnotizen</h2>
+    <h2 id="dlg-title">Stadtchronik</h2>
     <h3>Stand dieser Welle</h3>
     ${patches}
     <h3>Offen</h3>

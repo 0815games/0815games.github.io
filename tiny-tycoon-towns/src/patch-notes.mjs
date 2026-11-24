@@ -1,8 +1,26 @@
-// Feldnotizen: Was ist veröffentlicht, was ist offen. Jede Zeile braucht DE und EN
+// Stadtchronik: Was ist veröffentlicht, was ist offen. Jede Zeile braucht DE und EN
 // (tests/patch-notes.test.mjs prüft das). Neue Welle immer oben in RELEASED_PATCHES.
 // Ein Eintrag behauptet keine Geräteabnahme, die nicht stattgefunden hat.
 
 export const RELEASED_PATCHES = [
+  {
+    build: '20261124-chronik',
+    date: '2026-11-24',
+    items: [
+      {
+        de: 'Die Feldnotizen heißen jetzt Stadtchronik. Der Knopf oben im Menü ist unverändert.',
+        en: 'Field notes are now called Stadtchronik. The button at the top of the menu is unchanged.',
+      },
+      {
+        de: 'Freibriefe: Wenn deine Stadt Stadtlevel 8 und 100.000 Münzen Gesamtertrag erreicht hat, kannst du einen Freibrief gründen. Die Stadt startet neu, Name und Freunde bleiben. Der Perk-Baum wirkt auf Ertrag, Lager, Verkaufspreis und Offline-Zeit. Eilpost folgt mit den Konvois. Die Regeln für Freibriefe müssen noch veröffentlicht werden.',
+        en: 'Charters: once your town reaches town level 8 and 100,000 coins of total yield, you can found a charter. The town restarts, the name and friends stay. The perk tree affects yield, storage, sale price and offline time. Express post follows with convoys. The charter rules still have to be published.',
+      },
+      {
+        de: 'Münzen stehen jetzt oben auf der Karte. Beim Bauen zeigen Symbole, wie viel Geld und Material du hast: grün genug, rot zu wenig. Dazu steht, was fehlt.',
+        en: 'Coins now show at the top of the map. When building, symbols show how much money and material you have: green is enough, red is too little. The missing amount is named as well.',
+      },
+    ],
+  },
   {
     build: '20261124-sitz18',
     date: '2026-11-24',

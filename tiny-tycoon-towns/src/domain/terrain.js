@@ -1,5 +1,5 @@
-import { mulberry32 } from './rng.js?v=20261124-sitz18';
-import { GRID, HALL } from './grid.js?v=20261124-sitz18';
+import { mulberry32 } from './rng.js?v=20261124-chronik';
+import { GRID, HALL } from './grid.js?v=20261124-chronik';
 
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 

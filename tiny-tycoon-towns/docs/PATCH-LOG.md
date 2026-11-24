@@ -422,3 +422,24 @@ Ereignis ergänzt.
   `floor(sqrt(Ertrag / 100000))`, Perk-Baum (28 Punkte) und Kaufregeln. Quelle: `docs/GAME_PLAN.md`, Abschnitt 4.11.
 - Noch nicht im Spiel: kein Stand-Feld, keine Oberfläche, keine Regeländerung. Offen: Zurücksetzen der Stadt, Anbindung der Perk-Wirkungen an die Produktion.
 - Prüfungen: 71 Tests grün, `check` ohne Fehler.
+
+### TTT-0024 – Freibriefe im Spiel, Münzanzeige, Symbolkosten (PR #424, ohne eigene Welle)
+
+- Zeit / Quelle: PR #424 gemergt am 2026-11-24 16:09:10 UTC (GitHub-Angabe), Merge-Commit `12d7a2d`.
+- Block / Ziel: B3 Fortschritt (Freibrief und Perks). Nutzerwunsch: Freibriefe im Spiel, Perk-Wirkung, Münzen und Material beim Bauen sichtbar.
+- Branch / Basis: `arena/a6f5f272-0815games-github-io`, Basis `5ea8a17`.
+- Commits: `f25cd03` (Menüeintrag, Gründung, Perk-Baum, Speichern unter `charters/{uid}`), `a0356d3` (Perk-Wirkung über `applyCharterToData`), `39eb534` (Münzpille auf der Karte, Kosten als Symbole mit Vorrat).
+- Dateien: `src/main.js`, `src/cloud.js`, `src/domain/charters.js`, `src/domain/economy.js`, `index.html`, `style.css`, `firebase/database.rules.json`, `tests/charters.test.mjs`, `tests/rules.test.mjs`, `scripts/rules-publish-dry-run.mjs`.
+- Prüfungen: `npm test` 74 pass, 0 fail. `npm run check` ohne Fehler. Nachweis: Unit-Tests und Strukturprüfung der Regeln. Nicht geprüft: Emulator, Browser mit Anmeldung (in der Sandbox nicht möglich), echtes Gerät.
+- Git / PR / Veröffentlichung: PR #424 gemergt. Die Regeln `charters/$uid` sind **nicht veröffentlicht**. Der Code ging auf `main`, bevor es dafür einen Patch-Notes-Eintrag und eine eigene Welle gab. Das holt TTT-0025 nach.
+- Offen / nächster Schritt: Regeln `charters/$uid` veröffentlichen (Nutzer). Gerätetest für Freibriefe, Münzpille und Symbolkosten (Nutzer). „Eilpost“ bleibt bis P2 markiert.
+
+### TTT-0025 – Fahrplan und Umbenennung „Feldnotizen“ zu „Stadtchronik“ (Welle `20261124-chronik`)
+
+- Zeit / Quelle: Nutzerwunsch im Chat: zuerst das Log nachtragen, dann eine Datei mit dem langfristigen Plan, offene Punkte herausnehmen, sobald sie fertig und im Spiel sind. Der Name „Feldnotizen“ klingt nach Notizblock und passt nicht zur Stadt.
+- Block / Ziel: Fahrplan als Arbeitsgrundlage, Ablauf. Keine Spielmechanik.
+- Änderungen: neu `docs/ROADMAP.md` (Fahrplan, Entscheidungen, Erledigt). Hinweis in `docs/GAME_PLAN.md` Abschnitt 12, dass dessen Technikplan überholt ist. `AGENTS.md` und `docs/PATCH-ABLAUF.md` verweisen auf den Fahrplan und nennen die Chronik. `index.html`, `src/main.js`: Knopf und Fenster heißen „Stadtchronik“. `src/patch-notes.mjs`: neuer Eintrag oben. Historische Log-Einträge bleiben unverändert.
+- Welle: `node scripts/patch.mjs bump 20261124-chronik --apply` (Cache-Token in allen Dateien).
+- Prüfungen: `npm test` 74 pass, 0 fail, Exit 0. `npm run check:suite` ohne Fehler (Serienlauf 11 Dateien, 74 Tests grün). Nachweis: Unit und Strukturprüfung. Nicht geprüft: Browser mit Anmeldung, Gerät.
+- Git / PR / Veröffentlichung: Commit und PR folgen; Merge erst nach Nutzerfreigabe. Die Welle wird mit dem Merge auf `main` ausgeliefert.
+- Offen / nächster Schritt: siehe `docs/ROADMAP.md`, Abschnitt „Jetzt“.

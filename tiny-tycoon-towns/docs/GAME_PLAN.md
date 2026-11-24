@@ -1134,6 +1134,8 @@ jobs:
 
 ## 12. Roadmap und Arbeitspakete
 
+> **Hinweis (2026-11-24):** Dieser Abschnitt ist überholt. Er beschreibt einen Technikstack (TypeScript, Pixi, Firestore), der nicht gebaut wurde. Den laufenden Fahrplan führt [`ROADMAP.md`](ROADMAP.md).
+
 ### Phase 1: Solo-Kern (4 Wochen)
 
 **Woche 1: Fundament**
