@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see docs/PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261123-aim4';
+import {getLanguage} from './language.mjs?v=20261123-aim5';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,19 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'aim5',build:'20261123-aim5',pr:388,
+    title:{en:'Living Field V · Clouds, Wind and a Frightened Flock',de:'Lebendiges Feld V · Wolken, Wind und eine erschrockene Schar'},
+    shipped:[
+      {en:'Cloud shadows now drift slowly across the ground - weather you only notice as movement on the dirt.',de:'Wolkschatten ziehen jetzt langsam übers Gelände - Wetter, das man nur als Bewegung auf dem Boden bemerkt.'},
+      {en:'Wind tumbles hay, leaves or snow low across the terrain, tinted for each biome: sand in the desert, reed in the marsh, green in the forest, white in the arctic.',de:'Wind wirbelt Heu, Blätter oder Schnee tief übers Terrain, in der Farbe des Bioms: Sand in der Wüste, Schilf in der Marsch, Grün im Wald, Weiß in der Arktis.'},
+      {en:'A flock of six birds crosses the sky. Fresh shots make them climb and beat their wings faster; a quiet field lets them glide. The alarm is read from the same shot list the tracer paints - no new state, nothing new on the wire.',de:'Eine Schar aus sechs Vögeln kreuzt den Himmel. Frische Schüsse lassen sie steigen und schneller schlagen; ein ruhiges Feld lässt sie gleiten. Die Alarmlage wird aus derselben Schussliste gelesen, die der Tracer malt - kein neuer Zustand, nichts Neues auf dem Draht.'},
+      {en:'Raised the cache wave to 20261123-aim5, because the field gained new layers: no device should fight with yesterday’s eyes.',de:'Die Cache-Welle auf 20261123-aim5 erhöht, weil das Feld neue Ebenen bekam: Kein Gerät soll mit den Augen von gestern kämpfen.'},
+    ],
+    open:[
+      {en:'The Living Field series is complete: spinning heads, fine polish, flashes and casings, and now a living sky. What comes next is the operator’s call.',de:'Die Reihe Lebendiges Feld ist vollständig: drehende Köpfe, Feinschliff, Blitze und Hülsen - und jetzt ein lebendiger Himmel. Was als Nächstes kommt, entscheidet der Betreiber.'},
+    ]
+  },
   {
     id:'aim4',build:'20261123-aim4',pr:387,
     title:{en:'Living Field IV · Flashes at the Muzzle, Casings in the Air',de:'Lebendiges Feld IV · Blitze an der Mündung, Hülsen in der Luft'},
