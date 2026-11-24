@@ -170,8 +170,15 @@ test('der Rand der Wolke zählt, ein Feld weiter nicht', () => {
   Game.baueRadWolken('desert');
   const w = Game.radWolkenImSektor()[0];
 
-  assert.ok(Game.radWolkeAufFeld(w.x + w.radius, w.y), 'Randfeld zählt nicht');
-  assert.equal(Game.radWolkeAufFeld(w.x + w.radius + 2, w.y), null, 'zwei Felder weiter strahlt noch');
+  // Die Wolken werden zufaellig platziert und koennen sich ueberlappen.
+  // Beim ersten Durchlauf lag eine zweite Wolke zufaellig zwei Felder
+  // neben der ersten - der Test war dann rot, obwohl der Radius stimmte.
+  // Deshalb wird hier eine einzelne Wolke gesetzt statt gewuerfelt.
+  Game.state.radClouds = [{sektor: {x: 0, y: 0}, x: 20, y: 20, radius: 2, dichte: 1, zug: 0}];
+
+  assert.ok(Game.radWolkeAufFeld(22, 20), 'Randfeld zählt nicht');
+  assert.equal(Game.radWolkeAufFeld(24, 20), null, 'zwei Felder weiter strahlt noch');
+  assert.equal(Game.radWolkeAufFeld(20, 23), null, 'ausserhalb des Radius strahlt noch');
 });
 
 test('Gasmaske senkt die Dosis einer Wolke', () => {

@@ -1,5 +1,32 @@
 # CHANGELOG
 
+## v14.0.5 (Item-Bilder, 2026-11-24)
+Bis hierher hatte jedes Item ein Emoji nach **Typ**: Stimpack und RadAway sahen
+beide wie eine Spritze aus, alle 34 Waffen wie eine Pistole.
+
+- [FEATURE] **Echte Item-Bilder:** grüne Linien auf Schwarz, im Stil der
+  Oberfläche. Erste Ausbaustufe mit 13 Motiven (Verbrauchsgüter, Munition,
+  zwei Waffen und eine Rüstung).
+- [FEATURE] **`tools/icons.mjs`** bereitet die Rohbilder auf: auf den Inhalt
+  beschneiden, quadratisch mit Rand, 128 px. Aus 11 MB Rohmaterial wurden
+  76 kB für das Set.
+- [FEATURE] **Icon-Tabelle im Quellcode** (`data_item_icons.js`) wird beim
+  Aufbereiten aus dem Dateibestand erzeugt — Code und Bilder können nicht
+  auseinanderlaufen.
+- [FALLBACK] **Fehlt ein Bild, bleibt das Typ-Emoji.** Das Set wächst in
+  Etappen; ein leeres Feld darf dabei nicht entstehen.
+
+### Zwei Fallen beim Aufbereiten
+
+1. **Lage schlägt Auflösung.** Die erste Spritze lag diagonal im Bild: bei
+   32 px blieb ein Strich. Dieselbe Datei nur gedreht war klar lesbar.
+2. **sharp führt pro Pipeline nur einen `resize` aus.** In einer Kette wurde
+   der zweite still ignoriert — alle Bilder kamen mit 254–276 px statt 128
+   heraus. Aufgefallen ist es nur, weil ein Test die Pixelmaße prüft.
+
+- [TESTS] 6 neue Tests (135 gesamt): Tabelle ↔ Dateien, Bildgröße, relative
+  Pfade, Auslieferung im Spielordner.
+
 ## v14.0.4 (Absturz auf dem iPhone, 2026-11-24)
 Bericht: „Script error.", LOCATION `Internal : ?:?`, kein Stack, leerer
 Log-Puffer. Der Bericht selbst war die erste Baustelle — er verschwieg die

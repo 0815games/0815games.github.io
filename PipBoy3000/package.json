@@ -1,6 +1,6 @@
 {
   "name": "pipboy3000",
-  "version": "14.0.4",
+  "version": "14.0.5",
   "private": true,
   "description": "Pip-Boy 3003 - Ödland-RPG im Browser",
   "type": "module",
@@ -12,11 +12,13 @@
     "build:check": "node build.mjs --check",
     "test": "node --test --test-force-exit tests/*.test.mjs",
     "test:balance": "node --test --test-force-exit tests/balance.test.mjs",
-    "verify": "npm run build:check && npm test"
+    "verify": "npm run build:check && npm test",
+    "icons": "node tools/icons.mjs"
   },
   "devDependencies": {
     "esbuild": "^0.24.2",
     "jsdom": "^25.0.1",
+    "sharp": "^0.35.5",
     "tailwindcss": "^3.4.17"
   },
   "dependencies": {
