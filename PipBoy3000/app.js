@@ -439,6 +439,7 @@
   // src/data/data_item_icons.js
   if (typeof window.GameData === "undefined") window.GameData = {};
   window.GameData.itemBilder = [
+    "adhesive",
     "alien_blaster",
     "ammo",
     "ammo_10mm",
@@ -455,13 +456,16 @@
     "baseball_bat",
     "bat_alum",
     "bat_spiked",
+    "bone",
     "boots_combat",
     "boots_leather",
     "boots_worn",
     "bp_ammo",
+    "bp_stimpack",
     "bracers_leather",
     "buffout",
     "cap_baseball",
+    "circuit",
     "cloth",
     "combat_armor",
     "combat_arms",
@@ -469,6 +473,7 @@
     "combat_shotgun",
     "deathclaw_gauntlet",
     "gas_mask",
+    "gears",
     "glue",
     "greaves_metal",
     "hazmat_suit",
@@ -486,12 +491,15 @@
     "leather",
     "leather_armor",
     "leather_helm",
+    "legendary_part",
     "machete",
     "metal_armor",
     "metal_arms",
     "minigun",
+    "nuclear_mat",
     "nuka_cola",
     "nuka_quantum",
+    "oil",
     "pants_leather",
     "pipe_pistol",
     "pipe_revolver",
@@ -522,6 +530,7 @@
     "switchblade",
     "synth_armor",
     "synth_helmet",
+    "titanium",
     "vault_suit"
   ];
 
