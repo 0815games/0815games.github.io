@@ -99,6 +99,8 @@ function ancestorModes(live,path){
 // Sperrmodus: the root stays closed, only saves/$uid/town is reachable, and the
 // owner check, schema validation and unknown-field rejection are present.
 // Blockers: the same rules that the emulator suite would enforce in IronPath.
+// Felder einer Stadt, die jeder angemeldete Spieler lesen darf (Ansicht fremder Städte).
+export const PUBLIC_VIEW=['name','biome','townLevel','tiles'];
 export function checkRules(raw){
   const errors=[];
   const rules=unwrapRules(raw);
@@ -121,6 +123,12 @@ export function checkRules(raw){
       if(!String(town['.validate']??'').includes('newData'))errors.push('town: .validate prüft nichts');
       if(town.$other?.['.validate']!==false)errors.push('town: $other muss .validate false haben (unbekannte Felder abweisen)');
       if(!String(town['.validate']??'').includes('schemaVersion'))errors.push('town: Schema-Downgrade wird nicht geprüft');
+      // Fremde Städte: nur die Ansichtsfelder dürfen gelesen werden. Münzen, Lager und Verwaltung bleiben privat.
+      if(town['.read']!==undefined)errors.push('town: .read darf nicht am Stadt-Knoten stehen (sonst sind Münzen und Lager lesbar)');
+      for(const [key,node] of Object.entries(town)){
+        if(key.startsWith('.')||!node||typeof node!=='object')continue;
+        if(node['.read']!==undefined&&!PUBLIC_VIEW.includes(key))errors.push(`town/${key}: .read nur für Ansichtsfelder erlaubt (${PUBLIC_VIEW.join(', ')})`);
+      }
     }
   }
   // Sitzung je Konto (eine Anmeldung pro Konto, über alle Geräte): nur der Inhaber, nur bekannte Felder.

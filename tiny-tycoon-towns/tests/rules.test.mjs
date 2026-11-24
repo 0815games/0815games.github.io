@@ -52,3 +52,14 @@ test('admins are readable only by their own account and never writable (bissfest
   assert.ok(errs.some((e) => e.includes('admins/$uid: .write muss false sein')));
   assert.equal(checkRules(candidate).errors.filter((e) => e.includes('admins')).length, 0);
 });
+
+test('other towns: only the view fields are readable, never coins, stock or the town node (bissfest)', () => {
+  const bad = structuredClone(candidate);
+  bad.rules.saves.$uid.town.coins['.read'] = 'auth != null';
+  assert.ok(checkRules(bad).errors.some((e) => e.includes('town/coins: .read nur für Ansichtsfelder')));
+  const bad2 = structuredClone(candidate);
+  bad2.rules.saves.$uid.town['.read'] = 'auth != null';
+  assert.ok(checkRules(bad2).errors.some((e) => e.includes('Stadt-Knoten')));
+  // Die Ansicht selbst ist erlaubt.
+  assert.equal(checkRules(candidate).errors.filter((e) => e.includes('Ansichtsfelder') || e.includes('Stadt-Knoten')).length, 0);
+});

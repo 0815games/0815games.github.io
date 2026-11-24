@@ -4,6 +4,20 @@
 
 export const RELEASED_PATCHES = [
   {
+    build: '20261124-sitz12',
+    date: '2026-11-24',
+    items: [
+      {
+        de: 'Fremde Städte kannst du jetzt ansehen: Name, Level und Gebäude. Münzen und Lager bleiben privat.',
+        en: 'You can now view other towns: name, level and buildings. Coins and stock stay private.',
+      },
+      {
+        de: 'Ändert der Betreiber deine Stadt, siehst du einen Hinweis und lädst das Spiel neu. So geht nichts verloren.',
+        en: 'If the operator changes your town, you see a notice and reload the game. Nothing gets overwritten.',
+      },
+    ],
+  },
+  {
     build: '20261124-sitz11',
     date: '2026-11-24',
     items: [
