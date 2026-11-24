@@ -1,4 +1,26 @@
-# CHANGELOG (v0.6.6 - v0.8.0)
+# CHANGELOG
+
+## v14.0.0 (Umbau, 2026-11-24)
+- [SYSTEM] **ES-Module und Build:** 26 Skripte werden zu `app.js` gebündelt
+  (esbuild), Tailwind läuft zur Buildzeit statt über den Play-CDN. Quellen der
+  Hüllseiten in `shell/`, Templates in `templates/`.
+- [SYSTEM] **Auslieferung in-place:** Der Build schreibt in den Spielordner,
+  weil GitHub Pages die Repo-Wurzel ausliefert. `dist/` entfällt.
+- [SYSTEM] **Absicherung:** Der Build bricht bei unbestätigten
+  Doppel-Definitionen, veralteten Freigaben, verwaisten Dateien und einer
+  abweichenden Ladereihenfolge ab.
+- [BUGFIX] **Jackpot:** `createLegendaryItem` fehlte; der Jackpot-Zweig nutzte
+  die schwächere von zwei `gambleLegendaryLoot`-Fassungen.
+- [BUGFIX] **Biome:** `city` und `jungle` wurden definiert, aber nie erzeugt.
+- [BUGFIX] **Boot-Sequenz:** fehlendes `scriptsLoaded` ließ die Anmeldung
+  dauerhaft warten; gefunden vom neuen Seitentest.
+- [BUGFIX] **style.css:** lag nach dem Umzug nur in `shell/` und wurde mit 404
+  verlinkt; der Build liefert sie jetzt mit aus.
+- [TESTS] 31 Tests: Bündel, Datenintegrität, gebootete Seite, Ordnerhygiene.
+- [CLEANUP] Vier `.old`-Dateien, das nie geladene 3D-Experiment,
+  `migration-manifest.json` und drei leere Ordner entfernt.
+
+## Ältere Stände (v0.6.6 - v0.8.0)
 
 ## v0.8.0 (The Hub Update)
 - [UI] **Rusty Springs Overhaul:** Das Stadt-Menü wurde komplett überarbeitet.
