@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#FFF6E5">
-  <meta name="ttt-build" content="20261124-sitz5">
+  <meta name="ttt-build" content="20261124-sitz6">
   <title>Tiny Tycoon Towns</title>
   <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -13,7 +13,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Tiny Towns">
-  <link rel="stylesheet" href="style.css?v=20261124-sitz5">
+  <link rel="stylesheet" href="style.css?v=20261124-sitz6">
 </head>
 <body>
   <a class="skip" href="#board">Zum Spielfeld springen</a>
@@ -44,7 +44,7 @@
       <p class="auth-intro-tag">Baue deine kleine Insel-Stadt</p>
     </div>
     <div class="auth-card" id="auth-card"></div>
-    <p class="auth-foot small">Tiny Tycoon Towns · BUILD 20261124-sitz5</p>
+    <p class="auth-foot small">Tiny Tycoon Towns · BUILD 20261124-sitz6</p>
   </section>
 
   <div id="loading" class="app-shell" hidden>
@@ -58,48 +58,52 @@
     </div>
   </header>
 
-  <main class="layout">
-    <section class="board-wrap" aria-label="Spielfeld">
-      <div class="map-hud" aria-label="Stadtwerte">
+  <div class="map-hud">
     <div class="town map-pill">
       <h1 id="town-name">Tiny Tycoon Towns</h1>
       <p id="town-meta" class="muted"></p>
       <p id="sync" class="small muted" aria-live="polite"></p>
     </div>
-    <div class="coins map-pill" aria-live="off">
-      <span aria-hidden="true">🪙</span>
-      <span class="label">Münzen</span>
-      <strong id="coins">0</strong>
-    </div>
     <div class="xp map-pill">
       <span id="level-label">Stadtlevel 1</span>
       <progress id="xp-bar" max="100" value="0" aria-label="Fortschritt zum nächsten Stadtlevel"></progress>
     </div>
-      </div>
-      <div id="board" class="board" tabindex="0" aria-describedby="board-hint"></div>
-      <p id="board-hint" class="muted small">Pfeiltasten bewegen die Auswahl, Enter wählt ein Feld.</p>
+  </div>
 
+  <button type="button" id="stock-btn" class="stock-btn">🪙 Lager und Geld</button>
+
+  <main class="layout">
+    <section class="board-wrap" aria-label="Spielfeld">
+      <div id="board" class="board" tabindex="0" aria-describedby="board-hint"></div>
+      <p id="board-hint" class="sr-only">Pfeiltasten bewegen die Auswahl, Enter öffnet das Feld.</p>
       <p id="resultsVersionStatus" class="warn small" role="status" hidden></p>
-        <section class="stock" aria-labelledby="stock-title">
-        <h2 id="stock-title">Lager und Verkauf</h2>
-        <ul id="stock"></ul>
-        <p class="muted small">Das Rathaus verkauft automatisch. Je Ressource bleiben 20 Einheiten als Reserve.</p>
-      </section>
     </section>
 
-    <aside id="panel" class="panel" aria-live="polite"></aside>
+    <aside id="panel" class="panel" aria-live="polite" hidden></aside>
   </main>
 
+  <dialog id="stock-sheet" class="sheet" aria-labelledby="stock-title">
+    <div class="dlg-body">
+      <h2 id="stock-title">Lager und Geld</h2>
+      <p class="coins-line"><span aria-hidden="true">🪙</span> <strong id="coins">0</strong> Münzen</p>
+      <section class="stock" aria-label="Lagerbestand">
+        <ul id="stock"></ul>
+      </section>
+      <p class="muted small">Das Rathaus verkauft automatisch. Je Ressource bleiben 20 Einheiten als Reserve.</p>
+      <div id="merchant"></div>
+      <p class="row"><button type="button" id="stock-close" class="primary">Schließen</button></p>
+    </div>
+  </dialog>
   </div>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <p class="build-stamp" aria-hidden="true">BUILD 20261124-sitz5</p>
+  <p class="build-stamp" aria-hidden="true">BUILD 20261124-sitz6</p>
 
   <div id="tutorial" class="tutorial" hidden></div>
 
   <dialog id="dlg" aria-labelledby="dlg-title"></dialog>
 
-  <script type="module" src="src/main.js?v=20261124-sitz5"></script>
+  <script type="module" src="src/main.js?v=20261124-sitz6"></script>
 </body>
 </html>

@@ -3,21 +3,21 @@
 import {
   createTown, newSeed, chooseBiome, placeBuilding, upgradeBuilding,
   toggleSell, buyOffer, advance, hydrateTown, setTutorialStep,
-} from './domain/engine.js?v=20261124-sitz5';
+} from './domain/engine.js?v=20261124-sitz6';
 import {
   productionMultiplier, ratePerMin, buildCost, storageCap, classOf,
-} from './domain/economy.js?v=20261124-sitz5';
-import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261124-sitz5';
-import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261124-sitz5';
-import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261124-sitz5';
+} from './domain/economy.js?v=20261124-sitz6';
+import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261124-sitz6';
+import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261124-sitz6';
+import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261124-sitz6';
 const SEEN_NOTES_KEY = 'ttt:notes-seen';
-import { withTimeout } from './async-util.js?v=20261124-sitz5';
-import { createBoard } from './world/board.js?v=20261124-sitz5';
-import { createLoginScene } from './world/login-scene.js?v=20261124-sitz5';
-import { TUTORIAL_STEPS, HELP_SECTIONS } from './tutorial.js?v=20261124-sitz5';
-import { createVersionUI } from './version-ui.mjs?v=20261124-sitz5';
+import { withTimeout } from './async-util.js?v=20261124-sitz6';
+import { createBoard } from './world/board.js?v=20261124-sitz6';
+import { createLoginScene } from './world/login-scene.js?v=20261124-sitz6';
+import { TUTORIAL_STEPS, HELP_SECTIONS } from './tutorial.js?v=20261124-sitz6';
+import { createVersionUI } from './version-ui.mjs?v=20261124-sitz6';
 
-const BUILD = '20261124-sitz5';
+const BUILD = '20261124-sitz6';
 console.info(`Tiny Tycoon Towns ${BUILD}`);
 const LAST_BIOME_KEY = 'ttt.lastBiome';
 const LOCAL_KEY = (uid) => `ttt.save.v1.${uid}`;
@@ -61,6 +61,16 @@ let cloud = null;          // ./cloud.js, loaded after the data
 let uid = null;            // signed-in user, null when signed out
 let state = null;          // current town, null until loaded or founded
 let selected = { x: 4, y: 4 };
+let popupOpen = false;     // Feld-Popup sichtbar
+let buildIdx = 0;          // gezeigte Bauoption im Popup
+let lastSelKey = '';       // Feld, zu dem buildIdx gehört
+
+/** Schreibt Inhalt ins Popup und zeigt es (für Meldungen wie Laden, Fehler, Sitzung). */
+function setPanelHtml(html) {
+  const p = $('#panel');
+  p.innerHTML = html;
+  p.hidden = false;
+}
 let cloudDirty = false;    // local change not yet confirmed by the cloud
 let cloudPending = false;  // a cloud write is in flight
 let lastCloudAt = 0;
@@ -78,7 +88,7 @@ const REMOTE_TIMEOUT_MS = 10_000;
 async function loadData() {
   const names = ['resources', 'biomes', 'buildings', 'economy', 'merchant'];
   const parts = await Promise.all(names.map((n) =>
-    fetch(`data/${n}.json?v=20261124-sitz5`).then((r) => {
+    fetch(`data/${n}.json?v=20261124-sitz6`).then((r) => {
       if (!r.ok) throw new Error(`data/${n}.json: HTTP ${r.status}`);
       return r.json();
     })));
@@ -123,7 +133,7 @@ async function boot() {
   window.addEventListener('offline', updateSync);
 
   try {
-    cloud = await import('./cloud.js?v=20261124-sitz5');
+    cloud = await import('./cloud.js?v=20261124-sitz6');
   } catch {
     showFatal('Das Konto-System konnte nicht geladen werden. Ohne Anmeldung lässt sich nicht spielen. Bitte Verbindung prüfen und neu laden.');
     return;
@@ -234,12 +244,12 @@ async function retryRemote() {
 }
 
 function showLoading(text) {
-  $('#panel').innerHTML = `<p class="muted">${esc(text)}</p>`;
+  setPanelHtml(`<p class="muted">${esc(text)}</p>`);
 }
 
 function showRetry(text) {
-  $('#panel').innerHTML = `<p class="warn">${esc(text)}</p>
-    <p><button type="button" id="retry-load" class="primary">Erneut versuchen</button></p>`;
+  setPanelHtml(`<p class="warn">${esc(text)}</p>
+    <p><button type="button" id="retry-load" class="primary">Erneut versuchen</button></p>`);
   $('#retry-load').addEventListener('click', () => {
     if (!currentUser) return;
     uid = null;
@@ -266,12 +276,12 @@ function renderSignedOut() {
   board = null;
   $('#board').innerHTML = '';
   $('#stock').innerHTML = '';
-  $('#panel').innerHTML = '';
+  setPanelHtml('');
 }
 
 function showFatal(text, { quiet = false } = {}) {
-  if (!quiet) $('#panel').innerHTML = `<p class="warn">${esc(text)}</p>`;
-  else $('#panel').innerHTML = `<p class="muted">${esc(text)}</p>`;
+  if (!quiet) setPanelHtml(`<p class="warn">${esc(text)}</p>`);
+  else setPanelHtml(`<p class="muted">${esc(text)}</p>`);
 }
 
 // ---------- Saving ----------
@@ -434,7 +444,13 @@ function dispatch(result, okMsg) {
 }
 
 function selectTile({ x, y }) {
+  const key = `${x},${y}`;
+  if (key !== lastSelKey) {
+    lastSelKey = key;
+    buildIdx = 0;
+  }
   selected = { x, y };
+  popupOpen = true;
   renderBoard();
   renderPanel();
   board?.focusTile(x, y);
@@ -472,9 +488,21 @@ function ensureBoard() {
 function bindStatic() {
   // Enter wählt das markierte Feld: Bedienfeld öffnen.
   $('#board').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && state) renderPanel();
+    if (e.key === 'Enter' && state) {
+      popupOpen = true;
+      renderPanel();
+    }
   });
   $('#panel').addEventListener('click', onPanelClick);
+  $('#stock-btn').addEventListener('click', openStock);
+  $('#stock-close').addEventListener('click', () => $('#stock-sheet').close());
+  $('#stock-sheet').addEventListener('click', onPanelClick); // Händler: Kaufen
+  // Escape schließt zuerst den offenen Dialog, sonst das Feld-Popup.
+  window.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape' || !popupOpen || $('#dlg')?.open || $('#stock-sheet').open) return;
+    popupOpen = false;
+    renderPanel();
+  });
   $('#stock').addEventListener('click', (e) => {
     const btn = e.target.closest('[data-sell]');
     if (!btn || !state) return;
@@ -521,6 +549,21 @@ function onPanelClick(e) {
   if (action === 'build') dispatch(placeBuilding(state, { x, y, buildingId: id }, ctx()), 'Gebaut.');
   if (action === 'upgrade') dispatch(upgradeBuilding(state, { x, y }, ctx()), 'Aufgewertet.');
   if (action === 'buy') dispatch(buyOffer(state, { index: Number(index) }, ctx()), 'Gekauft. Eberhard nickt zufrieden.');
+  if (action === 'close') {
+    popupOpen = false;
+    renderPanel();
+  }
+  if (action === 'cycle') {
+    const count = Object.values(data.buildings).filter((d) => !d.fixed).length;
+    buildIdx = (buildIdx + Number(btn.dataset.dir) + count) % count;
+    renderPanel();
+  }
+}
+
+function openStock() {
+  renderStock();
+  const sheet = $('#stock-sheet');
+  if (!sheet.open) sheet.showModal();
 }
 
 // ---------- Game loop ----------
@@ -731,6 +774,7 @@ function renderStock() {
     </li>`;
   });
   $('#stock').innerHTML = items.join('');
+  $('#merchant').innerHTML = merchantSection();
   updateStockNumbers();
 }
 
@@ -748,14 +792,22 @@ function updateStockNumbers() {
 
 function renderPanel() {
   if (!state) return;
+  const panel = $('#panel');
+  if (!popupOpen) {
+    panel.hidden = true;
+    return;
+  }
+  panel.hidden = false;
   const { x, y } = selected;
   const tile = state.tiles[keyOf(x, y)];
   const unlocked = isUnlocked(x, y, state.townLevel, data);
   const b = tile.building;
-  let html = `<section><h2>Feld ${x + 1}, ${y + 1}</h2><p class="muted">${TERRAIN_DE[tile.terrain]}${unlocked ? '' : ' · gesperrt'}</p></section>`;
+  let html = `<div class="panel-head"><div><h2>Feld ${x + 1}, ${y + 1}</h2>
+    <p class="muted small">${TERRAIN_DE[tile.terrain]}${unlocked ? '' : ' · gesperrt'}</p></div>
+    <button type="button" data-action="close" class="ghost" aria-label="Fenster schließen">✕</button></div>`;
 
   if (!unlocked) {
-    html += '<section><p>Dieses Feld ist noch im Nebel. Mit höherem Stadtlevel wird die Fläche größer.</p></section>';
+    html += '<p>Dieses Feld ist noch im Nebel. Mit höherem Stadtlevel wird die Fläche größer.</p>';
   } else if (b?.id === 'townHall') {
     html += `<section><h3>${data.buildings.townHall.icon} Rathaus</h3>
       <p>Verkauft automatisch ${data.economy.sell.townHallThroughputPerMin} Einheiten pro Minute. Mehr Durchsatz gibt der Marktplatz.</p></section>`;
@@ -764,10 +816,7 @@ function renderPanel() {
   } else {
     html += buildMenu(x, y);
   }
-
-  html += merchantSection();
-  html += '<section class="small muted"><p>Tipp: Ein Hof auf einer Wiese bringt +20 %. Nachbarschaft zählt auch, zum Beispiel Imkerei neben Hof.</p></section>';
-  $('#panel').innerHTML = html;
+  panel.innerHTML = html;
 }
 
 function multiplierText(m) {
@@ -798,33 +847,38 @@ function buildingDetails(b, x, y) {
   return `${html}</section>`;
 }
 
+/** Eine Bauoption je Ansicht. ‹ › blättert durch alle Gebäude. */
 function buildMenu(x, y) {
-  const rows = Object.entries(data.buildings)
-    .filter(([, d]) => !d.fixed)
-    .map(([id, d]) => {
-      const c = buildCost(id, 0, data);
-      const matName = data.resources[c.material.resource].name.de;
-      const locked = d.unlockTownLevel > state.townLevel;
-      const affordable = state.coins >= c.coins && state.stock[c.material.resource] >= c.material.amount;
-      let meta;
-      if (d.resource) {
-        const m = productionMultiplier({ ...state, tiles: withTempBuilding(x, y, id) }, x, y, id, data);
-        const rate = d.baseRatePerMin * m;
-        meta = `${fmtRate(rate)} ${esc(data.resources[d.resource].name.de)}/min auf diesem Feld (${multiplierText(m)})`;
-      } else {
-        meta = id === 'warehouse' ? 'Mehr Lagerkapazität' : 'Mehr Verkaufsdurchsatz';
-      }
-      return `<div class="opt">
-        <div><strong>${d.icon} ${esc(d.name.de)}</strong>
+  const entries = Object.entries(data.buildings).filter(([, d]) => !d.fixed);
+  if (buildIdx >= entries.length) buildIdx = 0;
+  const [id, d] = entries[buildIdx];
+  const c = buildCost(id, 0, data);
+  const matName = data.resources[c.material.resource].name.de;
+  const locked = d.unlockTownLevel > state.townLevel;
+  const affordable = state.coins >= c.coins && state.stock[c.material.resource] >= c.material.amount;
+  let meta;
+  if (d.resource) {
+    const m = productionMultiplier({ ...state, tiles: withTempBuilding(x, y, id) }, x, y, id, data);
+    const rate = d.baseRatePerMin * m;
+    meta = `${fmtRate(rate)} ${esc(data.resources[d.resource].name.de)}/min auf diesem Feld (${multiplierText(m)})`;
+  } else {
+    meta = id === 'warehouse' ? 'Mehr Lagerkapazität' : 'Mehr Verkaufsdurchsatz';
+  }
+  return `<section>
+    <div class="cycle">
+      <button type="button" data-action="cycle" data-dir="-1" data-cycle aria-label="Vorherige Option">‹</button>
+      <div class="opt">
+        <div><strong>${d.icon} ${esc(d.name.de)}</strong> <span class="muted small">${buildIdx + 1} / ${entries.length}</span>
           <div class="meta">${fmt0(c.coins)} 🪙 · ${c.material.amount} ${esc(matName)}</div>
           <div class="meta">${meta}</div>
           ${locked ? `<div class="locked-note">Ab Stadtlevel ${d.unlockTownLevel}</div>` : ''}
           ${!locked && !affordable ? '<div class="locked-note">Dir fehlen Münzen oder Material</div>' : ''}
         </div>
         <button type="button" data-action="build" data-id="${id}" ${locked || !affordable ? 'disabled' : ''}>Bauen</button>
-      </div>`;
-    });
-  return `<section><h3>Bauen</h3>${rows.join('')}</section>`;
+      </div>
+      <button type="button" data-action="cycle" data-dir="1" data-cycle aria-label="Nächste Option">›</button>
+    </div>
+  </section>`;
 }
 
 /** Temporary tile map with a building placed, used only for bonus previews. */
@@ -960,7 +1014,7 @@ function onSessionLost(sessionUid) {
   sessionLost = true;
   stopSessionGuard();
   activeUid = null;
-  $('#panel').innerHTML = `<p class="warn">${esc(SESSION_LOST_TEXT)}</p>`;
+  setPanelHtml(`<p class="warn">${esc(SESSION_LOST_TEXT)}</p>`);
   openDialog(`<div class="dlg-body">
     <h2 id="dlg-title">Sitzung übernommen</h2>
     <p>${esc(SESSION_LOST_TEXT)}</p>
@@ -978,11 +1032,11 @@ function onSessionLost(sessionUid) {
 }
 
 function showSessionTaken(sessionUid) {
-  $('#panel').innerHTML = `<p class="warn">${esc(SESSION_TAKEN_TEXT)}</p>
+  setPanelHtml(`<p class="warn">${esc(SESSION_TAKEN_TEXT)}</p>
     <p class="row">
       <button type="button" id="session-take" class="primary">Hier übernehmen</button>
       <button type="button" id="session-retry">Erneut prüfen</button>
-    </p>`;
+    </p>`);
   $('#session-take').addEventListener('click', () => takeOverSession(sessionUid));
   $('#session-retry').addEventListener('click', () => { uid = null; void onUser(currentUser); });
 }

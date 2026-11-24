@@ -376,3 +376,78 @@ dialog input {
 @media (prefers-reduced-motion: reduce) {
   .tut-target, .tut-card { animation: none; }
 }
+
+/* ---------- Vollbild-Karte: Spielfeld füllt den Bildschirm, Werte schweben darüber ---------- */
+.layout { display: block; padding: 0; margin: 0; max-width: none; }
+.board-wrap { position: fixed; inset: 0; z-index: 0; margin: 0; gap: 0; }
+.board { width: 100%; height: 100%; border: 0; border-radius: 0; background: #14223f; }
+.map-hud {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  right: auto;
+  bottom: auto;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  width: auto;
+  pointer-events: none;
+}
+.map-hud .town { flex: none; }
+.map-pill h1 { font-size: 17px; }
+.stock-btn {
+  position: fixed;
+  left: 12px;
+  bottom: 12px;
+  z-index: 40;
+  min-height: 44px;
+  padding: 8px 16px;
+  font-weight: 700;
+  background: var(--gold);
+  border: 2px solid var(--ink);
+  border-radius: 14px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+}
+/* Feld-Popup: erscheint nach dem Klick auf ein Feld, unten mittig. */
+.panel {
+  position: fixed;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+  z-index: 45;
+  width: min(94vw, 420px);
+  max-height: 52vh;
+  overflow: auto;
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  background: var(--paper);
+  border: 3px solid var(--ink);
+  border-radius: 18px;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.4);
+  animation: card-in 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.panel-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.panel-head h2 { font-size: 18px; margin: 0; }
+.panel-head p { margin: 0; }
+.cycle { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.cycle .opt { flex: 1 1 auto; }
+.cycle button[data-cycle] { min-width: 48px; min-height: 44px; font-size: 22px; font-weight: 700; }
+/* Lager und Geld: Dialog mit Lager, Münzen und Händler. */
+.sheet {
+  width: min(94vw, 520px);
+  max-height: 86vh;
+  overflow: auto;
+  padding: 0;
+  border: 3px solid var(--ink);
+  border-radius: 18px;
+  background: var(--paper);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+}
+.sheet .dlg-body { padding: 16px; }
+.sheet h2 { font-size: 22px; margin: 0; }
+.coins-line { font-size: 20px; margin: 0; }
+.sheet .stock { max-width: none; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

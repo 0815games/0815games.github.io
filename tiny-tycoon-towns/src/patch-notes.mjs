@@ -4,6 +4,20 @@
 
 export const RELEASED_PATCHES = [
   {
+    build: '20261124-sitz6',
+    date: '2026-11-24',
+    items: [
+      {
+        de: 'Die Karte füllt den ganzen Bildschirm. Ein Tipp auf ein Feld öffnet ein kleines Fenster mit den Bauoptionen, durchblätterbar mit ‹ ›.',
+        en: 'The map fills the whole screen. Tapping a tile opens a small window with build options, which you can browse with ‹ ›.',
+      },
+      {
+        de: 'Lager, Münzen und Eberhards Angebote liegen jetzt unter „Lager und Geld“ unten links.',
+        en: 'Stock, coins and Eberhard\'s offers are now under “Stock and money” at the bottom left.',
+      },
+    ],
+  },
+  {
     build: '20261124-sitz5',
     date: '2026-11-24',
     items: [

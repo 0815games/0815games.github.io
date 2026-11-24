@@ -10,23 +10,23 @@ export const TUTORIAL_STEPS = Object.freeze([
   },
   {
     title: 'Das Spielfeld',
-    text: 'Klicke auf ein Feld, um es auszuwählen. Ziehen verschiebt die Karte, das Mausrad oder zwei Finger zoomen. Mit den Pfeiltasten wanderst du über das Raster.',
+    text: 'Tippe auf ein Feld, dann öffnet sich ein Fenster. Ziehen verschiebt die Karte, das Mausrad oder zwei Finger zoomen. Mit den Pfeiltasten wanderst du über das Raster.',
     target: '#board',
   },
   {
     title: 'Gebäude bauen',
-    text: 'Im Bedienfeld rechts baust du Gebäude. Jedes braucht Münzen und Material. Ein Hof bringt Getreide, ein Sägewerk Holz.',
-    target: '#panel',
+    text: 'Im Feld-Fenster baust du Gebäude. Mit den Pfeilen wählst du die Option. Jedes Gebäude braucht Münzen und Material.',
+    target: null,
   },
   {
     title: 'Lager und Reserve',
-    text: 'Produkte landen im Lager. Von jeder Ressource bleiben 20 Einheiten als Reserve. Der Rest wird verkauft, wenn der Verkauf für sie eingeschaltet ist.',
-    target: '#stock',
+    text: 'Produkte landen im Lager. Unten links siehst du Lager und Geld. Von jeder Ressource bleiben 20 Einheiten als Reserve.',
+    target: '#stock-btn',
   },
   {
     title: 'Dein Rathaus verkauft',
-    text: 'Das Rathaus verkauft automatisch. Die Münzen siehst du oben. Mehr Verkaufsleistung bringt der Marktplatz.',
-    target: '#coins',
+    text: 'Das Rathaus verkauft automatisch. Die Münzen siehst du unter Lager und Geld. Mehr Verkaufsleistung bringt der Marktplatz.',
+    target: '#stock-btn',
   },
   {
     title: 'Stadtlevel',
@@ -63,7 +63,7 @@ export const HELP_SECTIONS = Object.freeze([
   {
     title: 'Bauen und Ausbauen',
     paragraphs: [
-      'Gebäude baust du im Bedienfeld. Jede Stufe erhöht den Ertrag. Die Kosten steigen mit jeder Stufe.',
+      'Gebäude baust du im Feld-Fenster, wenn du ein Feld antippst. Jede Stufe erhöht den Ertrag. Die Kosten steigen mit jeder Stufe.',
     ],
   },
   {

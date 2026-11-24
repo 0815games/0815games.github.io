@@ -1,7 +1,7 @@
 // DOM-Brücke für die Weltansicht: Canvas, Kamera (Ziehen, Zoom), Tastatur, Animation.
 // Der Spielzustand kommt von außen (main.js). Diese Datei verändert ihn nie.
-import { toScreen } from './iso.js?v=20261124-sitz5';
-import { renderWorld, pickTile, makeFx, stepFx, produceIcons, coinGain, dayFactor, GRID_SIZE, HALL } from './scene.js?v=20261124-sitz5';
+import { toScreen } from './iso.js?v=20261124-sitz6';
+import { renderWorld, pickTile, makeFx, stepFx, produceIcons, coinGain, dayFactor, GRID_SIZE, HALL } from './scene.js?v=20261124-sitz6';
 
 const DRAG_PX = 6;
 const K_MIN = 0.45;
@@ -46,7 +46,8 @@ export function createBoard(container, opts) {
   function resize() {
     const rect = container.getBoundingClientRect();
     const w = Math.max(280, Math.floor(rect.width));
-    const h = Math.max(320, Math.min(560, Math.round(w * 0.66)));
+    // Vollbild: die Karte nimmt die ganze Höhe des Containers. Fallback auf das alte Seitenverhältnis.
+    const h = Math.max(320, Math.floor(rect.height) || Math.round(w * 0.66));
     dpr = Math.min(window.devicePixelRatio || 1, 2);
     W = w;
     H = h;

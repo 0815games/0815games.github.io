@@ -1,7 +1,7 @@
 // Daily wandering merchant ("Eberhard"). Offers are derived from a seed,
 // so no server is needed and the same town sees the same offers all day.
-import { fnv1a, mulberry32 } from './rng.js?v=20261124-sitz5';
-import { classOf, sellPrice } from './economy.js?v=20261124-sitz5';
+import { fnv1a, mulberry32 } from './rng.js?v=20261124-sitz6';
+import { classOf, sellPrice } from './economy.js?v=20261124-sitz6';
 
 export function merchantOffers(townId, dateKey, biome, data) {
   const cfg = data.merchant;
