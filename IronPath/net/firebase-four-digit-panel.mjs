@@ -1,5 +1,5 @@
 // UI for the party-code approval flow (six-digit codes since AUSBAU-PLAN Punkt 5; four-digit codes from before the switch still join).
-import {translateText as tr} from '../language.mjs?v=20261123-aim5';
+import {translateText as tr} from '../language.mjs?v=20261123-aim6';
 export function createFourDigitPanel({document,createLobby,createApproval,getProfile,onJoinMatch,onLeaveMatch,confirmMatch,confirmClose=()=>true,enabled=false}){
   const $=id=>document.getElementById(id),root=$('firebaseParty'),requests=$('partyRequests'),toggle=$('partyToggle');
   let base=null,approval=null,party=null,unwatch=[],profileWatch=null,guest=null,guestReady=false,matchGuest=null,started=false,busy=false,version=0;
