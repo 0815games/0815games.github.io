@@ -5,8 +5,8 @@ import {
   getAuth, onAuthStateChanged, createUserWithEmailAndPassword,
   signInWithEmailAndPassword, signOut,
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
-import { getDatabase, ref, get, set, onValue } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
-import { firebaseConfig } from './firebase-config.js?v=20261124-welt1';
+import { getDatabase, ref, get, set, onValue, runTransaction } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
+import { firebaseConfig } from './firebase-config.js?v=20261124-sitz1';
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -37,6 +37,38 @@ export function saveTown(uid, town) {
 
 export function deleteTown(uid) {
   return set(townRef(uid), null);
+}
+
+// ---------- Sitzung: ein offenes Fenster pro Konto, geräteübergreifend ----------
+// Eine Sitzung gilt als verwaist, wenn sie länger als SESSION_STALE_MS keinen Herzschlag hatte.
+// Das schützt vor einem abgestürzten Tab. Die Sperre ist eine Absicherung gegen Doppelbetrieb,
+// keine Kryptografie: Wer das Konto kennt, kann die Sitzung übernehmen (dafür gibt es den Knopf).
+export const SESSION_STALE_MS = 120_000;
+const sessionRef = (uid) => ref(db, `sessions/${uid}`);
+
+/** Belegt das Konto für dieses Fenster (sid). Mit force wird eine fremde Sitzung übernommen. Liefert true bei Erfolg. */
+export async function claimSession(uid, sid, { force = false } = {}) {
+  const res = await runTransaction(sessionRef(uid), (cur) => {
+    const now = Date.now();
+    if (force || !cur || cur.id === sid || now - (Number(cur.at) || 0) > SESSION_STALE_MS) {
+      return { id: sid, at: now };
+    }
+    return undefined; // abbrechen: ein anderes Fenster hält das Konto
+  }, { applyLocally: false });
+  return res.committed;
+}
+
+/** Gibt die Sitzung frei, aber nur, wenn sie noch unserer ist. */
+export async function releaseSession(uid, sid) {
+  await runTransaction(sessionRef(uid), (cur) => (cur && cur.id === sid ? null : undefined), { applyLocally: false });
+}
+
+/** Ruft onLost() auf, sobald ein anderes Fenster die Sitzung übernimmt. Liefert die Abmeldefunktion. */
+export function watchSession(uid, sid, onLost) {
+  return onValue(sessionRef(uid), (snap) => {
+    const v = snap.val();
+    if (v && v.id !== sid) onLost();
+  });
 }
 
 const AUTH_DE = {

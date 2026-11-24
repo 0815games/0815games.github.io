@@ -248,3 +248,39 @@ Ereignis ergänzt.
   - Regeln (`firebase/database.rules.json`) unverändert. Geprüft: alle Felder des Spielstands sind erlaubt.
 - Prüfungen: 57 Tests grün, `check --fast` ohne Fehler, `rules:check` ohne Live-Export: Struktur OK.
 - Offen: Regeln in der Konsole oder per CLI veröffentlichen (`docs/FIREBASE.md`, Schritte 1 bis 5).
+
+## TTT-0007 – Anmeldung über alle Geräte nur einmal (Welle `20261124-sitz1`)
+
+- Zeit / Quelle: Sitzung 2026-11-24 (UTC). Auftrag des Betreibers: Doppelanmeldung auch über verschiedene
+  Browser und Geräte verhindern, und die Regel dafür in den Firebase-Regeln absichern.
+- Änderungen (Commit d8fd459):
+  - `firebase/database.rules.json`: neuer Pfad `sessions/{uid}` (nur Inhaber, Felder `id` und `at`, unbekannte
+    Felder abgewiesen).
+  - `src/cloud.js`: `claimSession` (Transaktion, Ablauf nach 120 s ohne Herzschlag), `releaseSession`,
+    `watchSession`.
+  - `src/main.js`: Herzschlag alle 30 s. Ein zweites Fenster bekommt „Hier übernehmen“. Das bisherige Fenster
+    speichert nichts mehr und bietet selbst „Hier übernehmen“ an. Kennung pro Tab in `sessionStorage`,
+    damit Neuladen nicht sperrt. Der Browser-Kanal aus TTT-0006 ist ersetzt.
+  - `scripts/rules-publish-dry-run.mjs`: kennt `sessions/{uid}` und prüft die Eigentümerregeln.
+  - Welle `20261124-sitz1` (bump --apply, 14 Dateien), Neuerungen-Eintrag DE/EN, Hilfe-Text angepasst.
+  - `docs/FIREBASE.md`: Hinweis, dass die Regeln vor der Welle veröffentlicht werden müssen.
+- Prüfungen: 58 Tests grün. `rules:check` ohne Live-Export: OK, Struktur. `check --fast` ohne Fehler.
+- Grenzen, nicht geprüft: kein echter Browser, kein Test über zwei Geräte. Die Sperre hängt an den
+  Gerätezeiten (Zeitstempel vom Client). Eine Abweichung von mehreren Minuten kann die Sperre verkürzen.
+- Vor dem Merge: Regeln in Firebase veröffentlichen. Ohne Regeln schlägt die Anmeldung fehl.
+
+### Nachtrag TTT-0007 – App-Icon (vor Merge, Welle `20261124-sitz1`)
+
+- Zeit / Quelle: Sitzung 2026-11-24 (UTC). Auftrag: sauberes Icon für iOS und andere Geräte, statt Haus-Symbol.
+- Änderungen: `icons/` (Apple-Touch-Icon 180, 192, 512, Favicon 32, undurchsichtig), `manifest.webmanifest`,
+  Icon- und Manifest-Verweise plus Apple-Web-App-Angaben in `index.html`. Das Quellbild (1024 px, 1,7 MB)
+  liegt nicht im Repo.
+- Prüfungen: 58 Tests grün, `check --fast` ohne Fehler. Auf dem iPhone noch nicht gesehen.
+
+### Nachtrag TTT-0007 – Logo und Intro (vor Merge, Welle `20261124-sitz1`)
+
+- Auftrag: Logo auf der Anmeldeseite und ein Intro (Animation), das bisher fehlte.
+- Änderungen: `icons/logo.png` (512 px, Emblem ohne Schrift, Titel als Text), Intro in `index.html`
+  (`#auth-intro`) und `style.css` (Keyframes, Reduce-Motion-Fallback), `playIntro()` in `src/main.js`
+  (einmal pro Seitenaufruf, Klick oder Taste überspringt, ca. 3,6 s). Logo in der Anmeldekarte.
+- Prüfungen: 58 Tests grün, `check --fast` ohne Fehler. Auf dem Bildschirm noch nicht gesehen.

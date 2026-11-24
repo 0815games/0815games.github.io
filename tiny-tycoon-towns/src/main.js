@@ -3,21 +3,21 @@
 import {
   createTown, newSeed, chooseBiome, placeBuilding, upgradeBuilding,
   toggleSell, buyOffer, advance, hydrateTown, setTutorialStep,
-} from './domain/engine.js?v=20261124-welt1';
+} from './domain/engine.js?v=20261124-sitz1';
 import {
   productionMultiplier, ratePerMin, buildCost, storageCap, classOf,
-} from './domain/economy.js?v=20261124-welt1';
-import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261124-welt1';
-import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261124-welt1';
-import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261124-welt1';
+} from './domain/economy.js?v=20261124-sitz1';
+import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261124-sitz1';
+import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261124-sitz1';
+import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261124-sitz1';
 const SEEN_NOTES_KEY = 'ttt:notes-seen';
-import { withTimeout } from './async-util.js?v=20261124-welt1';
-import { createBoard } from './world/board.js?v=20261124-welt1';
-import { createLoginScene } from './world/login-scene.js?v=20261124-welt1';
-import { TUTORIAL_STEPS, HELP_SECTIONS } from './tutorial.js?v=20261124-welt1';
-import { createVersionUI } from './version-ui.mjs?v=20261124-welt1';
+import { withTimeout } from './async-util.js?v=20261124-sitz1';
+import { createBoard } from './world/board.js?v=20261124-sitz1';
+import { createLoginScene } from './world/login-scene.js?v=20261124-sitz1';
+import { TUTORIAL_STEPS, HELP_SECTIONS } from './tutorial.js?v=20261124-sitz1';
+import { createVersionUI } from './version-ui.mjs?v=20261124-sitz1';
 
-const BUILD = '20261124-welt1';
+const BUILD = '20261124-sitz1';
 console.info(`Tiny Tycoon Towns ${BUILD}`);
 const LAST_BIOME_KEY = 'ttt.lastBiome';
 const LOCAL_KEY = (uid) => `ttt.save.v1.${uid}`;
@@ -78,7 +78,7 @@ const REMOTE_TIMEOUT_MS = 10_000;
 async function loadData() {
   const names = ['resources', 'biomes', 'buildings', 'economy', 'merchant'];
   const parts = await Promise.all(names.map((n) =>
-    fetch(`data/${n}.json?v=20261124-welt1`).then((r) => {
+    fetch(`data/${n}.json?v=20261124-sitz1`).then((r) => {
       if (!r.ok) throw new Error(`data/${n}.json: HTTP ${r.status}`);
       return r.json();
     })));
@@ -123,7 +123,7 @@ async function boot() {
   window.addEventListener('offline', updateSync);
 
   try {
-    cloud = await import('./cloud.js?v=20261124-welt1');
+    cloud = await import('./cloud.js?v=20261124-sitz1');
   } catch {
     showFatal('Das Konto-System konnte nicht geladen werden. Ohne Anmeldung lässt sich nicht spielen. Bitte Verbindung prüfen und neu laden.');
     return;
@@ -165,7 +165,7 @@ async function enterAccount(user) {
     currentUser = null;
     state = null;
     remoteLoaded = false;
-    activeUid = null;
+    releaseCurrentSession();
     endTutorial();
     renderSignedOut();
     showLoginScreen('login');
@@ -175,16 +175,12 @@ async function enterAccount(user) {
   closeDialog();
   if (uid === user.uid && state) return; // token refresh, nothing to load
   if (activeUid !== user.uid) {
-    const free = await claimSession(user.uid);
-    if (!free) {
-      // Das Konto läuft schon in einem anderen Fenster. Hier wird nichts geladen oder gespeichert.
-      currentUser = user;
-      uid = null;
-      state = null;
-      renderSignedOut();
-      showRetry(OCCUPIED_TEXT);
-      return;
-    }
+    if (activeUid) releaseCurrentSession(); // anderes Konto: alte Sitzung freigeben
+    currentUser = user;
+    uid = null;
+    state = null;
+    const free = await acquireSession(user.uid);
+    if (!free) return; // Hinweis steht bereits im Panel, hier wird nichts geladen oder gespeichert
   }
   currentUser = user;
   uid = user.uid;
@@ -290,7 +286,7 @@ function loadLocal(u) {
 }
 
 function saveLocal() {
-  if (!state || !uid) return;
+  if (!state || !uid || sessionLost) return;
   try {
     localStorage.setItem(LOCAL_KEY(uid), JSON.stringify(state));
   } catch {
@@ -299,7 +295,7 @@ function saveLocal() {
 }
 
 function cloudSave() {
-  if (!state || !uid || !cloudDirty || cloudPending || !remoteLoaded) return;
+  if (!state || !uid || !cloudDirty || cloudPending || !remoteLoaded || sessionLost) return;
   const sentUid = uid;
   const snapshot = JSON.parse(JSON.stringify(state));
   cloudDirty = false;
@@ -347,6 +343,7 @@ function showLoginScreen(mode, msg = '') {
   $('#loading').inert = true;
   screen.hidden = false;
   $('#auth-card').innerHTML = `<form id="auth-form" class="auth-form" novalidate>
+    <img class="auth-card-logo" src="icons/logo.png" alt="" width="84" height="84">
     <h2 id="auth-title">${isLogin ? 'Anmelden' : 'Konto erstellen'}</h2>
     <p class="small">Deine Stadt wird in der Cloud gespeichert. Mit demselben Konto spielst du auf jedem Gerät weiter.</p>
     <label>E-Mail<input name="email" type="email" autocomplete="email" required></label>
@@ -376,7 +373,31 @@ function showLoginScreen(mode, msg = '') {
   });
   if (!loginScene) loginScene = createLoginScene($('#authCanvas'));
   loginScene.start();
+  playIntro();
   $('#auth-card').querySelector('input[name=email]')?.focus({ preventScroll: true });
+}
+
+/** Intro einmal pro Seitenaufruf: Klick oder Taste überspringt, die Karte erscheint danach. */
+let introStarted = false;
+function playIntro() {
+  if (introStarted) return;
+  introStarted = true;
+  const screen = $('#authScreen');
+  const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+  screen.classList.add('intro-running');
+  screen.classList.remove('intro-done');
+  let timer = null;
+  const finish = () => {
+    clearTimeout(timer);
+    screen.removeEventListener('pointerdown', finish);
+    window.removeEventListener('keydown', finish);
+    screen.classList.remove('intro-running');
+    screen.classList.add('intro-done');
+    $('#auth-intro')?.remove();
+  };
+  screen.addEventListener('pointerdown', finish);
+  window.addEventListener('keydown', finish);
+  timer = setTimeout(finish, reduce ? 300 : 3600);
 }
 
 function hideLoginScreen() {
@@ -390,6 +411,7 @@ function versionSafety() {
   const form = $('#auth-form');
   if (form && [...form.querySelectorAll('input')].some((el) => el.value)) return 'form';
   if ($('#dlg')?.open) return 'dialog';
+  if (sessionLost) return 'dialog';
   if (state && (cloudDirty || cloudPending || (uid && !remoteLoaded))) return 'saving';
   return 'ready';
 }
@@ -773,93 +795,126 @@ function askLogout() {
   $('#logout-cancel').focus();
 }
 
-// Eine Anmeldung pro Konto im selben Browser. Firebase teilt die Anmeldung zwischen Tabs,
-// deshalb sperrt das zweite Fenster nur das Spiel, statt sich selbst oder das erste abzumelden.
-const SESSION_CHANNEL = typeof BroadcastChannel === 'function' ? new BroadcastChannel('ttt-session') : null;
-let activeUid = null;      // Konto, das in diesem Fenster gerade spielt
-const OCCUPIED_TEXT = 'Dieses Konto ist bereits in einem anderen Fenster dieses Browsers geöffnet. Schließe das andere Fenster und prüfe dann erneut.';
-
-SESSION_CHANNEL?.addEventListener('message', (e) => {
-  if (e.data?.type === 'probe' && activeUid && e.data.uid === activeUid) {
-    SESSION_CHANNEL.postMessage({ type: 'active', uid: activeUid });
+// Eine Sitzung pro Konto, über alle Fenster und Geräte (Regeln: sessions/{uid}).
+// Jedes Fenster hat eine eigene Kennung. Ein Herzschlag hält die Sitzung frisch.
+// Die Kennung gilt pro Tab und überlebt Neuladen (sessionStorage), damit ein Reload das Konto nicht sperrt.
+const SESSION_ID = (() => {
+  try {
+    const kept = sessionStorage.getItem('ttt:session-id');
+    if (kept) return kept;
+    const fresh = globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    sessionStorage.setItem('ttt:session-id', fresh);
+    return fresh;
+  } catch {
+    return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
   }
-});
+})();
+const HEARTBEAT_MS = 30_000;
+const SESSION_TAKEN_TEXT = 'Dieses Konto ist gerade in einem anderen Fenster oder auf einem anderen Gerät geöffnet. Schließe das andere Fenster oder übernimm die Sitzung hier.';
+const SESSION_LOST_TEXT = 'Dieses Konto wurde in einem anderen Fenster oder auf einem anderen Gerät übernommen. Hier wird nichts mehr gespeichert, bis du es hier übernimmst.';
+let activeUid = null;       // Konto, dessen Sitzung dieses Fenster hält
+let sessionLost = false;    // true, sobald ein anderes Fenster übernommen hat: nichts mehr speichern
+let sessionUnwatch = null;
+let heartbeatTimer = null;
 
-/** Liefert true, wenn dieses Fenster das Konto übernehmen darf. */
-async function claimSession(sessionUid) {
-  if (!SESSION_CHANNEL) return true; // ohne Kanal gibt es keine Prüfung
-  let busy = false;
-  const onReply = (e) => { if (e.data?.type === 'active' && e.data.uid === sessionUid) busy = true; };
-  SESSION_CHANNEL.addEventListener('message', onReply);
-  SESSION_CHANNEL.postMessage({ type: 'probe', uid: sessionUid });
-  await new Promise((r) => setTimeout(r, 350));
-  SESSION_CHANNEL.removeEventListener('message', onReply);
-  if (busy) return false;
+/** Belegt die Sitzung für das Konto. Liefert true, wenn dieses Fenster spielen darf. */
+async function acquireSession(sessionUid) {
+  let ok = false;
+  try {
+    ok = await cloud.claimSession(sessionUid, SESSION_ID);
+  } catch (error) {
+    console.error('Sitzung nicht prüfbar:', error);
+    showRetry(cloudErrorText(error));
+    return false;
+  }
+  if (!ok) {
+    showSessionTaken(sessionUid);
+    return false;
+  }
   activeUid = sessionUid;
+  sessionLost = false;
+  startSessionGuard(sessionUid);
   return true;
 }
 
-// ---------- Tutorial und Hilfe ----------
+function startSessionGuard(sessionUid) {
+  stopSessionGuard();
+  sessionUnwatch = cloud.watchSession(sessionUid, SESSION_ID, () => onSessionLost(sessionUid));
+  heartbeatTimer = setInterval(async () => {
+    if (sessionLost || activeUid !== sessionUid) return;
+    try {
+      const ok = await cloud.claimSession(sessionUid, SESSION_ID);
+      if (!ok) onSessionLost(sessionUid);
+    } catch {
+      // Offline: der nächste Herzschlag versucht es erneut. Verwaiste Sitzungen laufen nach 2 Minuten ab.
+    }
+  }, HEARTBEAT_MS);
+}
 
-/** Zeigt einen Tutorial-Schritt als Karte unten. Der Zielbereich wird hervorgehoben. */
-function showTutorialStep(i) {
-  const step = TUTORIAL_STEPS[i];
-  if (!step || !state) return endTutorial();
-  const last = i === TUTORIAL_STEPS.length - 1;
-  const box = $('#tutorial');
-  highlightTarget(step.target);
-  box.hidden = false;
-  box.innerHTML = `<div class="tut-card" role="region" aria-label="Tutorial">
-    <p class="small muted">Schritt ${i + 1} von ${TUTORIAL_STEPS.length}</p>
-    <h2>${esc(step.title)}</h2>
-    <p>${esc(step.text)}</p>
+function stopSessionGuard() {
+  sessionUnwatch?.();
+  sessionUnwatch = null;
+  if (heartbeatTimer !== null) clearInterval(heartbeatTimer);
+  heartbeatTimer = null;
+}
+
+function releaseCurrentSession() {
+  const prev = activeUid;
+  stopSessionGuard();
+  activeUid = null;
+  sessionLost = false;
+  if (prev) cloud.releaseSession(prev, SESSION_ID).catch(() => { /* Ablauf nach 2 Minuten greift */ });
+}
+
+function onSessionLost(sessionUid) {
+  if (sessionLost || activeUid !== sessionUid) return;
+  sessionLost = true;
+  stopSessionGuard();
+  activeUid = null;
+  $('#panel').innerHTML = `<p class="warn">${esc(SESSION_LOST_TEXT)}</p>`;
+  openDialog(`<div class="dlg-body">
+    <h2 id="dlg-title">Sitzung übernommen</h2>
+    <p>${esc(SESSION_LOST_TEXT)}</p>
     <p class="row">
-      <button type="button" id="tut-skip" class="ghost">Überspringen</button>
-      <button type="button" id="tut-next" class="primary">${last ? 'Fertig' : 'Weiter'}</button>
+      <button type="button" id="lost-logout">Abmelden</button>
+      <button type="button" id="lost-take" class="primary">Hier übernehmen</button>
     </p>
-  </div>`;
-  $('#tut-next').addEventListener('click', () => advanceTutorial(i + 1));
-  $('#tut-skip').addEventListener('click', () => advanceTutorial(TUTORIAL_STEPS.length));
-  $('#tut-next').focus({ preventScroll: true });
-}
-
-function advanceTutorial(next) {
-  if (!state) return;
-  dispatch(setTutorialStep(state, next));
-  if (next >= TUTORIAL_STEPS.length) endTutorial();
-  else showTutorialStep(next);
-}
-
-function endTutorial() {
-  const box = $('#tutorial');
-  if (box) { box.hidden = true; box.innerHTML = ''; }
-  highlightTarget(null);
-}
-
-function highlightTarget(selector) {
-  document.querySelectorAll('.tut-target').forEach((el) => el.classList.remove('tut-target'));
-  if (selector) $(selector)?.classList.add('tut-target');
-}
-
-function showHelp() {
-  const sections = HELP_SECTIONS.map((sec) =>
-    `<section><h3>${esc(sec.title)}</h3>${sec.paragraphs.map((p) => `<p>${esc(p)}</p>`).join('')}</section>`).join('');
-  openDialog(`<div class="dlg-body help">
-    <h2 id="dlg-title">Hilfe</h2>
-    ${sections}
-    <p class="row">
-      <button type="button" id="help-tut">Tutorial wiederholen</button>
-      <button type="button" id="help-close" class="primary">Schließen</button>
-    </p>
-    <p class="small muted">Build ${esc(BUILD)}</p>
   </div>`);
-  $('#help-close').addEventListener('click', closeDialog);
-  $('#help-tut').addEventListener('click', () => {
+  $('#dlg').addEventListener('cancel', (e) => e.preventDefault(), { once: true });
+  $('#lost-take').addEventListener('click', () => takeOverSession(sessionUid));
+  $('#lost-logout').addEventListener('click', async () => {
     closeDialog();
-    if (!state) return;
-    dispatch(setTutorialStep(state, 0));
-    showTutorialStep(0);
+    try { await cloud.logout(); } catch { toast('Abmelden fehlgeschlagen.', 'error'); }
   });
+}
+
+function showSessionTaken(sessionUid) {
+  $('#panel').innerHTML = `<p class="warn">${esc(SESSION_TAKEN_TEXT)}</p>
+    <p class="row">
+      <button type="button" id="session-take" class="primary">Hier übernehmen</button>
+      <button type="button" id="session-retry">Erneut prüfen</button>
+    </p>`;
+  $('#session-take').addEventListener('click', () => takeOverSession(sessionUid));
+  $('#session-retry').addEventListener('click', () => { uid = null; void onUser(currentUser); });
+}
+
+/** Übernimmt die Sitzung für dieses Fenster und lädt den Stand neu (der neuere Stand gewinnt). */
+async function takeOverSession(sessionUid) {
+  let ok = false;
+  try {
+    ok = await cloud.claimSession(sessionUid, SESSION_ID, { force: true });
+  } catch (error) {
+    toast(cloud.dbErrorDe(error), 'error');
+    return;
+  }
+  if (!ok) return;
+  closeDialog();
+  activeUid = sessionUid;
+  sessionLost = false;
+  startSessionGuard(sessionUid);
+  uid = null;
+  state = null;
+  void onUser(currentUser);
 }
 
 function openDialog(html) {

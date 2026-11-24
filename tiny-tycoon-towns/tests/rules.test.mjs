@@ -34,3 +34,12 @@ test('missing live paths are reported before publishing', () => {
 test('the wrapped export form is accepted', () => {
   assert.deepEqual(checkRules({ rules: candidate.rules }).errors, []);
 });
+
+test('sessions are owner-only and reject unknown fields (bissfest)', () => {
+  const bad = structuredClone(candidate);
+  bad.rules.sessions.$uid['.write'] = 'true';
+  assert.ok(checkRules(bad).errors.some((e) => e.includes('sessions/$uid: .write ohne Eigentümerprüfung')));
+  const bad2 = structuredClone(candidate);
+  delete bad2.rules.sessions.$uid.$other;
+  assert.ok(checkRules(bad2).errors.some((e) => e.includes('$other')));
+});
