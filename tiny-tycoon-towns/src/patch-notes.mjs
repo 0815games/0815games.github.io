@@ -4,6 +4,20 @@
 
 export const RELEASED_PATCHES = [
   {
+    build: '20261124-sitz13',
+    date: '2026-11-24',
+    items: [
+      {
+        de: 'Freunde: Im Menü öffnest du „Freunde“. Dort siehst du deinen Freundescode, lädst per Name oder Code ein und verwaltest deine Freundesliste.',
+        en: 'Friends: open "Freunde" in the menu. There you see your friend code, invite by name or code, and manage your friend list.',
+      },
+      {
+        de: 'Stadtnamen sind jetzt eindeutig. Ein vergebener Name lässt sich nicht mehr wählen.',
+        en: 'Town names are now unique. A name that is taken cannot be chosen again.',
+      },
+    ],
+  },
+  {
     build: '20261124-sitz12',
     date: '2026-11-24',
     items: [

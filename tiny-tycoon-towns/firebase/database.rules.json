@@ -5,6 +5,7 @@
       "$uid": {
         ".read": "auth != null && (auth.uid === $uid || root.child('admins').child(auth.uid).val() === true)",
         "town": {
+          ".read": "auth != null && root.child('friends').child($uid).child(auth.uid).val() === true",
           ".write": "auth != null && (auth.uid === $uid || root.child('admins').child(auth.uid).val() === true)",
           ".validate": "newData.hasChildren(['schemaVersion','id','name','biome','townLevel','coins','stock','tiles','lastTick']) && (!data.exists() || newData.child('schemaVersion').val() >= data.child('schemaVersion').val())",
           "schemaVersion": {
@@ -104,6 +105,68 @@
       "$uid": {
         ".read": "auth != null && auth.uid === $uid",
         ".write": false
+      }
+    },
+    "profiles": {
+      "$uid": {
+        ".read": "auth != null",
+        ".write": "auth != null && auth.uid === $uid",
+        ".validate": "newData.hasChildren(['townName']) || !newData.exists()",
+        "townName": {
+          ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 24"
+        },
+        "townLevel": {
+          ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 12"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    "friendCodes": {
+      "$code": {
+        ".read": "auth != null",
+        ".write": "auth != null && ((!data.exists() && newData.val() == auth.uid) || (data.exists() && data.val() == auth.uid))",
+        ".validate": "newData.isString() && newData.val() == auth.uid && $code.matches(/^[A-HJ-NP-Z2-9]{6}$/)"
+      }
+    },
+    "ownCodes": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid",
+        ".validate": "newData.isString() && newData.val().matches(/^[A-HJ-NP-Z2-9]{6}$/)",
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    "friendRequests": {
+      "$to": {
+        ".read": "auth != null && auth.uid === $to",
+        "$from": {
+          ".read": "auth != null && (auth.uid === $to || auth.uid === $from)",
+          ".write": "auth != null && (auth.uid === $from || (auth.uid === $to && !newData.exists()))",
+          ".validate": "$from != $to && (!newData.exists() || (newData.hasChildren(['name','at']) && newData.child('name').isString() && newData.child('name').val().length <= 24 && newData.child('at').isNumber()))",
+          "$other": {
+            ".validate": false
+          }
+        }
+      }
+    },
+    "friends": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        "$other": {
+          ".write": "auth != null && (auth.uid === $uid || (auth.uid === $other && (!newData.exists() || root.child('friendRequests').child($other).child($uid).exists())))",
+          ".validate": "newData.val() == true"
+        }
+      }
+    },
+    "townNames": {
+      "$name": {
+        ".read": "auth != null",
+        ".write": "auth != null && ((!data.exists() && newData.val() == auth.uid) || (data.exists() && data.val() == auth.uid) || root.child('admins').child(auth.uid).val() === true)",
+        ".validate": "newData.isString() && (newData.val() == auth.uid || root.child('admins').child(auth.uid).val() === true) && $name.matches(/^[^.#$\\[\\]\\/]{1,24}$/)"
       }
     }
   }

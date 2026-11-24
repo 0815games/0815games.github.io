@@ -3,21 +3,23 @@
 import {
   createTown, newSeed, chooseBiome, placeBuilding, upgradeBuilding,
   toggleSell, buyOffer, advance, hydrateTown, setTutorialStep,
-} from './domain/engine.js?v=20261124-sitz12';
+} from './domain/engine.js?v=20261124-sitz13';
 import {
   productionMultiplier, ratePerMin, buildCost, storageCap, classOf,
-} from './domain/economy.js?v=20261124-sitz12';
-import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261124-sitz12';
-import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261124-sitz12';
-import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261124-sitz12';
+} from './domain/economy.js?v=20261124-sitz13';
+import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261124-sitz13';
+import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261124-sitz13';
+import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261124-sitz13';
 const SEEN_NOTES_KEY = 'ttt:notes-seen';
-import { withTimeout } from './async-util.js?v=20261124-sitz12';
-import { createBoard } from './world/board.js?v=20261124-sitz12';
-import { createLoginScene } from './world/login-scene.js?v=20261124-sitz12';
-import { TUTORIAL_STEPS, HELP_SECTIONS } from './tutorial.js?v=20261124-sitz12';
-import { createVersionUI } from './version-ui.mjs?v=20261124-sitz12';
+import { withTimeout } from './async-util.js?v=20261124-sitz13';
+import { checkTownName } from './town-names.js?v=20261124-sitz13';
+import { friendsShell, mountFriends } from './friends-ui.js?v=20261124-sitz13';
+import { createBoard } from './world/board.js?v=20261124-sitz13';
+import { createLoginScene } from './world/login-scene.js?v=20261124-sitz13';
+import { TUTORIAL_STEPS, HELP_SECTIONS } from './tutorial.js?v=20261124-sitz13';
+import { createVersionUI } from './version-ui.mjs?v=20261124-sitz13';
 
-const BUILD = '20261124-sitz12';
+const BUILD = '20261124-sitz13';
 console.info(`Tiny Tycoon Towns ${BUILD}`);
 const LAST_BIOME_KEY = 'ttt.lastBiome';
 const LOCAL_KEY = (uid) => `ttt.save.v1.${uid}`;
@@ -88,7 +90,7 @@ const REMOTE_TIMEOUT_MS = 10_000;
 async function loadData() {
   const names = ['resources', 'biomes', 'buildings', 'economy', 'merchant'];
   const parts = await Promise.all(names.map((n) =>
-    fetch(`data/${n}.json?v=20261124-sitz12`).then((r) => {
+    fetch(`data/${n}.json?v=20261124-sitz13`).then((r) => {
       if (!r.ok) throw new Error(`data/${n}.json: HTTP ${r.status}`);
       return r.json();
     })));
@@ -133,7 +135,7 @@ async function boot() {
   window.addEventListener('offline', updateSync);
 
   try {
-    cloud = await import('./cloud.js?v=20261124-sitz12');
+    cloud = await import('./cloud.js?v=20261124-sitz13');
   } catch {
     showFatal('Das Konto-System konnte nicht geladen werden. Ohne Anmeldung lässt sich nicht spielen. Bitte Verbindung prüfen und neu laden.');
     return;
@@ -221,6 +223,7 @@ async function enterAccount(user) {
     return;
   }
   state = candidates[0];
+  claimExistingName(uid, state.name);
   // A newer local copy that the cloud does not have yet must be pushed.
   cloudDirty = state === local && (!remote || local.lastTick > remote.lastTick);
   lastCloudAt = 0;
@@ -317,7 +320,11 @@ function cloudSave() {
   cloudPending = true;
   updateSync();
   cloud.saveTown(sentUid, snapshot)
-    .then(() => { lastCloudAt = Date.now(); })
+    .then(() => {
+      lastCloudAt = Date.now();
+      // Profil für Freunde und Namenssuche. Fehler sind nicht kritisch, die Stadt ist gespeichert.
+      cloud.saveProfile(sentUid, { townName: snapshot.name, townLevel: snapshot.townLevel }).catch(() => {});
+    })
     .catch((e) => {
       cloudDirty = true;
       toast(cloud.dbErrorDe(e), 'error');
@@ -528,6 +535,7 @@ function bindStatic() {
   $('#feld-btn').addEventListener('click', showFieldNotes);
   $('#logout-btn').addEventListener('click', askLogout);
   $('#help-btn').addEventListener('click', showHelp);
+  $('#friends-btn').addEventListener('click', openFriends);
   // Menü oben rechts: öffnet und schließt die Schaltflächen Hilfe, Feldnotizen, Neu beginnen, Abmelden.
   const menuBtn = $('#menu-btn');
   const menuList = $('#menu-list');
@@ -1175,14 +1183,28 @@ function showFounding() {
     });
   };
   paint();
-  dlg.querySelector('#found-form').addEventListener('submit', (e) => {
-    const name = new FormData(e.target).get('name').toString().trim();
-    if (!name) {
-      // Eigene Meldung statt des Browser-Hinweises bei Pflichtfeldern
-      e.preventDefault();
-      dlg.querySelector('#found-msg').textContent = 'Gib deiner Stadt einen Namen.';
+  dlg.querySelector('#found-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const msg = dlg.querySelector('#found-msg');
+    const check = checkTownName(new FormData(e.target).get('name')?.toString() ?? '');
+    if (!check.ok) {
+      msg.textContent = check.reason;
       return;
     }
+    // Stadtnamen sind eindeutig: den Namen zuerst für dieses Konto sichern.
+    msg.textContent = 'Prüfe den Namen …';
+    let claimed = false;
+    try {
+      claimed = await cloud.claimTownName(uid, check.key);
+    } catch (err) {
+      msg.textContent = cloud.dbErrorDe(err);
+      return;
+    }
+    if (!claimed) {
+      msg.textContent = 'Dieser Name ist schon vergeben. Wähle einen anderen.';
+      return;
+    }
+    const name = check.name;
     localStorage.setItem(LAST_BIOME_KEY, biome);
     state = createTown({ name, biome, seed: newSeed(), now: Date.now(), data });
     selected = { x: 4, y: 4 };
@@ -1193,6 +1215,36 @@ function showFounding() {
     cloudSave();
   });
   dlg.addEventListener('cancel', (e) => e.preventDefault());
+}
+
+/** Altbestand: Stadtnamen, die noch niemand beansprucht hat, für dieses Konto sichern. Vergebene bleiben unverändert. */
+function claimExistingName(forUid, name) {
+  const check = checkTownName(name);
+  if (!check.ok) return;
+  cloud.claimTownName(forUid, check.key).catch(() => {});
+}
+
+/** Freunde-Fenster: eigene Stadt, Code, Einladung, Anfragen, klappbare Liste. */
+function openFriends() {
+  if (!state || !uid) {
+    toast('Melde dich an und lade deine Stadt, dann öffnen sich die Freunde.', 'error');
+    return;
+  }
+  const count = (o) => Object.values(o).filter((t) => t.building).length;
+  const info = {
+    townName: state.name,
+    level: state.townLevel,
+    coins: Math.floor(state.coins),
+    buildings: count(state.tiles),
+  };
+  const dlg = openDialog(friendsShell(info));
+  const unmount = mountFriends(dlg, {
+    me: uid,
+    myName: () => state?.name ?? '',
+    toast,
+    confirm: askConfirm,
+  });
+  dlg.addEventListener('close', unmount, { once: true });
 }
 
 function showOfflineReport(r, awaySec) {

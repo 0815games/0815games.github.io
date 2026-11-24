@@ -5,8 +5,9 @@ import {
   getAuth, onAuthStateChanged, createUserWithEmailAndPassword,
   signInWithEmailAndPassword, signOut,
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
-import { getDatabase, ref, get, set, onValue, runTransaction } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
-import { firebaseConfig } from './firebase-config.js?v=20261124-sitz12';
+import { getDatabase, ref, get, set, update, onValue, runTransaction } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
+import { firebaseConfig } from './firebase-config.js?v=20261124-sitz13';
+import { townKey } from './town-names.js?v=20261124-sitz13';
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -43,8 +44,135 @@ export function watchAdminEdit(uid, onChange) {
   });
 }
 
-export function deleteTown(uid) {
-  return set(townRef(uid), null);
+/** Löscht die Stadt und gibt ihren Namen wieder frei. */
+export async function deleteTown(uid) {
+  const snap = await get(townRef(uid));
+  const name = snap.exists() ? snap.val()?.name : null;
+  await set(townRef(uid), null);
+  if (name) await releaseTownName(uid, name).catch(() => {});
+}
+
+// ---------- Stadtnamen: eindeutig ----------
+// townNames/{schlüssel} = UID. Der Schlüssel kommt aus src/town-names.js.
+
+const townNameRef = (key) => ref(db, `townNames/${key}`);
+
+/** Beansprucht den Namen für uid. False, wenn ihn schon jemand anderes hat. */
+export async function claimTownName(uid, key) {
+  const res = await runTransaction(townNameRef(key), (cur) => {
+    if (cur === null) return uid;
+    if (cur === uid) return cur;
+    return undefined; // vergeben: nicht schreiben
+  });
+  return res.committed && res.snapshot.val() === uid;
+}
+
+/** Gibt den Namen frei, aber nur, wenn er uid gehört. */
+export async function releaseTownName(uid, name) {
+  const key = townKey(name);
+  await runTransaction(townNameRef(key), (cur) => (cur === uid ? null : undefined));
+}
+
+/** Benennt die Stadt um (Betreiber). Bricht ab, wenn der neue Name vergeben ist. */
+export async function renameTownName(uid, oldName, newName) {
+  const oldKey = townKey(oldName);
+  const newKey = townKey(newName);
+  if (oldKey === newKey) return true;
+  const claimed = await claimTownName(uid, newKey);
+  if (!claimed) return false;
+  await releaseTownName(uid, oldName).catch(() => {});
+  return true;
+}
+
+// ---------- Profile: öffentlich lesbar (Name und Level, für Freunde) ----------
+
+export function saveProfile(uid, { townName, townLevel }) {
+  return set(ref(db, `profiles/${uid}`), { townName, townLevel });
+}
+
+export async function loadProfile(uid) {
+  const snap = await get(ref(db, `profiles/${uid}`));
+  return snap.exists() ? snap.val() : null;
+}
+
+// ---------- Freundescode und Einladungen ----------
+
+const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+
+function randomCode() {
+  const bytes = new Uint32Array(6);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (b) => CODE_ALPHABET[b % CODE_ALPHABET.length]).join('');
+}
+
+/** Liefert den eigenen Code. Legt ihn beim ersten Mal an. */
+export async function getOwnCode(uid) {
+  const snap = await get(ref(db, `ownCodes/${uid}`));
+  if (snap.exists()) return snap.val();
+  for (let i = 0; i < 8; i++) {
+    const code = randomCode();
+    const res = await runTransaction(ref(db, `friendCodes/${code}`), (cur) => (cur === null ? uid : undefined));
+    if (res.committed && res.snapshot.val() === uid) {
+      await set(ref(db, `ownCodes/${uid}`), code);
+      return code;
+    }
+  }
+  throw new Error('Kein freier Freundescode gefunden. Bitte später erneut versuchen.');
+}
+
+/** Findet eine Stadt über ihren Code oder ihren Namen. Liefert { uid, profile } oder null. */
+export async function findTown(query) {
+  const q = String(query ?? '').trim();
+  if (!q) return null;
+  let uid = null;
+  if (/^[A-HJ-NP-Z2-9]{6}$/i.test(q)) {
+    const snap = await get(ref(db, `friendCodes/${q.toUpperCase()}`));
+    uid = snap.exists() ? snap.val() : null;
+  } else {
+    const snap = await get(townNameRef(townKey(q)));
+    uid = snap.exists() ? snap.val() : null;
+  }
+  if (!uid) return null;
+  const profile = await loadProfile(uid);
+  return profile ? { uid, profile } : null;
+}
+
+export function sendFriendRequest(me, myName, toUid) {
+  return set(ref(db, `friendRequests/${toUid}/${me}`), { name: myName, at: Date.now() });
+}
+
+/** Meldet eingehende Anfragen als Liste [{ from, name, at }]. */
+export function watchRequests(me, onChange) {
+  return onValue(ref(db, `friendRequests/${me}`), (snap) => {
+    const v = snap.val() ?? {};
+    onChange(Object.entries(v).map(([from, r]) => ({ from, name: r?.name ?? '?', at: r?.at ?? 0 })));
+  });
+}
+
+export function acceptRequest(me, fromUid) {
+  return update(ref(db), {
+    [`friends/${me}/${fromUid}`]: true,
+    [`friends/${fromUid}/${me}`]: true,
+    [`friendRequests/${me}/${fromUid}`]: null,
+  });
+}
+
+export function declineRequest(me, fromUid) {
+  return set(ref(db, `friendRequests/${me}/${fromUid}`), null);
+}
+
+/** Meldet die Freunde-UIDs [uid, ...]. */
+export function watchFriends(me, onChange) {
+  return onValue(ref(db, `friends/${me}`), (snap) => {
+    onChange(Object.keys(snap.val() ?? {}));
+  });
+}
+
+export function removeFriend(me, friendUid) {
+  return update(ref(db), {
+    [`friends/${me}/${friendUid}`]: null,
+    [`friends/${friendUid}/${me}`]: null,
+  });
 }
 
 // ---------- Betreiber (Admin) ----------

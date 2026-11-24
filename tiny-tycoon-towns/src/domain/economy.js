@@ -1,5 +1,5 @@
 // Pure formulas from GAME_PLAN.md section 4.5 - 4.7. No state mutation here.
-import { inBounds, keyOf } from './grid.js?v=20261124-sitz12';
+import { inBounds, keyOf } from './grid.js?v=20261124-sitz13';
 
 export const RESOURCE_CLASSES = ['abundant', 'neutral', 'scarce'];
 

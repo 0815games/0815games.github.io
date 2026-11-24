@@ -573,3 +573,21 @@ button.danger { background: #E4837A; border-color: var(--ink); }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--ink); border-radius: 8px; border: 2px solid var(--paper); }
 ::-webkit-scrollbar-thumb:hover { background: #2a2020; }
+
+/* Freunde-Fenster */
+.friends { gap: 14px; }
+.friends h3 { margin: 0 0 6px; font-size: 16px; }
+.friends-me { background: #fff6e5; border: 2px solid var(--ink); border-radius: 14px; padding: 12px; display: grid; gap: 6px; }
+.friends-me p { margin: 0; }
+.friends-code { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.friends-code .code-big { font-size: 22px; letter-spacing: 3px; font-variant-numeric: tabular-nums; }
+.invite-row { display: flex; gap: 8px; }
+.invite-row input { flex: 1 1 auto; min-width: 0; }
+.friend-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.friend-card { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; background: #fff; border: 2px solid var(--ink); border-radius: 12px; padding: 10px 12px; }
+.friend-card > div:first-child { min-width: 0; }
+.friend-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.friend-actions button { min-height: 40px; }
+.friend-fold summary { font-weight: 700; cursor: pointer; min-height: 40px; display: flex; align-items: center; }
+.friend-fold[open] summary { margin-bottom: 8px; }
+.muted { color: rgba(59, 47, 47, 0.7); }

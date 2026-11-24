@@ -372,3 +372,15 @@ Ereignis ergänzt.
 - Spiel: Ändert der Betreiber eine Stadt, zeigt das Spiel „Neu laden“. Speichern stoppt, die lokale Sicherung wird verworfen.
 - Reihenfolge beim Ausrollen: erst die Regeln veröffentlichen, dann den Code. Sonst lehnt die alte Regel den Zeitstempel ab.
 - Prüfungen: 60 Tests grün. Im Browser nicht geprüft (Firebase ist in der Sandbox nicht erreichbar).
+
+### TTT-0018 – Freunde und eindeutige Stadtnamen (Welle `20261124-sitz13`)
+
+- Regeln (`firebase/database.rules.json`): neue Zweige `profiles`, `friendCodes`, `ownCodes`, `friendRequests`,
+  `friends`, `townNames`. Freunde dürfen die ganze Stadt lesen (Vorbereitung für „Besuchen“). Fremde nur die Ansicht.
+  Eindeutige Namen: `townNames/{schlüssel}` mit UID des Besitzers.
+- Spiel: Menü „Freunde“ mit eigenem Code, Einladung per Name oder Code, Anfragen (annehmen/ablehnen) und klappbarer Liste.
+  Gründung prüft den Namen. Altbestand: freie Namen werden beim Laden gesichert, vergebene bleiben unverändert.
+- Betreiber: Umbenennen prüft die Eindeutigkeit.
+- Ausrollen: erst die Regeln veröffentlichen, dann mergen. Sonst scheitern Gründung und Freunde.
+- Offen: „Besuchen“ (folgt im nächsten Schritt). Alte doppelte Stadtnamen werden nicht automatisch umbenannt.
+- Prüfungen: 65 Tests grün, `check` ohne Fehler, lint ohne Befund. Im Browser nicht gegen Firebase geprüft.
