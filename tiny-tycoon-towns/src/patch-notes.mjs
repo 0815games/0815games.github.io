@@ -4,6 +4,16 @@
 
 export const RELEASED_PATCHES = [
   {
+    build: '20261124-sitz3',
+    date: '2026-11-24',
+    items: [
+      {
+        de: 'Neues Logo: die Stadt mit dem Spielnamen darüber, auf der Anmeldeseite und im Intro.',
+        en: 'New logo: the town with the game name above it, on the sign-in page and in the intro.',
+      },
+    ],
+  },
+  {
     build: '20261124-sitz2',
     date: '2026-11-24',
     items: [
