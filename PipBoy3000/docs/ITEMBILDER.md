@@ -23,12 +23,16 @@ Waffen: `pistol_10mm` `revolver_44` `shotgun` `combat_shotgun` `smg`
 `assault_rifle` `minigun` `laser_pistol` `laser_rifle` `plasma_pistol` `plasma_rifle`
 Rüstung: `power_armor`
 
-## Kaputte Rohbilder
+## Bildfehler-Prüfung
 
-`knuckles` — weisse Stoerung in allen vier Ecken (9 % der Flaeche). Neu zeichnen.
-`baseball_bat` — zeigt zwei gekreuzte Schlaeger statt einem. Neu zeichnen.
+`node tools/icon-check.mjs` (laeuft bei `npm run icons` zuerst) meldet Rohbilder
+mit mehr als 0,5 % weissen Pixeln und bricht dann ab.
 
-## Block 3 — Restliche Waffen (23)
+Bisher gefunden: `knuckles` (weisse Stoerung in allen vier Ecken) und
+`pipe_sniper` (gefuellte Grafik auf Weiss statt Linien auf Schwarz). Beide neu
+gezeichnet, die Pruefung greift jetzt vor der Aufbereitung.
+
+## Erledigt in Block 3 — Restliche Waffen (23)
 
 Schusswaffen:
 
@@ -63,7 +67,7 @@ Nahkampf:
 | `power_fist` | angetriebene Powerfaust mit Hydraulik |
 | `deathclaw_gauntlet` | Handschuh aus Todeskrallen-Klauen |
 
-## Block 4 — Rüstung (25)
+## Block 4 — Rüstung (25)  ← naechster Block
 
 | Stufe | ids |
 |---|---|
