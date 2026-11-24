@@ -40,7 +40,7 @@ keinen Service-Account-Schlüssel**. Der Wartungsschalter nutzt ein separates
 Firebase-Auth-Administratorkonto mit eigener, in den Rules freigeschalteter UID.
 Das frühere Vercel-Experiment und sein abweichendes Control-Format sind in
 `PAGES-ROLLOUT.md` nur historisch dokumentiert und dürfen mit diesem Ablauf nicht
-vermischt werden. Keine weiteren Tests auf `ironpathtest`. Keine Abrechnung
+vermischt werden. `ironpathtest` ist gelöscht und der Testpfad entfernt. Keine Abrechnung
 aktivieren; Firebase-Spark- und Pages-Kontingente und ihre aktuellen Bedingungen
 vorab prüfen.
 

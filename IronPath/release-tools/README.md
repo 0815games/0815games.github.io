@@ -398,64 +398,40 @@ clock: passing an emulator test says nothing about live clock skew or pending
 sign-in completion. Until those assumptions and a suitable enforcement design
 are validated, this mechanism is experimental, not a demonstrated guarantee.
 
-## Using the existing test project
+## Removed: the `ironpathtest` test pipeline (2026-11-24)
 
-`build-isolated-test-site.mjs` packages the guarded launcher and game for the
-owner's existing `ironpathtest` Firebase project and the separate
-`ironpath-release` Vercel project. The configuration contains only public Web
-settings. It derives an immutable build ID from the complete Git commit, refuses
-to replace an existing output, and scans the staged output for the known normal
-Firebase project ID and Web key. It does not change Firebase or create a server,
-verify every possible production endpoint, or make the guard production-ready.
-The test Vercel project may explicitly run `node build-isolated-test-site.mjs`
-as its build command; it must include source files outside its `release-tools`
-root. Generated site files are build outputs, not repository files. The first
-[public test deployment](https://ironpath-release.vercel.app/IronPath/) was
-`dpl_ECCSFqqxjxCxqV7AZMLcDC7KoieD` from `d70f068`; that earlier deployment
-had no test credential. The owner then supplied a sensitive test-only variable,
-and deployment `dpl_6Ga2xnFwr4ZZKQ8Ei1gLfxN99p8g` from `3eef6ea` explicitly
-ran the initializer. Its read-back verified the pinned Rules in `ironpathtest`;
-the test launcher displayed maintenance and a direct game link returned to it.
-A subsequent live exercise succeeded and opened test build `04ee7ce`, promoted
-as `dpl_DWEKWjwEJXPJqWXbm8hwXMhFXsyp`. This is not GitHub Pages or the real
-game's Firebase project.
+The separate Firebase project `ironpathtest` and the Vercel project
+`ironpath-release` were deleted by the owner; the test database is gone.
+Firebase retires a deleted project ID permanently, so the following four
+operators and their three unit tests were removed from the repository rather
+than pointed at a new project:
 
-`initialize-isolated-test.mjs` accepts only `ironpathtest`, the exact test RTDB
-and Vercel project/origin, an explicit flag, and a pinned Rules candidate. It
-required denied root read/write and an absent control record, conditionally
-created a maintenance record, then replaced and verified the **test** Rules. It
-never writes the root, a player node, or a credential. A second Rules read limits
-but does not eliminate a concurrent operator race. If an operation fails or
-times out, inspect the test Rules/status before retrying. The original locked
-Rules are `{ "rules": { ".read": false, ".write": false } }`; restoring
-those locks the test database but is not a production rollback plan. Subsequent
-builds must use only `node build-isolated-test-site.mjs`; `vercel.json` does not
-implicitly run this one-time operator.
+- `build-isolated-test-site.mjs` (packaged the guarded launcher and game for
+  the test project)
+- `initialize-isolated-test.mjs` (wrote the pinned test Rules and control
+  record)
+- `exercise-isolated-guard.mjs` (HTTP/API smoke against the test service)
+- `browser-tests/release-live-test.cjs` (manual Chromium login smoke; never
+  referenced by CI or by an npm script)
+- `tests/release-test-site.test.mjs`, `tests/release-test-initialize.test.mjs`,
+  `tests/release-test-live-exercise.test.mjs` (mocked tests of the above)
 
-`exercise-isolated-guard.mjs` is a separate, explicitly invoked **test-only**
-operator. It requires the exact prior maintenance build and epoch, rechecks the
-Rules, and uses a synthetic account/profile to exercise the service and Rules.
-On `dpl_DWEKWjwEJXPJqWXbm8hwXMhFXsyp` it verified password and custom-token
-sign-in, allowed profile read/write when open, denial during maintenance, denial
-of old credentials after reopening, a fresh new session, and removal of the
-synthetic profile and account. The first attempt stopped safely because its REST
-response check incorrectly required `localId`; that is not required by Firebase's
-custom-token response and was corrected. The test checks the ID-token subject.
-The temporary build command was restored to packaging only. This is an HTTP/API
-smoke on selected paths, not a real-player, all-Rules, offline-device, browser
-or production-cutover proof. The separate real-browser login step in
-[CI 43556162279](https://github.com/0815games/0815games.github.io/actions/runs/43556162279)
-reached recruitment and returned success from synthetic-account deletion. That
-smoke did not create a character or exercise a maintenance transition in the
-browser. Its former opt-in CI step has been removed at the owner's request;
-do not repeat the test on the other server or assume a killed runner cleaned up.
+Nothing else depended on them: no workflow, npm script or production asset
+imported these files, and no step in the production path
+(`build-pages-site.mjs`, `pages-safety.mjs`, `production-public-config.json`)
+used the test configuration. The production release stays on
+`iron-path-dc727` with the session service in the Vercel project
+`ironpath-live-session`.
 
-The operator closes its own epoch and checks cleanup on failure; a killed
-process, lost response or concurrent operator still requires inspection. Its
-final test opening can briefly point at a not-yet-promoted new Vercel build: the
-launcher should fail closed if that build is unavailable. It is not an atomic
-production rollout. Do not point these tools, service credentials, or Rules at
-real players.
+Reinstating an isolated test stage needs a **new** project ID and new public
+Web settings, plus the guarded Rules builder it consumed. The history below is
+kept as a record of what the deleted pipeline did and how it failed; do not
+re-run it against the production project.
+
+## Historical record of the deleted test pipeline
+
+The two sections below document the removed pipeline. They are
+history, not instructions.
 
 ## Creating an isolated guarded candidate
 
@@ -529,6 +505,10 @@ node --test IronPath/tests/release-*.test.mjs
 npm ci --prefix IronPath/release-tools --no-audit --no-fund
 node --test IronPath/release-tools/session-config.test.mjs IronPath/release-tools/runtime-compatibility.test.mjs
 ```
+
+The `release-test-*.test.mjs` files were removed together with the deleted
+`ironpathtest` pipeline; the remaining release tests above run against mocks and
+the emulator only.
 
 The earlier unconfigured-deployment probe sent only synthetic invalid inputs;
 it did not test successful login, streaming, credentials or production Firebase.
