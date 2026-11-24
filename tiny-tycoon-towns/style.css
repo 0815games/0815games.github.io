@@ -410,23 +410,26 @@ dialog input {
   border-radius: 14px;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
 }
-/* Feld-Popup: erscheint nach dem Klick auf ein Feld, unten mittig. */
+/* Feld-Popup: erscheint nach dem Klick auf ein Feld, unten mittig.
+   Mitte über left/right und auto-Ränder, NICHT über transform: die Einblend-Animation
+   setzt transform und würde die Zentrierung sonst verschieben. */
 .panel {
   position: fixed;
-  left: 50%;
-  bottom: 12px;
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
+  bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  margin: 0 auto;
   z-index: 45;
-  width: min(94vw, 420px);
-  max-height: 52vh;
+  width: min(92vw, 420px);
+  max-height: 54vh;
   overflow: auto;
   display: grid;
-  gap: 10px;
-  padding: 14px;
-  background: var(--paper);
+  gap: 12px;
+  padding: 16px 16px 14px;
+  background: linear-gradient(180deg, #fff6e5 0%, #ffffff 100%);
   border: 3px solid var(--ink);
-  border-radius: 18px;
-  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.4);
+  border-radius: 22px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
   animation: card-in 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
@@ -530,3 +533,31 @@ button.danger { background: #E4837A; border-color: var(--ink); }
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
 }
 .auth-admin-entry:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+
+/* Feld-Popup: Feinschliff */
+.panel-head { padding-bottom: 8px; border-bottom: 2px dashed rgba(59, 47, 47, 0.3); }
+.panel-head h2 { font-size: 20px; }
+.panel-head button[data-action="close"] { min-width: 40px; min-height: 40px; border-radius: 50%; border: 2px solid var(--ink); }
+.panel .cycle { gap: 10px; }
+.panel .cycle .opt {
+  flex: 1 1 auto;
+  background: #fff;
+  border: 2px solid var(--ink);
+  border-radius: 16px;
+  padding: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+.panel .cycle .opt strong { font-size: 18px; }
+.panel .cycle button[data-cycle] {
+  flex: 0 0 46px;
+  width: 46px;
+  height: 46px;
+  min-width: 46px;
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid var(--ink);
+  background: var(--gold);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+}
+.panel .cycle button[data-cycle]:active { transform: scale(0.94); }
+.panel .opt > button { min-height: 44px; font-weight: 700; }

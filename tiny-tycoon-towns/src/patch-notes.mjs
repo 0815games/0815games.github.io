@@ -4,6 +4,16 @@
 
 export const RELEASED_PATCHES = [
   {
+    build: '20261124-sitz10',
+    date: '2026-11-24',
+    items: [
+      {
+        de: 'Das Bau-Fenster sitzt jetzt mittig am unteren Rand, auch im Hochformat, und wirkt aufgeräumter.',
+        en: 'The build window is now centered at the bottom, also in portrait mode, and looks tidier.',
+      },
+    ],
+  },
+  {
     build: '20261124-sitz9',
     date: '2026-11-24',
     items: [
