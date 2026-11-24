@@ -135,7 +135,7 @@ export function simulate({ biome, days }) {
     level5Wall: null,
     level5Active: null,
     firstCharterWall: null,
-    level8Wall: null,
+    level10Wall: null,
     coins100kWall: null,
     violations: 0,
     levels: {}, // Stadtstufe -> { activeH, wallH }
@@ -154,9 +154,9 @@ export function simulate({ biome, days }) {
     if (m.firstSaleWall === null && events.some((e) => e.type === 'sold') && m.firstBuildWall !== null) m.firstSaleWall = wallMs;
     if (m.fiveBuildingsActive === null && countBuildings(s) >= 5) m.fiveBuildingsActive = activeMin;
     if (m.level5Wall === null && s.townLevel >= 5) { m.level5Wall = wallMs; m.level5Active = activeMin; }
-    if (m.level8Wall === null && s.townLevel >= 8) m.level8Wall = wallMs;
+    if (m.level10Wall === null && s.townLevel >= 10) m.level10Wall = wallMs;
     if (m.coins100kWall === null && s.lifetimeCoins >= 100000) m.coins100kWall = wallMs;
-    if (m.firstCharterWall === null && s.townLevel >= 8 && charterGain(s.lifetimeCoins) >= 1) m.firstCharterWall = wallMs;
+    if (m.firstCharterWall === null && s.townLevel >= 10 && charterGain(s.lifetimeCoins) >= 1) m.firstCharterWall = wallMs;
   };
 
   const endDay = days * DAY_MIN;
@@ -201,7 +201,7 @@ export function simulate({ biome, days }) {
     level10ActiveHours: m.levels[10]?.activeH ?? null,
     level10WallHours: m.levels[10]?.wallH ?? null,
     firstCharterHours: wallH(m.firstCharterWall),
-    level8Hours: wallH(m.level8Wall),
+    level10Hours: wallH(m.level10Wall),
     coins100kHours: wallH(m.coins100kWall),
     firstBuildHours: wallH(m.firstBuildWall),
     capHours: data.economy.offline.baseCapHours,

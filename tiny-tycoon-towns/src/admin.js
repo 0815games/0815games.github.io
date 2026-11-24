@@ -1,10 +1,10 @@
 // Betreiber-Bereich: Anmeldung, Spielerliste und Stadt-Editor.
 // Sicherheit: Die Datenbankregeln lassen nur Admins fremde Städte lesen und schreiben.
 // Dieser Code zeigt nur an, was die Regeln ohnehin erlauben.
-import * as cloud from './cloud.js?v=20261124-chronik';
-import { createLoginScene } from './world/login-scene.js?v=20261124-chronik';
-import { checkTownName, townKey } from './town-names.js?v=20261124-chronik';
-import { GRID, keyOf, gridSize, isUnlocked } from './domain/grid.js?v=20261124-chronik';
+import * as cloud from './cloud.js?v=20261124-zentrieren';
+import { createLoginScene } from './world/login-scene.js?v=20261124-zentrieren';
+import { checkTownName, townKey } from './town-names.js?v=20261124-zentrieren';
+import { GRID, keyOf, gridSize, isUnlocked } from './domain/grid.js?v=20261124-zentrieren';
 
 const HOUR = 3_600_000;
 const TERRAIN_ICON = { meadow: '🌿', forest: '🌲', rock: '🪨', water: '🌊', sand: '🏖️' };
@@ -25,7 +25,7 @@ let scene = null;
 async function loadData() {
   const names = ['resources', 'buildings', 'economy'];
   const parts = await Promise.all(names.map((n) =>
-    fetch(`data/${n}.json?v=20261124-chronik`).then((r) => {
+    fetch(`data/${n}.json?v=20261124-zentrieren`).then((r) => {
       if (!r.ok) throw new Error(`data/${n}.json: HTTP ${r.status}`);
       return r.json();
     })));

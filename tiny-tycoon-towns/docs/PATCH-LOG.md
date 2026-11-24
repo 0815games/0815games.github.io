@@ -505,3 +505,24 @@ Ereignis ergänzt.
 - Grenzen: Bot mit 2 Aktionen je aktiver Minute (Annahme), Gitter-Erweiterung nur an Stufen gebunden, 150 Tage Simulation.
 - Offen / nächster Schritt: Nutzer entscheidet über Riverlands (mehr Einnahmen, Gitterwachstum oder Ziel anpassen) und die Formel für XP je Ausbau. Danach Umsetzung im Spiel, Tests, Freibrief-Gate auf Stufe 10 (CHARTER_MIN_LEVEL).
 
+
+### TTT-0030 – Balance umgesetzt, Klick zentriert die Karte nicht mehr, Freibrief ab Stadtlevel 10 (Stempel 20261124-zentrieren)
+
+- Zeit / Quelle: Nutzerentscheidung im Chat: Option 1 (mehr Einnahmen für Riverlands), danach „mach wie du denkst“. Nutzerbericht: Klick auf ein Feld verschiebt die Karte und nervt. Der Nutzer will die Testversion online.
+- Änderungen / Dateien:
+  - `data/biomes.json`: Riverlands `scarce` = `["stone"]` (Holz nicht mehr knapp).
+  - `data/economy.json`: `townLevelThresholds` ab Stufe 5 neu (Stufe 5 bei 162.000 XP, Stufe 10 bei 1.938.000 XP); `gridSizeByTownLevel` mit `"10": 10` statt `"12": 10`.
+  - `src/domain/engine.js`: XP je Ausbau = `upgradePerNewLevel × Stufe²`.
+  - `src/domain/charters.js`: `CHARTER_MIN_LEVEL` = 10 (vorher 8).
+  - `src/main.js`: `selectTile` ruft kein `focusTile` mehr auf. Klick und Tipp verschieben die Karte nicht.
+  - `src/world/board.js`: Die Pfeiltasten zentrieren weiter die Auswahl (`focusOn`).
+  - `src/patch-notes.mjs`: neuer Eintrag `20261124-zentrieren` (DE/EN). Der Eintrag `20261124-chronik` bleibt unverändert.
+  - `tests/charters.test.mjs`, `tests/domain.test.mjs`: Werte an Stufe 10 und an die neue XP-Formel angepasst.
+  - `scripts/simulate-balance.mjs`: Freibrief-Meilenstein auf Stufe 10.
+  - `docs/GAME_PLAN.md`: Gründung ab Stadtlevel 10.
+  - Stempel `20261124-chronik` → `20261124-zentrieren` in 17 Dateien (`bump --apply`).
+- Messung (`npm run simulate`, 30 Tage, Bot wie TTT-0028): Stadtlevel 5 bei Tiefwald 4,4 h, Hochland 4,5 h, Küste 4,1 h, Riverlands 3,6 h (unter 4 h). Stadtlevel 10 bei Tiefwald 11,3 h; Hochland 10,9 h (knapp unter 11); Küste und Riverlands bleiben bei Stufe 9 stehen. Exit 1 mit 4 Meilensteinen außerhalb des Korridors.
+- Prüfungen: `npm test` 76 pass, 0 fail. `npm run check:suite` Exit 0, 76 Tests grün.
+- Nachweisgrad: Unit-Test und Bot-Simulation. Der Klick-Fix ist nicht automatisch getestet. Browser-Test auf dem Preview steht aus.
+- Grenzen: Der Bot füllt das Raster mit Lagern und baut keine Eisenmine. Ob der Stillstand bei Stufe 9 im echten Spiel auftritt, ist offen. Stufe 5 in Riverlands liegt unter dem Ziel.
+- Offen / nächster Schritt: Betreiber testet den Klick auf dem Preview. Danach Entscheidung über Riverlands (Stillstand auf Stufe 9) und über das Raster ab Stufe 10.

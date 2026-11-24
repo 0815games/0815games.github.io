@@ -4,6 +4,24 @@
 
 export const RELEASED_PATCHES = [
   {
+    build: '20261124-zentrieren',
+    date: '2026-11-24',
+    items: [
+      {
+        de: 'Klicken auf ein Feld verschiebt die Karte nicht mehr. Die Pfeiltasten zentrieren weiterhin die Auswahl.',
+        en: 'Clicking a tile no longer moves the map. The arrow keys still centre the selection.',
+      },
+      {
+        de: 'Freibriefe erst ab Stadtlevel 10 (vorher 8). Die Stadt braucht dafür 100.000 Münzen Gesamtertrag.',
+        en: 'Charters now need town level 10 (previously 8). The town also needs 100,000 coins of total yield.',
+      },
+      {
+        de: 'Balance (Simulation, kein Test am Gerät): Stadtlevel 5 nach etwa 4 bis 4,5 Stunden aktiver Spielzeit in Tiefwald, Hochland und Küste. Stadtlevel 10 braucht mehr Ausbauten. Flusslande (Riverlands) hat jetzt nur Stein als knappe Ressource, dafür bleibt Holz ohne Abzug.',
+        en: 'Balance (simulation, not tested on a device): town level 5 after about 4 to 4.5 active hours in Deep Woods, Highlands and Coast. Town level 10 needs more upgrades. Riverlands now has only stone as a scarce resource, so lumber is no longer penalised.',
+      },
+    ],
+  },
+  {
     build: '20261124-chronik',
     date: '2026-11-24',
     items: [

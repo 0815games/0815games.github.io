@@ -1,7 +1,7 @@
 // DOM-Brücke für die Weltansicht: Canvas, Kamera (Ziehen, Zoom), Tastatur, Animation.
 // Der Spielzustand kommt von außen (main.js). Diese Datei verändert ihn nie.
-import { toScreen } from './iso.js?v=20261124-chronik';
-import { renderWorld, pickTile, makeFx, stepFx, produceIcons, coinGain, dayFactor, GRID_SIZE, HALL } from './scene.js?v=20261124-chronik';
+import { toScreen } from './iso.js?v=20261124-zentrieren';
+import { renderWorld, pickTile, makeFx, stepFx, produceIcons, coinGain, dayFactor, GRID_SIZE, HALL } from './scene.js?v=20261124-zentrieren';
 
 const DRAG_PX = 6;
 const K_MIN = 0.45;
@@ -179,6 +179,7 @@ export function createBoard(container, opts) {
       const nx = Math.min(GRID_SIZE - 1, Math.max(0, s.x + d[0]));
       const ny = Math.min(GRID_SIZE - 1, Math.max(0, s.y + d[1]));
       opts.onSelect({ x: nx, y: ny });
+      focusOn(nx, ny); // Tastatur: die Auswahl bleibt im Blick
       return;
     }
     if (e.key === '+' || e.key === '-') {
@@ -187,6 +188,14 @@ export function createBoard(container, opts) {
       dirty = true;
     }
   });
+
+  function focusOn(x, y) {
+    const c = toScreen(x + 0.5, y + 0.5);
+    cam.x = c.x;
+    cam.y = c.y;
+    clampCam();
+    dirty = true;
+  }
 
   // ----- Animation -----
   function frame(now) {
@@ -237,13 +246,7 @@ export function createBoard(container, opts) {
       if (coins > 0) fx.coinsPending += coins;
     },
     /** Eine Kachel im Blick halten (nach Tastaturauswahl). */
-    focusTile(x, y) {
-      const c = toScreen(x + 0.5, y + 0.5);
-      cam.x = c.x;
-      cam.y = c.y;
-      clampCam();
-      dirty = true;
-    },
+    focusTile: focusOn,
     destroy() {
       cancelAnimationFrame(rafId);
       ro.disconnect();

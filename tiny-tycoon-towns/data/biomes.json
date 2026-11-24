@@ -1,5 +1,5 @@
 {
-  "riverlands": { "name": { "de": "Flusslande", "en": "Riverlands" }, "abundant": ["grain", "fish"],  "scarce": ["stone", "lumber"], "layout": "river" },
+  "riverlands": { "name": { "de": "Flusslande", "en": "Riverlands" }, "abundant": ["grain", "fish"],  "scarce": ["stone"], "layout": "river" },
   "deepwoods":  { "name": { "de": "Tiefwald", "en": "Deep Woods" },   "abundant": ["lumber", "honey"], "scarce": ["fish", "iron"],    "layout": "woods" },
   "highlands":  { "name": { "de": "Hochland", "en": "Highlands" },    "abundant": ["stone", "iron"],   "scarce": ["grain", "fish"],   "layout": "rock" },
   "coast":      { "name": { "de": "Küstenstrich", "en": "Coast" },    "abundant": ["salt", "pearls"],  "scarce": ["lumber", "iron"],  "layout": "coast" }

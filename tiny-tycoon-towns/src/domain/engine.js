@@ -1,13 +1,13 @@
 // Game engine: state creation, player actions and time advance.
 // Every exported action is (state, input, ctx) -> { state, events, error? }.
 // The input state is never mutated.
-import { generateTerrain } from './terrain.js?v=20261124-chronik';
-import { GRID, HALL, keyOf, parseKey, inBounds, isUnlocked } from './grid.js?v=20261124-chronik';
+import { generateTerrain } from './terrain.js?v=20261124-zentrieren';
+import { GRID, HALL, keyOf, parseKey, inBounds, isUnlocked } from './grid.js?v=20261124-zentrieren';
 import {
   classOf, buildCost, productionMultiplier, townLevelFor,
   storageCap, throughputPerMin, sellPrice,
-} from './economy.js?v=20261124-chronik';
-import { merchantOffers } from './merchant.js?v=20261124-chronik';
+} from './economy.js?v=20261124-zentrieren';
+import { merchantOffers } from './merchant.js?v=20261124-zentrieren';
 
 export const SCHEMA_VERSION = 1;
 export const BIOMES = ['riverlands', 'deepwoods', 'highlands', 'coast'];
@@ -148,7 +148,7 @@ export function upgradeBuilding(state, { x, y }, ctx) {
   sb.level += 1;
 
   const events = [{ type: 'upgraded', x, y, buildingId: b.id, level: sb.level }];
-  const lu = addXp(s, data.economy.xp.upgradePerNewLevel * sb.level, data);
+  const lu = addXp(s, data.economy.xp.upgradePerNewLevel * sb.level * sb.level, data);
   if (lu) events.push(lu);
   return { state: s, events };
 }
