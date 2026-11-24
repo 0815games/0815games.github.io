@@ -23,9 +23,22 @@ Waffen: `pistol_10mm` `revolver_44` `shotgun` `combat_shotgun` `smg`
 `assault_rifle` `minigun` `laser_pistol` `laser_rifle` `plasma_pistol` `plasma_rifle`
 Rüstung: `power_armor`
 
-## Ausschuss in Block 5
+## Ausschuss in Block 5 — offen
 
-`bp_stimpack` (47,1 % weisse Pixel) — vom Pruefskript abgefangen, neu zeichnen.
+`bp_stimpack` — weisser Hintergrund statt schwarz.
+`gears` — weisser Hintergrund statt schwarz.
+`duct_tape` — weisser Streifen ueber die volle Breite am unteren Rand
+(y 896-1023); beim Zuschneiden waere daraus eine weisse Kante geworden.
+
+Alle drei vom Pruefskript abgefangen, neu zeichnen.
+
+## Regel: Hintergrund pruefen
+
+Ein Motiv kann inhaltlich stimmen und trotzdem unbrauchbar sein, wenn der
+Hintergrund weiss ist. Das Faerbungsmuster "green line art on a solid pure
+black background" wird nicht immer befolgt. `tools/icon-check.mjs` zaehlt
+weisse Pixel und bricht ab - bei `gears` war nur der Hintergrund falsch,
+die Zahnraeder selbst waren sauber.
 
 ## Ausschuss in Block 4 — erledigt
 
@@ -95,12 +108,12 @@ Rucksäcke (fertig): `backpack_frame` `backpack_leather` `backpack_metal`
 Werkzeug: `camp_kit` `lockpick` `wrench` `clipboard` `tin_can`
 `radio_part` `fusion_core`
 
-Baupläne (1/2): `bp_ammo` · Ausschuss: `bp_stimpack`
+Baupläne (1/2): `bp_ammo` · offen: `bp_stimpack`
 
 Munition (fertig): `ammo` (Schrott .38) `ammo_308` `ammo_cell`
 
-Rohstoffe: `junk_metal` `cloth` `screws` `duct_tape` `glue` `gears`
-`springs` `plastic` `leather` `circuit` `adhesive` `oil`
+Rohstoffe (7/12): `junk_metal` `cloth` `screws` `glue` `springs` `plastic` `leather`
+Offen: `duct_tape` `gears` `circuit` `adhesive` `oil`
 
 Selten: `nuclear_mat` `legendary_part` `deathclaw_hand` `titanium`
 `bone` `acid` `poison_gland` `gunpowder`
