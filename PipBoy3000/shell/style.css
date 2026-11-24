@@ -1,0 +1,351 @@
+/* [TIMESTAMP] 2026-01-18 16:30:00 - style.css - Fix Nav Z-Index Layering */
+
+/* --- LAYOUT RESET & SCROLLING LOGIC --- */
+
+/* 1. Hauptcontainer: Passt sich dem HANDY-SCREEN an (dvh = dynamic viewport height) */
+#pipboy-case {
+    background: linear-gradient(145deg, #1a1a1a, #0d0d0d);
+    padding: 10px;
+    border-radius: 20px;
+    box-shadow: inset 0 0 20px #000, 0 0 0 5px #2a2a2a, 0 0 30px rgba(0,0,0,0.8);
+    width: 100%;
+    max-width: 1200px;
+    
+    height: 100vh;        /* Fallback für alte Browser */
+    height: 100dvh;       /* FIX: Ignoriert Browser-Leisten nicht! */
+    max-height: 100dvh;   
+    
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden !important; /* Kein Scrollen am Gehäuse selbst */
+}
+
+@media (min-width: 768px) {
+    #pipboy-case {
+        height: 95vh !important;
+        border-radius: 30px;
+        padding: 15px;
+    }
+}
+
+/* 2. Game Screen: Der innere Monitor */
+#game-screen {
+    background-color: var(--pip-bg);
+    border: 2px solid var(--pip-dim);
+    border-radius: 10px;
+    flex: 1; /* Füllt den Rest des Case aus */
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden !important;
+    width: 100%;
+    min-height: 0; /* WICHTIG: Damit Flex-Kinder scrollen können */
+}
+
+#main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0; /* WICHTIG */
+    position: relative;
+}
+
+#main-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
+}
+
+/* 3. View Container: Hier wird gescrollt! */
+#view-container {
+    flex: 1;
+    width: 100%;
+    position: relative;
+    overflow-y: auto !important; /* Vertikales Scrollen erlaubt */
+    overflow-x: hidden !important;
+    background-color: #000;
+    -webkit-overflow-scrolling: touch; /* Flüssiges Scrollen auf iOS */
+}
+
+/* BURGER MENÜ FIX */
+#main-nav {
+    z-index: 999999 !important; /* [FIX] Über Toasts und allem anderen */
+    max-height: 90vh;         /* Nicht höher als 70% des Screens */
+    overflow-y: auto;         /* Vertikal scrollen erlaubt */
+    overflow-x: hidden;       /* FIX: Horizontales Wackeln/Scrollen verboten */
+    width: 14rem;             /* Entspricht w-56, erzwingt feste Breite */
+}
+
+/* --- LEICHEN IM KELLER (Old Layout entfernen) --- */
+#log-panel, #layout-split, #log-area { display: none !important; }
+
+/* --- VARIABLES & BASE --- */
+:root { --pip-green: #1aff1a; --pip-glow: #2bff2b; --pip-dim: #0d330d; --pip-bg: #051105; }
+
+html, body { width: 100%; height: 100%; overflow: hidden; overscroll-behavior: none; position: fixed; margin: 0; padding: 0; }
+body { background-color: #000; color: var(--pip-green); font-family: 'VT323', monospace; display: flex; justify-content: center; align-items: center; user-select: none; -webkit-user-select: none; cursor: crosshair; }
+
+canvas { image-rendering: pixelated; image-rendering: crisp-edges; display: block; }
+#view-container > * { max-width: 100%; }
+
+/* --- SCROLLBAR STYLING --- */
+* { scrollbar-width: thin; scrollbar-color: var(--pip-green) #001100; box-sizing: border-box; }
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: #001100; border-left: 1px solid var(--pip-dim); }
+::-webkit-scrollbar-thumb { background: var(--pip-dim); border: 1px solid var(--pip-green); }
+::-webkit-scrollbar-thumb:hover { background: var(--pip-green); }
+::-webkit-scrollbar-corner { background: #000; }
+
+#view-container::-webkit-scrollbar, .login-box::-webkit-scrollbar, #main-nav::-webkit-scrollbar {
+    width: 8px;
+}
+#view-container::-webkit-scrollbar-thumb, .login-box::-webkit-scrollbar-thumb, #main-nav::-webkit-scrollbar-thumb {
+    background-color: #39ff14;
+    border: 1px solid #000;
+}
+
+/* --- OVERLAY BOXEN FIX (Boot Screen Größe) --- */
+.login-box {
+    border: 2px solid var(--pip-green);
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 0 20px var(--pip-dim);
+    width: 90%;
+    max-width: 400px;
+    
+    /* FIX: Minimale Höhe wiederhergestellt! */
+    min-height: 400px; 
+    
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Inhalt zentrieren */
+    background: rgba(0, 10, 0, 0.95);
+    z-index: 20;
+    position: relative;
+    max-height: 90vh;
+    overflow-y: auto; 
+}
+
+/* Spezieller Fix für Boot-Sequenz, damit sie nicht oben klebt */
+#boot-sequence {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#login-screen, #spawn-screen, #reset-overlay, #manual-overlay, #changelog-overlay, #char-select-screen, #delete-confirm-overlay {
+    position: absolute; inset: 0; z-index: 999;
+    background: #000;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    width: 100%; height: 100%;
+}
+
+/* --- ANIMATIONS & EFFECTS --- */
+@keyframes fireFlicker {
+    0% { opacity: 0.8; transform: scale(1); text-shadow: 0 0 4px red; }
+    50% { opacity: 1; transform: scale(1.1); text-shadow: 0 0 10px orange; }
+    100% { opacity: 0.8; transform: scale(1); text-shadow: 0 0 4px red; }
+}
+.fire-anim { display: inline-block; animation: fireFlicker 0.8s infinite alternate ease-in-out; }
+
+.scanline {
+    width: 100%; height: 100px; z-index: 10;
+    background: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(26, 255, 26, 0.04) 50%, rgba(0,0,0,0) 100%);
+    opacity: 0.1; position: absolute; bottom: 100%;
+    animation: scanline 10s linear infinite; pointer-events: none !important;
+}
+@keyframes scanline { 0% { bottom: 100%; } 100% { bottom: -100%; } }
+
+.hex-bg {
+    background-color: #000;
+    background-image: linear-gradient(rgba(26, 255, 26, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(26, 255, 26, 0.03) 1px, transparent 1px);
+    background-size: 20px 20px; animation: pan-grid 60s linear infinite;
+}
+@keyframes pan-grid { 0% { background-position: 0 0; } 100% { background-position: 100px 100px; } }
+
+.crt-flicker { animation: flicker 0.15s infinite; }
+@keyframes flicker { 0% { opacity: 0.97; } 50% { opacity: 1; } 100% { opacity: 0.98; } }
+
+.crt-effect-container::before {
+    content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+    z-index: 10; background-size: 100% 3px, 4px 100%;
+    pointer-events: none !important;
+}
+
+button, .action-button, .header-btn, .shop-item-row { position: relative; z-index: 50; pointer-events: auto !important; }
+
+/* --- ALERTS, GLOWS & BUTTON STYLES --- */
+.action-button { background-color: #0f1f0f; color: var(--pip-green); border: 1px solid var(--pip-green); padding: 5px 10px; margin: 2px; cursor: pointer; text-transform: uppercase; font-size: 1.25rem; transition: all 0.1s; font-family: 'VT323', monospace; display: flex; align-items: center; justify-content: center; }
+.action-button:hover { background-color: var(--pip-green); color: black; }
+.action-button:active { transform: scale(0.95); }
+.action-button:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(100%); }
+
+.header-btn { padding: 5px 15px; font-size: 1.25rem; display: flex; align-items: center; justify-content: center; border: 2px solid var(--pip-green); background: rgba(0, 20, 0, 0.8); color: var(--pip-green); text-transform: uppercase; font-weight: bold; min-width: 100px; transition: all 0.2s; }
+.header-btn:hover { background-color: var(--pip-green); color: black; }
+
+.alert-glow-red { animation: pulse-red-intense 1.5s infinite !important; border-width: 2px !important; font-weight: bold !important; }
+@keyframes pulse-red-intense { 0% { box-shadow: 0 0 5px red; border-color: #800000; color: #ffcccc; } 50% { box-shadow: 0 0 25px red; border-color: red; color: white; background-color: rgba(255, 0, 0, 0.2); } 100% { box-shadow: 0 0 5px red; border-color: #800000; color: #ffcccc; } }
+
+.alert-glow-yellow, .lvl-ready-glow { animation: pulse-yellow-intense 1.5s infinite !important; border: 2px solid #ffd700 !important; font-weight: bold !important; }
+@keyframes pulse-yellow-intense { 0% { box-shadow: 0 0 5px #ffd700; border-color: #b8860b; color: #ffffcc; } 50% { box-shadow: 0 0 25px #ffd700; border-color: #ffd700; color: white; background-color: rgba(255, 215, 0, 0.2); } 100% { box-shadow: 0 0 5px #ffd700; border-color: #b8860b; color: #ffffcc; } }
+
+/* --- CHAR SLOTS --- */
+.char-slot { border: 1px solid var(--pip-dim); background: rgba(0,20,0,0.5); padding: 10px; margin-bottom: 5px; cursor: pointer; transition: all 0.2s; display: flex; justify-content: space-between; align-items: center; }
+@media (hover: hover) { .char-slot:hover { border-color: var(--pip-green); background: rgba(0,40,0,0.8); } }
+.char-slot.active-slot { border-color: #ffd700; background: rgba(255, 215, 0, 0.08); box-shadow: 0 0 15px rgba(255, 215, 0, 0.3); }
+
+/* --- MISC --- */
+#login-form { width: 100%; display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; }
+input.login-input { background: #000; border: 2px solid var(--pip-green); color: var(--pip-green); font-family: inherit; font-size: 20px; padding: 10px; text-align: center; outline: none; width: 100%; }
+
+.boot-line { margin-bottom: 2px; white-space: nowrap; overflow: hidden; opacity: 0; animation: type-line 0.1s forwards; text-align: left; width: 100%; padding-left: 20px; font-size: 0.9rem; }
+@keyframes type-line { to { opacity: 1; } }
+
+/* CITY & TRADING FIX */
+.city-grid { 
+    display: grid; 
+    grid-template-columns: 1fr; 
+    gap: 15px; 
+    padding: 15px; 
+    /* WICHTIG: Keine eigene Scrollbar, Container scrollt! */
+    height: auto !important; 
+    overflow: visible !important;
+}
+@media (min-width: 768px) { .city-grid { grid-template-columns: 1fr 1fr; } .city-card.trader { grid-column: span 2; } }
+
+.city-card { border: 1px solid #1b5e20; background: rgba(0, 20, 0, 0.8); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; padding: 25px 15px; min-height: 120px; }
+@media (hover: hover) { .city-card:hover { border-color: #39ff14; background: rgba(57, 255, 20, 0.1); transform: translateY(-2px); } }
+.city-card .icon { font-size: 3.5rem; margin-bottom: 10px; transition: transform 0.2s; }
+.city-card:hover .icon { transform: scale(1.1); }
+.city-card .label { font-size: 1.2rem; font-weight: bold; color: #39ff14; text-transform: uppercase; margin-bottom: 5px; }
+
+/* TOASTS */
+/* Sicherstellen, dass der Toast-Container unter dem Menü liegt */
+#game-toast-container { z-index: 50000 !important; }
+
+@keyframes slideInRight { from { opacity: 0; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
+.animate-slide-in { animation: slideInRight 0.3s ease-out forwards; }
+#game-toast-container::-webkit-scrollbar { display: none; }
+
+/* Custom Scroll Class */
+.custom-scroll { scrollbar-width: thin; scrollbar-color: #39ff14 #000000; }
+
+/* --- MINIGAMES --- */
+
+/* LOCKPICKING */
+.lock-container {
+    position: relative;
+    width: 250px;
+    height: 250px;
+    margin: 20px auto;
+    border-radius: 50%;
+    border: 4px solid #333;
+    background: #111;
+    box-shadow: inset 0 0 30px #000;
+}
+
+.lock-inner {
+    position: absolute;
+    top: 10%;
+    left: 10%;
+    width: 80%;
+    height: 80%;
+    border-radius: 50%;
+    border: 2px solid #555;
+    background: radial-gradient(circle, #333 30%, #1a1a1a 70%);
+    transition: transform 0.1s ease-out; /* Weiche Drehung */
+    box-shadow: 0 0 10px #000;
+}
+
+.lock-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px; /* Schlüsselloch */
+    height: 60px;
+    background: #000;
+    transform: translate(-50%, -50%);
+    border-radius: 10px;
+}
+
+.bobby-pin {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 200px;
+    height: 6px;
+    background: linear-gradient(to right, #ccc, #888);
+    transform-origin: 0% 50%; /* Dreht sich um die Mitte des Schlosses */
+    pointer-events: none;
+    z-index: 20;
+    filter: drop-shadow(2px 2px 2px #000);
+}
+
+.screwdriver {
+    position: absolute;
+    bottom: -40px;
+    left: 50%;
+    width: 20px;
+    height: 150px;
+    background: #444;
+    transform: translateX(-50%);
+    z-index: 10;
+    border-radius: 4px;
+}
+
+/* HACKING */
+.hack-row {
+    cursor: pointer;
+    padding: 2px 8px;
+    font-family: monospace;
+    transition: all 0.1s;
+}
+.hack-row:hover {
+    background: #39ff14;
+    color: #000;
+    font-weight: bold;
+}
+.hack-hex {
+    color: #004d00;
+    margin-right: 12px;
+}
+
+/* DEFUSAL */
+#defusal-lights {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    background: #000;
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid #1a441a;
+}
+
+/* --- NEUER V.A.T.S. HINTERGRUND STIL --- */
+.vats-digital-skyline-bg {
+    position: relative;
+    overflow: hidden;
+    /* Tiefschwarzer/Grüner Grund */
+    background-color: #010501 !important;
+    background-image: 
+        /* Ebene 1: Feine Scanlines (wie im Original) */
+        repeating-linear-gradient(transparent 0px, transparent 2px, rgba(0, 20, 0, 0.8) 3px),
+        /* Ebene 2: Der blockige "Skyline" Stil von oben, jetzt überall verteilt */
+        linear-gradient(90deg, rgba(57,255,20,0.15) 0%, transparent 15%, transparent 30%, rgba(57,255,20,0.15) 30%, rgba(57,255,20,0.15) 32%, transparent 32%),
+        /* Ebene 3: Horizontale Unterbrechungslinien (der Look aus deinem Screenshot) */
+        linear-gradient(0deg, transparent 45%, rgba(57,255,20,0.4) 45%, rgba(57,255,20,0.4) 46%, transparent 46%, transparent 70%, rgba(57,255,20,0.4) 70%, rgba(57,255,20,0.4) 71%, transparent 71%)
+        !important;
+    background-size: 100% 4px, 200px 100%, 100% 150px !important;
+    background-blend-mode: screen;
+    border: 2px solid #39ff14 !important;
+    box-shadow: inset 0 0 50px rgba(0,0,0,0.8), 0 0 20px rgba(57,255,20,0.3) !important;
+}

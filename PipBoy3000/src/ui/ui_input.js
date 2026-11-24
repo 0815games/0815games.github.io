@@ -185,7 +185,9 @@ Object.assign(UI, {
         // --- NAVIGATION & VIEWS ---
         const navMap = {
             'btn-inv': 'inventory', 'btn-char': 'char', 'btn-map': 'map',
-            'btn-quests': 'journal', 'btn-wiki': 'wiki', 'btn-radio': 'radio'
+            // Das Template heißt views/quests.html; 'journal' hatte keines und
+            // lief beim Klick auf AUFGABEN in einen 404 (docs/ANALYSE.md, B8).
+            'btn-quests': 'quests', 'btn-wiki': 'wiki'
         };
 
         for (const [id, view] of Object.entries(navMap)) {
@@ -359,7 +361,7 @@ Object.assign(UI, {
             if(k === 'i') this.switchView('inventory');
             else if(k === 'c') { this.charTab = 'status'; this.switchView('char'); }
             else if(k === 'm') this.switchView('map');
-            else if(k === 'j') this.switchView('journal');
+            else if(k === 'j') this.switchView('quests');
         }
     },
     

@@ -528,19 +528,17 @@ Object.assign(Game, {
         if(typeof UI.renderChar === 'function') UI.renderChar();
     },
 
-    // [NEU] Wichtig für Minigame Loot!
-    gambleLegendaryLoot: function(score) {
-        const roll = Math.random() * 100;
-        const chance = score * 2; 
-        
-        if(roll > chance) {
-            UI.log(`Kein Glück (${Math.floor(roll)} > ${chance})`, "text-gray-500");
-            this.state.caps += score;
-            return;
-        }
+    // Die Belohnung des Glücksspiels liegt in game_char_logic.js (dort mit
+    // klaren Stufen und ohne Zufalls-Abbruch). Die frühere Fassung an dieser
+    // Stelle war durch die Ladereihenfolge wirkungslos und ist entfernt.
+    // Die wiederverwendbare Erzeugung legendärer Waffen steht unten in
+    // createLegendaryItem() und wird von beiden Wegen genutzt.
 
-        const bases = ['pistol', 'rifle', 'shotgun', 'machete', 'super_sledge'];
-        const baseId = bases[Math.floor(Math.random() * bases.length)];
+    createLegendaryItem: function(baseId = null) {
+        // Ohne Vorgabe zufällig eine Basiswaffe wählen. Nur IDs verwenden, die
+        // im Katalog existieren - 'pistol' und 'rifle' gibt es dort nicht.
+        const bases = ['pipe_pistol', 'hunting_rifle', 'shotgun', 'machete', 'super_sledge'];
+        if (!baseId) baseId = bases[Math.floor(Math.random() * bases.length)];
         const baseItem = this.items[baseId];
 
         if(!baseItem) return;
@@ -578,7 +576,11 @@ Object.assign(Game, {
 
         // Custom Item hinzufügen
         this.addToInventory(legendaryItem, 1);
-        
+        return legendaryItem;
+    },
+
+    // Anzeige des zuletzt erzeugten legendären Items
+    announceLegendary: function(legendaryItem) {
         UI.log("LEGENDÄRES ITEM ERHALTEN!", "text-yellow-400 font-bold animate-pulse");
         if(typeof UI.showItemOverlay === 'function') UI.showItemOverlay(legendaryItem);
     },

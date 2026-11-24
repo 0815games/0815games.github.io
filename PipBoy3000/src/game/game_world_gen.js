@@ -1,6 +1,6 @@
 // [2026-02-21 13:05:00] game_world_gen.js - POI Offset Spawns
 
-const WorldGen = {
+const WorldGen = window.WorldGen = {
     _seed: 12345,
     locations: { vault: {x:4, y:4}, city: {x:7, y:7}, ghostTown: {x:2, y:8} }, 
     sectorRoads: {}, 
@@ -101,7 +101,13 @@ const WorldGen = {
         const gx = sx * 50 + 25; const gy = sy * 50 + 25;
         const moisture = this.smoothNoise(gx * 0.003, gy * 0.003, this._seed + 200);
         const heat = this.smoothNoise(gx * 0.003 + 100, gy * 0.003 + 100, 888);
+        // 'city' und 'jungle' werden hier bewusst erzeugt: game_char_logic.js
+        // baut eigene Gegner-Pools dafür, die sonst nie erreichbar wären
+        // (docs/ANALYSE.md, B6).
+        const urban = this.smoothNoise(gx * 0.004 + 300, gy * 0.004 + 300, this._seed + 300);
+        if(urban > 0.78 && heat < 0.7) return 'city';
         if(moisture > 0.6 && heat < 0.5) return 'forest';
+        if(moisture > 0.65 && heat > 0.62) return 'jungle';
         if(moisture > 0.65 && heat > 0.5) return 'swamp';
         if(heat > 0.7 && moisture < 0.4) return 'desert';
         if(this.smoothNoise(gx * 0.005, gy * 0.005, this._seed + 100) > 0.75) return 'mountain';

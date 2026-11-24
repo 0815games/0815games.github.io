@@ -82,13 +82,17 @@ Object.assign(Game, {
         
         if(zone.includes("Supermarkt")) { pool = [this.monsters.raider, this.monsters.ghoul, this.monsters.wildDog]; if(lvl >= 4) pool.push(this.monsters.superMutant); } 
         else if (zone.includes("Höhle")) { pool = [this.monsters.moleRat, this.monsters.radScorpion, this.monsters.bloatfly]; if(lvl >= 3) pool.push(this.monsters.ghoul); } 
-        else if(biome === 'city') { pool = [this.monsters.raider, this.monsters.ghoul, this.monsters.protectron]; if(lvl >= 5) pool.push(this.monsters.superMutant); if(lvl >= 7) pool.push(this.monsters.sentryBot); } 
+        // Gegner werden nach Lebendigkeit gefiltert: ein Pool-Eintrag, den es im
+        // Katalog nicht gibt, wurde früher als "Unbekanntes Monster" mit 20 HP
+        // ausgeliefert (siehe docs/ANALYSE.md, B5).
+        else if(biome === 'city') { pool = [this.monsters.raider, this.monsters.ghoul, this.monsters.wildDog]; if(lvl >= 5) pool.push(this.monsters.superMutant); if(lvl >= 8) pool.push(this.monsters.deathclaw); } 
         else if(biome === 'desert') { pool = [this.monsters.radScorpion, this.monsters.raider, this.monsters.moleRat]; } 
-        else if(biome === 'jungle') { pool = [this.monsters.bloatfly, this.monsters.mutantRose, this.monsters.yaoGuai]; } 
-        else if(biome === 'swamp') { pool = [this.monsters.mirelurk, this.monsters.bloatfly]; if(lvl >= 5) pool.push(this.monsters.ghoul); } 
+        else if(biome === 'jungle') { pool = [this.monsters.bloatfly, this.monsters.ghoul, this.monsters.wildDog]; if(lvl >= 4) pool.push(this.monsters.radScorpion); } 
+        else if(biome === 'swamp') { pool = [this.monsters.bloatfly, this.monsters.moleRat]; if(lvl >= 5) pool.push(this.monsters.ghoul); } 
         else { pool = [this.monsters.moleRat, this.monsters.radRoach, this.monsters.bloatfly]; if(lvl >= 2) pool.push(this.monsters.raider); if(lvl >= 3) pool.push(this.monsters.wildDog); } 
         
         if(lvl >= 8 && Math.random() < 0.1) pool = [this.monsters.deathclaw]; 
+        pool = pool.filter(m => m && m.name);
         if(pool.length === 0) pool = [this.monsters.radRoach]; 
 
         const template = pool[Math.floor(Math.random()*pool.length)]; 
@@ -132,10 +136,14 @@ Object.assign(Game, {
             UI.log("Gewinn: 150 KK + Stimpack + Schrott", "text-blue-400");
         }
         else {
-            const rareId = this.items['plasma_rifle'] ? 'plasma_rifle' : 'hunting_rifle';
-            const item = Game.generateLoot(rareId);
-            item.props = { prefix: 'legendary', name: `Legendäres ${this.items[rareId].name}`, dmgMult: 1.5, valMult: 3.0, bonus: {LUC: 2}, color: 'text-yellow-400 font-bold' };
-            this.addToInventory(item);
+            // Jackpot: jetzt über die gemeinsame Erzeugung legendärer Waffen,
+            // damit Präfixe (Brutale, Vampir, Atomare ...) auch hier greifen.
+            const item = (typeof this.createLegendaryItem === 'function')
+                ? this.createLegendaryItem('plasma_rifle')
+                : null;
+            if (item && typeof this.announceLegendary === 'function') {
+                this.announceLegendary(item);
+            }
             this.state.caps += 300;
             UI.log("JACKPOT! Legendäre Waffe + 300 KK!", "text-yellow-400 font-bold animate-pulse");
         }

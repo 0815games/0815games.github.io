@@ -113,6 +113,22 @@ window.Game = {
         this.isDirty = false;
     },
 
+    // Wird von Combat.playerAttack (Vampir-Waffen) aufgerufen. Fehlte bisher,
+    // wodurch der Effekt still wirkungslos blieb (docs/ANALYSE.md, B11).
+    getMaxHp: function() { return (this.state && this.state.maxHp) || 100; },
+
+    // Wird beim Permadeath aufgerufen (ui_render_overlays.js). Fehlte bisher;
+    // der dortige Ersatzweg löschte Schlüssel, die das Spiel nie geschrieben hat.
+    deleteSave: function(slot) {
+        const index = (slot === undefined || slot === null) ? (this.state ? this.state.saveSlot : 0) : slot;
+        if (typeof Network !== 'undefined' && typeof Network.deleteSlot === 'function') {
+            Network.deleteSlot(index).catch(() => {});
+        }
+        try { localStorage.removeItem('pipboy_save'); } catch (e) {}
+        this.isDirty = false;
+        this.state = null;
+    },
+
     hardReset: function() { if(typeof Network !== 'undefined') Network.deleteSave(); this.state = null; location.reload(); },
 
     getPerkLevel: function(perkId) {

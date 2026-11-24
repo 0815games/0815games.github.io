@@ -220,7 +220,7 @@ Object.assign(UI, {
         if(name === 'hacking') { this.renderHacking(); Game.state.view = name; return; }
         if(name === 'lockpicking') { this.renderLockpicking(true); Game.state.view = name; return; }
 
-        const path = `views/${name}.html?v=${ver}`;
+        const path = `templates/${name}.html?v=${ver}`;
         try {
             const res = await fetch(path);
             if (!res.ok) throw new Error(`View '${name}' not found`);
@@ -268,39 +268,13 @@ Object.assign(UI, {
         if(this.els.btnQuests) this.els.btnQuests.classList.toggle('active', activeName === 'quests');
     },
 
+    // Diese Fassung wird von ui_render_overlays.restoreOverlay überschrieben.
+    // Sie bleibt als dünner Aufruf erhalten, damit beide Wege dasselbe Ergebnis
+    // liefern (vorher legte nur diese Version den Joystick an - siehe ANALYSE.md B2).
     restoreOverlay: function() {
-        if(document.getElementById('joystick-base')) return;
-        
-        const joystickHTML = `
-            <div id="joystick-base" style="position: absolute; width: 100px; height: 100px; border-radius: 50%; border: 2px solid rgba(57, 255, 20, 0.5); background: rgba(0, 0, 0, 0.2); display: none; pointer-events: none; z-index: 9999;"></div>
-            <div id="joystick-stick" style="position: absolute; width: 50px; height: 50px; border-radius: 50%; background: rgba(57, 255, 20, 0.8); display: none; pointer-events: none; z-index: 10000; box-shadow: 0 0 10px #39ff14;"></div>
-            
-            <div id="dialog-overlay" 
-                 onclick="if(event.target === this) { this.style.display='none'; this.innerHTML=''; event.stopPropagation(); event.preventDefault(); }"
-                 style="position: fixed; inset: 0; z-index: 10001; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 5px; background: rgba(0,0,0,0.6); backdrop-filter: blur(2px);">
-            </div>
-        `;
-        
-        document.body.insertAdjacentHTML('beforeend', joystickHTML);
-        
-        this.els.joyBase = document.getElementById('joystick-base');
-        this.els.joyStick = document.getElementById('joystick-stick');
-        this.els.dialog = document.getElementById('dialog-overlay');
-
-        if(!window.escListenerAdded) {
-            window.addEventListener('keydown', (e) => {
-                if(e.key === 'Escape') {
-                    const d = document.getElementById('dialog-overlay');
-                    if(d && d.style.display !== 'none') {
-                        d.style.display = 'none';
-                        d.innerHTML = '';
-                        e.stopPropagation(); 
-                        e.stopImmediatePropagation();
-                        e.preventDefault();
-                    }
-                }
-            }, true); 
-            window.escListenerAdded = true;
+        if (typeof this.ensureJoystick === 'function') return this.ensureJoystick();
+        if (typeof UI.restoreOverlay === 'function' && UI.restoreOverlay !== this.restoreOverlay) {
+            return UI.restoreOverlay();
         }
     },
     

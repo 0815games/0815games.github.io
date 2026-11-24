@@ -172,6 +172,8 @@ Object.assign(Game, {
         if(bd === 'swamp') zn = "Todes-Sümpfe";
         if(bd === 'desert') zn = "Die Glühende See";
         if(bd === 'mountain') zn = "Felsengebirge";
+        if(bd === 'city') zn = "Zerfallene Stadt";
+        if(bd === 'jungle') zn = "Überwucherter Dschungel";
         this.state.zone = `${zn} (${sx},${sy})`; 
         
         this.ensureWalkableSpawn(); 
