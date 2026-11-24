@@ -43,3 +43,4 @@ Umsetzungshistorie im [PATCH-LOG.md](PATCH-LOG.md).
 | 9 | **Lebendiges Feld, Scheibe 2** | Drehende Köpfe auch für Kanone, Flak und Scharfschütze; Feinschliff nach Sichtung von Scheibe 1. | [x] gebaut (`IPL-0123`, PR `#385`), Betreiber-Sichtung steht aus |
 | 10 | **Lebendiges Feld, Feinschliff** | Schwenk 3,0 rad/s mit weichem Einrasten, Rückstoß-Fenster 0,16 s, Rückstoß nur in der Waffengruppe (Lafette bleibt stehen). Nur Darstellung. | [x] gebaut (`IPL-0124`, PR `#386`), Betreiber-Sichtung steht aus |
 | 11 | **Lebendiges Feld, mehr Leben** | Mündungsfeuer am Rohr und Hülsenauswurf aus dem bestehenden Rückstoßwert, ohne neuen Zustand. Nur Darstellung. | [x] gebaut (`IPL-0125`, PR `#387`), Betreiber-Sichtung steht aus |
+| 12 | **Lebendiges Ambiente** | Wolkschatten, Windgut und eine Vogelschar, die bei Schüssen auffliegt — alles aus Uhr und Schussliste, ohne neuen Zustand. Nur Darstellung. | [x] gebaut (`IPL-0126`, PR `#388`), Betreiber-Sichtung steht aus |
