@@ -392,3 +392,11 @@ Ereignis ergänzt.
 - Besuchen: Freunde öffnen die Stadt schreibgeschützt. Der Stand wird im Speicher mit der aktuellen Zeit weitergerechnet
   (`advance`), nie gespeichert. Auch der eigene Stand bleibt unberührt. Escape oder „Zurück“ beendet den Besuch.
 - Prüfungen: 65 Tests grün, lint ohne Befund, Seiten laden ohne Fehler. Im echten Login und im Besuch mit Firebase nicht geprüft.
+
+### TTT-0020 – Übergang Intro zur Anmeldung flüssig (Welle `20261124-sitz15`)
+
+- Ursache: Das ganze Intro-Overlay wurde ab 2,9 s ausgeblendet. Der Flug startete erst bei 3,6 s. Das Logo war also
+  schon unsichtbar, die Kopie erschien voll sichtbar und schrumpfte dann zur Karte.
+- Behebung: Das Overlay blendet nicht mehr aus, nur der Schriftzug. Das Logo bleibt bis zum Flug voll sichtbar.
+  Der Flug dauert 1,1 s mit weicherer Kurve.
+- Prüfungen: 65 Tests grün, lint ohne Befund. Im echten Login nicht geprüft (Firebase nicht erreichbar).
