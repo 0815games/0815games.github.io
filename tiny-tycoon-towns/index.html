@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#FFF6E5">
+  <title>Tiny Tycoon Towns</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <a class="skip" href="#board">Zum Spielfeld springen</a>
+
+  <header class="hud">
+    <div class="town">
+      <h1 id="town-name">Tiny Tycoon Towns</h1>
+      <p id="town-meta" class="muted"></p>
+    </div>
+    <div class="coins" aria-live="off">
+      <span aria-hidden="true">🪙</span>
+      <span class="label">Münzen</span>
+      <strong id="coins">0</strong>
+    </div>
+    <div class="xp">
+      <span id="level-label">Stadtlevel 1</span>
+      <progress id="xp-bar" max="100" value="0" aria-label="Fortschritt zum nächsten Stadtlevel"></progress>
+    </div>
+    <button type="button" id="reset-btn" class="ghost">Neu beginnen</button>
+  </header>
+
+  <main class="layout">
+    <section class="board-wrap" aria-label="Spielfeld">
+      <div id="board" class="board" tabindex="0" aria-describedby="board-hint"></div>
+      <p id="board-hint" class="muted small">Pfeiltasten bewegen die Auswahl, Enter wählt ein Feld.</p>
+
+      <section class="stock" aria-labelledby="stock-title">
+        <h2 id="stock-title">Lager und Verkauf</h2>
+        <ul id="stock"></ul>
+        <p class="muted small">Das Rathaus verkauft automatisch. Je Ressource bleiben 20 Einheiten als Reserve.</p>
+      </section>
+    </section>
+
+    <aside id="panel" class="panel" aria-live="polite"></aside>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <dialog id="dlg" aria-labelledby="dlg-title"></dialog>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
