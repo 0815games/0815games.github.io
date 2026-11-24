@@ -110,3 +110,14 @@ test('recoil keys on the tower type, not just the pad',()=>{
   aims=aim.sample({...field2,shots:[{x:100,y:100,tx:200,ty:100,kind:2,id:3}]},.2);
   assert.equal(aims[0].recoil,1,'its own shot does');
 });
+
+test('the traverse eases onto the target instead of slamming in',()=>{
+  const aim=createTowerAim({turnRate:Math.PI});
+  const right={x:200,y:100,hp:10,segment:5};
+  aim.sample(field({enemies:[right]}),0);
+  const near={x:100+Math.cos(.4)*100,y:100+Math.sin(.4)*100,hp:10,segment:5};
+  let aims=aim.sample(field({enemies:[near]}),.1);
+  assert.ok(aims[0].angle>0&&aims[0].angle<.4,'easing moves part of the way, not all of it');
+  aims=aim.sample(field({enemies:[near]}),.2);
+  assert.ok(Math.abs(aims[0].angle-.4)<1e-9,'and it settles exactly on the target');
+});
