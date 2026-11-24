@@ -37,6 +37,35 @@ function roadPoint(map,t){ // fraction t along the longest road
   const paths=(map.paths||[map.path]).slice().sort((a,b)=>pathLength(b)-pathLength(a));
   return roadPointAt(map,paths[0],t);
 }
+// Tower placement scenarios (IPL-0129): where the autopilot puts its pads.
+// The default `coverage` stays byte-identical to the old coverageOrder, so
+// every pinned balance result keeps its number; the alternatives model how a
+// player actually sits on a field (entrance, last line, spread out).
+export function placementOrder(map,placement){
+  if(!placement||placement==='coverage')return coverageOrder(map);
+  const pads=map.pads,paths=map.paths||[map.path];
+  const bunker=map.bunker||{x:map.width-60,y:map.height-60};
+  if(placement==='roadside'){
+    const entry=paths.reduce((acc,p)=>({x:acc.x+p[0].x/paths.length,y:acc.y+p[0].y/paths.length}),{x:0,y:0});
+    return pads.map((p,i)=>({i,score:-Math.hypot(p.x-entry.x,p.y-entry.y)}))
+      .sort((a,b)=>a.score-b.score||a.i-b.i);
+  }
+  if(placement==='bunker'){
+    return pads.map((p,i)=>({i,score:-Math.hypot(p.x-bunker.x,p.y-bunker.y)}))
+      .sort((a,b)=>a.score-b.score||a.i-b.i);
+  }
+  if(placement==='spread'){
+    const start=roadPoint(map,.5),order=[],left=pads.map((_,i)=>i);
+    let cur=start;
+    while(left.length){
+      let best=left[0],bd=-1;
+      for(const i of left){const d=Math.hypot(pads[i].x-cur.x,pads[i].y-cur.y);if(d>bd){bd=d;best=i;}}
+      order.push({i:best,score:bd});left.splice(left.indexOf(best),1);cur=pads[best];
+    }
+    return order;
+  }
+  return coverageOrder(map);
+}
 function roadPointAt(map,path,t){ // fraction t along one given road
   const total=pathLength(path);let left=total*t;
   for(let i=1;i<path.length;i++){const a=path[i-1],b=path[i],seg=Math.hypot(b.x-a.x,b.y-a.y);
@@ -106,7 +135,7 @@ function pilot(ctx){
   const s=ctx.state;
   if(s.ended)return;
   if(s.mapId!==ctx.mapId){ // sector retreat changed the field: re-anchor
-    ctx.mapId=s.mapId;ctx.map=getMap(s.mapId);ctx.order=coverageOrder(ctx.map);
+    ctx.mapId=s.mapId;ctx.map=getMap(s.mapId);ctx.order=placementOrder(ctx.map,ctx.placement);
     const mid=roadPoint(ctx.map,.55);
     for(const id of ctx.ids){const p=s.players[id];p.x=mid.x;p.y=mid.y;p.target=null;p.direction={x:0,y:0};}
   }
@@ -137,20 +166,51 @@ function laneResult(ctx){
     ended:s.ended?'defeat':'alive',towers:s.towers.length,levels:s.towers.reduce((n,t)=>n+t.level,0),
     money:Math.round(s.individualSupplies?Object.values(s.players).reduce((n,p)=>n+(p.money||0),0):s.money),samples:ctx.samples.join(' ')};
 }
+// Wave-boundary telemetry for the field report (IPL-0129): one snapshot at
+// every wave start (hp/money/towers before the shooting) and one when the
+// wave closes, plus the sector retreat itself. Pure observation - the pilot
+// keeps flying exactly as before, so pinned runs do not move.
+function traceWave(ctx,ticks){
+  if(!ctx.trace)return;
+  const s=ctx.state;
+  if(s.mapId!==ctx._tmap){
+    ctx.trace.push({type:'advance',wave:s.wave,from:ctx._tmap,to:s.mapId,t:ticks,
+      hp:Math.round(s.hp),maxHp:s.maxHp,money:moneyOf(s),towers:s.towers.length});
+    ctx._tmap=s.mapId;
+  }
+  if(ctx._tw===undefined){ctx._tw=s.wave;ctx._tr=s.running;return;}
+  if(s.wave!==ctx._tw){
+    ctx.trace.push({type:'wave',wave:s.wave,hp:Math.round(s.hp),maxHp:s.maxHp,t:ticks,
+      money:moneyOf(s),towers:s.towers.length,
+      levels:s.towers.reduce((n,t)=>n+t.level,0),mapId:s.mapId});
+    ctx._tw=s.wave;ctx._tr=s.running;
+    return;
+  }
+  if(ctx._tr&&!s.running){
+    ctx.trace.push({type:'end',wave:s.wave,hp:Math.round(s.hp),ended:!!s.ended,t:ticks});
+    ctx._tr=s.running;
+  }
+}
+function moneyOf(s){return Math.round(s.individualSupplies?Object.values(s.players).reduce((n,p)=>n+(p.money||0),0):s.money);}
 function driveLanes(laneCtxs,step,tickLimit=30*60*120){
   let ticks=0;
   const active=()=>laneCtxs.some(ctx=>!ctx.state.ended&&ctx.state.wave<ctx.maxWaves);
   while(active()&&ticks<tickLimit){
-    if(ticks%15===0){for(const ctx of laneCtxs)pilot(ctx);for(const ctx of laneCtxs)ctx.sync?.();}
+    // Trace BEFORE the pilot: the pilot clears a wave and starts the next
+    // one inside a single call, so a trace after pilot would never observe
+    // the between-waves state (and with it the wave-end snapshots).
+    if(ticks%15===0){for(const ctx of laneCtxs)traceWave(ctx,ticks);for(const ctx of laneCtxs)pilot(ctx);for(const ctx of laneCtxs)ctx.sync?.();}
     step();
     if(ticks%450===0)for(const ctx of laneCtxs)ctx.samples.push(`${ctx.state.wave}:${Math.round(ctx.state.hp)}`);
     ticks++;
   }
   return laneCtxs.map(laneResult);
 }
-function makeCtx(state,ids,label,maxWaves,command,branch){
+function makeCtx(state,ids,label,maxWaves,command,branch,opts={}){
   const map=getMap(state.mapId);
-  const ctx={state,ids,label,maxWaves,command,buildSeq:0,samples:[],mapId:state.mapId,map,order:coverageOrder(map),branch};
+  const ctx={state,ids,label,maxWaves,command,buildSeq:0,samples:[],mapId:state.mapId,map,
+    order:placementOrder(map,opts.placement),placement:opts.placement,branch,
+    trace:opts.trace?[]:null,_tmap:state.mapId,_tw:undefined,_tr:state.running};
   const mid=roadPoint(map,.55);
   for(const id of ids){const p=state.players[id];p.x=mid.x;p.y=mid.y;p.target=null;p.direction={x:0,y:0};}
   return ctx;
@@ -161,6 +221,30 @@ export function runSolo(mapId,gear=GEARS.rookie,maxWaves=25){
   const player=createPlayer('p1',profile(gear),850,450);
   const state=createMatch([player],mapId);
   return driveLanes([makeCtx(state,['p1'],`solo ${mapId} ${gear.label}`,maxWaves,(id,c)=>applyCommand(state,id,c),gear.branch??0)],()=>stepMatch(state))[0];
+}
+// The same rookie/veteran/elite run with wave-boundary telemetry attached
+// (`result.trace`) and an optional tower placement scenario: 'coverage'
+// (default), 'roadside', 'bunker', 'spread'.
+export function runSoloTrace(mapId,gear=GEARS.rookie,maxWaves=25,opts={}){
+  const player=createPlayer('p1',profile(gear),850,450);
+  const state=createMatch([player],mapId);
+  const ctx=makeCtx(state,['p1'],`solo ${mapId} ${gear.label}`,maxWaves,
+    (id,c)=>applyCommand(state,id,c),gear.branch??0,{...opts,trace:true});
+  driveLanes([ctx],()=>stepMatch(state));
+  const result=laneResult(ctx);
+  result.trace=ctx.trace;
+  result.mapId0=mapId;
+  result.placement=opts.placement||'coverage';
+  return result;
+}
+// Class variants for the report matrix: same level/loadout/skill bits as the
+// veteran gear, one run per soldier class - the autopilot's policy does not
+// change, only the kit the soldier carries into the field.
+export const CLASS_VARIANTS=Object.freeze(['none','assault','engineer','logistics','medic','recon','airDefense']);
+export function classGear(cls){
+  const base=GEARS.veteran;
+  const skills=cls==='none'?'v2;none':`v2;${cls};3;1;11111111111111`;
+  return {...base,label:`veteran-${cls}`,skills};
 }
 export function runCoop(mapId,count,gear=GEARS.rookie,maxWaves=25){
   const players=Array.from({length:count},(_,i)=>createPlayer(`p${i+1}`,profile(gear),850,450));

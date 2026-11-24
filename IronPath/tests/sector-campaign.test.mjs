@@ -37,7 +37,7 @@ test('startWave waits for the retreat order',()=>{
  assert.match(refused.reason,/retreat/i);
 });
 
-test('the retreat refunds 60%, patches the bunker and keeps the wave counter',()=>{
+test('the retreat refunds 80%, patches the bunker and keeps the wave counter',()=>{
  const state=createMatch([player()],'g3-09e3779b1');
  assert.ok(applyCommand(state,'local',{type:'build',pad:0,towerType:0}).ok);
  assert.ok(applyCommand(state,'local',{type:'upgrade',pad:0}).ok);
@@ -49,8 +49,8 @@ test('the retreat refunds 60%, patches the bunker and keeps the wave counter',()
  state.hp=Math.max(1,Math.round(state.maxHp*.2));
  const retreat=applyCommand(state,'local',{type:'advanceSector'});
  assert.equal(retreat.ok,true);
- assert.equal(retreat.refund,72,'60% of 50 tower + 70 upgrade');
- assert.equal(state.money,before+72);
+ assert.equal(retreat.refund,96,'80% of 50 tower + 70 upgrade');
+ assert.equal(state.money,before+96);
  assert.equal(state.towers.length,0,'towers do not travel');
  assert.equal(sectorOf(state.mapId),2);
  assert.equal(getMap(state.mapId).width,SECTOR_SPECS[1].width,'the field grew');

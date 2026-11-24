@@ -8,3 +8,4 @@ build/
 
 *.bak
 *.before-*
+IronPath/tests/balance-report-latest.json

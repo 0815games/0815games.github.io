@@ -290,7 +290,11 @@ test('armory items stay honest gear',()=>{
   const onboarding=CAMPAIGN.filter(m=>m.act.includes('ACT I ·')&&!m.finale&&m.threat==='standard');
   for(let item=0;item<=ITEMS.length;item++){
     const gear={...GEARS.rookie,loadout:`0,0,${item}`};
-    assert.ok(runSolo('g3-0d3e7f521',gear,40).wave<35,`item ${item}: the endless curve still wins`);
+    // IPL-0129 moved this margin deliberately: the 80% retreat refund plus the
+    // grace wave extend every endless run (plain rookie on this field: 25 -> 30)
+    // and the vest run is measured dead at wave 41 - the curve must still win
+    // before 45, and any item that full-clears fails here.
+    assert.ok(runSolo('g3-0d3e7f521',gear,60).wave<45,`item ${item}: the endless curve still wins`);
     for(const mission of onboarding)
       assert.equal(runCampaign(mission,gear).won,true,`item ${item}: ${mission.id} onboarding stays winnable`);
     let coasts=0;

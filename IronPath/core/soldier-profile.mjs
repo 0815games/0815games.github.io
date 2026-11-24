@@ -1,6 +1,6 @@
 import {characterProgress} from './progression.mjs?v=20261105-prestige1';
 import {readArmory,ITEMS} from './armory.mjs?v=20261112-tagless1';
-import {parseBuild,webBonuses,abilityName,specialistUnlocked,SKILL_PATH_MAP} from './skills.mjs?v=20261123-aim6';
+import {parseBuild,webBonuses,abilityName,specialistUnlocked,SKILL_PATH_MAP} from './skills.mjs?v=20261124-aim7';
 // Base loadout values only. Terrain, temporary perks and enemy defenses can
 // change the actual battlefield result; no simulation state is written here.
 export function soldierProfile(profile){
