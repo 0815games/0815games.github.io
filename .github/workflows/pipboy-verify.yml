@@ -47,17 +47,16 @@ jobs:
         working-directory: PipBoy3000
         run: npm run build
 
-      # Die Balancing-Wächter laufen im normalen Testlauf als "todo" mit und
-      # blockieren nicht. Hier werden sie streng geprüft: der Schritt ist
-      # nicht blockierend, zeigt aber jeden offenen Befund als Warnung im
-      # Pull Request. So geraten sie nicht in Vergessenheit, ohne dass ein
-      # bekannter Befund jeden Merge blockiert.
-      - name: Offene Balancing-Befunde melden (nicht blockierend)
+      # Die Balancing-Wächter prüfen, ob Ausrüstung und Werte im Spiel
+      # wirken, und laufen seit Version 14.0.0 streng im normalen Testlauf
+      # mit. Dieser Schritt macht sie zusätzlich einzeln sichtbar.
+      - name: Balancing-Bericht ist aktuell
         working-directory: PipBoy3000
-        continue-on-error: true
         run: |
-          if ! BALANCE_STRICT=1 npm run test:balance; then
-            echo "::warning::Offene Balancing-Befunde - siehe PipBoy3000/docs/BALANCE_BEFUNDE.md"
+          npm run test:balance
+          if ! git diff --quiet docs/BALANCING.md; then
+            echo "::error::docs/BALANCING.md passt nicht zum Katalog - 'node tools/balance.mjs --write' ausführen."
+            exit 1
           fi
 
       - name: Tests fahren

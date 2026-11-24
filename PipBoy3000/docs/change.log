@@ -1,5 +1,34 @@
 # CHANGELOG
 
+## v14.0.1 (Balancing-Befunde, 2026-11-24)
+Alle sieben Befunde aus `docs/BALANCE_BEFUNDE.md` sind behoben. Neu ist
+`docs/BALANCING.md`: ein aus dem Quellstand erzeugtes Datenblatt mit Waffen,
+Rüstung, Perks, Verbrauchsgütern, Monstern, Wirtschaft und Minispielen.
+
+- [BUGFIX] **Rüstung wirkte nicht:** kein Rüstungsteil hatte einen
+  Verteidigungswert, der Kampf las ein Feld, das es nicht gab. 28 Teile tragen
+  jetzt `def` (1–25), der Kampf rechnet über `Game.equipDef()`.
+- [BUGFIX] **Ein Drittel der Truhen war kaputt:** das Minispiel heißt
+  `defusal`, aufgerufen wurde `bomb`. Der Aufruf brach still ab und ließ
+  `inDialog` gesperrt zurück. `startMinigame` meldet jetzt unbekannte
+  Schlüssel, statt zu schweigen.
+- [BUGFIX] **Buff-Items wirkten nicht:** Buffout, Jet, Rad-X und Stealth Boy
+  wurden verbraucht, ohne etwas zu ändern. Neu: `Game.applyBuff()`, Buffs mit
+  Ablaufzeit, `getStat` rechnet sie ein.
+- [BUGFIX] **Strahlungsresistenz wurde ignoriert:** Anzug, Gasmaske und Rad-X
+  zählen jetzt, gedeckelt auf 90 %.
+- [BUGFIX] **CHA hatte keine Wirkung:** 1 % je Punkt über 1 auf Händlerpreise,
+  beim Kauf günstiger, beim Verkauf teurer.
+- [FEATURE] **Truhen haben drei Typen:** Dietrich, Bombe und — ab Dungeon-Ebene
+  2 — Terminal. Über das Terminal ist `hacking` erstmals erreichbar, und INT
+  senkt dort die Zahl der Passwörter.
+- [BALANCE] **Waffenpreise folgen dem Schaden:** Minigun, Sturmgewehr,
+  Lasergewehr, Scharfschützengewehr und Plasmagewehr neu bepreist. Keine
+  Fernkampfwaffe ist mehr teurer und gleichzeitig schwächer als eine
+  billigere.
+- [TESTS] 93 Tests, davon 13 Balancing-Wächter (jetzt streng statt `todo`),
+  7 Truhen- und 12 Ausrüstungstests neu.
+
 ## v14.0.0 (Umbau, 2026-11-24)
 - [SYSTEM] **ES-Module und Build:** 26 Skripte werden zu `app.js` gebündelt
   (esbuild), Tailwind läuft zur Buildzeit statt über den Play-CDN. Quellen der

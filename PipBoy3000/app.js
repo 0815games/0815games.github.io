@@ -351,7 +351,7 @@
     sledgehammer: { name: "Vorschlaghammer", type: "weapon", slot: "weapon", baseDmg: 25, cost: 180, desc: "Sehr langsam, sehr schwer.", usesAmmo: false },
     power_fist: { name: "Powerfaust", type: "weapon", slot: "weapon", baseDmg: 30, cost: 450, desc: "Pneumatischer Schlag.", usesAmmo: false },
     super_sledge: { name: "Superhammer", type: "weapon", slot: "weapon", baseDmg: 45, cost: 700, desc: "Raketengetrieben.", usesAmmo: false },
-    ripper: { name: "Ripper", type: "weapon", slot: "weapon", baseDmg: 18, cost: 350, desc: "Kettensägen-Messer.", usesAmmo: false },
+    ripper: { name: "Ripper", type: "weapon", slot: "weapon", baseDmg: 18, cost: 420, desc: "Kettensägen-Messer.", usesAmmo: false },
     deathclaw_gauntlet: { name: "Todeskralle", type: "weapon", slot: "weapon", baseDmg: 50, cost: 1e3, desc: "Die Klaue einer Bestie.", usesAmmo: false },
     // ==============================
     // === FERNKAMPF (Guns/Ammo) ===
@@ -371,52 +371,52 @@
     pipe_revolver: { name: "Rohrrevolver", type: "weapon", slot: "weapon", baseDmg: 9, cost: 45, desc: "Kaliber .45.", usesAmmo: true, ammoType: "ammo", ammoCost: 1 },
     pipe_sniper: { name: "Rohr-Sniper", type: "weapon", slot: "weapon", baseDmg: 12, cost: 60, desc: "Mit Zielfernrohr.", usesAmmo: true, ammoType: "ammo", ammoCost: 2 },
     // Conventional
-    pistol_10mm: { name: "10mm Pistole", type: "weapon", slot: "weapon", baseDmg: 12, cost: 120, desc: "Verlässlich.", usesAmmo: true, ammoType: "ammo_10mm", ammoCost: 1 },
+    pistol_10mm: { name: "10mm Pistole", type: "weapon", slot: "weapon", baseDmg: 12, cost: 150, desc: "Verlässlich.", usesAmmo: true, ammoType: "ammo_10mm", ammoCost: 1 },
     revolver_44: { name: ".44 Revolver", type: "weapon", slot: "weapon", baseDmg: 25, cost: 250, desc: "Dirty Harry Style.", usesAmmo: true, ammoType: "ammo_308", ammoCost: 1 },
-    smg: { name: "Maschinenpistole", type: "weapon", slot: "weapon", baseDmg: 10, cost: 300, desc: "Schnellfeuer.", usesAmmo: true, ammoType: "ammo_10mm", ammoCost: 3 },
-    hunting_rifle: { name: "Jagdgewehr", type: "weapon", slot: "weapon", baseDmg: 20, cost: 200, desc: "Präzise.", usesAmmo: true, ammoType: "ammo_308", ammoCost: 1 },
-    sniper_rifle: { name: "Scharfschützengewehr", type: "weapon", slot: "weapon", baseDmg: 35, cost: 700, desc: "Tödlich auf Distanz.", usesAmmo: true, ammoType: "ammo_308", ammoCost: 1 },
+    smg: { name: "Maschinenpistole", type: "weapon", slot: "weapon", baseDmg: 10, cost: 55, desc: "Schnellfeuer.", usesAmmo: true, ammoType: "ammo_10mm", ammoCost: 3 },
+    hunting_rifle: { name: "Jagdgewehr", type: "weapon", slot: "weapon", baseDmg: 20, cost: 230, desc: "Präzise.", usesAmmo: true, ammoType: "ammo_308", ammoCost: 1 },
+    sniper_rifle: { name: "Scharfschützengewehr", type: "weapon", slot: "weapon", baseDmg: 45, cost: 1150, desc: "Tödlich auf Distanz.", usesAmmo: true, ammoType: "ammo_308", ammoCost: 1 },
     shotgun: { name: "Doppelflinte", type: "weapon", slot: "weapon", baseDmg: 30, cost: 350, desc: "Zwei Läufe.", usesAmmo: true, ammoType: "ammo_shell", ammoCost: 2 },
     combat_shotgun: { name: "Kampfflinte", type: "weapon", slot: "weapon", baseDmg: 38, cost: 600, desc: "Magazin-geladen.", usesAmmo: true, ammoType: "ammo_shell", ammoCost: 2 },
-    assault_rifle: { name: "Sturmgewehr", type: "weapon", slot: "weapon", baseDmg: 28, cost: 550, desc: "Militärstandard.", usesAmmo: true, ammoType: "ammo_308", ammoCost: 2 },
-    minigun: { name: "Minigun", type: "weapon", slot: "weapon", baseDmg: 15, cost: 1500, desc: "Extremes Schnellfeuer (Mehrfach-Treffer).", usesAmmo: true, ammoType: "ammo_micro", ammoCost: 5 },
+    assault_rifle: { name: "Sturmgewehr", type: "weapon", slot: "weapon", baseDmg: 45, cost: 1150, desc: "Militärstandard.", usesAmmo: true, ammoType: "ammo_308", ammoCost: 2 },
+    minigun: { name: "Minigun", type: "weapon", slot: "weapon", baseDmg: 48, cost: 1700, desc: "Extremes Schnellfeuer (Mehrfach-Treffer).", usesAmmo: true, ammoType: "ammo_micro", ammoCost: 5 },
     // Energy
-    laser_pistol: { name: "Laserpistole", type: "weapon", slot: "weapon", baseDmg: 22, cost: 400, desc: "Vorsicht, heiß.", usesAmmo: true, ammoType: "ammo_cell", ammoCost: 2 },
-    laser_rifle: { name: "Lasergewehr", type: "weapon", slot: "weapon", baseDmg: 32, cost: 650, desc: "Lange Reichweite.", usesAmmo: true, ammoType: "ammo_cell", ammoCost: 2 },
-    plasma_pistol: { name: "Plasmapistole", type: "weapon", slot: "weapon", baseDmg: 35, cost: 600, desc: "Grüner Schleim.", usesAmmo: true, ammoType: "ammo_cell", ammoCost: 3 },
+    laser_pistol: { name: "Laserpistole", type: "weapon", slot: "weapon", baseDmg: 22, cost: 240, desc: "Vorsicht, heiß.", usesAmmo: true, ammoType: "ammo_cell", ammoCost: 2 },
+    laser_rifle: { name: "Lasergewehr", type: "weapon", slot: "weapon", baseDmg: 48, cost: 1250, desc: "Lange Reichweite.", usesAmmo: true, ammoType: "ammo_cell", ammoCost: 2 },
+    plasma_pistol: { name: "Plasmapistole", type: "weapon", slot: "weapon", baseDmg: 40, cost: 880, desc: "Grüner Schleim.", usesAmmo: true, ammoType: "ammo_cell", ammoCost: 3 },
     plasma_rifle: { name: "Plasmagewehr", type: "weapon", slot: "weapon", baseDmg: 45, cost: 900, desc: "Schmilzt Rüstung.", usesAmmo: true, ammoType: "ammo_cell", ammoCost: 3 },
     alien_blaster: { name: "Alien Blaster", type: "weapon", slot: "weapon", baseDmg: 80, cost: 3e3, desc: "Extraterrestrisch.", usesAmmo: false },
     // ======================================
     // === RÜSTUNGEN (Nach Sets sortiert) ===
     // ======================================
-    raider_armor: { name: "Raider-Rüstung", type: "body", slot: "body", cost: 80, bonus: { END: 1, STR: 1 }, desc: "Stachelig." },
-    raider_helm: { name: "Sackgassen-Helm", type: "head", slot: "head", cost: 40, bonus: { PER: -1, END: 1 }, desc: "Furchteinflößend." },
-    raider_arm_l: { name: "Raider-Armschiene (L)", type: "arms", slot: "arms", cost: 30, bonus: { STR: 1 }, desc: "Aus Reifen." },
-    raider_leg_r: { name: "Raider-Beinschutz", type: "legs", slot: "legs", cost: 35, bonus: { END: 1 }, desc: "Rostiges Blech." },
-    leather_armor: { name: "Lederrüstung", type: "body", slot: "body", cost: 150, bonus: { END: 2, AGI: 2 }, desc: "Leicht und leise." },
-    leather_helm: { name: "Lederkappe", type: "head", slot: "head", cost: 60, bonus: { PER: 1 }, desc: "Fliegerbrille inklusive." },
-    bracers_leather: { name: "Lederarmschienen", type: "arms", slot: "arms", cost: 80, bonus: { STR: 1 }, desc: "Klassisch." },
-    pants_leather: { name: "Lederhose", type: "legs", slot: "legs", cost: 100, bonus: { AGI: 1 }, desc: "Eng anliegend." },
-    boots_leather: { name: "Lederstiefel", type: "feet", slot: "feet", cost: 70, bonus: { AGI: 1 }, desc: "Guter Halt." },
-    metal_armor: { name: "Metallrüstung", type: "body", slot: "body", cost: 300, bonus: { END: 5, AGI: -2 }, desc: "Hält Kugeln ab." },
-    helmet_metal: { name: "Metallhelm", type: "head", slot: "head", cost: 150, bonus: { END: 2, PER: -1 }, desc: "Eingeschränkte Sicht." },
-    metal_arms: { name: "Metallarme", type: "arms", slot: "arms", cost: 120, bonus: { STR: 1, END: 1 }, desc: "Schwer." },
-    greaves_metal: { name: "Metallbeinschienen", type: "legs", slot: "legs", cost: 140, bonus: { END: 2, AGI: -1 }, desc: "Klappert laut." },
-    combat_armor: { name: "Kampfrüstung", type: "body", slot: "body", cost: 600, bonus: { END: 6, STR: 1 }, desc: "Polymer-Verbund." },
-    helmet_combat: { name: "Kampfhelm", type: "head", slot: "head", cost: 300, bonus: { END: 2, PER: 1 }, desc: "Taktisch." },
-    combat_arms: { name: "Kampfarmschienen", type: "arms", slot: "arms", cost: 250, bonus: { STR: 2 }, desc: "Verstärkt." },
-    combat_legs: { name: "Kampfbeinschützer", type: "legs", slot: "legs", cost: 280, bonus: { END: 2, AGI: 1 }, desc: "Beweglich." },
-    boots_combat: { name: "Kampfstiefel", type: "feet", slot: "feet", cost: 150, bonus: { AGI: 1, END: 1 }, desc: "Militärstandard." },
-    synth_armor: { name: "Synth-Rüstung", type: "body", slot: "body", cost: 800, bonus: { END: 5, INT: 2 }, desc: "Institut-Technologie." },
-    synth_helmet: { name: "Synth-Feldhelm", type: "head", slot: "head", cost: 400, bonus: { PER: 2, INT: 1 }, desc: "Volle Abdeckung." },
-    vault_suit: { name: "Vault-Anzug", type: "body", slot: "body", cost: 0, bonus: { END: 1, INT: 1 }, desc: "Blau und eng." },
-    power_armor: { name: "Power Rüstung T-45", type: "body", slot: "body", cost: 2500, bonus: { END: 12, STR: 4, RAD: 100, AGI: -3 }, desc: "Ein Panzer zum Anziehen." },
-    hazmat_suit: { name: "Strahlenschutzanzug", type: "body", slot: "body", cost: 400, bonus: { RAD: 1e3, END: -2 }, desc: "Perfekt für das Leuchtende Meer." },
-    cap_baseball: { name: "Baseballkappe", type: "head", slot: "head", cost: 20, bonus: { PER: 1 }, desc: "Schützt vor Sonne." },
-    helmet_mining: { name: "Minenhelm", type: "head", slot: "head", cost: 50, bonus: { END: 1 }, desc: "Mit Lampe." },
-    gas_mask: { name: "Gasmaske", type: "head", slot: "head", cost: 120, bonus: { RAD: 20 }, desc: "Filtert die Luft." },
-    jeans: { name: "Jeans", type: "legs", slot: "legs", cost: 30, bonus: { AGI: 1 }, desc: "Bequemer Denim." },
-    boots_worn: { name: "Alte Stiefel", type: "feet", slot: "feet", cost: 20, bonus: {}, desc: "Besser als barfuß." },
+    raider_armor: { name: "Raider-Rüstung", type: "body", slot: "body", def: 2, cost: 80, bonus: { END: 1, STR: 1 }, desc: "Stachelig." },
+    raider_helm: { name: "Sackgassen-Helm", type: "head", slot: "head", def: 1, cost: 40, bonus: { PER: -1, END: 1 }, desc: "Furchteinflößend." },
+    raider_arm_l: { name: "Raider-Armschiene (L)", type: "arms", slot: "arms", def: 1, cost: 30, bonus: { STR: 1 }, desc: "Aus Reifen." },
+    raider_leg_r: { name: "Raider-Beinschutz", type: "legs", slot: "legs", def: 1, cost: 35, bonus: { END: 1 }, desc: "Rostiges Blech." },
+    leather_armor: { name: "Lederrüstung", type: "body", slot: "body", def: 4, cost: 150, bonus: { END: 2, AGI: 2 }, desc: "Leicht und leise." },
+    leather_helm: { name: "Lederkappe", type: "head", slot: "head", def: 2, cost: 60, bonus: { PER: 1 }, desc: "Fliegerbrille inklusive." },
+    bracers_leather: { name: "Lederarmschienen", type: "arms", slot: "arms", def: 2, cost: 80, bonus: { STR: 1 }, desc: "Klassisch." },
+    pants_leather: { name: "Lederhose", type: "legs", slot: "legs", def: 2, cost: 100, bonus: { AGI: 1 }, desc: "Eng anliegend." },
+    boots_leather: { name: "Lederstiefel", type: "feet", slot: "feet", def: 1, cost: 70, bonus: { AGI: 1 }, desc: "Guter Halt." },
+    metal_armor: { name: "Metallrüstung", type: "body", slot: "body", def: 7, cost: 300, bonus: { END: 5, AGI: -2 }, desc: "Hält Kugeln ab." },
+    helmet_metal: { name: "Metallhelm", type: "head", slot: "head", def: 3, cost: 150, bonus: { END: 2, PER: -1 }, desc: "Eingeschränkte Sicht." },
+    metal_arms: { name: "Metallarme", type: "arms", slot: "arms", def: 3, cost: 120, bonus: { STR: 1, END: 1 }, desc: "Schwer." },
+    greaves_metal: { name: "Metallbeinschienen", type: "legs", slot: "legs", def: 3, cost: 140, bonus: { END: 2, AGI: -1 }, desc: "Klappert laut." },
+    combat_armor: { name: "Kampfrüstung", type: "body", slot: "body", def: 12, cost: 600, bonus: { END: 6, STR: 1 }, desc: "Polymer-Verbund." },
+    helmet_combat: { name: "Kampfhelm", type: "head", slot: "head", def: 5, cost: 300, bonus: { END: 2, PER: 1 }, desc: "Taktisch." },
+    combat_arms: { name: "Kampfarmschienen", type: "arms", slot: "arms", def: 5, cost: 250, bonus: { STR: 2 }, desc: "Verstärkt." },
+    combat_legs: { name: "Kampfbeinschützer", type: "legs", slot: "legs", def: 5, cost: 280, bonus: { END: 2, AGI: 1 }, desc: "Beweglich." },
+    boots_combat: { name: "Kampfstiefel", type: "feet", slot: "feet", def: 3, cost: 150, bonus: { AGI: 1, END: 1 }, desc: "Militärstandard." },
+    synth_armor: { name: "Synth-Rüstung", type: "body", slot: "body", def: 15, cost: 800, bonus: { END: 5, INT: 2 }, desc: "Institut-Technologie." },
+    synth_helmet: { name: "Synth-Feldhelm", type: "head", slot: "head", def: 6, cost: 400, bonus: { PER: 2, INT: 1 }, desc: "Volle Abdeckung." },
+    vault_suit: { name: "Vault-Anzug", type: "body", slot: "body", def: 1, cost: 0, bonus: { END: 1, INT: 1 }, desc: "Blau und eng." },
+    power_armor: { name: "Power Rüstung T-45", type: "body", slot: "body", def: 25, cost: 2500, bonus: { END: 12, STR: 4, RAD: 100, AGI: -3 }, desc: "Ein Panzer zum Anziehen." },
+    hazmat_suit: { name: "Strahlenschutzanzug", type: "body", slot: "body", def: 2, cost: 400, bonus: { RAD: 1e3, END: -2 }, desc: "Perfekt für das Leuchtende Meer." },
+    cap_baseball: { name: "Baseballkappe", type: "head", slot: "head", def: 1, cost: 20, bonus: { PER: 1 }, desc: "Schützt vor Sonne." },
+    helmet_mining: { name: "Minenhelm", type: "head", slot: "head", def: 2, cost: 50, bonus: { END: 1 }, desc: "Mit Lampe." },
+    gas_mask: { name: "Gasmaske", type: "head", slot: "head", def: 2, cost: 120, bonus: { RAD: 20 }, desc: "Filtert die Luft." },
+    jeans: { name: "Jeans", type: "legs", slot: "legs", def: 1, cost: 30, bonus: { AGI: 1 }, desc: "Bequemer Denim." },
+    boots_worn: { name: "Alte Stiefel", type: "feet", slot: "feet", def: 1, cost: 20, bonus: {}, desc: "Besser als barfuß." },
     // --- MONSTER-DROPS ---
     // Diese Materialien werden in data_monsters.js gedroppt. Ohne Definition
     // landeten sie als unbekannte IDs im Inventar: ein Slot belegt, aber in der
@@ -630,7 +630,13 @@
       password: "",
       attempts: 4,
       logs: [],
-      init: function() {
+      onSuccess: null,
+      onFail: null,
+      // Wie bei defusal: der Aufrufer (Terminal-Truhe) muss das Ergebnis
+      // erfahren. Ohne Rückruf blieb die Truhe zu und inDialog gesperrt.
+      init: function(onSuccess, onFail) {
+        this.onSuccess = typeof onSuccess === "function" ? onSuccess : null;
+        this.onFail = typeof onFail === "function" ? onFail : null;
         const int = Game.getStat("INT") || 1;
         const diff = 12 - Math.min(8, int);
         const wordList = ["PASS", "FAIL", "DATA", "CODE", "HACK", "BIOS", "BOOT", "USER", "ROOT", "WIFI", "LINK", "NODE", "CORE", "DISK", "FILE", "SAVE", "LOAD", "EXIT"];
@@ -670,7 +676,11 @@
         } else {
           UI.log("Zugriff verweigert.", "text-red-500");
         }
-        UI.stopMinigame();
+        const rueckruf = success ? this.onSuccess : this.onFail;
+        this.onSuccess = null;
+        this.onFail = null;
+        if (rueckruf) setTimeout(rueckruf, 800);
+        else UI.stopMinigame();
       }
     },
     // --- LOCKPICKING ---
@@ -774,7 +784,15 @@
       zoneWidth: 20,
       gameLoop: null,
       isRunning: false,
-      init: function() {
+      onSuccess: null,
+      onFail: null,
+      // Die Truhe ruft das Minispiel mit ihren Rückrufen auf. Vorher nahm
+      // init() keine Argumente - der Aufrufer erfuhr deshalb nie, wie es
+      // ausging, und die Truhe blieb für immer zu (docs/BALANCE_BEFUNDE.md,
+      // B2). `memory` macht es seit jeher so.
+      init: function(onSuccess, onFail) {
+        this.onSuccess = typeof onSuccess === "function" ? onSuccess : null;
+        this.onFail = typeof onFail === "function" ? onFail : null;
         this.round = 1;
         this.maxRounds = 3;
         this.isRunning = true;
@@ -837,9 +855,11 @@
           Game.state.hp = Math.max(0, Game.state.hp - 30);
           if (typeof UI.update === "function") UI.update();
         }
-        setTimeout(() => {
-          UI.stopMinigame();
-        }, 1500);
+        const rueckruf = success ? this.onSuccess : this.onFail;
+        this.onSuccess = null;
+        this.onFail = null;
+        if (rueckruf) setTimeout(rueckruf, 1500);
+        else setTimeout(() => UI.stopMinigame(), 1500);
       }
     },
     // --- MEMORY OVERRIDE (CHEST UNLOCK) ---
@@ -1890,16 +1910,50 @@
       this.state.ammo = t;
       if (typeof UI !== "undefined" && UI.update) UI.update();
     },
+    // Summiert einen Bonus-Schlüssel aus der angelegten Ausrüstung.
+    // getStat() taugt dafür nicht: es liefert für jeden Schlüssel, der nicht
+    // in state.stats steht, eine Basis von 5 (die SPECIAL-Vorgabe). Für
+    // RAD oder RAD_RESIST hieße das, jeder trüge schon Schutz.
+    equipBonus: function(key) {
+      if (!this.state || !this.state.equip) return 0;
+      let summe = 0;
+      ["weapon", "body", "head", "legs", "feet", "arms", "back"].forEach((slot) => {
+        const teil = this.state.equip[slot];
+        if (!teil) return;
+        const katalog = teil.id && this.items[teil.id] ? this.items[teil.id] : null;
+        const quelle = teil.bonus || !katalog ? teil : katalog;
+        if (quelle.bonus && typeof quelle.bonus[key] === "number") summe += quelle.bonus[key];
+        if (teil.props && teil.props.bonus && typeof teil.props.bonus[key] === "number") {
+          summe += teil.props.bonus[key];
+        }
+      });
+      return summe;
+    },
+    // Rüstungsschutz aus allen Teilen. Der Kampf rechnet damit gegen den
+    // erlittenen Schaden (docs/BALANCE_BEFUNDE.md, B1).
+    equipDef: function() {
+      if (!this.state || !this.state.equip) return 0;
+      let summe = 0;
+      ["body", "head", "legs", "feet", "arms"].forEach((slot) => {
+        const teil = this.state.equip[slot];
+        if (!teil) return;
+        if (typeof teil.def === "number") summe += teil.def;
+        else if (teil.id && this.items[teil.id] && typeof this.items[teil.id].def === "number") {
+          summe += this.items[teil.id].def;
+        }
+      });
+      return summe;
+    },
     getStat: function(key) {
       if (!this.state) return 5;
       let v = this.state.stats[key] || 5;
       ["weapon", "body", "head", "legs", "feet", "arms", "back"].forEach((s) => {
         const i = this.state.equip[s];
-        if (i) {
-          if (i.bonus && i.bonus[key]) v += i.bonus[key];
-          if (i.props && i.props.bonus && i.props.bonus[key]) v += i.props.bonus[key];
-        }
+        if (!i) return;
+        if (i.bonus && i.bonus[key]) v += i.bonus[key];
+        if (i.props && i.props.bonus && i.props.bonus[key]) v += i.props.bonus[key];
       });
+      if (typeof this.buffBonus === "function") v += this.buffBonus(key);
       return v;
     },
     expToNextLevel: function(l) {
@@ -2472,7 +2526,9 @@
     interactWithChest: function(x, y) {
       if (this.state.inDialog) return;
       this.state.inDialog = true;
-      const isBomb = Math.random() < 0.3;
+      const typWurf = Math.random();
+      const istTerminal = (this.state.dungeonLevel || 0) >= 2 && typWurf < 0.25;
+      const isBomb = !istTerminal && typWurf >= 0.7;
       const diff = Math.max(1, Math.min(10, Math.floor(this.state.lvl / 5) + 1));
       const onSuccess = () => {
         this.state.inDialog = false;
@@ -2504,6 +2560,10 @@
             UI.showInfoDialog("💥 BOOOM! 💥", `Du hast den Zünder ausgelöst! Die Kiste ist explodiert und der Loot vernichtet.<br><br>Du verlierst <span class="text-red-500 font-bold">${dmg} TP</span>.`);
           }
           if (this.state.hp <= 0 && typeof UI !== "undefined" && UI.showGameOver) UI.showGameOver();
+        } else if (istTerminal) {
+          if (typeof UI !== "undefined" && UI.showInfoDialog) {
+            UI.showInfoDialog("ZUGRIFF VERWEIGERT", "Das Terminal hat sich gesperrt. Die Truhe bleibt zu.");
+          }
         } else {
           if (typeof UI !== "undefined" && UI.showInfoDialog) {
             UI.showInfoDialog("VERKLEMMT", "Dein Dietrich ist abgebrochen und das Schloss hat sich für immer verklemmt. Die Truhe lässt sich nicht mehr öffnen.");
@@ -2513,18 +2573,14 @@
         if (this.draw) this.draw();
         if (typeof UI !== "undefined" && UI.update) UI.update();
       };
-      if (isBomb) {
-        if (typeof UI !== "undefined" && UI.startMinigame) {
-          UI.startMinigame("bomb", onSuccess, onFail, diff);
-        } else {
-          onSuccess();
-        }
+      const typ = istTerminal ? "hacking" : isBomb ? "defusal" : "lockpicking";
+      if (typeof UI !== "undefined" && UI.startMinigame && UI.hasMinigame && UI.hasMinigame(typ)) {
+        UI.startMinigame(typ, onSuccess, onFail, diff);
+      } else if (typeof UI !== "undefined" && UI.startMinigame && !UI.hasMinigame) {
+        UI.startMinigame(typ, onSuccess, onFail, diff);
       } else {
-        if (typeof UI !== "undefined" && UI.startMinigame) {
-          UI.startMinigame("lockpicking", onSuccess, onFail, diff);
-        } else {
-          onSuccess();
-        }
+        this.state.inDialog = false;
+        onSuccess();
       }
     },
     generateScaledLoot: function(playerLevel) {
@@ -4150,7 +4206,7 @@
               this.addRadiation(itemDef.rad * countToUse);
             }
             if (itemDef.effect === "buff") {
-              UI.log(`${itemDef.name} konsumiert! (Effekte noch WIP)`, "text-pink-400");
+              this.applyBuff(itemDef);
             } else {
               UI.log(`Verwendet: ${countToUse}x ${itemDef.name} (+${totalHeal} HP)`, "text-blue-400");
             }
@@ -4266,6 +4322,49 @@
       if (prefix.weightMod) legendaryItem.weight = (baseItem.weight || 1) * prefix.weightMod;
       this.addToInventory(legendaryItem, 1);
       return legendaryItem;
+    },
+    // Legt einen Buff aus einem Verbrauchsgut an. Vorher schrieb useItem nur
+    // "(Effekte noch WIP)" ins Log und verbrauchte das Item - Buffout, Jet,
+    // Rad-X und Stealth Boy (zusammen 310 KK Ladenwert) hatten keine Wirkung
+    // (docs/BALANCE_BEFUNDE.md, B3).
+    applyBuff: function(itemDef) {
+      if (!this.state) return false;
+      if (!this.state.buffs) this.state.buffs = [];
+      const bonus = itemDef.bonus || {};
+      if (Object.keys(bonus).length === 0) return false;
+      const sekunden = itemDef.duration || 1800;
+      const vorhanden = this.state.buffs.find((b) => b.id === itemDef.id);
+      if (vorhanden) {
+        vorhanden.expires = Date.now() + sekunden * 1e3;
+      } else {
+        this.state.buffs.push({ id: itemDef.id, name: itemDef.name, bonus, expires: Date.now() + sekunden * 1e3 });
+      }
+      const beschreibung = Object.entries(bonus).map(([k, v]) => `${k}+${v}`).join(", ");
+      const minuten = Math.round(sekunden / 60);
+      UI.log(`${itemDef.name}: ${beschreibung} für ${minuten} Min.`, "text-pink-400 font-bold");
+      this.recalcStats();
+      return true;
+    },
+    // Summe aller noch laufenden Buffs für einen Schlüssel.
+    buffBonus: function(key) {
+      if (!this.state || !Array.isArray(this.state.buffs)) return 0;
+      const jetzt = Date.now();
+      let summe = 0;
+      for (const buff of this.state.buffs) {
+        if (!buff || !buff.bonus) continue;
+        if (buff.expires && buff.expires <= jetzt) continue;
+        if (typeof buff.bonus[key] === "number") summe += buff.bonus[key];
+      }
+      return summe;
+    },
+    // Abgelaufene Buffs entfernen. Wird von getStat und recalcStats gerufen,
+    // damit kein Zeitgeber nötig ist.
+    pruneBuffs: function() {
+      if (!this.state || !Array.isArray(this.state.buffs)) return false;
+      const jetzt = Date.now();
+      const vorher = this.state.buffs.length;
+      this.state.buffs = this.state.buffs.filter((b) => !b.expires || b.expires > jetzt);
+      return this.state.buffs.length !== vorher;
     },
     // Anzeige des zuletzt erzeugten legendären Items
     announceLegendary: function(legendaryItem) {
@@ -4435,8 +4534,13 @@
       let finalAmount = amount;
       if (amount > 0) {
         const perkLvl = this.getPerkLevel("rad_resistant");
-        if (perkLvl > 0) {
-          const reduction = perkLvl * 0.1;
+        let reduction = perkLvl * 0.1;
+        const resistenz = this.equipBonus("RAD_RESIST") + (typeof this.buffBonus === "function" ? this.buffBonus("RAD_RESIST") : 0);
+        const schutz = this.equipBonus("RAD");
+        reduction += resistenz / 100;
+        reduction += schutz / 100;
+        reduction = Math.min(0.9, reduction);
+        if (reduction > 0) {
           finalAmount = Math.ceil(amount * (1 - reduction));
         }
       }
@@ -4488,6 +4592,16 @@
       Game.state.shop.ammoStockByType[id] = current + amount;
       if (id === "ammo") Game.state.shop.ammoStock = Game.state.shop.ammoStockByType[id];
     },
+    // Charisma-Rabatt beim Kauf und Aufschlag beim Verkauf. CHA war der
+    // einzige SPECIAL-Wert ohne jede Wirkung (docs/BALANCE_BEFUNDE.md, B5).
+    // Ein Prozent je Punkt, gedeckelt auf 25 Prozent - sonst wäre CHA 10
+    // ein Freifahrtschein.
+    charismaFaktor: function(richtung) {
+      const cha = typeof this.getStat === "function" ? this.getStat("CHA") : 5;
+      const stufe = Math.max(-5, Math.min(25, cha - 1));
+      if (richtung === "verkaufen") return 1 + stufe / 100;
+      return 1 - stufe / 100;
+    },
     buyItem: function(id, qtyMode = 1) {
       if (id === "camp_kit") {
         if (typeof UI !== "undefined") UI.error("Nicht käuflich!");
@@ -4507,6 +4621,9 @@
         pricePerUnit = (item.cost || 1) * 10;
       } else {
         stock = this.state.shop.stock && this.state.shop.stock[id] !== void 0 ? this.state.shop.stock[id] : 0;
+      }
+      if (pricePerUnit > 0) {
+        pricePerUnit = Math.max(1, Math.round(pricePerUnit * this.charismaFaktor("kaufen")));
       }
       if (stock < itemsPerUnit) {
         if (typeof UI !== "undefined") UI.error("Händler hat das nicht mehr.");
@@ -4552,7 +4669,7 @@
       const item = Game.items[entry.id];
       if (!item) return;
       let valMult = entry.props && entry.props.valMult ? entry.props.valMult : 1;
-      let unitPrice = Math.floor(item.cost * 0.25 * valMult);
+      let unitPrice = Math.floor(item.cost * 0.25 * valMult * this.charismaFaktor("verkaufen"));
       if (unitPrice < 1) unitPrice = 1;
       let amount = 1;
       if (typeof qtyMode === "number") amount = qtyMode;
@@ -4981,16 +5098,7 @@
       const roll = Math.random() * 100;
       if (roll <= enemyHitChance) {
         let dmg = this.enemy.dmg;
-        let armor = 0;
-        const slots = ["body", "head", "legs", "feet", "arms"];
-        slots.forEach((s) => {
-          if (Game.state.equip[s]) {
-            if (Game.state.equip[s].def) armor += Game.state.equip[s].def;
-            if (Game.state.equip[s].props && Game.state.equip[s].props.bonus && Game.state.equip[s].props.bonus.DEF) {
-              armor += Game.state.equip[s].props.bonus.DEF;
-            }
-          }
-        });
+        const armor = typeof Game.equipDef === "function" ? Game.equipDef() : 0;
         let dmgTaken = Math.max(1, dmg - Math.floor(armor / 2));
         Game.state.hp -= dmgTaken;
         this.log(`${this.enemy.name} trifft dich: -${dmgTaken} HP`, "text-red-500 font-bold");
@@ -8257,8 +8365,16 @@
       }
       return { title, text };
     },
+    // Prüft, ob ein Minispiel überhaupt existiert. Aufrufer können damit
+    // vorher fragen, statt auf einen stillen Abbruch zu laufen.
+    hasMinigame: function(type) {
+      return typeof MiniGames !== "undefined" && !!MiniGames[type];
+    },
     startMinigame: function(type, ...args) {
-      if (typeof MiniGames === "undefined" || !MiniGames[type]) return;
+      if (!this.hasMinigame(type)) {
+        if (typeof console !== "undefined") console.warn(`startMinigame: unbekanntes Minispiel "${type}"`);
+        return false;
+      }
       const launch = () => {
         MiniGames.active = type;
         if (typeof MiniGames[type].init === "function") {

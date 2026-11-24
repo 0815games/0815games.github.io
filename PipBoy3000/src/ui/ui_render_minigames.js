@@ -25,9 +25,21 @@ Object.assign(UI, {
         return { title, text };
     },
 
+    // Prüft, ob ein Minispiel überhaupt existiert. Aufrufer können damit
+    // vorher fragen, statt auf einen stillen Abbruch zu laufen.
+    hasMinigame: function(type) {
+        return typeof MiniGames !== 'undefined' && !!MiniGames[type];
+    },
+
     startMinigame: function(type, ...args) {
         // Safety Checks
-        if (typeof MiniGames === 'undefined' || !MiniGames[type]) return;
+        if (!this.hasMinigame(type)) {
+            // Früher stand hier nur `return`. Ein Aufruf mit falschem
+            // Schlüssel verschwand damit spurlos und der Aufrufer wartete
+            // ewig auf seinen Rückruf (docs/BALANCE_BEFUNDE.md, B2).
+            if (typeof console !== 'undefined') console.warn(`startMinigame: unbekanntes Minispiel "${type}"`);
+            return false;
+        }
 
         const launch = () => {
             MiniGames.active = type;

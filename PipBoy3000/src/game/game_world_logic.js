@@ -153,9 +153,33 @@ Object.assign(Game, {
         
         let finalAmount = amount;
         if (amount > 0) {
+            // Zwei Quellen, die vorher nur eine war: der Perk und die
+            // Ausrüstung. Strahlenschutzanzug (RAD+1000), Gasmaske (RAD+20)
+            // und Rad-X (RAD_RESIST+20) hatten bis hierher keine Wirkung
+            // (docs/BALANCE_BEFUNDE.md, B4).
             const perkLvl = this.getPerkLevel('rad_resistant');
-            if (perkLvl > 0) {
-                const reduction = perkLvl * 0.10; 
+            let reduction = perkLvl * 0.10;
+
+            // Ausrüstung: der Bonus liegt in `bonus.RAD_RESIST` (Rad-X, 20)
+            // oder `bonus.RAD` (Anzug 1000, Maske 20). Bewusst über
+            // equipBonus() und nicht über getStat(): getStat() setzt für
+            // jeden unbekannten Schlüssel eine Basis von 5 an (die
+            // SPECIAL-Vorgabe), ein Spieler ohne Schutz hätte damit schon
+            // 5 % Resistenz.
+            // RAD und RAD_RESIST sind beide in Prozent gemeint: die Gasmaske
+            // hat 20, Rad-X 20. Der Strahlenschutzanzug trägt 1000, einen
+            // Platzhalterwert - der läuft in den Deckel unten.
+            const resistenz = this.equipBonus('RAD_RESIST') +
+                ((typeof this.buffBonus === 'function') ? this.buffBonus('RAD_RESIST') : 0);
+            const schutz = this.equipBonus('RAD');
+            reduction += resistenz / 100;
+            reduction += schutz / 100;
+
+            // Gedeckelt: auch ein Strahlenschutzanzug soll nicht immun machen.
+            // RAD+1000 ist ein Platzhalterwert aus den Daten.
+            reduction = Math.min(0.90, reduction);
+
+            if (reduction > 0) {
                 finalAmount = Math.ceil(amount * (1 - reduction));
             }
         }
@@ -208,6 +232,20 @@ Object.assign(Game, {
         if (id === 'ammo') Game.state.shop.ammoStock = Game.state.shop.ammoStockByType[id];
     },
 
+    // Charisma-Rabatt beim Kauf und Aufschlag beim Verkauf. CHA war der
+    // einzige SPECIAL-Wert ohne jede Wirkung (docs/BALANCE_BEFUNDE.md, B5).
+    // Ein Prozent je Punkt, gedeckelt auf 25 Prozent - sonst wäre CHA 10
+    // ein Freifahrtschein.
+    charismaFaktor: function(richtung) {
+        const cha = (typeof this.getStat === 'function') ? this.getStat('CHA') : 5;
+        // 1 % je Punkt über 1, gedeckelt auf 25 %. CHA 5 (Standard) bringt
+        // damit 4 %, CHA 10 die volle Wirkung - und CHA 1 einen Aufschlag.
+        const stufe = Math.max(-5, Math.min(25, cha - 1));
+        // richtung 'kaufen' senkt den Preis, 'verkaufen' hebt ihn
+        if (richtung === 'verkaufen') return 1 + (stufe / 100);
+        return 1 - (stufe / 100);
+    },
+
     buyItem: function(id, qtyMode = 1) {
         // [FIX] Camp Kit nicht kaufbar
         if (id === 'camp_kit') { if(typeof UI !== 'undefined') UI.error("Nicht käuflich!"); return; }
@@ -227,6 +265,11 @@ Object.assign(Game, {
             pricePerUnit = (item.cost || 1) * 10;
         } else {
             stock = (this.state.shop.stock && this.state.shop.stock[id] !== undefined) ? this.state.shop.stock[id] : 0;
+        }
+
+        // Charisma wirkt auf den Endpreis, nachdem die Paketgröße feststeht.
+        if (pricePerUnit > 0) {
+            pricePerUnit = Math.max(1, Math.round(pricePerUnit * this.charismaFaktor('kaufen')));
         }
 
         if (stock < itemsPerUnit) { if(typeof UI !== 'undefined') UI.error("Händler hat das nicht mehr."); return; }
@@ -273,7 +316,8 @@ Object.assign(Game, {
         if (!item) return;
 
         let valMult = entry.props && entry.props.valMult ? entry.props.valMult : 1;
-        let unitPrice = Math.floor((item.cost * 0.25) * valMult);
+        // Grundwert 25 % des Katalogpreises, CHA hebt ihn an.
+        let unitPrice = Math.floor((item.cost * 0.25) * valMult * this.charismaFaktor('verkaufen'));
         if (unitPrice < 1) unitPrice = 1;
 
         let amount = 1;

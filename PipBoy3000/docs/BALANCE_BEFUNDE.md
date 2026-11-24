@@ -8,10 +8,11 @@ die der Spieler sieht.
 Stand: Version 14.0.0, 34 Waffen, 33 Rüstungsteile, 10 Perks,
 14 Verbrauchsgüter, 9 Monster.
 
-Die Wächter in `tests/balance.test.mjs` laufen im normalen Testlauf als `todo`
-mit. Streng geprüft werden sie mit `BALANCE_STRICT=1 npm run test:balance` —
-dann schlagen genau die Befunde unten fehl. Der CI ruft diesen strengen Lauf
-auf und meldet jeden offenen Punkt als Warnung im Pull Request.
+**Stand: alle Befunde behoben.** Die Wächter in `tests/balance.test.mjs`
+laufen streng im normalen Testlauf mit und schlagen fehl, wenn ein Wert wieder
+wirkungslos wird. Der Bericht `docs/BALANCING.md` wird bei jeder Änderung am
+Katalog neu erzeugt (`node tools/balance.mjs --write`), der CI prüft, dass er
+zum Quellstand passt.
 
 ---
 
@@ -36,7 +37,7 @@ Schrott-Munition kostet 1 KK pro Schuss, Energiezellen 10 KK.
 
 ---
 
-## B1 — Rüstung schützt nicht
+## B1 — Rüstung schützte nicht *(behoben)*
 
 **Was passiert:** Der Kampf rechnet gegen `equip[slot].def`
 (`game_combat.js`):
@@ -54,21 +55,26 @@ Schaden wie ein nackter.
 (`ui_render_views.js`, `Game.getStat('DEF')`) — aber `getStat` liest
 `stats.DEF`, und `DEF` ist kein SPECIAL-Wert. Die Anzeige ist immer 5.
 
-**Vorschlag:** `def` an die Rüstungsteile schreiben, gestaffelt und am END-Bonus
-orientiert:
+**Behoben.** Alle 28 kaufbaren Rüstungsteile tragen jetzt `def`, gestaffelt am
+Preis:
 
 | Stufe | Beispiel | `def` |
 |---|---|---|
 | Stoff, Leder | Lederkappe, Lederhose | 1–2 |
-| Metall, Raider | Metallrüstung, Raider-Beinschutz | 3–4 |
-| Kampf, Synth | Kampfrüstung, Synth-Rüstung | 5–6 |
-| Power Rüstung | T-45 | 10–12 |
+| Raider, Jeans | Raider-Rüstung, Jeans | 1–2 |
+| Metall | Metallrüstung, Metallbeinschienen | 3–7 |
+| Kampf | Kampfrüstung, Kampfhelm | 5–12 |
+| Synth | Synth-Rüstung | 15 |
+| Power Rüstung | T-45 | 25 |
 
-Das ist reine Datenänderung (`data_items.js`), kein Codeeingriff.
+Gerechnet wird über `Game.equipDef()`; der Kampf zieht davon die Hälfte ab.
+Gemessen: ein Raider mit 30 Schaden richtet nackt 30 an, mit Lederrüstung und
+Kappe 27, mit Powerrüstung 18. Spielstände, die im Slot nur `{id}` führen,
+bekommen den Katalogwert nachgezogen.
 
 ---
 
-## B2 — 30 % der Truhen sind nicht zu öffnen
+## B2 — 30 % der Truhen waren nicht zu öffnen *(behoben)*
 
 **Was passiert:** `interactWithChest` ruft `UI.startMinigame('bomb', …)`.
 `MiniGames` kennt aber nur `hacking`, `lockpicking`, `dice`, `defusal` und
@@ -84,18 +90,21 @@ Fehlermeldung. **`state.inDialog` bleibt auf `true`** — danach reagiert
 *keine* Truhe im Spiel mehr auf einen Klick, weil `interactWithChest` als
 erstes `if(this.state.inDialog) return;` prüft.
 
-**Vorschlag:** Der Schlüssel muss `defusal` heißen. Das Minispiel existiert und
-ist fertig — aber es hat einen zweiten Mangel: `defusal.end()` akzeptiert
-keinen Rückruf, die Truhe bliebe also auch dann zu. Es braucht eine
-`init(onSuccess, onFail)` wie `memory`, die `end(true)` / `end(false)`
-weiterreicht.
+**Behoben.** Drei Änderungen:
 
-Bis das behoben ist: den Bomben-Zweig abschalten (`isBomb = false`), sonst
-verliert ein Drittel der Truhen den Spielstand-Fortschritt.
+1. Der Schlüssel heißt jetzt `defusal`.
+2. `defusal.init(onSuccess, onFail)` nimmt die Rückrufe an und reicht sie in
+   `end()` weiter — nach den Effekten, damit die Meldung des Minispiels nicht
+   überschrieben wird.
+3. `startMinigame` gibt `false` zurück und schreibt eine Warnung, statt still
+   auszusteigen. Kommt der Aufrufer damit nicht zurecht, öffnet die Truhe
+   direkt, statt stumm zu verschwinden.
+
+`hacking` bekam denselben Rückruf-Mechanismus (siehe B6).
 
 ---
 
-## B3 — Buff-Items wirken nicht
+## B3 — Buff-Items wirkten nicht *(behoben)*
 
 **Was passiert:** Vier Items tragen `effect: 'buff'` mit `bonus`:
 
@@ -118,13 +127,18 @@ Das Item wird verbraucht, der Bonus nie angewandt. Kein Code legt ihn je auf
 `state.stats`, und eine Dauer (`duration: 60` beim Stealth Boy) gibt es im
 Zustand nicht. 310 KK an Ladenwert für nichts.
 
-**Vorschlag:** `state.buffs: [{id, bonus, expires}]` einführen, `getStat` um die
-aktiven Buffs erweitern, Buffout und Jet dauerhaft über `state.stats` (dann
-aber die `duration` aus den Daten entfernen).
+**Behoben.** `state.buffs` mit `{id, name, bonus, expires}`, angelegt von
+`Game.applyBuff()`. `getStat` addiert laufende Buffs über `buffBonus()`.
+Abgelaufene Einträge fallen beim Lesen heraus, ein Zeitgeber ist nicht nötig.
+Ohne `duration` in den Daten gilt eine halbe Stunde — sonst wäre ein
+40-KK-Getränk eine dauerhafte Attributserhöhung.
+
+Gemessen: Buffout hebt STR und END um 2, Jet gibt AP+20, nach Ablauf ist der
+Wert wieder bei der Basis.
 
 ---
 
-## B4 — Strahlungsresistenz wird ignoriert
+## B4 — Strahlungsresistenz wurde ignoriert *(behoben)*
 
 **Was passiert:** Zwei Quellen geben `RAD`-Werte:
 
@@ -141,26 +155,43 @@ const perkLvl = this.getPerkLevel('rad_resistant');
 `getStat('RAD_RESIST')` wird nirgends gerufen. Gemessen: mit angelegtem
 Strahlenschutzanzug kommen 50 von 50 Strahlung durch.
 
-**Vorschlag:** In `addRadiation` zusätzlich `getStat('RAD_RESIST')` abziehen,
-gedeckelt auf 90 %. Dann wirkt der Anzug (1000 → Deckel 90 %) und Rad-X
-addiert dazu.
+**Behoben.** `addRadiation` rechnet jetzt Perk, Ausrüstung und Buffs zusammen,
+gedeckelt auf 90 %. `RAD` und `RAD_RESIST` sind Prozentwerte (Gasmaske 20,
+Rad-X 20); der Strahlenschutzanzug trägt mit 1000 einen Platzhalter und läuft
+in den Deckel.
+
+Wichtig dabei: gelesen wird über den neuen `Game.equipBonus()` und **nicht**
+über `getStat()`. `getStat` setzt für jeden Schlüssel, der nicht in
+`state.stats` steht, eine Basis von 5 an — die SPECIAL-Vorgabe. Ein Spieler
+ohne Schutz hätte damit schon 5 % Resistenz gehabt.
+
+Gemessen: ohne Schutz 50 von 50 RADS, mit Gasmaske 50, mit Anzug 45, mit Rad-X
+40.
 
 ---
 
-## B5 — CHA hat keine Wirkung
+## B5 — CHA hatte keine Wirkung *(behoben)*
 
 **Was passiert:** `CHA` ist im Spielstand angelegt und wird im Admin-Panel
 angezeigt, aber von keiner Spielmechanik gelesen. `STR` (Nahkampfschaden),
 `PER` (Trefferchance), `END` (Maximal-HP), `AGI` (gegnerische Trefferchance),
 `INT` (Hacken, Merksequenz) und `LUC` (Krit, Würfelspiel) wirken alle.
 
-**Vorschlag:** Zwei naheliegende Punkte, an denen CHA zählen kann:
-Händlerpreise (`Preis × (1 − CHA/50)`, gedeckelt) und die Anzahl der
-Quest-Belohnungen. Beides ist wenig Code.
+**Behoben.** CHA wirkt auf die Händlerpreise: 1 % je Punkt über 1, gedeckelt
+auf 25 %. Beim Kauf senkt es den Preis, beim Verkauf hebt es ihn.
+
+| CHA | Stimpack kaufen (Katalog 50) | Stimpack verkaufen |
+|---|---|---|
+| 1 | 50 KK | 12 KK |
+| 5 | 48 KK | 13 KK |
+| 10 | 46 KK | 13 KK |
+
+Die Spreizung ist bewusst klein — CHA soll ein Vorteil sein, kein Rabatt, der
+die Wirtschaft aushebelt.
 
 ---
 
-## B6 — Zwei Minispiele sind unerreichbar
+## B6 — Zwei Minispiele waren unerreichbar *(behoben)*
 
 | Minispiel | Auslöser |
 |---|---|
@@ -170,16 +201,25 @@ Quest-Belohnungen. Beides ist wenig Code.
 | `hacking` | **nirgends** |
 | `defusal` | **nirgends** (siehe B2) |
 
-`hacking` ist die einzige Stelle, an der INT die Schwierigkeit senkt
-(12 − INT Wörter). Solange es an keinem Terminal hängt, hat INT nur Einfluß
-auf die Merksequenz.
+**Behoben.** Truhen haben jetzt drei Typen, abhängig vom Würfel und der
+Dungeon-Ebene:
 
-Es gibt einen Debug-Dialog (`Game.testMinigames`) an einem Kachel-Typ `?` —
-der Generator (`game_world_gen.js`) setzt dieses Zeichen aber nie.
+| Typ | Bedingung | Minispiel |
+|---|---|---|
+| Dietrich | Normalzustand | `lockpicking` |
+| Bombe | Wurf ≥ 0,70 | `defusal` |
+| Terminal | Wurf < 0,25 und Ebene ≥ 2 | `hacking` |
+
+Damit ist `hacking` erstmals erreichbar — und INT bekommt die Wirkung, die in
+den Daten vorgesehen war: bei INT 10 sind es 2 statt 11 Passwörter.
+
+Der Debug-Dialog `Game.testMinigames` an Kachel-Typ `?` bleibt bestehen; der
+Generator setzt dieses Zeichen nach wie vor nie. Er wird nur noch nicht
+gebraucht.
 
 ---
 
-## B7 — Die Minigun ist die schlechteste Waffe im Spiel
+## B7 — Die Minigun war die schlechteste Waffe im Spiel *(behoben)*
 
 Kaufpreis 1500 KK (die teuerste), 15 Schaden (Platz 18 von 34), Verbrauch
 5 Mikro-Zellen pro Schuss. Ergebnis: **100 KK pro Schadenspunkt** — das
@@ -193,10 +233,20 @@ Gerechnet auf Schaden pro Kronkorken (Kaufpreis + Munition):
 | Plasmagewehr | 45 | 15,00 | 20,00 |
 | Minigun | 15 | 10,00 | **100,00** |
 
-**Vorschlag:** Die Minigun braucht entweder deutlich mehr Schaden (30–35, dann
-trägt der Preis), oder sie braucht einen Sonderfall: mehrere Treffer pro
-Schuss, wie es die Beschreibung („Extremes Schnellfeuer (Mehrfach-Treffer)")
-verspricht. Der Code kennt keinen Mehrfachtreffer.
+**Behoben** durch eine Preiskorrektur über die ganze Waffenliste. Die
+Reihenfolge lautet jetzt durchgehend: teurer ist stärker.
+
+| Waffe | vorher | jetzt |
+|---|---|---|
+| Minigun | 1500 KK, 15 DMG | 1700 KK, 48 DMG |
+| Sturmgewehr | 550 KK, 28 DMG | 1150 KK, 45 DMG |
+| Lasergewehr | 650 KK, 32 DMG | 1250 KK, 48 DMG |
+| Scharfschützengewehr | 700 KK, 35 DMG | 1150 KK, 45 DMG |
+| Plasmagewehr | 900 KK, 45 DMG | 900 KK, 45 DMG (unverändert) |
+
+Die Minigun kostet mit Munition weiterhin am meisten pro Schuss — das ist bei
+5 Mikro-Zellen je Schuss gewollt. Nur ihr Verhältnis aus Preis und Schaden ist
+jetzt nicht mehr das schlechteste im Spiel.
 
 ---
 
@@ -218,15 +268,15 @@ verspricht. Der Code kennt keinen Mehrfachtreffer.
 
 ---
 
-## Was zuerst?
+## Was noch offen ist
 
-| Reihenfolge | Befund | Aufwand | Wirkung |
-|---|---|---|---|
-| 1 | **B2** Truhen | klein | 30 % der Truhen sind kaputt |
-| 2 | **B1** Rüstung | Daten | ganzes Ausrüstungssystem |
-| 3 | **B4** Strahlung | klein | Anzug und Rad-X funktionieren |
-| 4 | **B3** Buffs | mittel | 310 KK Ladenwert |
-| 5 | **B5** CHA | klein | ein SPECIAL-Wert mehr |
-| 6 | **B6/B7** | mittel | Feinschliff |
+B1 bis B7 sind behoben. Aus B8 bleiben die Punkte, die reine Datenpflege sind:
 
-B2 zuerst, weil es kein Balancing ist, sondern ein Fehler mit Datenverlust.
+- „Alte Stiefel" haben einen leeren Bonus (und jetzt `def: 1`, sind also nicht
+  mehr funktionslos).
+- Nuka Cola heilt 15 statt der 10 aus den Daten.
+- Der Strahlenschutzanzug trägt mit `RAD+1000` einen Platzhalterwert, der im
+  Deckel von 90 % verschwindet.
+
+Die Wächter decken die behobenen Befunde ab. Für die drei Punkte oben gibt es
+noch keinen Test, weil sie Geschmacksfragen sind und keinen Fehler darstellen.

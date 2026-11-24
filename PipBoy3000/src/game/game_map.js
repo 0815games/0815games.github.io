@@ -213,8 +213,14 @@ Object.assign(Game, {
         if(this.state.inDialog) return;
         this.state.inDialog = true; 
         
-        // 70% Chance auf Lockpicking, 30% Chance auf Bombe
-        const isBomb = Math.random() < 0.3;
+        // Truhentyp auswürfeln: Dietrich, Bombe oder Terminal.
+        // Das Terminal ist der einzige Weg ins Hacking-Minispiel - dort senkt
+        // INT die Anzahl der Passwörter (12 - INT). Solange es keinen Auslöser
+        // gab, hatte INT außerhalb der Merksequenz keine Wirkung
+        // (docs/BALANCE_BEFUNDE.md, B5/B6).
+        const typWurf = Math.random();
+        const istTerminal = (this.state.dungeonLevel || 0) >= 2 && typWurf < 0.25;
+        const isBomb = !istTerminal && typWurf >= 0.7;
         const diff = Math.max(1, Math.min(10, Math.floor(this.state.lvl / 5) + 1));
         
         const onSuccess = () => {
@@ -253,6 +259,10 @@ Object.assign(Game, {
                     UI.showInfoDialog("💥 BOOOM! 💥", `Du hast den Zünder ausgelöst! Die Kiste ist explodiert und der Loot vernichtet.<br><br>Du verlierst <span class="text-red-500 font-bold">${dmg} TP</span>.`);
                 }
                 if(this.state.hp <= 0 && typeof UI !== 'undefined' && UI.showGameOver) UI.showGameOver();
+            } else if (istTerminal) {
+                if(typeof UI !== 'undefined' && UI.showInfoDialog) {
+                    UI.showInfoDialog("ZUGRIFF VERWEIGERT", "Das Terminal hat sich gesperrt. Die Truhe bleibt zu.");
+                }
             } else {
                 if(typeof UI !== 'undefined' && UI.showInfoDialog) {
                     UI.showInfoDialog("VERKLEMMT", "Dein Dietrich ist abgebrochen und das Schloss hat sich für immer verklemmt. Die Truhe lässt sich nicht mehr öffnen.");
@@ -264,18 +274,21 @@ Object.assign(Game, {
             if(typeof UI !== 'undefined' && UI.update) UI.update();
         };
 
-        if(isBomb) {
-            if(typeof UI !== 'undefined' && UI.startMinigame) {
-                UI.startMinigame('bomb', onSuccess, onFail, diff);
-            } else {
-                onSuccess(); 
-            }
+        // Das Minispiel heißt 'defusal', nicht 'bomb'. Unter dem falschen
+        // Schlüssel brach startMinigame still ab: kein Rückruf, keine Meldung,
+        // und state.inDialog blieb auf true - danach reagierte keine Truhe
+        // mehr (docs/BALANCE_BEFUNDE.md, B2).
+        const typ = istTerminal ? 'hacking' : (isBomb ? 'defusal' : 'lockpicking');
+
+        if(typeof UI !== 'undefined' && UI.startMinigame && UI.hasMinigame && UI.hasMinigame(typ)) {
+            UI.startMinigame(typ, onSuccess, onFail, diff);
+        } else if(typeof UI !== 'undefined' && UI.startMinigame && !UI.hasMinigame) {
+            UI.startMinigame(typ, onSuccess, onFail, diff);
         } else {
-            if(typeof UI !== 'undefined' && UI.startMinigame) {
-                UI.startMinigame('lockpicking', onSuccess, onFail, diff);
-            } else {
-                onSuccess(); 
-            }
+            // Kein passendes Minispiel verfügbar: die Truhe darf nicht stumm
+            // verschwinden, dann lieber direkt öffnen.
+            this.state.inDialog = false;
+            onSuccess();
         }
     },
 

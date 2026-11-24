@@ -8,7 +8,7 @@
 // unbemerkt verpufft, weil die Daten zwar da waren, aber niemand sie las:
 // Munition (`usesAmmo`), Waffenschaden (`baseDmg`), Strahlungsresistenz,
 // Buff-Items. Werte, die niemand liest, sind für den Spieler nicht vorhanden.
-import {test, test as nodeTest} from 'node:test';
+import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {join, dirname} from 'node:path';
@@ -18,13 +18,10 @@ import {buildReport} from '../tools/balance.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
-// Die Wächter unten prüfen, ob Ausrüstung und Werte im Spiel wirken. Solange
-// die Befunde in docs/BALANCE_BEFUNDE.md offen sind, sind sie rot. Damit sie
-// den normalen Testlauf nicht dauerhaft blockieren, laufen sie nur mit
-// BALANCE_STRICT=1 streng; sonst werden sie als "todo" gemeldet und zählen
-// nicht als Fehlschlag. Der Bericht selbst wird immer geprüft.
-const STRENG = process.env.BALANCE_STRICT === '1';
-const waechter = (name, fn) => nodeTest(name, {todo: STRENG ? false : 'offener Befund, siehe docs/BALANCE_BEFUNDE.md'}, fn);
+// Die Wächter unten prüfen, ob Ausrüstung und Werte im Spiel wirken. Bis
+// Version 14.0.0 liefen sie als "todo" mit, weil die Befunde offen waren
+// (docs/BALANCE_BEFUNDE.md). Seit alle behoben sind, laufen sie streng wie
+// jeder andere Test - und blockieren, wenn ein Wert wieder wirkungslos wird.
 
 function freshGame(overrides = {}) {
   const {window} = loadBundle(join(ROOT, 'app.js'));
@@ -109,23 +106,38 @@ test('alle Perks werden im Code gelesen', () => {
   assert.equal(tot.join(', '), '', `Perks ohne Wirkung: ${tot.join(', ')}`);
 });
 
-waechter('Rüstung mindert den erlittenen Schaden', () => {
-  // Der Kampf rechnet mit items[...].def, aber kein Rüstungsteil besitzt das
-  // Feld. Ein voll ausgerüsteter Spieler nimmt deshalb genauso viel Schaden
-  // wie ein nackter. (docs/BALANCE_BEFUNDE.md)
-  const {game, combat, state} = freshGame({lvl: 5});
-  state.equip = {body: {id: 'vault_suit'}, head: {id: 'leather_helm'}};
+test('Rüstung mindert den erlittenen Schaden', () => {
+  // Am Kampf gemessen, nicht am Datenfeld: ein Gegner mit 30 Schaden greift
+  // mehrfach an, einmal nackt und einmal gerüstet.
+  const schaden = (equip) => {
+    const {window, combat, state} = freshGame({lvl: 5, hp: 100});
+    let summe = 0;
+    const runden = 20;
+    const original = window.Math.random;
+    try {
+      for (let i = 0; i < runden; i++) {
+        state.equip = equip;
+        state.hp = 100;
+        combat.enemy = {name: 'Raider', dmg: 30, hp: 100, maxHp: 100};
+        combat.turn = 'enemy';
+        window.Math.random = () => 0;
+        combat.enemyTurn();
+        summe += 100 - state.hp;
+      }
+    } finally {
+      window.Math.random = original;
+    }
+    return summe / runden;
+  };
 
-  const armorFelder = ['body', 'head', 'legs', 'feet', 'arms']
-    .map(s => state.equip[s])
-    .filter(Boolean)
-    .reduce((summe, teil) => summe + (teil.def || 0), 0);
+  const nackt = schaden({});
+  const geruestet = schaden({body: {id: 'power_armor', def: 25}});
 
-  assert.ok(armorFelder > 0,
-    'kein Ausrüstungsteil hat ein def-Feld — Rüstung schützt im Kampf nicht');
+  assert.ok(geruestet < nackt,
+    `Rüstung schützt nicht (nackt ${nackt}, gerüstet ${geruestet}) — kein Ausrüstungsteil hat ein def-Feld`);
 });
 
-waechter('Buff-Items legen ihren Bonus auch an', () => {
+test('Buff-Items legen ihren Bonus auch an', () => {
   // Buffout (+STR 2, +END 2), Jet (+AP 20), Rad-X und Stealth Boy haben
   // `effect: 'buff'` mit `bonus`. useItem schreibt nur "noch WIP" ins Log.
   const {game, state} = freshGame();
@@ -137,23 +149,23 @@ waechter('Buff-Items legen ihren Bonus auch an', () => {
   const strNachher = game.getStat('STR');
   assert.equal(strNachher, strVorher + 2,
     `Buffout erhöht STR nicht (${strVorher} -> ${strNachher}) — der Bonus wird nie angewandt`);
+  assert.equal(game.buffBonus('STR'), 2, 'kein laufender Buff eingetragen');
 });
 
-waechter('Strahlungsresistenz aus Ausrüstung wirkt', () => {
+test('Strahlungsresistenz aus Ausrüstung wirkt', () => {
   // Der Strahlenschutzanzug trägt bonus.RAD+1000, Rad-X RAD_RESIST+20.
   // addRadiation kennt nur den Rad-Resistenz-Perk.
   const {game, state} = freshGame({maxHp: 100});
-  state.equip = {body: {id: 'strahlenschutzanzug'}};
+  state.equip = {body: {id: 'hazmat_suit'}};
   state.rads = 0;
 
   game.addRadiation(50);
 
-  // Mit 1000 Strahlungsresistenz darf praktisch nichts ankommen.
   assert.ok(state.rads < 50,
     `Strahlung kommt ungehindert durch (${state.rads} von 50) — der RAD-Bonus wird ignoriert`);
 });
 
-waechter('jedes Minispiel, das gestartet wird, existiert auch', () => {
+test('jedes Minispiel, das gestartet wird, existiert auch', () => {
   // startMinigame bricht bei unbekanntem Schlüssel still ab. Der Aufrufer
   // wartet dann ewig auf einen Rückruf: bei Truhen bleibt inDialog = true
   // und damit jeder weitere Truhenklick wirkungslos.
@@ -163,13 +175,13 @@ waechter('jedes Minispiel, das gestartet wird, existiert auch', () => {
   assert.equal(texte.join('; '), '', `Aufruf auf unbekanntes Minispiel: ${texte.join(', ')}`);
 });
 
-waechter('jedes Minispiel ist über eine Spielsituation erreichbar', () => {
+test('jedes Minispiel ist über eine Spielsituation erreichbar', () => {
   const {daten} = buildReport();
   const tot = daten.minigames.liste.filter(m => m.erreicht.length === 0).map(m => m.type);
   assert.equal(tot.join(', '), '', `nicht erreichbar: ${tot.join(', ')}`);
 });
 
-waechter('CHA wird von einer Spielmechanik gelesen', () => {
+test('CHA wird von einer Spielmechanik gelesen', () => {
   // CHA wird nirgends gelesen: kein Dialogwurf, kein Händlerrabatt.
   const {daten} = buildReport();
   const ungenutzt = Object.entries(daten.special.leser)
@@ -191,12 +203,15 @@ test('jede Waffe macht im Kampf ihren Katalogwert', () => {
   assert.equal(falsch.join(', '), '', `falscher Kampfschaden: ${falsch.join(', ')}`);
 });
 
-waechter('keine Waffe ist teurer und gleichzeitig schwächer als eine billigere', () => {
+test('keine Fernkampfwaffe ist teurer und gleichzeitig schwächer als eine billigere', () => {
   // Eine Waffe, die mehr kostet und weniger Schaden macht, ist eine Falle.
+  // Verglichen wird innerhalb der Fernkampfgruppe: sie kostet zusätzlich
+  // Munition, eine Pistole ist also nicht automatisch schlechter als ein
+  // gleich starker Hammer.
   const {game} = freshGame();
   const waffen = Object.entries(game.items)
-    .filter(([, d]) => d.type === 'weapon' && d.cost > 0)
-    .map(([id, d]) => ({id, kosten: d.cost, dmg: d.baseDmg}))
+    .filter(([, d]) => d.type === 'weapon' && d.cost > 0 && d.ammoType)
+    .map(([id, d]) => ({id, kosten: d.cost, dmg: d.baseDmg, munition: !!d.ammoType}))
     .sort((a, b) => a.kosten - b.kosten);
 
   const fallen = [];
