@@ -11,6 +11,7 @@ import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261124-k
 import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261124-konto2';
 import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261124-konto2';
 import { withTimeout } from './async-util.js?v=20261124-konto2';
+import { createBoard } from './world/board.js?v=20261124-konto2';
 
 const BUILD = '20261124-konto2';
 console.info(`Tiny Tycoon Towns ${BUILD}`);
@@ -62,6 +63,7 @@ let lastCloudAt = 0;
 let currentUser = null;    // Firebase user object while signed in
 let remoteLoaded = false;  // true once the cloud copy was read successfully; no writes before that
 let remoteRetryPending = false;
+let board = null;          // Weltansicht (canvas), see ./world/board.js
 let connected = true;      // Realtime Database connection, from .info/connected
 const REMOTE_TIMEOUT_MS = 10_000;
 
@@ -237,6 +239,8 @@ function renderSignedOut() {
   $('#sync').textContent = '';
   $('#town-name').textContent = 'Tiny Tycoon Towns';
   $('#town-meta').textContent = 'Bitte anmelden, um zu spielen.';
+  board?.destroy();
+  board = null;
   $('#board').innerHTML = '';
   $('#stock').innerHTML = '';
   $('#panel').innerHTML = '';
@@ -359,32 +363,47 @@ function dispatch(result, okMsg) {
   renderAll();
 }
 
-function onBoardClick(e) {
-  const cell = e.target.closest('[data-x]');
-  if (!cell) return;
-  selected = { x: Number(cell.dataset.x), y: Number(cell.dataset.y) };
+function selectTile({ x, y }) {
+  selected = { x, y };
   renderBoard();
   renderPanel();
-  cell.focus();
+  board?.focusTile(x, y);
 }
 
-function onBoardKey(e) {
-  const map = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
-  const d = map[e.key];
-  if (!d) return;
-  e.preventDefault();
-  selected = {
-    x: Math.min(GRID - 1, Math.max(0, selected.x + d[0])),
-    y: Math.min(GRID - 1, Math.max(0, selected.y + d[1])),
-  };
-  renderBoard();
-  renderPanel();
-  document.querySelector(`[data-x="${selected.x}"][data-y="${selected.y}"]`)?.focus();
+function describeTile(x, y) {
+  if (!state) return '';
+  const tile = state.tiles[keyOf(x, y)];
+  const b = tile.building;
+  const bName = b ? data.buildings[b.id].name.de : '';
+  const unlocked = isUnlocked(x, y, state.townLevel, data);
+  return [
+    `Feld ${x + 1}, ${y + 1}`,
+    TERRAIN_DE[tile.terrain],
+    unlocked ? '' : 'gesperrt',
+    bName,
+    b && b.id !== 'townHall' ? `Stufe ${b.level}` : '',
+  ].filter(Boolean).join(', ');
+}
+
+function ensureBoard() {
+  if (board || !state) return;
+  board = createBoard($('#board'), {
+    getSelected: () => selected,
+    onSelect: selectTile,
+    describe: describeTile,
+    getModel: () => ({
+      state,
+      data,
+      unlocked: (x, y) => isUnlocked(x, y, state.townLevel, data),
+    }),
+  });
 }
 
 function bindStatic() {
-  $('#board').addEventListener('click', onBoardClick);
-  $('#board').addEventListener('keydown', onBoardKey);
+  // Enter wählt das markierte Feld: Bedienfeld öffnen.
+  $('#board').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && state) renderPanel();
+  });
   $('#panel').addEventListener('click', onPanelClick);
   $('#stock').addEventListener('click', (e) => {
     const btn = e.target.closest('[data-sell]');
@@ -438,9 +457,11 @@ function startGame() {
 
 function tick() {
   if (!state) return;
+  const coinsBefore = state.coins;
   const r = advance(state, Date.now(), ctx());
   state = r.state;
   cloudDirty = true;
+  board?.gain(state.coins - coinsBefore);
   renderHud();
   updateStockNumbers();
 }
@@ -480,36 +501,10 @@ function renderHud() {
 
 function renderBoard() {
   if (!state) return;
-  const t = state;
-  const cells = [];
-  for (let y = 0; y < GRID; y++) {
-    for (let x = 0; x < GRID; x++) {
-      const tile = t.tiles[keyOf(x, y)];
-      const unlocked = isUnlocked(x, y, t.townLevel, data);
-      const b = tile.building;
-      const isHall = b?.id === 'townHall';
-      const bName = b ? data.buildings[b.id].name.de : '';
-      const label = [
-        `Feld ${x + 1}, ${y + 1}`,
-        TERRAIN_DE[tile.terrain],
-        unlocked ? '' : 'gesperrt',
-        bName,
-        b && !isHall ? `Stufe ${b.level}` : '',
-      ].filter(Boolean).join(', ');
-      const classes = ['cell', `t-${tile.terrain}`];
-      if (!unlocked) classes.push('locked');
-      if (isHall) classes.push('hall');
-      if (selected.x === x && selected.y === y) classes.push('selected');
-      const icon = b ? data.buildings[b.id].icon : '';
-      const lvl = b && !isHall ? `<span class="lvl">${b.level}</span>` : '';
-      cells.push(
-        `<button type="button" class="${classes.join(' ')}" data-x="${x}" data-y="${y}"`
-        + ` aria-label="${esc(label)}" tabindex="${selected.x === x && selected.y === y ? 0 : -1}">`
-        + `<span aria-hidden="true">${unlocked ? icon : ''}</span>${lvl}</button>`,
-      );
-    }
-  }
-  $('#board').innerHTML = cells.join('');
+  ensureBoard();
+  board?.redraw();
+  const { x, y } = selected;
+  $('#board').setAttribute('aria-label', `Spielfeld. Ausgewählt: ${describeTile(x, y)}`);
 }
 
 function totalRates() {
