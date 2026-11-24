@@ -1,9 +1,10 @@
 // Betreiber-Bereich: Anmeldung, Spielerliste und Stadt-Editor.
 // Sicherheit: Die Datenbankregeln lassen nur Admins fremde Städte lesen und schreiben.
 // Dieser Code zeigt nur an, was die Regeln ohnehin erlauben.
-import * as cloud from './cloud.js?v=20261124-sitz12';
-import { createLoginScene } from './world/login-scene.js?v=20261124-sitz12';
-import { GRID, keyOf, gridSize, isUnlocked } from './domain/grid.js?v=20261124-sitz12';
+import * as cloud from './cloud.js?v=20261124-sitz13';
+import { createLoginScene } from './world/login-scene.js?v=20261124-sitz13';
+import { checkTownName, townKey } from './town-names.js?v=20261124-sitz13';
+import { GRID, keyOf, gridSize, isUnlocked } from './domain/grid.js?v=20261124-sitz13';
 
 const HOUR = 3_600_000;
 const TERRAIN_ICON = { meadow: '🌿', forest: '🌲', rock: '🪨', water: '🌊', sand: '🏖️' };
@@ -24,7 +25,7 @@ let scene = null;
 async function loadData() {
   const names = ['resources', 'buildings', 'economy'];
   const parts = await Promise.all(names.map((n) =>
-    fetch(`data/${n}.json?v=20261124-sitz12`).then((r) => {
+    fetch(`data/${n}.json?v=20261124-sitz13`).then((r) => {
       if (!r.ok) throw new Error(`data/${n}.json: HTTP ${r.status}`);
       return r.json();
     })));
@@ -332,6 +333,23 @@ $('#admin-editor').addEventListener('click', async (e) => {
   if (act === 'save') {
     btn.disabled = true;
     try {
+      // Stadtnamen bleiben eindeutig: bei Umbenennung zuerst den neuen Namen sichern.
+      const before = players.find((p) => p.uid === selectedUid)?.town?.name;
+      const check = checkTownName(draft.name);
+      if (!check.ok) {
+        setNote(check.reason);
+        btn.disabled = false;
+        return;
+      }
+      if (before && check.key !== townKey(before)) {
+        const renamed = await cloud.renameTownName(selectedUid, before, check.name);
+        if (!renamed) {
+          setNote('Dieser Stadtname ist schon vergeben.');
+          btn.disabled = false;
+          return;
+        }
+      }
+      draft.name = check.name;
       draft.adminEditedAt = Date.now(); // Spieler bekommt dadurch einen Hinweis zum Neuladen
       await cloud.saveTown(selectedUid, draft);
       const entry = players.find((p) => p.uid === selectedUid);

@@ -102,7 +102,7 @@ function ancestorModes(live,path){
 // Felder einer Stadt, die jeder angemeldete Spieler lesen darf (Ansicht fremder Städte).
 export const PUBLIC_VIEW=['name','biome','townLevel','tiles'];
 // Erlaubte Hauptzweige. Neue Zweige müssen hier bewusst eingetragen werden.
-export const BRANCHES=['saves','sessions','admins','profiles','friendCodes','ownCodes','friendRequests','friends'];
+export const BRANCHES=['saves','sessions','admins','profiles','friendCodes','ownCodes','friendRequests','friends','townNames'];
 export function checkRules(raw){
   const errors=[];
   const rules=unwrapRules(raw);
@@ -165,6 +165,12 @@ export function checkRules(raw){
   if(rules.friends?.$uid){
     const fr=rules.friends.$uid;
     if(!String(fr['.read']??'').includes('auth.uid === $uid'))errors.push('friends/$uid: .read ohne Eigentümerprüfung');
+  }
+  // Stadtnamen: eindeutig. Schreiben nur für den Besitzer des Namens (oder den Betreiber).
+  if(rules.townNames){
+    const tn=rules.townNames.$name;
+    if(!tn)errors.push('townNames/$name fehlt');
+    else if(!String(tn['.write']??'').includes('auth.uid'))errors.push('townNames/$name: .write ohne Eigentümerprüfung');
   }
   // Betreiber: admins/{uid} nur für das Konto selbst lesbar, nie von Clients schreibbar.
   const adm=rules.admins?.$uid;

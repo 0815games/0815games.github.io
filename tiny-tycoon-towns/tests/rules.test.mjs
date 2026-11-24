@@ -65,12 +65,12 @@ test('other towns: only the view fields are readable, never coins, stock or the 
 });
 
 test('friends draft passes the lock-mode checks (bissfest)', () => {
-  const draft = JSON.parse(readFileSync(new URL('../firebase/friends-draft.rules.json', import.meta.url), 'utf8'));
+  const draft = JSON.parse(readFileSync(new URL('../firebase/database.rules.json', import.meta.url), 'utf8'));
   assert.deepEqual(checkRules(draft).errors, []);
 });
 
 test('friend requests can only be created by the sender (bissfest)', () => {
-  const draft = JSON.parse(readFileSync(new URL('../firebase/friends-draft.rules.json', import.meta.url), 'utf8'));
+  const draft = JSON.parse(readFileSync(new URL('../firebase/database.rules.json', import.meta.url), 'utf8'));
   const rule = String(draft.rules.friendRequests.$to.$from['.write']);
   // Der Empfänger darf nur löschen (annehmen/ablehnen), nie anlegen.
   assert.ok(rule.includes('auth.uid === $from ||'));
