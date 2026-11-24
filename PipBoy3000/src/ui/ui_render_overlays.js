@@ -48,8 +48,26 @@ Object.assign(UI, {
                 UI.leaveDialog();
             }
         };
+
+        // Der Touch-Joystick gehörte bisher nur zur gleichnamigen Funktion in
+        // ui_render_core.js - und die wird von dieser Fassung überschrieben.
+        // Ergebnis: els.joyBase blieb null und der Joystick erschien nie
+        // (docs/ANALYSE.md, B2). Hier mit angelegt, damit beide Fassungen
+        // denselben Zustand herstellen.
+        this.ensureJoystick();
         
         return overlay;
+    },
+
+    ensureJoystick: function() {
+        if(!document.getElementById('joystick-base')) {
+            document.body.insertAdjacentHTML('beforeend', `
+                <div id="joystick-base" style="position: absolute; width: 100px; height: 100px; border-radius: 50%; border: 2px solid rgba(57, 255, 20, 0.5); background: rgba(0, 0, 0, 0.2); display: none; pointer-events: none; z-index: 9999;"></div>
+                <div id="joystick-stick" style="position: absolute; width: 50px; height: 50px; border-radius: 50%; background: rgba(57, 255, 20, 0.8); display: none; pointer-events: none; z-index: 10000; box-shadow: 0 0 10px #39ff14;"></div>
+            `);
+        }
+        this.els.joyBase = document.getElementById('joystick-base');
+        this.els.joyStick = document.getElementById('joystick-stick');
     },
 
     leaveDialog: function() {

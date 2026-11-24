@@ -183,7 +183,18 @@ Object.assign(window.GameData.items, {
     gas_mask: { name: "Gasmaske", type: "head", slot: "head", cost: 120, bonus: {RAD: 20}, desc: "Filtert die Luft." },
     
     jeans: { name: "Jeans", type: "legs", slot: "legs", cost: 30, bonus: {AGI: 1}, desc: "Bequemer Denim." },
-    boots_worn: { name: "Alte Stiefel", type: "feet", slot: "feet", cost: 20, bonus: {}, desc: "Besser als barfuß." }
+    boots_worn: { name: "Alte Stiefel", type: "feet", slot: "feet", cost: 20, bonus: {}, desc: "Besser als barfuß." },
+
+    // --- MONSTER-DROPS ---
+    // Diese Materialien werden in data_monsters.js gedroppt. Ohne Definition
+    // landeten sie als unbekannte IDs im Inventar: ein Slot belegt, aber in der
+    // Inventaransicht unsichtbar (ui_view_inv.js überspringt unbekannte IDs).
+    bone: { name: "Knochen", type: "component", cost: 4, icon: "🦴", desc: "Zäh und vielseitig." },
+    acid: { name: "Säuredrüse", type: "component", cost: 18, icon: "🧪", desc: "Ätzend. Vorsichtig lagern." },
+    poison_gland: { name: "Giftdrüse", type: "component", cost: 25, icon: "☠️", desc: "Roh ungenießbar, verarbeitet wertvoll." },
+    gunpowder: { name: "Schießpulver", type: "component", cost: 30, icon: "💥", desc: "Grundstoff für Munition." },
+    deathclaw_hand: { name: "Todeskrallen-Hand", type: "rare", cost: 400, icon: "🦾", desc: "Kaum zu glauben, dass du das überlebt hast." },
+    titanium: { name: "Titanplatte", type: "rare", cost: 350, icon: "⚙️", desc: "Leicht, hart, begehrt." }
 });
 
 if(typeof Game !== 'undefined') Game.items = window.GameData.items;

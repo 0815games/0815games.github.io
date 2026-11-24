@@ -8,10 +8,10 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet">
     
-    <script>document.write('<link rel="stylesheet" href="style.css?v=' + Date.now() + '">');</script>
+    <link rel="stylesheet" href="app.css?v=13.37">
+    <link rel="stylesheet" href="style.css?v=13.37">
 
     <style>
         .admin-font { font-family: 'Share Tech Mono', monospace; }
@@ -308,26 +308,10 @@
 </div>
 
 <script>
-    // INITIALIZATION SCRIPT
     window.Game = { items: {}, recipes: [] };
     window.GameData = { items: {}, recipes: [], monsters: {} };
-    
-    const v = Date.now();
-    const load = (src) => new Promise((res, rej) => {
-        const s = document.createElement('script');
-        s.src = src + '?v=' + v;
-        s.onload = res; s.onerror = rej;
-        document.body.appendChild(s);
-    });
-
-    // Korrekte Lade-Reihenfolge inkl. data_monsters.js
-    load('data/data_core.js')
-    .then(() => load('data/data_items.js')) 
-    .then(() => load('data/data_recipes.js'))
-    .then(() => load('data/data_monsters.js')) // WICHTIG für Monster/Loot
-    .then(() => load('network.js'))
-    .then(() => load('admin.js'))
-    .catch(e => document.body.innerHTML = `<h1 style="color:red;padding:20px">BOOT ERROR: ${e}</h1>`);
 </script>
+    <script crossorigin src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="admin.js?v=13.37"></script>
 </body>
 </html>

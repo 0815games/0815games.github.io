@@ -1,6 +1,6 @@
 // [2026-02-22 02:00:00] network.js - Safe Name Release & RIP Highscore Logic
 
-const Network = {
+const Network = window.Network = {
     db: null,
     auth: null,
     myId: null,
