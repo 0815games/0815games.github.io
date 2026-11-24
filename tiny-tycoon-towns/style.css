@@ -156,6 +156,14 @@ progress { width: 100%; height: 14px; accent-color: var(--gold); }
 .opt { display: grid; grid-template-columns: 1fr auto; gap: 6px 10px; align-items: center; padding: 8px; border: 1px solid rgba(59,47,47,0.3); border-radius: 10px; }
 .opt .meta { font-size: 14px; }
 .opt .locked-note { color: var(--warn); font-size: 13px; }
+.coins-pill { font-size: 18px; white-space: nowrap; }
+.cost-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0; }
+.cost-chip {
+  border: 2px solid currentColor; border-radius: 999px; padding: 1px 10px;
+  font-weight: 700; font-size: 14px; background: #fff8ec; white-space: nowrap;
+}
+.cost-chip.ok { color: var(--ok); }
+.cost-chip.short { color: var(--warn); }
 .ok { color: var(--ok); }
 .warn { color: var(--warn); }
 

@@ -795,6 +795,7 @@ function renderHud() {
   $('#town-name').textContent = t.name;
   $('#town-meta').textContent = `${biome} · Raster ${gridSize(t.townLevel, data)} × ${gridSize(t.townLevel, data)}`;
   $('#coins').textContent = fmt0(t.coins);
+  $('#hud-coins').textContent = fmt0(t.coins);
   $('#level-label').textContent = `Stadtlevel ${t.townLevel}`;
 
   const th = data.economy.townLevelThresholds;
@@ -902,6 +903,32 @@ function multiplierText(m) {
   return `×${nf2.format(m)}`;
 }
 
+/**
+ * Kosten als Symbole mit Vorrat („Vorrat / Bedarf“). Grün = genug, rot = zu wenig.
+ */
+function costChips(c) {
+  const mat = data.resources[c.material.resource];
+  const coins = Math.floor(state.coins);
+  const stock = Math.floor(state.stock[c.material.resource] ?? 0);
+  const chip = (icon, name, have, need) => {
+    const ok = have >= need;
+    const label = `${name}: ${fmt0(have)} von ${fmt0(need)}, ${ok ? 'genug' : 'zu wenig'}`;
+    return `<span class="cost-chip ${ok ? 'ok' : 'short'}" aria-label="${esc(label)}"><span aria-hidden="true">${icon}</span> ${fmt0(have)} / ${fmt0(need)}</span>`;
+  };
+  return `<div class="cost-row">${chip('🪙', 'Münzen', coins, c.coins)}${chip(mat.icon, mat.name.de, stock, c.material.amount)}</div>`;
+}
+
+/** Sagt, was genau fehlt. Leer, wenn alles reicht. */
+function missingText(c) {
+  const mat = data.resources[c.material.resource];
+  const miss = [];
+  const coins = Math.ceil(c.coins - state.coins);
+  const units = Math.ceil(c.material.amount - (state.stock[c.material.resource] ?? 0));
+  if (coins > 0) miss.push(`${fmt0(coins)} 🪙`);
+  if (units > 0) miss.push(`${fmt0(units)} ${esc(mat.name.de)}`);
+  return miss.length ? `Dir fehlen: ${miss.join(' und ')}` : '';
+}
+
 function buildingDetails(b, x, y) {
   const def = data.buildings[b.id];
   const m = productionMultiplier(state, x, y, b.id, data);
@@ -915,11 +942,10 @@ function buildingDetails(b, x, y) {
   }
   if (b.level < def.maxLevel) {
     const c = buildCost(b.id, b.level, data);
-    const matName = data.resources[c.material.resource].name.de;
     const ok = state.coins >= c.coins && state.stock[c.material.resource] >= c.material.amount;
-    html += `<p class="small">Upgrade: ${fmt0(c.coins)} 🪙 und ${c.material.amount} ${esc(matName)}</p>`;
+    html += `<p class="small">Upgrade:</p>${costChips(c)}`;
     html += `<button type="button" class="primary" data-action="upgrade" ${ok ? '' : 'disabled'}>Auf Stufe ${b.level + 1} ausbauen</button>`;
-    if (!ok) html += '<p class="small warn">Dir fehlen Münzen oder Material.</p>';
+    if (!ok) html += `<p class="small warn">${missingText(c)}</p>`;
   } else {
     html += '<p class="small ok">Maximalstufe erreicht.</p>';
   }
@@ -932,7 +958,6 @@ function buildMenu(x, y) {
   if (buildIdx >= entries.length) buildIdx = 0;
   const [id, d] = entries[buildIdx];
   const c = buildCost(id, 0, data);
-  const matName = data.resources[c.material.resource].name.de;
   const locked = d.unlockTownLevel > state.townLevel;
   const affordable = state.coins >= c.coins && state.stock[c.material.resource] >= c.material.amount;
   let meta;
@@ -948,10 +973,10 @@ function buildMenu(x, y) {
       <button type="button" data-action="cycle" data-dir="-1" data-cycle aria-label="Vorherige Option">‹</button>
       <div class="opt">
         <div><strong>${d.icon} ${esc(d.name.de)}</strong> <span class="muted small">${buildIdx + 1} / ${entries.length}</span>
-          <div class="meta">${fmt0(c.coins)} 🪙 · ${c.material.amount} ${esc(matName)}</div>
+          ${costChips(c)}
           <div class="meta">${meta}</div>
           ${locked ? `<div class="locked-note">Ab Stadtlevel ${d.unlockTownLevel}</div>` : ''}
-          ${!locked && !affordable ? '<div class="locked-note">Dir fehlen Münzen oder Material</div>' : ''}
+          ${!locked && !affordable ? `<div class="locked-note">${missingText(c)}</div>` : ''}
         </div>
         <button type="button" data-action="build" data-id="${id}" ${locked || !affordable ? 'disabled' : ''}>Bauen</button>
       </div>
