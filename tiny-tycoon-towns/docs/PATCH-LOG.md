@@ -348,3 +348,10 @@ Ereignis ergänzt.
   der Stadt (`data-persist`), dort muss entschieden werden. Feld-Popup schließt sich bei Klick auf die Karte neben
   einem Feld (`onEmpty` in `board.js`). Escape und ✕ bleiben.
 - Prüfungen: 59 Tests grün, `check` ohne Fehler, lint `no-undef` ohne Befund. Im Browser noch nicht geprüft.
+
+### TTT-0015 – Feld-Popup mittig (Welle `20261124-sitz10`)
+
+- Befund: Das Bau-Popup saß im Hochformat zu weit rechts. Ursache: Die Einblend-Animation `card-in` setzt `transform`
+  und hob damit die Zentrierung per `translateX(-50%)` auf.
+- Behebung: Zentrierung über `left`/`right` und auto-Ränder. Gestaltung überarbeitet (Karte, runde Blätter-Pfeile, Bau-Option als Karte).
+- Prüfungen: 59 Tests grün, `check` ohne Fehler, lint `no-undef` ohne Befund. Im Browser noch nicht geprüft.
