@@ -89,7 +89,7 @@ test('match classUpgrade applies independently from level-3 universal kits and r
   assert.equal(sellRes.refund,expectedSellRefund);
   assert.equal(getSupplies(m,'p1')-suppliesBeforeSell,expectedSellRefund);
 
-  // Sector advance rebates 60% of both universal and class investment
+  // Sector advance rebates 80% of both universal and class investment (IPL-0129)
   assert.equal(applyCommand(m,'p1',{type:'build',pad:1,towerType:1}).ok,true);
   const t2=m.towers[0];
   assert.equal(applyCommand(m,'p1',{type:'classUpgrade',pad:1}).ok,true);
@@ -98,8 +98,8 @@ test('match classUpgrade applies independently from level-3 universal kits and r
   m.pendingSector=1;
   const adv=advanceSector(m);
   assert.equal(adv.sector,2);
-  assert.equal(adv.refund,Math.floor(basePlusClass*.6));
-  assert.equal(getSupplies(m,'p1')-beforeAdvance,Math.floor(basePlusClass*.6));
+  assert.equal(adv.refund,Math.floor(basePlusClass*.8));
+  assert.equal(getSupplies(m,'p1')-beforeAdvance,Math.floor(basePlusClass*.8));
 });
 
 test('all six class tower factors and hit effects behave strictly and propagate across protocol snapshots',()=>{

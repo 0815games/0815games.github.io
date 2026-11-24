@@ -75,8 +75,18 @@ export function stepMatch(state){
     p.x=Math.max(12,Math.min((map.width||960)-12,p.x));p.y=Math.max(12,Math.min((map.height||540)-12,p.y));
     if(!jamField&&state.running)p.cooldown=Math.max(0,p.cooldown-dt);
   }
-  if(state.running&&state.spawnLeft>0){state.spawnTimer-=dt;if(state.spawnTimer<=0){const spawnIndex=state.spawnIndex++,formation=sectorFormation(missionFormation(state.wave,state.campaignContract),(state.individualSupplies||state.hostId)?0:sector),kind=formation[spawnIndex%formation.length],enemy=makeEnemy(kind,state.wave),count=activePlayers(state).length,road=spawnIndex%paths.length,path=paths[road],effectiveSector=(state.individualSupplies||state.hostId)&&state.wave<MULTIPLAYER_SECTOR_START_WAVE?1:sector;
-      if(effectiveSector>1){enemy.hp=enemy.maxHp=Math.max(1,Math.round(enemy.maxHp*(1+.12*(effectiveSector-1))));enemy.speed*=1+.05*(effectiveSector-1);}if(state.individualSupplies&&count>1){const healthMult=count>3?COOP_FOUR_ENEMY_HEALTH:count>2?COOP_THREE_ENEMY_HEALTH:COOP_ENEMY_HEALTH;enemy.hp=enemy.maxHp=Math.round(enemy.maxHp*healthMult);}
+  if(state.running&&state.spawnLeft>0){state.spawnTimer-=dt;if(state.spawnTimer<=0){
+      // IPL-0129: the first wave after a sector retreat (sectorGraceWave)
+      // spawns in the old rhythm - no armor lean, no sector stat bonus -
+      // so the rebuild wave is a rebuild wave. From the next wave on the new
+      // field's threat applies in full.
+      const grace=Number.isFinite(state.sectorGraceWave)&&state.wave<=state.sectorGraceWave;
+      const spawnIndex=state.spawnIndex++,formation=sectorFormation(missionFormation(state.wave,state.campaignContract),grace?1:((state.individualSupplies||state.hostId)?0:sector)),kind=formation[spawnIndex%formation.length],enemy=makeEnemy(kind,state.wave),count=activePlayers(state).length,road=spawnIndex%paths.length,path=paths[road],effectiveSector=grace?1:((state.individualSupplies||state.hostId)&&state.wave<MULTIPLAYER_SECTOR_START_WAVE?1:sector);
+      // IPL-0129 note: the pre-retreat opening (waves 6-10) deliberately keeps
+      // its authored curve — the field report's `early` column measures damage
+      // taken there, and hardening it is one future knob at this spot.
+      if(effectiveSector>1){enemy.hp=enemy.maxHp=Math.max(1,Math.round(enemy.maxHp*(1+.12*(effectiveSector-1))));enemy.speed*=1+.05*(effectiveSector-1);}
+      if(state.individualSupplies&&count>1){const healthMult=count>3?COOP_FOUR_ENEMY_HEALTH:count>2?COOP_THREE_ENEMY_HEALTH:COOP_ENEMY_HEALTH;enemy.hp=enemy.maxHp=Math.round(enemy.maxHp*healthMult);}
       if(state.campaignContract){enemy.hp=enemy.maxHp=Math.round(enemy.maxHp*state.campaignContract.unit);enemy.campaign=true;}
       if(state.campaignContract?.bossUnit&&enemy.boss)enemy.hp=enemy.maxHp=Math.max(1,Math.round(enemy.maxHp*state.campaignContract.bossUnit));
       state.enemies.push({...enemy,...(paths.length>1?{road}:{}),x:path[0].x,y:path[0].y,segment:1});

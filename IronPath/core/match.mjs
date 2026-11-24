@@ -24,10 +24,15 @@ export function towerRefund(tower) {
 
 export function advanceSector(state,nextMapId){
   if(!state||state.individualSupplies||state.hostId||!state.pendingSector||sectorOf(state.mapId)<1)return null;
-  const refund=state.towers.reduce((sum,tower)=>sum+Math.floor(.6*(TOWER_COSTS[tower.type]+(towerUpgradeInvestment(tower.level)??0)+classPathInvested(tower))),0);
+  // IPL-0129: the retreat sells the army at 80 percent (was 60) and the
+  // first wave on the new field keeps the old sector's rhythm
+  // (sectorGraceWave) - you rebuild into the new threat, you do not meet it
+  // with an empty road and the armor lean in the same breath.
+  const refund=state.towers.reduce((sum,tower)=>sum+Math.floor(.8*(TOWER_COSTS[tower.type]+(towerUpgradeInvestment(tower.level)??0)+classPathInvested(tower))),0);
   const factory=typeof nextMapId==='function'?nextMapId:createRandomMapId;
   const mapId=factory(state.mapId,globalThis.crypto,sectorOf(state.mapId)+1),map=getMap(mapId);
   state.mapId=mapId;state.pendingSector=0;state.towers=[];state.shots=[];state.enemies=[];state.spawnLeft=0;state.dustClouds=[];state.money=(state.money||0)+refund;
+  state.sectorGraceWave=state.wave+1;
   for(const id of Object.keys(state.players))releaseBuildReservations(state,id);
   state.hp=Math.max(state.hp,Math.round(state.maxHp*.75));
   for(const player of Object.values(state.players)){player.x=Math.max(90,map.bunker.x-90);player.y=Math.min(map.height-60,map.bunker.y+60);player.target=null;player.direction={x:0,y:0};}

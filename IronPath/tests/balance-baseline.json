@@ -1,0 +1,1607 @@
+{
+  "meta": {
+    "created": "2026-11-24T13:31:34.872Z",
+    "node": "v22.22.3",
+    "quick": false,
+    "scenarios": 34,
+    "note": "IPL-0129 field matrix — compare with tests/balance-field-report.mjs --check"
+  },
+  "runs": {
+    "solo:rookie:road:coverage": {
+      "scenario": {
+        "kind": "solo",
+        "map": "road",
+        "gear": "rookie",
+        "placement": "coverage"
+      },
+      "outcome": "alive",
+      "deathWave": null,
+      "finalWave": 25,
+      "hpFinal": 112,
+      "maxHp": 120,
+      "towers": 10,
+      "levels": 67,
+      "advance": null,
+      "advances": [],
+      "cliff": {
+        "from": 11,
+        "to": 13,
+        "damage": 0
+      },
+      "cliffDamage": 0,
+      "graceWaveDamage": 0,
+      "rebuild": {
+        "towersAtGraceStart": 10,
+        "towersAtNextStart": 10
+      },
+      "damageBands": {
+        "w1_5": 0,
+        "w6_10": 8,
+        "w11_15": 0,
+        "w16_20": 0
+      },
+      "waveSeconds": {
+        "early": 35.3,
+        "transition": 40.2
+      }
+    },
+    "solo:veteran:road:coverage": {
+      "scenario": {
+        "kind": "solo",
+        "map": "road",
+        "gear": "veteran",
+        "placement": "coverage"
+      },
+      "outcome": "alive",
+      "deathWave": null,
+      "finalWave": 25,
+      "hpFinal": 123,
+      "maxHp": 130,
+      "towers": 10,
+      "levels": 67,
+      "advance": null,
+      "advances": [],
+      "cliff": {
+        "from": 11,
+        "to": 13,
+        "damage": 0
+      },
+      "cliffDamage": 0,
+      "graceWaveDamage": 0,
+      "rebuild": {
+        "towersAtGraceStart": 10,
+        "towersAtNextStart": 10
+      },
+      "damageBands": {
+        "w1_5": 0,
+        "w6_10": 7,
+        "w11_15": 0,
+        "w16_20": 0
+      },
+      "waveSeconds": {
+        "early": 33.1,
+        "transition": 40.7
+      }
+    },
+    "solo:elite:road:coverage": {
+      "scenario": {
+        "kind": "solo",
+        "map": "road",
+        "gear": "elite",
+        "placement": "coverage"
+      },
+      "outcome": "alive",
+      "deathWave": null,
+      "finalWave": 25,
+      "hpFinal": 150,
+      "maxHp": 150,
+      "towers": 10,
+      "levels": 67,
+      "advance": null,
+      "advances": [],
+      "cliff": {
+        "from": 11,
+        "to": 13,
+        "damage": 0
+      },
+      "cliffDamage": 0,
+      "graceWaveDamage": 0,
+      "rebuild": {
+        "towersAtGraceStart": 10,
+        "towersAtNextStart": 10
+      },
+      "damageBands": {
+        "w1_5": 0,
+        "w6_10": 0,
+        "w11_15": 0,
+        "w16_20": 0
+      },
+      "waveSeconds": {
+        "early": 25,
+        "transition": 34.8
+      }
+    },
+    "solo:rookie:forest:coverage": {
+      "scenario": {
+        "kind": "solo",
+        "map": "forest",
+        "gear": "rookie",
+        "placement": "coverage"
+      },
+      "outcome": "alive",
+      "deathWave": null,
+      "finalWave": 25,
+      "hpFinal": 100,
+      "maxHp": 100,
+      "towers": 10,
+      "levels": 66,
+      "advance": null,
+      "advances": [],
+      "cliff": {
+        "from": 11,
+        "to": 13,
+        "damage": 0
+      },
+      "cliffDamage": 0,
+      "graceWaveDamage": 0,
+      "rebuild": {
+        "towersAtGraceStart": 10,
+        "towersAtNextStart": 10
+      },
+      "damageBands": {
+        "w1_5": 36,
+        "w6_10": 0,
+        "w11_15": 0,
+        "w16_20": 0
+      },
+      "waveSeconds": {
+        "early": 37.8,
+        "transition": 42
+      }
+    },
+    "solo:veteran:forest:coverage": {
+      "scenario": {
+        "kind": "solo",
+        "map": "forest",
+        "gear": "veteran",
+        "placement": "coverage"
+      },
+      "outcome": "alive",
+      "deathWave": null,
+      "finalWave": 25,
+      "hpFinal": 110,
+      "maxHp": 110,
+      "towers": 10,
+      "levels": 66,
+      "advance": null,
+      "advances": [],
+      "cliff": {
+        "from": 11,
+        "to": 13,
+        "damage": 0
+      },
+      "cliffDamage": 0,
+      "graceWaveDamage": 0,
+      "rebuild": {
+        "towersAtGraceStart": 10,
+        "towersAtNextStart": 10
+      },
+      "damageBands": {
+        "w1_5": 0,
+        "w6_10": 0,
+        "w11_15": 0,
+        "w16_20": 0
+      },
+      "waveSeconds": {
+        "early": 34.6,
+        "transition": 42.2
+      }
+    },
+    "solo:elite:forest:coverage": {
+      "scenario": {
+        "kind": "solo",
+        "map": "forest",
+        "gear": "elite",
+        "placement": "coverage"
+      },
+      "outcome": "alive",
+      "deathWave": null,
+      "finalWave": 25,
+      "hpFinal": 130,
+      "maxHp": 130,
+      "towers": 10,
+      "levels": 67,
+      "advance": null,
+      "advances": [],
+      "cliff": {
+        "from": 11,
+        "to": 13,
+        "damage": 0
+      },
+      "cliffDamage": 0,
+      "graceWaveDamage": 0,
+      "rebuild": {
+        "towersAtGraceStart": 10,
+        "towersAtNextStart": 10
+      },
+      "damageBands": {
+        "w1_5": 0,
+        "w6_10": 0,
+        "w11_15": 0,
+        "w16_20": 0
+      },
+      "waveSeconds": {
+        "early": 27.3,
+        "transition": 34.3
+      }
+    },
+    "solo:rookie:g3-0b9f45231:coverage": {
+      "scenario": {
+        "kind": "solo",
+        "map": "g3-0b9f45231",
+        "gear": "rookie",
+        "placement": "coverage"
+      },
+      "outcome": "alive",
+      "deathWave": null,
+      "finalWave": 25,
+      "hpFinal": 98,
+      "maxHp": 100,
+      "towers": 18,
+      "levels": 86,
+      "advance": {
+        "wave": 10,
+        "from": "g3-0b9f45231",
+        "to": "g3-125dca8c6",
+        "hp": 92,
+        "money": 3179
+      },
+      "advances": [
+        {
+          "wave": 10,
+          "from": "g3-0b9f45231",
+          "to": "g3-125dca8c6",
+          "hp": 92,
+          "money": 3179
+        },
+        {
+          "wave": 20,
+          "from": "g3-125dca8c6",
+          "to": "g3-27c35d789",
+          "hp": 100,
+          "money": 9064
+        }
+      ],
+      "cliff": {
+        "from": 11,
+        "to": 13,
+        "damage": 0
+      },
+      "cliffDamage": 0,
+      "graceWaveDamage": 0,
+      "rebuild": {
+        "towersAtGraceStart": 4,
+        "towersAtNextStart": 14
+      },
+      "damageBands": {
+        "w1_5": 0,
+        "w6_10": 8,
+        "w11_15": 0,
+        "w16_20": 0
+      },
+      "waveSeconds": {
+        "early": 39.1,
+        "transition": 53.5
+      }
+    },
+    "solo:veteran:g3-0b9f45231:coverage": {
+      "scenario": {
+        "kind": "solo",
+        "map": "g3-0b9f45231",
+        "gear": "veteran",
+        "placement": "coverage"
+      },
+      "outcome": "alive",
+      "deathWave": null,
+      "finalWave": 25,
+      "hpFinal": 110,
+      "maxHp": 110,
+      "towers": 18,
+      "levels": 86,
+      "advance": {
+        "wave": 10,
+        "from": "g3-0b9f45231",
+        "to": "g3-125dca8c6",
+        "hp": 103,
+        "money": 3179
+      },
+      "advances": [
+        {
+          "wave": 10,
+          "from": "g3-0b9f45231",
+          "to": "g3-125dca8c6",
+          "hp": 103,
+          "money": 3179
+        },
+        {
+          "wave": 20,
+          "from": "g3-125dca8c6",
+          "to": "g3-27c35d789",
+          "hp": 110,
+          "money": 9064
+        }
+      ],
+      "cliff": {
+        "from": 11,
+        "to": 13,
+        "damage": 0
+      },
+      "cliffDamage": 0,
+      "graceWaveDamage": 0,
+      "rebuild": {
+        "towersAtGraceStart": 4,
+        "towersAtNextStart": 14
+      },
+      "damageBands": {
+        "w1_5": 0,
+        "w6_10": 7,
+        "w11_15": 0,
+        "w16_20": 0
+      },
+      "waveSeconds": {
+        "early": 34.8,
+        "transition": 53.3
+      }
+    },
+    "solo:elite:g3-0b9f45231:coverage": {
+      "scenario": {
+        "kind": "solo",
+        "map": "g3-0b9f45231",
+        "gear": "elite",
+        "placement": "coverage"
+      },
+      "outcome": "alive",
+      "deathWave": null,
+      "finalWave": 25,
+      "hpFinal": 130,
+      "maxHp": 130,
+      "towers": 18,
+      "levels": 87,
+      "advance": {
+        "wave": 10,
+        "from": "g3-0b9f45231",
+        "to": "g3-125dca8c6",
+        "hp": 130,
+        "money": 3251
+      },
+      "advances": [
+        {
+          "wave": 10,
+          "from": "g3-0b9f45231",
+          "to": "g3-125dca8c6",
+          "hp": 130,
+          "money": 3251
+        },
+        {
+          "wave": 20,
+          "from": "g3-125dca8c6",
+          "to": "g3-27c35d789",
+          "hp": 130,
+          "money": 9316
+        }
+      ],
+      "cliff": {
+        "from": 11,
+        "to": 13,
+        "damage": 0
+      },
+      "cliffDamage": 0,
+      "graceWaveDamage": 0,
+      "rebuild": {
+        "towersAtGraceStart": 4,
+        "towersAtNextStart": 14
+      },
+      "damageBands": {
+        "w1_5": 0,
+        "w6_10": 0,
+        "w11_15": 0,
+        "w16_20": 0
+      },
+      "waveSeconds": {
+        "early": 27.3,
+        "transition": 42.5
+      }
+    },
+    "solo:rookie:g3-0d3e7f521:coverage": {
+      "scenario": {
+        "kind": "solo",
+        "map": "g3-0d3e7f521",
+        "gear": "rookie",
+        "placement": "coverage"
+      },
+      "outcome": "alive",
+      "deathWave": null,
+      "finalWave": 25,
+      "hpFinal": 92,
+      "maxHp": 100,
+      "towers": 18,
+      "levels": 84,
+      "advance": {
+        "wave": 10,
+        "from": "g3-0d3e7f521",
+        "to": "g3-1023d5f1b",
+        "hp": 92,
+        "money": 3134
+      },
+      "advances": [
+        {
+          "wave": 10,
+          "from": "g3-0d3e7f521",
+          "to": "g3-1023d5f1b",
+          "hp": 92,
+          "money": 3134
+        },
+        {
+          "wave": 20,
+          "from": "g3-1023d5f1b",
+          "to": "g3-22167a91c",
+          "hp": 92,
+          "money": 8717
+        }
+      ],
+      "cliff": {
+        "from": 11,
+        "to": 13,
+        "damage": 0
+      },
+      "cliffDamage": 0,
+      "graceWaveDamage": 0,
+      "rebuild": {
+        "towersAtGraceStart": 4,
+        "towersAtNextStart": 14
+      },
+      "damageBands": {
+        "w1_5": 0,
+        "w6_10": 8,
+        "w11_15": 0,
+        "w16_20": 0
+      },
+      "waveSeconds": {
+        "early": 41.3,
+        "transition": 51.2
+      }
+    },
+    "solo:veteran:g3-0d3e7f521:coverage": {
+      "scenario": {
+        "kind": "solo",
+        "map": "g3-0d3e7f521",
+        "gear": "veteran",
+        "placement": "coverage"
+      },
+      "outcome": "alive",
+      "deathWave": null,
+      "finalWave": 25,
+      "hpFinal": 103,
+      "maxHp": 110,
+      "towers": 18,
+      "levels": 84,
+      "advance": {
+        "wave": 10,
+        "from": "g3-0d3e7f521",
+        "to": "g3-1023d5f1b",
+        "hp": 103,
+        "money": 3098
+      },
+      "advances": [
+        {
+          "wave": 10,
+          "from": "g3-0d3e7f521",
+          "to": "g3-1023d5f1b",
+          "hp": 103,
+          "money": 3098
+        },
+        {
+          "wave": 20,
+          "from": "g3-1023d5f1b",
+          "to": "g3-22167a91c",
+          "hp": 103,
+          "money": 8681
+        }
+      ],
+      "cliff": {
+        "from": 11,
+        "to": 13,
+        "damage": 0
+      },
+      "cliffDamage": 0,
+      "graceWaveDamage": 0,
+      "rebuild": {
+        "towersAtGraceStart": 4,
+        "towersAtNextStart": 14
+      },
+      "damageBands": {
+        "w1_5": 0,
+        "w6_10": 7,
+        "w11_15": 0,
+        "w16_20": 0
+      },
+      "waveSeconds": {
+        "early": 33.1,
+        "transition": 50.3
+      }
+    },
+    "solo:elite:g3-0d3e7f521:coverage": {
+      "scenario": {
+        "kind": "solo",
+        "map": "g3-0d3e7f521",
+        "gear": "elite",
+        "placement": "coverage"
+      },
+      "outcome": "alive",
+      "deathWave": null,
+      "finalWave": 25,
+      "hpFinal": 130,
+      "maxHp": 130,
+      "towers": 18,
+      "levels": 85,
+      "advance": {
+        "wave": 10,
+        "from": "g3-0d3e7f521",
+        "to": "g3-1023d5f1b",
+        "hp": 130,
+        "money": 3158
+      },
+      "advances": [
+        {
+          "wave": 10,
+          "from": "g3-0d3e7f521",
+          "to": "g3-1023d5f1b",
+          "hp": 130,
+          "money": 3158
+        },
+        {
+          "wave": 20,
+          "from": "g3-1023d5f1b",
+          "to": "g3-22167a91c",
+          "hp": 130,
+          "money": 8801
+        }
+      ],
+      "cliff": {
+        "from": 11,
+        "to": 13,
+        "damage": 0
+      },
+      "cliffDamage": 0,
+      "graceWaveDamage": 0,
+      "rebuild": {
+        "towersAtGraceStart": 4,
+        "towersAtNextStart": 14
+      },
+      "damageBands": {
+        "w1_5": 0,
+        "w6_10": 0,
+        "w11_15": 0,
+        "w16_20": 0
+      },
+      "waveSeconds": {
+        "early": 26.3,
+        "transition": 33.5
+      }
+    },
+    "solo:veteran-none:road:coverage": {
+      "scenario": {
+        "kind": "solo",
+        "map": "road",
+        "gear": "veteran-none",
+        "placement": "coverage"
+      },
+      "outcome": "alive",
+      "deathWave": null,
+      "finalWave": 25,
+      "hpFinal": 123,
+      "maxHp": 130,
+      "towers": 10,
+      "levels": 67,
+      "advance": null,
+      "advances": [],
+      "cliff": {
+        "from": 11,
+        "to": 13,
+        "damage": 0
+      },
+      "cliffDamage": 0,
+      "graceWaveDamage": 0,
+      "rebuild": {
+        "towersAtGraceStart": 10,
+        "towersAtNextStart": 10
+      },
+      "damageBands": {
+        "w1_5": 0,
+        "w6_10": 7,
+        "w11_15": 0,
+        "w16_20": 0
+      },
+      "waveSeconds": {
+        "early": 33.8,
+        "transition": 40
+      }
+    },
+    "solo:veteran-none:g3-0b9f45231:coverage": {
+      "scenario": {
+        "kind": "solo",
+        "map": "g3-0b9f45231",
+        "gear": "veteran-none",
+        "placement": "coverage"
+      },
+      "outcome": "alive",
+      "deathWave": null,
+      "finalWave": 25,
+      "hpFinal": 110,
+      "maxHp": 110,
+      "towers": 18,
+      "levels": 86,
+      "advance": {
+        "wave": 10,
+        "from": "g3-0b9f45231",
+        "to": "g3-125dca8c6",
+        "hp": 103,
+        "money": 3179
+      },
+      "advances": [
+        {
+          "wave": 10,
+          "from": "g3-0b9f45231",
+          "to": "g3-125dca8c6",
+          "hp": 103,
+          "money": 3179
+        },
+        {
+          "wave": 20,
+          "from": "g3-125dca8c6",
+          "to": "g3-27c35d789",
+          "hp": 110,
+          "money": 9064
+        }
+      ],
+      "cliff": {
+        "from": 11,
+        "to": 13,
+        "damage": 0
+      },
+      "cliffDamage": 0,
+      "graceWaveDamage": 0,
+      "rebuild": {
+        "towersAtGraceStart": 4,
+        "towersAtNextStart": 14
+      },
+      "damageBands": {
+        "w1_5": 0,
+        "w6_10": 7,
+        "w11_15": 0,
+        "w16_20": 0
+      },
+      "waveSeconds": {
+        "early": 36.6,
+        "transition": 53.5
+      }
+    },
+    "solo:veteran-assault:road:coverage": {
+      "scenario": {
+        "kind": "solo",
+        "map": "road",
+        "gear": "veteran-assault",
+        "placement": "coverage"
+      },
+      "outcome": "alive",
+      "deathWave": null,
+      "finalWave": 25,
+      "hpFinal": 123,
+      "maxHp": 130,
+      "towers": 10,
+      "levels": 67,
+      "advance": null,
+      "advances": [],
+      "cliff": {
+        "from": 11,
+        "to": 13,
+        "damage": 0
+      },
+      "cliffDamage": 0,
+      "graceWaveDamage": 0,
+      "rebuild": {
+        "towersAtGraceStart": 10,
+        "towersAtNextStart": 10
+      },
+      "damageBands": {
+        "w1_5": 0,
+        "w6_10": 7,
+        "w11_15": 0,
+        "w16_20": 0
+      },
+      "waveSeconds": {
+        "early": 33.8,
+        "transition": 40
+      }
+    },
+    "solo:veteran-assault:g3-0b9f45231:coverage": {
+      "scenario": {
+        "kind": "solo",
+        "map": "g3-0b9f45231",
+        "gear": "veteran-assault",
+        "placement": "coverage"
+      },
+      "outcome": "alive",
+      "deathWave": null,
+      "finalWave": 25,
+      "hpFinal": 110,
+      "maxHp": 110,
+      "towers": 18,
+      "levels": 86,
+      "advance": {
+        "wave": 10,
+        "from": "g3-0b9f45231",
+        "to": "g3-125dca8c6",
+        "hp": 103,
+        "money": 3179
+      },
+      "advances": [
+        {
+          "wave": 10,
+          "from": "g3-0b9f45231",
+          "to": "g3-125dca8c6",
+          "hp": 103,
+          "money": 3179
+        },
+        {
+          "wave": 20,
+          "from": "g3-125dca8c6",
+          "to": "g3-27c35d789",
+          "hp": 110,
+          "money": 9064
+        }
+      ],
+      "cliff": {
+        "from": 11,
+        "to": 13,
+        "damage": 0
+      },
+      "cliffDamage": 0,
+      "graceWaveDamage": 0,
+      "rebuild": {
+        "towersAtGraceStart": 4,
+        "towersAtNextStart": 14
+      },
+      "damageBands": {
+        "w1_5": 0,
+        "w6_10": 7,
+        "w11_15": 0,
+        "w16_20": 0
+      },
+      "waveSeconds": {
+        "early": 36.6,
+        "transition": 53.5
+      }
+    },
+    "solo:veteran-engineer:road:coverage": {
+      "scenario": {
+        "kind": "solo",
+        "map": "road",
+        "gear": "veteran-engineer",
+        "placement": "coverage"
+      },
+      "outcome": "alive",
+      "deathWave": null,
+      "finalWave": 25,
+      "hpFinal": 123,
+      "maxHp": 130,
+      "towers": 10,
+      "levels": 67,
+      "advance": null,
+      "advances": [],
+      "cliff": {
+        "from": 11,
+        "to": 13,
+        "damage": 0
+      },
+      "cliffDamage": 0,
+      "graceWaveDamage": 0,
+      "rebuild": {
+        "towersAtGraceStart": 10,
+        "towersAtNextStart": 10
+      },
+      "damageBands": {
+        "w1_5": 0,
+        "w6_10": 7,
+        "w11_15": 0,
+        "w16_20": 0
+      },
+      "waveSeconds": {
+        "early": 33.8,
+        "transition": 40
+      }
+    },
+    "solo:veteran-engineer:g3-0b9f45231:coverage": {
+      "scenario": {
+        "kind": "solo",
+        "map": "g3-0b9f45231",
+        "gear": "veteran-engineer",
+        "placement": "coverage"
+      },
+      "outcome": "alive",
+      "deathWave": null,
+      "finalWave": 25,
+      "hpFinal": 110,
+      "maxHp": 110,
+      "towers": 18,
+      "levels": 86,
+      "advance": {
+        "wave": 10,
+        "from": "g3-0b9f45231",
+        "to": "g3-125dca8c6",
+        "hp": 103,
+        "money": 3179
+      },
+      "advances": [
+        {
+          "wave": 10,
+          "from": "g3-0b9f45231",
+          "to": "g3-125dca8c6",
+          "hp": 103,
+          "money": 3179
+        },
+        {
+          "wave": 20,
+          "from": "g3-125dca8c6",
+          "to": "g3-27c35d789",
+          "hp": 110,
+          "money": 9064
+        }
+      ],
+      "cliff": {
+        "from": 11,
+        "to": 13,
+        "damage": 0
+      },
+      "cliffDamage": 0,
+      "graceWaveDamage": 0,
+      "rebuild": {
+        "towersAtGraceStart": 4,
+        "towersAtNextStart": 14
+      },
+      "damageBands": {
+        "w1_5": 0,
+        "w6_10": 7,
+        "w11_15": 0,
+        "w16_20": 0
+      },
+      "waveSeconds": {
+        "early": 36.6,
+        "transition": 53.5
+      }
+    },
+    "solo:veteran-logistics:road:coverage": {
+      "scenario": {
+        "kind": "solo",
+        "map": "road",
+        "gear": "veteran-logistics",
+        "placement": "coverage"
+      },
+      "outcome": "alive",
+      "deathWave": null,
+      "finalWave": 25,
+      "hpFinal": 123,
+      "maxHp": 130,
+      "towers": 10,
+      "levels": 67,
+      "advance": null,
+      "advances": [],
+      "cliff": {
+        "from": 11,
+        "to": 13,
+        "damage": 0
+      },
+      "cliffDamage": 0,
+      "graceWaveDamage": 0,
+      "rebuild": {
+        "towersAtGraceStart": 10,
+        "towersAtNextStart": 10
+      },
+      "damageBands": {
+        "w1_5": 0,
+        "w6_10": 7,
+        "w11_15": 0,
+        "w16_20": 0
+      },
+      "waveSeconds": {
+        "early": 33.8,
+        "transition": 40
+      }
+    },
+    "solo:veteran-logistics:g3-0b9f45231:coverage": {
+      "scenario": {
+        "kind": "solo",
+        "map": "g3-0b9f45231",
+        "gear": "veteran-logistics",
+        "placement": "coverage"
+      },
+      "outcome": "alive",
+      "deathWave": null,
+      "finalWave": 25,
+      "hpFinal": 110,
+      "maxHp": 110,
+      "towers": 18,
+      "levels": 86,
+      "advance": {
+        "wave": 10,
+        "from": "g3-0b9f45231",
+        "to": "g3-125dca8c6",
+        "hp": 103,
+        "money": 3179
+      },
+      "advances": [
+        {
+          "wave": 10,
+          "from": "g3-0b9f45231",
+          "to": "g3-125dca8c6",
+          "hp": 103,
+          "money": 3179
+        },
+        {
+          "wave": 20,
+          "from": "g3-125dca8c6",
+          "to": "g3-27c35d789",
+          "hp": 110,
+          "money": 9064
+        }
+      ],
+      "cliff": {
+        "from": 11,
+        "to": 13,
+        "damage": 0
+      },
+      "cliffDamage": 0,
+      "graceWaveDamage": 0,
+      "rebuild": {
+        "towersAtGraceStart": 4,
+        "towersAtNextStart": 14
+      },
+      "damageBands": {
+        "w1_5": 0,
+        "w6_10": 7,
+        "w11_15": 0,
+        "w16_20": 0
+      },
+      "waveSeconds": {
+        "early": 36.6,
+        "transition": 53.5
+      }
+    },
+    "solo:veteran-medic:road:coverage": {
+      "scenario": {
+        "kind": "solo",
+        "map": "road",
+        "gear": "veteran-medic",
+        "placement": "coverage"
+      },
+      "outcome": "alive",
+      "deathWave": null,
+      "finalWave": 25,
+      "hpFinal": 123,
+      "maxHp": 130,
+      "towers": 10,
+      "levels": 67,
+      "advance": null,
+      "advances": [],
+      "cliff": {
+        "from": 11,
+        "to": 13,
+        "damage": 0
+      },
+      "cliffDamage": 0,
+      "graceWaveDamage": 0,
+      "rebuild": {
+        "towersAtGraceStart": 10,
+        "towersAtNextStart": 10
+      },
+      "damageBands": {
+        "w1_5": 0,
+        "w6_10": 7,
+        "w11_15": 0,
+        "w16_20": 0
+      },
+      "waveSeconds": {
+        "early": 33.8,
+        "transition": 40
+      }
+    },
+    "solo:veteran-medic:g3-0b9f45231:coverage": {
+      "scenario": {
+        "kind": "solo",
+        "map": "g3-0b9f45231",
+        "gear": "veteran-medic",
+        "placement": "coverage"
+      },
+      "outcome": "alive",
+      "deathWave": null,
+      "finalWave": 25,
+      "hpFinal": 110,
+      "maxHp": 110,
+      "towers": 18,
+      "levels": 86,
+      "advance": {
+        "wave": 10,
+        "from": "g3-0b9f45231",
+        "to": "g3-125dca8c6",
+        "hp": 103,
+        "money": 3179
+      },
+      "advances": [
+        {
+          "wave": 10,
+          "from": "g3-0b9f45231",
+          "to": "g3-125dca8c6",
+          "hp": 103,
+          "money": 3179
+        },
+        {
+          "wave": 20,
+          "from": "g3-125dca8c6",
+          "to": "g3-27c35d789",
+          "hp": 110,
+          "money": 9064
+        }
+      ],
+      "cliff": {
+        "from": 11,
+        "to": 13,
+        "damage": 0
+      },
+      "cliffDamage": 0,
+      "graceWaveDamage": 0,
+      "rebuild": {
+        "towersAtGraceStart": 4,
+        "towersAtNextStart": 14
+      },
+      "damageBands": {
+        "w1_5": 0,
+        "w6_10": 7,
+        "w11_15": 0,
+        "w16_20": 0
+      },
+      "waveSeconds": {
+        "early": 36.6,
+        "transition": 53.5
+      }
+    },
+    "solo:veteran-recon:road:coverage": {
+      "scenario": {
+        "kind": "solo",
+        "map": "road",
+        "gear": "veteran-recon",
+        "placement": "coverage"
+      },
+      "outcome": "alive",
+      "deathWave": null,
+      "finalWave": 25,
+      "hpFinal": 123,
+      "maxHp": 130,
+      "towers": 10,
+      "levels": 67,
+      "advance": null,
+      "advances": [],
+      "cliff": {
+        "from": 11,
+        "to": 13,
+        "damage": 0
+      },
+      "cliffDamage": 0,
+      "graceWaveDamage": 0,
+      "rebuild": {
+        "towersAtGraceStart": 10,
+        "towersAtNextStart": 10
+      },
+      "damageBands": {
+        "w1_5": 0,
+        "w6_10": 7,
+        "w11_15": 0,
+        "w16_20": 0
+      },
+      "waveSeconds": {
+        "early": 33.8,
+        "transition": 40
+      }
+    },
+    "solo:veteran-recon:g3-0b9f45231:coverage": {
+      "scenario": {
+        "kind": "solo",
+        "map": "g3-0b9f45231",
+        "gear": "veteran-recon",
+        "placement": "coverage"
+      },
+      "outcome": "alive",
+      "deathWave": null,
+      "finalWave": 25,
+      "hpFinal": 110,
+      "maxHp": 110,
+      "towers": 18,
+      "levels": 86,
+      "advance": {
+        "wave": 10,
+        "from": "g3-0b9f45231",
+        "to": "g3-125dca8c6",
+        "hp": 103,
+        "money": 3179
+      },
+      "advances": [
+        {
+          "wave": 10,
+          "from": "g3-0b9f45231",
+          "to": "g3-125dca8c6",
+          "hp": 103,
+          "money": 3179
+        },
+        {
+          "wave": 20,
+          "from": "g3-125dca8c6",
+          "to": "g3-27c35d789",
+          "hp": 110,
+          "money": 9064
+        }
+      ],
+      "cliff": {
+        "from": 11,
+        "to": 13,
+        "damage": 0
+      },
+      "cliffDamage": 0,
+      "graceWaveDamage": 0,
+      "rebuild": {
+        "towersAtGraceStart": 4,
+        "towersAtNextStart": 14
+      },
+      "damageBands": {
+        "w1_5": 0,
+        "w6_10": 7,
+        "w11_15": 0,
+        "w16_20": 0
+      },
+      "waveSeconds": {
+        "early": 36.6,
+        "transition": 53.5
+      }
+    },
+    "solo:veteran-airDefense:road:coverage": {
+      "scenario": {
+        "kind": "solo",
+        "map": "road",
+        "gear": "veteran-airDefense",
+        "placement": "coverage"
+      },
+      "outcome": "alive",
+      "deathWave": null,
+      "finalWave": 25,
+      "hpFinal": 123,
+      "maxHp": 130,
+      "towers": 10,
+      "levels": 67,
+      "advance": null,
+      "advances": [],
+      "cliff": {
+        "from": 11,
+        "to": 13,
+        "damage": 0
+      },
+      "cliffDamage": 0,
+      "graceWaveDamage": 0,
+      "rebuild": {
+        "towersAtGraceStart": 10,
+        "towersAtNextStart": 10
+      },
+      "damageBands": {
+        "w1_5": 0,
+        "w6_10": 7,
+        "w11_15": 0,
+        "w16_20": 0
+      },
+      "waveSeconds": {
+        "early": 33.8,
+        "transition": 40
+      }
+    },
+    "solo:veteran-airDefense:g3-0b9f45231:coverage": {
+      "scenario": {
+        "kind": "solo",
+        "map": "g3-0b9f45231",
+        "gear": "veteran-airDefense",
+        "placement": "coverage"
+      },
+      "outcome": "alive",
+      "deathWave": null,
+      "finalWave": 25,
+      "hpFinal": 110,
+      "maxHp": 110,
+      "towers": 18,
+      "levels": 86,
+      "advance": {
+        "wave": 10,
+        "from": "g3-0b9f45231",
+        "to": "g3-125dca8c6",
+        "hp": 103,
+        "money": 3179
+      },
+      "advances": [
+        {
+          "wave": 10,
+          "from": "g3-0b9f45231",
+          "to": "g3-125dca8c6",
+          "hp": 103,
+          "money": 3179
+        },
+        {
+          "wave": 20,
+          "from": "g3-125dca8c6",
+          "to": "g3-27c35d789",
+          "hp": 110,
+          "money": 9064
+        }
+      ],
+      "cliff": {
+        "from": 11,
+        "to": 13,
+        "damage": 0
+      },
+      "cliffDamage": 0,
+      "graceWaveDamage": 0,
+      "rebuild": {
+        "towersAtGraceStart": 4,
+        "towersAtNextStart": 14
+      },
+      "damageBands": {
+        "w1_5": 0,
+        "w6_10": 7,
+        "w11_15": 0,
+        "w16_20": 0
+      },
+      "waveSeconds": {
+        "early": 36.6,
+        "transition": 53.5
+      }
+    },
+    "solo:rookie:road:roadside": {
+      "scenario": {
+        "kind": "solo",
+        "map": "road",
+        "gear": "rookie",
+        "placement": "roadside"
+      },
+      "outcome": "alive",
+      "deathWave": null,
+      "finalWave": 25,
+      "hpFinal": 120,
+      "maxHp": 120,
+      "towers": 10,
+      "levels": 67,
+      "advance": null,
+      "advances": [],
+      "cliff": {
+        "from": 11,
+        "to": 13,
+        "damage": 0
+      },
+      "cliffDamage": 0,
+      "graceWaveDamage": 0,
+      "rebuild": {
+        "towersAtGraceStart": 10,
+        "towersAtNextStart": 10
+      },
+      "damageBands": {
+        "w1_5": 0,
+        "w6_10": 0,
+        "w11_15": 0,
+        "w16_20": 0
+      },
+      "waveSeconds": {
+        "early": 38.3,
+        "transition": 37.7
+      }
+    },
+    "solo:rookie:g3-0b9f45231:roadside": {
+      "scenario": {
+        "kind": "solo",
+        "map": "g3-0b9f45231",
+        "gear": "rookie",
+        "placement": "roadside"
+      },
+      "outcome": "alive",
+      "deathWave": null,
+      "finalWave": 25,
+      "hpFinal": 96,
+      "maxHp": 100,
+      "towers": 18,
+      "levels": 86,
+      "advance": {
+        "wave": 10,
+        "from": "g3-0b9f45231",
+        "to": "g3-125dca8c6",
+        "hp": 100,
+        "money": 3179
+      },
+      "advances": [
+        {
+          "wave": 10,
+          "from": "g3-0b9f45231",
+          "to": "g3-125dca8c6",
+          "hp": 100,
+          "money": 3179
+        },
+        {
+          "wave": 20,
+          "from": "g3-125dca8c6",
+          "to": "g3-27c35d789",
+          "hp": 100,
+          "money": 9064
+        }
+      ],
+      "cliff": {
+        "from": 11,
+        "to": 13,
+        "damage": 0
+      },
+      "cliffDamage": 0,
+      "graceWaveDamage": 0,
+      "rebuild": {
+        "towersAtGraceStart": 4,
+        "towersAtNextStart": 14
+      },
+      "damageBands": {
+        "w1_5": 0,
+        "w6_10": 0,
+        "w11_15": 0,
+        "w16_20": 0
+      },
+      "waveSeconds": {
+        "early": 43.3,
+        "transition": 59.3
+      }
+    },
+    "solo:rookie:road:bunker": {
+      "scenario": {
+        "kind": "solo",
+        "map": "road",
+        "gear": "rookie",
+        "placement": "bunker"
+      },
+      "outcome": "alive",
+      "deathWave": null,
+      "finalWave": 25,
+      "hpFinal": 112,
+      "maxHp": 120,
+      "towers": 10,
+      "levels": 67,
+      "advance": null,
+      "advances": [],
+      "cliff": {
+        "from": 11,
+        "to": 13,
+        "damage": 0
+      },
+      "cliffDamage": 0,
+      "graceWaveDamage": 0,
+      "rebuild": {
+        "towersAtGraceStart": 10,
+        "towersAtNextStart": 10
+      },
+      "damageBands": {
+        "w1_5": 0,
+        "w6_10": 8,
+        "w11_15": 0,
+        "w16_20": 0
+      },
+      "waveSeconds": {
+        "early": 35.7,
+        "transition": 44.3
+      }
+    },
+    "solo:rookie:g3-0b9f45231:bunker": {
+      "scenario": {
+        "kind": "solo",
+        "map": "g3-0b9f45231",
+        "gear": "rookie",
+        "placement": "bunker"
+      },
+      "outcome": "alive",
+      "deathWave": null,
+      "finalWave": 25,
+      "hpFinal": 100,
+      "maxHp": 100,
+      "towers": 18,
+      "levels": 86,
+      "advance": {
+        "wave": 10,
+        "from": "g3-0b9f45231",
+        "to": "g3-125dca8c6",
+        "hp": 92,
+        "money": 3179
+      },
+      "advances": [
+        {
+          "wave": 10,
+          "from": "g3-0b9f45231",
+          "to": "g3-125dca8c6",
+          "hp": 92,
+          "money": 3179
+        },
+        {
+          "wave": 20,
+          "from": "g3-125dca8c6",
+          "to": "g3-27c35d789",
+          "hp": 100,
+          "money": 9064
+        }
+      ],
+      "cliff": {
+        "from": 11,
+        "to": 13,
+        "damage": 0
+      },
+      "cliffDamage": 0,
+      "graceWaveDamage": 0,
+      "rebuild": {
+        "towersAtGraceStart": 4,
+        "towersAtNextStart": 14
+      },
+      "damageBands": {
+        "w1_5": 0,
+        "w6_10": 8,
+        "w11_15": 0,
+        "w16_20": 0
+      },
+      "waveSeconds": {
+        "early": 37.9,
+        "transition": 61.7
+      }
+    },
+    "solo:rookie:road:spread": {
+      "scenario": {
+        "kind": "solo",
+        "map": "road",
+        "gear": "rookie",
+        "placement": "spread"
+      },
+      "outcome": "alive",
+      "deathWave": null,
+      "finalWave": 25,
+      "hpFinal": 112,
+      "maxHp": 120,
+      "towers": 10,
+      "levels": 67,
+      "advance": null,
+      "advances": [],
+      "cliff": {
+        "from": 11,
+        "to": 13,
+        "damage": 0
+      },
+      "cliffDamage": 0,
+      "graceWaveDamage": 0,
+      "rebuild": {
+        "towersAtGraceStart": 10,
+        "towersAtNextStart": 10
+      },
+      "damageBands": {
+        "w1_5": 0,
+        "w6_10": 8,
+        "w11_15": 0,
+        "w16_20": 0
+      },
+      "waveSeconds": {
+        "early": 45.6,
+        "transition": 48.7
+      }
+    },
+    "solo:rookie:g3-0b9f45231:spread": {
+      "scenario": {
+        "kind": "solo",
+        "map": "g3-0b9f45231",
+        "gear": "rookie",
+        "placement": "spread"
+      },
+      "outcome": "alive",
+      "deathWave": null,
+      "finalWave": 25,
+      "hpFinal": 100,
+      "maxHp": 100,
+      "towers": 18,
+      "levels": 86,
+      "advance": {
+        "wave": 10,
+        "from": "g3-0b9f45231",
+        "to": "g3-125dca8c6",
+        "hp": 75,
+        "money": 3163
+      },
+      "advances": [
+        {
+          "wave": 10,
+          "from": "g3-0b9f45231",
+          "to": "g3-125dca8c6",
+          "hp": 75,
+          "money": 3163
+        },
+        {
+          "wave": 20,
+          "from": "g3-125dca8c6",
+          "to": "g3-27c35d789",
+          "hp": 100,
+          "money": 9033
+        }
+      ],
+      "cliff": {
+        "from": 11,
+        "to": 13,
+        "damage": 0
+      },
+      "cliffDamage": 0,
+      "graceWaveDamage": 0,
+      "rebuild": {
+        "towersAtGraceStart": 4,
+        "towersAtNextStart": 14
+      },
+      "damageBands": {
+        "w1_5": 20,
+        "w6_10": 8,
+        "w11_15": 0,
+        "w16_20": 0
+      },
+      "waveSeconds": {
+        "early": 39.7,
+        "transition": 57.3
+      }
+    },
+    "coop:rookie:road:coverage": {
+      "scenario": {
+        "kind": "coop",
+        "map": "road",
+        "gear": "rookie",
+        "placement": "coverage"
+      },
+      "outcome": "alive",
+      "deathWave": null,
+      "finalWave": 40,
+      "hpFinal": 68,
+      "maxHp": 120,
+      "towers": 10,
+      "levels": 98,
+      "advance": null,
+      "advances": [],
+      "cliff": null,
+      "graceWaveDamage": null,
+      "rebuild": null,
+      "damageBands": null,
+      "waveSeconds": null
+    },
+    "coop:rookie:forest:coverage": {
+      "scenario": {
+        "kind": "coop",
+        "map": "forest",
+        "gear": "rookie",
+        "placement": "coverage"
+      },
+      "outcome": "defeat",
+      "deathWave": 30,
+      "finalWave": 30,
+      "hpFinal": 0,
+      "maxHp": 100,
+      "towers": 10,
+      "levels": 82,
+      "advance": null,
+      "advances": [],
+      "cliff": null,
+      "graceWaveDamage": null,
+      "rebuild": null,
+      "damageBands": null,
+      "waveSeconds": null
+    }
+  }
+}
