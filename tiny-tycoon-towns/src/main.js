@@ -3,23 +3,23 @@
 import {
   createTown, newSeed, chooseBiome, placeBuilding, upgradeBuilding,
   toggleSell, buyOffer, advance, hydrateTown, setTutorialStep,
-} from './domain/engine.js?v=20261124-sitz13';
+} from './domain/engine.js?v=20261124-sitz14';
 import {
   productionMultiplier, ratePerMin, buildCost, storageCap, classOf,
-} from './domain/economy.js?v=20261124-sitz13';
-import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261124-sitz13';
-import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261124-sitz13';
-import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261124-sitz13';
+} from './domain/economy.js?v=20261124-sitz14';
+import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261124-sitz14';
+import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261124-sitz14';
+import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261124-sitz14';
 const SEEN_NOTES_KEY = 'ttt:notes-seen';
-import { withTimeout } from './async-util.js?v=20261124-sitz13';
-import { checkTownName } from './town-names.js?v=20261124-sitz13';
-import { friendsShell, mountFriends } from './friends-ui.js?v=20261124-sitz13';
-import { createBoard } from './world/board.js?v=20261124-sitz13';
-import { createLoginScene } from './world/login-scene.js?v=20261124-sitz13';
-import { TUTORIAL_STEPS, HELP_SECTIONS } from './tutorial.js?v=20261124-sitz13';
-import { createVersionUI } from './version-ui.mjs?v=20261124-sitz13';
+import { withTimeout } from './async-util.js?v=20261124-sitz14';
+import { checkTownName } from './town-names.js?v=20261124-sitz14';
+import { friendsShell, mountFriends } from './friends-ui.js?v=20261124-sitz14';
+import { createBoard } from './world/board.js?v=20261124-sitz14';
+import { createLoginScene } from './world/login-scene.js?v=20261124-sitz14';
+import { TUTORIAL_STEPS, HELP_SECTIONS } from './tutorial.js?v=20261124-sitz14';
+import { createVersionUI } from './version-ui.mjs?v=20261124-sitz14';
 
-const BUILD = '20261124-sitz13';
+const BUILD = '20261124-sitz14';
 console.info(`Tiny Tycoon Towns ${BUILD}`);
 const LAST_BIOME_KEY = 'ttt.lastBiome';
 const LOCAL_KEY = (uid) => `ttt.save.v1.${uid}`;
@@ -90,7 +90,7 @@ const REMOTE_TIMEOUT_MS = 10_000;
 async function loadData() {
   const names = ['resources', 'biomes', 'buildings', 'economy', 'merchant'];
   const parts = await Promise.all(names.map((n) =>
-    fetch(`data/${n}.json?v=20261124-sitz13`).then((r) => {
+    fetch(`data/${n}.json?v=20261124-sitz14`).then((r) => {
       if (!r.ok) throw new Error(`data/${n}.json: HTTP ${r.status}`);
       return r.json();
     })));
@@ -135,7 +135,7 @@ async function boot() {
   window.addEventListener('offline', updateSync);
 
   try {
-    cloud = await import('./cloud.js?v=20261124-sitz13');
+    cloud = await import('./cloud.js?v=20261124-sitz14');
   } catch {
     showFatal('Das Konto-System konnte nicht geladen werden. Ohne Anmeldung lässt sich nicht spielen. Bitte Verbindung prüfen und neu laden.');
     return;
@@ -365,7 +365,7 @@ function showLoginScreen(mode, msg = '') {
   $('#loading').inert = true;
   screen.hidden = false;
   $('#auth-card').innerHTML = `<form id="auth-form" class="auth-form" novalidate>
-    <img class="auth-card-logo" src="icons/town.png" alt="" width="120" height="120">
+    <img class="auth-card-logo" src="icons/logo.png" alt="Tiny Tycoon Towns" width="220">
     <h2 id="auth-title">${isLogin ? 'Anmelden' : 'Konto erstellen'}</h2>
     <p class="small">Deine Stadt wird in der Cloud gespeichert. Mit demselben Konto spielst du auf jedem Gerät weiter.</p>
     <label>E-Mail<input name="email" type="email" autocomplete="email" required></label>
@@ -409,17 +409,57 @@ function playIntro() {
   screen.classList.add('intro-running');
   screen.classList.remove('intro-done');
   let timer = null;
+  let finished = false;
   const finish = () => {
+    if (finished) return;
+    finished = true;
     clearTimeout(timer);
     screen.removeEventListener('pointerdown', finish);
     window.removeEventListener('keydown', finish);
+    const intro = $('#auth-intro');
+    const introImg = intro?.querySelector('.auth-intro-logo');
+    const target = screen.querySelector('#auth-card .auth-card-logo');
+    // Das Logo fliegt vom Intro an seinen Platz auf der Karte. Das Karten-Logo bleibt bis dahin unsichtbar.
+    const flight = !reduce && introImg && target ? flyLogo(introImg, target, screen) : null;
+    if (flight) screen.classList.add('logo-flying');
     screen.classList.remove('intro-running');
     screen.classList.add('intro-done');
-    $('#auth-intro')?.remove();
+    intro?.remove();
+    if (flight) {
+      const land = () => {
+        flight.ghost.remove();
+        screen.classList.remove('logo-flying');
+      };
+      flight.finished.then(land, land);
+    }
   };
   screen.addEventListener('pointerdown', finish);
   window.addEventListener('keydown', finish);
   timer = setTimeout(finish, reduce ? 300 : 3600);
+}
+
+/**
+ * Kopie des Intro-Logos fliegt von seiner aktuellen Stelle an die Zielstelle und bleibt dort.
+ * Liefert { ghost, finished } oder null, wenn nichts zu messen ist.
+ */
+function flyLogo(from, to, screen) {
+  const a = from.getBoundingClientRect();
+  const b = to.getBoundingClientRect();
+  if (!a.width || !b.width) return null;
+  const ghost = from.cloneNode(false);
+  ghost.removeAttribute('class');
+  ghost.removeAttribute('id');
+  ghost.setAttribute('aria-hidden', 'true');
+  ghost.style.cssText = `position:fixed;left:${a.left}px;top:${a.top}px;width:${a.width}px;height:auto;margin:0;transform-origin:0 0;z-index:2;pointer-events:none;filter:drop-shadow(0 12px 24px rgba(0,0,0,.45));`;
+  screen.appendChild(ghost);
+  const scale = b.width / a.width;
+  const dx = b.left - a.left;
+  const dy = b.top - a.top;
+  const anim = ghost.animate(
+    [{ transform: 'translate(0px, 0px) scale(1)' }, { transform: `translate(${dx}px, ${dy}px) scale(${scale})` }],
+    { duration: 900, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)', fill: 'forwards' },
+  );
+  return { ghost, finished: anim.finished };
 }
 
 function hideLoginScreen() {
@@ -536,6 +576,8 @@ function bindStatic() {
   $('#logout-btn').addEventListener('click', askLogout);
   $('#help-btn').addEventListener('click', showHelp);
   $('#friends-btn').addEventListener('click', openFriends);
+  $('#visit-exit').addEventListener('click', endVisit);
+  window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && visit) endVisit(); });
   // Menü oben rechts: öffnet und schließt die Schaltflächen Hilfe, Feldnotizen, Neu beginnen, Abmelden.
   const menuBtn = $('#menu-btn');
   const menuList = $('#menu-list');
@@ -1217,6 +1259,71 @@ function showFounding() {
   dlg.addEventListener('cancel', (e) => e.preventDefault());
 }
 
+// ---------- Besuch: Stadt eines Freundes, nur ansehen ----------
+// Der Stand des Freundes wird nur im Speicher weitergerechnet. Er wird nie gespeichert,
+// und auch der eigene Stand bleibt unberührt.
+let visit = null; // { uid, model: { state }, board, timer }
+
+async function startVisit(friendUid, friendName) {
+  closeDialog();
+  let raw;
+  try {
+    raw = await withTimeout(cloud.loadTown(friendUid), REMOTE_TIMEOUT_MS, 'Besuch laden');
+  } catch (err) {
+    toast(cloudErrorText(err), 'error');
+    return;
+  }
+  if (!raw) {
+    toast(`${friendName} hat noch keine Stadt gegründet.`, 'error');
+    return;
+  }
+  endVisit();
+  const town = hydrateTown(raw);
+  const model = { state: advance(town, Date.now(), ctx()).state };
+  visit = { uid: friendUid, model, board: null, timer: null };
+  $('#visit-name').textContent = town.name;
+  $('#visit').hidden = false;
+  visit.board = createBoard($('#visit-board'), {
+    getSelected: () => null,
+    onSelect: () => {}, // nur ansehen
+    describe: (x, y) => describeIn(model.state, x, y),
+    getModel: () => ({
+      state: model.state,
+      data,
+      unlocked: (x, y) => isUnlocked(x, y, model.state.townLevel, data),
+    }),
+  });
+  updateVisitInfo();
+  visit.timer = setInterval(() => {
+    if (!visit || visit.model !== model) return;
+    model.state = advance(model.state, Date.now(), ctx()).state;
+    visit.board?.redraw();
+    updateVisitInfo();
+  }, 1000);
+}
+
+function endVisit() {
+  if (!visit) return;
+  clearInterval(visit.timer);
+  visit.board?.destroy();
+  visit = null;
+  $('#visit').hidden = true;
+}
+
+function updateVisitInfo() {
+  const st = visit?.model.state;
+  if (!st) return;
+  const count = Object.values(st.tiles).filter((t) => t.building).length;
+  $('#visit-info').textContent = `Level ${st.townLevel} · 🪙 ${Math.floor(st.coins)} · 🏠 ${count} Gebäude`;
+}
+
+function describeIn(st, x, y) {
+  const tile = st?.tiles[keyOf(x, y)];
+  if (!tile) return '';
+  const b = tile.building;
+  return [`Feld ${x + 1}, ${y + 1}`, TERRAIN_DE[tile.terrain], b ? data.buildings[b.id].name.de : 'frei'].join(' · ');
+}
+
 /** Altbestand: Stadtnamen, die noch niemand beansprucht hat, für dieses Konto sichern. Vergebene bleiben unverändert. */
 function claimExistingName(forUid, name) {
   const check = checkTownName(name);
@@ -1243,6 +1350,7 @@ function openFriends() {
     myName: () => state?.name ?? '',
     toast,
     confirm: askConfirm,
+    visit: (friendUid, friendName) => startVisit(friendUid, friendName),
   });
   dlg.addEventListener('close', unmount, { once: true });
 }
