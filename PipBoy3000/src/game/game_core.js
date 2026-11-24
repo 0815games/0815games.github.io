@@ -114,7 +114,7 @@ window.Game = {
     },
 
     // Wird von Combat.playerAttack (Vampir-Waffen) aufgerufen. Fehlte bisher,
-    // wodurch der Effekt still wirkungslos blieb (docs/ANALYSE.md, B11).
+    // wodurch der Effekt still wirkungslos blieb (docs/ANALYSE.md, B8).
     getMaxHp: function() { return (this.state && this.state.maxHp) || 100; },
 
     // Wird beim Permadeath aufgerufen (ui_render_overlays.js). Fehlte bisher;

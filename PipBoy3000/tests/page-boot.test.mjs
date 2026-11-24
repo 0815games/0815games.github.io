@@ -94,6 +94,19 @@ test('Login-Bereich ist nach dem Boot sichtbar', () => {
   assert.ok(!login.classList.contains('hidden'), 'Login bleibt verborgen');
 });
 
+test('Kontextdateien, die die Seite nachlädt, existieren', () => {
+  // Handbuch und Changelog werden erst beim Öffnen gefetcht. Nach dem Umzug
+  // lagen sie unter docs/, der Code fragte weiter nach readme.md und
+  // change.log - im Browser zwei leere Overlays mit "Fehler beim Laden".
+  const source = readFileSync(join(ROOT, 'app.js'), 'utf8');
+  const paths = [...source.matchAll(/fetch\(`([^`?$]+)/g)].map(m => m[1]);
+  assert.ok(paths.length > 0, 'keine fetch-Pfade im Bündel gefunden');
+  for (const path of paths) {
+    if (/^https?:/.test(path)) continue;
+    assert.ok(existsSync(join(ROOT, path)), `Bündel lädt ${path}, das es nicht gibt`);
+  }
+});
+
 test('Template-Pfade zeigen auf vorhandene Dateien', () => {
   // Der Umbau hat die Templates von views/ nach templates/ verschoben; ein
   // vergessener Pfad wäre im Browser ein 404 erst beim Öffnen der Ansicht.

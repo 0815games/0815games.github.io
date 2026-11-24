@@ -179,6 +179,9 @@ ein Fund im Browser:
   Dateien in `src/`, begründete Überschreibungen, einheitlicher Versionsstempel.
 
 ### Behobene Befunde
+Eine Nachlese nach dem Umbau steht in [BEFUNDE.md](BEFUNDE.md) — inklusive
+eines Fehlers, den der Umbau selbst verursacht hat (Handbuch/Changelog 404).
+
 B1–B8 behoben und durch Tests abgesichert. B9 und B10 sind bewusst offen: beide
 sind Balancing- bzw. Datenpflege-Themen ohne Absturzfolge, und B9 braucht eine
 Design-Entscheidung (welche Waffe verbraucht wie viel).

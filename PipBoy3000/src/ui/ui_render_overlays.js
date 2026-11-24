@@ -757,7 +757,9 @@ Object.assign(UI, {
             const verDisplay = document.getElementById('version-display'); 
             const ver = verDisplay ? verDisplay.textContent.trim() : Date.now();
             try { 
-                const res = await fetch(`readme.md?v=${ver}`); 
+                // Liegt seit dem Umbau unter docs/: das Handbuch war früher
+                // /readme.md im Spielordner und lief nach dem Verschieben auf 404.
+                const res = await fetch(`docs/README.md?v=${ver}`); 
                 if (!res.ok) throw new Error("Manual not found"); 
                 let text = await res.text(); 
                 text = text.replace(/^# (.*$)/gim, '<h1 class="text-3xl font-bold text-yellow-400 mb-2 border-b border-yellow-500">$1</h1>');
@@ -779,7 +781,7 @@ Object.assign(UI, {
             overlay.style.display = 'flex'; overlay.classList.remove('hidden');
             const verDisplay = document.getElementById('version-display'); 
             const ver = verDisplay ? verDisplay.textContent.trim() : Date.now();
-            try { const res = await fetch(`change.log?v=${ver}`); if (!res.ok) throw new Error("Logfile nicht gefunden"); const text = await res.text(); content.textContent = text; } catch(e) { content.textContent = `Fehler beim Laden: ${e.message}`; }
+            try { const res = await fetch(`docs/change.log?v=${ver}`); if (!res.ok) throw new Error("Logfile nicht gefunden"); const text = await res.text(); content.textContent = text; } catch(e) { content.textContent = `Fehler beim Laden: ${e.message}`; }
         }
     },
 
