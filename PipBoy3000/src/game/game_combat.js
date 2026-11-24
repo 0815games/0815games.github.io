@@ -160,10 +160,31 @@ window.Combat = {
 
     getWeaponStats: function(item) {
         const dbItem = Game.items[item.id] || {};
-        const dmg = (item.dmg !== undefined) ? item.dmg : (item.baseDmg || dbItem.dmg || 2);
+
+        // Der Katalog führt Waffen mit `baseDmg`, nicht mit `dmg`. Vorher stand
+        // hier `item.baseDmg || dbItem.dmg || 2` - das Inventar-Objekt ist aber
+        // nur `{id, count}` und hat kein baseDmg, und dbItem.dmg gibt es nicht.
+        // Ergebnis: jede Waffe machte 2 Schaden, ein Alien Blaster (80) so viel
+        // wie die Fäuste. Der Katalogwert wurde nur in den Anzeigen gelesen
+        // (docs/BEFUNDE.md, 10).
+        // Reihenfolge: erst ein am Item festgeschriebener Wert (legendäre
+        // Waffen tragen ihren Schaden in `dmg`), dann der Katalogwert, dann
+        // der Notnagel 2.
+        let dmg;
+        if (item.dmg !== undefined && item.dmg !== null) {
+            dmg = item.dmg;
+        } else {
+            dmg = dbItem.baseDmg || dbItem.dmg || item.baseDmg || 2;
+            // Nur hier greift der Präfix-Wurf (`props.dmgMult`, z.B. 1.5 für
+            // legendär). Ein festgeschriebener Wert hat ihn schon angewandt -
+            // sonst würde doppelt multipliziert.
+            const dmgMult = (item.props && item.props.dmgMult) || 1;
+            dmg = Math.floor(dmg * dmgMult);
+        }
+
         const ammoType = item.ammoType || dbItem.ammoType || null;
         const ammoCost = (item.ammoCost !== undefined) ? item.ammoCost : (dbItem.ammoCost || 1);
-        
+
         return { dmg, ammoType, ammoCost };
     },
 
@@ -393,6 +414,20 @@ window.Combat = {
                             if (id === 'caps') Game.state.caps = (Game.state.caps || 0) + n;
                             else Game.addToInventory(id, n);
                         };
+
+                    // Waffen laufen über den Präfix-Würfel. Vorher fiel jede
+                    // Waffe nackt aus einem Gegner, obwohl die Tabelle
+                    // lootPrefixes bereitstand und generateLoot nie gerufen
+                    // wurde (docs/BEFUNDE.md, 9).
+                    const def = Game.items && Game.items[d.id];
+                    if (def && def.type === 'weapon' && typeof Game.generateLoot === 'function') {
+                        const loot = Game.generateLoot(d.id);
+                        if (loot && loot.props) {
+                            Game.addToInventory(loot);
+                            this.log(`Besonderer Fund: ${loot.props.name}`, loot.props.color || 'text-yellow-300');
+                            return; // forEach: dieser Drop ist erledigt
+                        }
+                    }
                     give(d.id, 1);
                 });
             }

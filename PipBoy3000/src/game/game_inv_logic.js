@@ -507,8 +507,10 @@ Object.assign(Game, {
             const needsAmmo = (item.ammoType || def.ammo) && (item.ammoType || def.ammo) !== 'none';
 
             if (isWeaponType && !needsAmmo) {
-                // [FIX] Nutze echte Item Stats
-                let dmg = item.dmg || def.dmg || 0;
+                // [FIX] Nutze echte Item Stats - der Katalog führt baseDmg,
+                // nicht dmg. Ohne diesen Zweig lag jede Nahkampfwaffe bei 0 und
+                // switchToBestMelee nahm irgendeine statt der besten.
+                let dmg = def.baseDmg || def.dmg || item.dmg || 0;
                 if (item.props && item.props.dmgMult) dmg *= item.props.dmgMult;
                 
                 if (dmg > bestDmg) {
@@ -564,10 +566,20 @@ Object.assign(Game, {
         legendaryItem.name = `${prefix.name} ${baseItem.name} ★`;
         legendaryItem.isLegendary = true;
         legendaryItem.desc = prefix.desc;
-        legendaryItem.value = (baseItem.value || 10) * 5;
-        
-        if(prefix.dmgMod) legendaryItem.dmg = Math.floor((baseItem.dmg || 1) * prefix.dmgMod);
-        else legendaryItem.dmg = baseItem.dmg;
+        // Der Katalog führt Waffen mit `baseDmg` und `cost`, nicht mit `dmg`
+        // und `value`. Vorher wurde `baseItem.dmg || 1` gerechnet - bei einem
+        // Plasmagewehr (baseDmg 45) kam so Schaden 1 heraus, ein legendäres
+        // Item war schwächer als eine Rohrpistole. `value` statt `cost` machte
+        // ein 900-KK-Gewehr zum 50-KK-Item (docs/BEFUNDE.md, 9).
+        const basisSchaden = baseItem.baseDmg || baseItem.dmg || 1;
+        const basisWert = baseItem.cost || baseItem.value || 10;
+        legendaryItem.value = basisWert * 5;
+
+        // `dmg` wird nur gesetzt, wenn das Präfix den Schaden verändert. Sonst
+        // bleibt das Feld weg, damit getWeaponStats den Katalogwert nimmt -
+        // ein gesetztes `dmg: 1` würde ihn überschreiben.
+        if(prefix.dmgMod) legendaryItem.dmg = Math.floor(basisSchaden * prefix.dmgMod);
+        else delete legendaryItem.dmg;
 
         legendaryItem.ammoType = baseItem.ammoType; 
         if(prefix.ammoMod) legendaryItem.ammoCost = (baseItem.ammoCost || 1) * prefix.ammoMod;

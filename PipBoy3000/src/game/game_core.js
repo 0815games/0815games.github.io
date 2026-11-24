@@ -293,13 +293,45 @@ window.Game = {
         }
     },
 
+    // Würfelt beim Fund einer Waffe ein Präfix aus. Die Prozente stehen als
+    // Tabelle da und nicht als Kette von else-if, damit sie sich prüfen lassen.
+    // Diese Funktion hatte bis eben keinen einzigen Aufrufer: Waffen fielen
+    // immer ohne Präfix (docs/BEFUNDE.md, 9).
+    lootChances: [
+        { key: 'legendary', bis: 0.020 },
+        { key: 'radiated',  bis: 0.050 },
+        { key: 'hardened',  bis: 0.150 },
+        { key: 'precise',   bis: 0.300 },
+        { key: 'rusty',     bis: 0.600 }
+    ],
+
+    rollLootPrefix: function() {
+        const roll = Math.random();
+        const treffer = this.lootChances.find(c => roll < c.bis);
+        return treffer ? treffer.key : null;
+    },
+
     generateLoot: function(baseId) {
-        const itemDef = this.items[baseId]; if(!itemDef || itemDef.type !== 'weapon') return { id: baseId, count: 1 };
-        const roll = Math.random(); let prefixKey = null;
-        if(roll < 0.3) prefixKey = 'rusty'; else if(roll < 0.45) prefixKey = 'precise'; else if(roll < 0.55) prefixKey = 'hardened'; else if(roll < 0.58) prefixKey = 'radiated'; else if(roll < 0.60) prefixKey = 'legendary';
+        const itemDef = this.items[baseId];
+        if(!itemDef || itemDef.type !== 'weapon') return { id: baseId, count: 1 };
+
+        const prefixKey = this.rollLootPrefix();
         if(!prefixKey) return { id: baseId, count: 1 };
+
         const p = this.lootPrefixes[prefixKey];
-        return { id: baseId, count: 1, props: { prefix: prefixKey, name: `${p.name} ${itemDef.name}`, dmgMult: p.dmgMult||1, valMult: p.valMult||1, bonus: p.bonus||null, color: p.color } };
+        return {
+            id: baseId,
+            count: 1,
+            props: {
+                prefix: prefixKey,
+                name: `${p.name} ${itemDef.name}`,
+                dmgMult: p.dmgMult || 1,
+                valMult: p.valMult || 1,
+                bonus: p.bonus || null,
+                effect: p.effect || null,
+                color: p.color
+            }
+        };
     },
 
     init: function(saveData, spawnTarget=null, slotIndex=0, newName=null) {

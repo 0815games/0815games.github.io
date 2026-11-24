@@ -2389,6 +2389,10 @@
     --tw-shadow-color: rgb(127 29 29 / 0.3);
     --tw-shadow: var(--tw-shadow-colored)
 }
+.shadow-yellow-600\/30 {
+    --tw-shadow-color: rgb(202 138 4 / 0.3);
+    --tw-shadow: var(--tw-shadow-colored)
+}
 .shadow-yellow-900\/20 {
     --tw-shadow-color: rgb(113 63 18 / 0.2);
     --tw-shadow: var(--tw-shadow-colored)
@@ -2593,6 +2597,10 @@
 .hover\:border-white:hover {
     --tw-border-opacity: 1;
     border-color: rgb(255 255 255 / var(--tw-border-opacity, 1))
+}
+.hover\:border-yellow-200:hover {
+    --tw-border-opacity: 1;
+    border-color: rgb(254 240 138 / var(--tw-border-opacity, 1))
 }
 .hover\:border-yellow-400:hover {
     --tw-border-opacity: 1;
