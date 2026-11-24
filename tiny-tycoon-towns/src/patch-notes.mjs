@@ -16,6 +16,10 @@ export const RELEASED_PATCHES = [
         en: 'Taken-over session: the previous window stops saving and shows that the account was taken over elsewhere.',
       },
       {
+        de: 'Neues App-Icon: Inselstadt statt Haus-Symbol. Auf dem Startbildschirm von iPhone und Android, mit eigenem Manifest.',
+        en: 'New app icon: an island town instead of the house symbol. On iPhone and Android home screens, with its own manifest.',
+      },
+      {
         de: 'Stand: im Code und mit dem Regel-Trockenlauf geprüft. Die Regeln müssen vom Betreiber in Firebase veröffentlicht werden, bevor die Sperre greift.',
         en: 'Status: checked in code and with the rules dry run. The operator must publish the rules in Firebase before the lock takes effect.',
       },

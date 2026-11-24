@@ -268,3 +268,11 @@ Ereignis ergänzt.
 - Grenzen, nicht geprüft: kein echter Browser, kein Test über zwei Geräte. Die Sperre hängt an den
   Gerätezeiten (Zeitstempel vom Client). Eine Abweichung von mehreren Minuten kann die Sperre verkürzen.
 - Vor dem Merge: Regeln in Firebase veröffentlichen. Ohne Regeln schlägt die Anmeldung fehl.
+
+### Nachtrag TTT-0007 – App-Icon (vor Merge, Welle `20261124-sitz1`)
+
+- Zeit / Quelle: Sitzung 2026-11-24 (UTC). Auftrag: sauberes Icon für iOS und andere Geräte, statt Haus-Symbol.
+- Änderungen: `icons/` (Apple-Touch-Icon 180, 192, 512, Favicon 32, undurchsichtig), `manifest.webmanifest`,
+  Icon- und Manifest-Verweise plus Apple-Web-App-Angaben in `index.html`. Das Quellbild (1024 px, 1,7 MB)
+  liegt nicht im Repo.
+- Prüfungen: 58 Tests grün, `check --fast` ohne Fehler. Auf dem iPhone noch nicht gesehen.
