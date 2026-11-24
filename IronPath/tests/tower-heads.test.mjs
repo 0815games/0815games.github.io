@@ -63,9 +63,10 @@ test('a head at rest does not translate sideways',()=>{
 });
 
 test('the kick draws a muzzle flash and a flying casing, keyed to the recoil',()=>{
-  // beginPath calls the fx adds: casing oval (1) + two flash stars per
-  // muzzle (2 each). The flak has two muzzles, so it adds five.
-  const extra={0:3,1:3,2:5,3:3};
+  // beginPath calls the fx adds: one casing oval + one powder puff per muzzle
+  // (IPL-0127, the recoil is the only gate for the smoke) + two flash stars
+  // per muzzle. The flak has two muzzles, so it adds seven.
+  const extra={0:4,1:4,2:7,3:4};
   for(const type of [0,1,2,3]){
     const count=recoil=>{
       const f=field([{pad:0,type,level:1,hp:100}]);
@@ -73,7 +74,7 @@ test('the kick draws a muzzle flash and a flying casing, keyed to the recoil',()
       return f.log.filter(call=>call[0]==='beginPath').length;
     };
     const rest=count(0),full=count(1),half=count(.4);
-    assert.equal(full-rest,extra[type],`type ${type} flash and casing add ${extra[type]} strokes at full kick`);
-    assert.equal(half-rest,1,`type ${type} below the flash threshold only the casing flies`);
+    assert.equal(full-rest,extra[type],`type ${type} flash, casing and powder add ${extra[type]} strokes at full kick`);
+    assert.equal(half-rest,1+(type===2?2:1),`type ${type} below the flash threshold only the casing and the powder fly`);
   }
 });
