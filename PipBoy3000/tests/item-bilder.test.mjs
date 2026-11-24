@@ -77,9 +77,11 @@ test('itemBildPfad liefert relative Pfade', () => {
   assert.ok(!pfad.startsWith('/'), 'absoluter Pfad: bricht auf einem der beiden Hosts');
 
   // Item ohne Bild -> null, damit der Aufrufer auf das Emoji zurueckfaellt.
-  // Das Set waechst, deshalb ein Item, das noch weit hinten in der Liste
-  // steht (Rohstoffe kommen zuletzt).
-  assert.equal(Game.itemBildPfad('screws'), null);
+  // Keine feste ID raten: das Set waechst und hat den Test schon zweimal
+  // gebrochen. Stattdessen ein Item nehmen, das die Tabelle nicht kennt.
+  const ohneBild = Object.keys(Game.items).find(id => Game.itemBildPfad(id) === null);
+  assert.ok(ohneBild, 'kein Item ohne Bild gefunden - der Rueckfall waere ungetestet');
+  assert.equal(Game.itemBildPfad(ohneBild), null);
   assert.equal(Game.itemBildPfad(null), null);
   assert.equal(Game.itemBildPfad('gibt_es_nicht'), null);
 });
