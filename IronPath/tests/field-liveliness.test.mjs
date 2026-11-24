@@ -4,7 +4,7 @@ import {drawCartoonBattle} from '../core/cartoon-art.mjs';
 import {createMatch,PATH,PADS,getTowerRange} from '../core/simulation.mjs';
 import {createPlayer} from '../core/match.mjs';
 
-// IPL-0127 - the field between the frames: muzzle powder, the struck unit,
+// IPL-0128 - the field between the frames: muzzle powder, the struck unit,
 // driving dust, battle scars, the wave lull, marsh weather and the amethyst
 // prestige halo. The machine cannot see any of it, so every pin reads back
 // what the brush was told: the colour it asked for, in the situation the

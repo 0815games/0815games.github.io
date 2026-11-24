@@ -10,10 +10,10 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     
-    <script>document.write('<link rel="stylesheet" href="style.css?v=' + Date.now() + '">');</script>
+    <link rel="stylesheet" href="app.css?v=13.37">
+    <link rel="stylesheet" href="style.css?v=13.37">
     
     <style>
         @keyframes spin-reverse { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
@@ -270,17 +270,6 @@ ${window.logBuffer.slice(-10).join('\n')}
 </div>
 
 <script>
-    // --- LOAD SCRIPT MIT ERROR HANDLING ---
-    function loadScript(src) { 
-        return new Promise((resolve, reject) => { 
-            captureLog("LOADER", `Loading ${src}...`);
-            const s = document.createElement('script'); 
-            s.src = src; 
-            s.onload = resolve; 
-            s.onerror = (e) => reject({src: src, evt: e, message: "Script failed to load"}); 
-            document.body.appendChild(s); 
-        }); 
-    }
     
     let scriptsLoaded = false;
 
@@ -353,48 +342,9 @@ ${window.logBuffer.slice(-10).join('\n')}
 
                 if(verDisplay) verDisplay.textContent = displayVer;
                 if(loginVerDisplay) loginVerDisplay.textContent = displayVer;
-                
-                // Laden der Scripts (Reihenfolge ist wichtig!)
-                loadScript('data/data_core.js?v=' + devVer)
-                    .then(() => loadScript('data/data_items.js?v=' + devVer))
-                    .then(() => loadScript('data/data_recipes.js?v=' + devVer))
-                    .then(() => loadScript('data/data_monsters.js?v=' + devVer))
-                    .then(() => loadScript('data/data_minigames.js?v=' + devVer))
-                    .then(() => loadScript('network.js?v=' + devVer))
-                    .then(() => loadScript('ui/ui_core.js?v=' + devVer)) 
-                    .then(() => loadScript('game/game_core.js?v=' + devVer))
-                    .then(() => loadScript('game/game_map.js?v=' + devVer))
-                    .then(() => loadScript('game/game_render.js?v=' + devVer))
-                    .then(() => loadScript('game/game_world_gen.js?v=' + devVer))
-                    .then(() => loadScript('game/game_inv_logic.js?v=' + devVer))
-                    .then(() => loadScript('game/game_world_logic.js?v=' + devVer))
-                    .then(() => loadScript('game/game_char_logic.js?v=' + devVer))
-                    .then(() => loadScript('game/game_combat.js?v=' + devVer))
-                    .then(() => loadScript('ui/ui_combat.js?v=' + devVer)) 
-                    .then(() => loadScript('ui/ui_input.js?v=' + devVer))
-                    .then(() => loadScript('ui/ui_view_inv.js?v=' + devVer))
-                    .then(() => loadScript('ui/ui_view_world.js?v=' + devVer))
-                    .then(() => loadScript('ui/ui_view_town.js?v=' + devVer))
-                    .then(() => loadScript('ui/ui_view_journal.js?v=' + devVer))
-                    .then(() => loadScript('ui/ui_view_camp.js?v=' + devVer))
-                    .then(() => loadScript('ui/ui_render_core.js?v=' + devVer)) 
-                    .then(() => loadScript('ui/ui_render_views.js?v=' + devVer))
-                    .then(() => loadScript('ui/ui_render_minigames.js?v=' + devVer))
-                    .then(() => loadScript('ui/ui_render_overlays.js?v=' + devVer))
-                    .then(() => { 
-                        if(typeof UI !== 'undefined') UI.init(); 
-                        scriptsLoaded = true; 
-                        console.log("All Scripts Loaded & UI Initialized."); 
-                    })
-                    .catch(err => {
-                        // Catch Error in Script Loading
-                        showCrashReport("SCRIPT_LOAD_ERROR", {
-                            msg: "Failed to load a script file. Check internet connection or file path.",
-                            url: err.src || "Unknown Script",
-                            line: 0, col: 0,
-                            stack: JSON.stringify(err)
-                        });
-                    });
+
+                if (typeof UI !== 'undefined') UI.init();
+                scriptsLoaded = true;
             })
             .catch(err => {
                 showCrashReport("VERSION_CHECK_FAILED", {
@@ -405,5 +355,6 @@ ${window.logBuffer.slice(-10).join('\n')}
     };
 </script>
 
+    <script src="app.js?v=13.37"></script>
 </body>
 </html>

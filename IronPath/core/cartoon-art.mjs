@@ -421,7 +421,7 @@ function bunker(ctx,state,notify,approach=0,time=0,motion=true){
     oval(ctx,q.x,q.y-21,3,3,'#6b563c',null);
   }
   line(ctx,[[p1.x,p1.y-17],[p2.x,p2.y-17]],'#6b563c',4);
-  // IPL-0127 Fahnen-Wellung: a flag on the bunker roof. It waves only in the
+  // IPL-0128 Fahnen-Wellung: a flag on the bunker roof. It waves only in the
   // wave lull and only when motion is allowed; in battle and under reduced
   // motion it hangs still - the same pennant either way, never a new state.
   const flagLull=!state.running&&!state.ended&&(state.hp??100)>0;
@@ -450,7 +450,7 @@ function muzzleFx(ctx,recoil,muzzles,port,arc){
   if(recoil<=0)return;
   const cx=port[0]+(1-recoil)*arc[0],cy=port[1]+(1-recoil)*arc[1];
   ctx.save();ctx.globalAlpha=recoil;oval(ctx,cx,cy,2.2,1.4,'#d9c08a','#8a6f3c',.8);ctx.restore();
-  // IPL-0127 Rueckstossrauch: das Fach atmet Pulver - klein und dicht an
+  // IPL-0128 Rueckstossrauch: das Fach atmet Pulver - klein und dicht an
   // der Muedung, wenn der Schuss frisch ist, breiter und faeber wenn sich
   // der Lauf setzt. Dasselbe Fenster wie die Huelle (recoil > 0), also
   // sieht reduzierte Bewegung (Rueckstoss 0) keinen Rauch.
@@ -604,7 +604,7 @@ function pad(ctx,p,tower,selected,types,notify,pulse=1,aim=null,levelFx=null){
   // the end of this function), so the glow can be strong without covering the
   // tower it belongs to - a glow that hides its own tower is worse than none.
   // A static amethyst halo remains visible even when reduced motion is enabled.
-  // IPL-0127: Prestige wears amethyst (#b48ce0), not the upgrade's gold - the
+  // IPL-0128: Prestige wears amethyst (#b48ce0), not the upgrade's gold - the
   // same colour for both was called out by the operator as nonsense.
   if(display.prestige){
     const pool=radial(ctx,x,y-6,2,x,y-6,58);
@@ -659,7 +659,7 @@ function pad(ctx,p,tower,selected,types,notify,pulse=1,aim=null,levelFx=null){
     if(tower.classTier>=2){oval(ctx,mx+4,my-8,3,3,'#f0d68a','#172720',1);oval(ctx,mx-4,my-8,3,3,'#f0d68a','#172720',1);}
   }
   oval(ctx,x+18,y+13,9,9,paper);ctx.fillStyle=ink;ctx.font='bold 11px Georgia';ctx.textAlign='center';ctx.fillText(String(display.level),x+18,y+17);ctx.textAlign='start';
-  // IPL-0127 Level-Up-Sichtbarkeit: das Abzeichen pocht, wenn der Turm
+  // IPL-0128 Level-Up-Sichtbarkeit: das Abzeichen pocht, wenn der Turm
   // aufsteigt - ein Emblem-Blitz rund um die Zahl, die sich eben drehete.
   // Nur ein Wert, den der Effekt ohnehin mitbringt; keine Uhr, kein Zustand.
   if(Number.isFinite(levelFx)){
@@ -743,7 +743,7 @@ function enemy(ctx,e,reducedMotion,notify,heading=0,bank=0,time=0,rail=false,dus
     if(!reducedMotion&&e.hp>0){const ph=(((t0*(e.kind==='runner'?2.4:1.6)+(x+y)*.021)%1)+1)%1;
       ctx.save();ctx.globalAlpha=.13*(1-ph);oval(ctx,x-ph*7,y+12,3+ph*4.5,1.6+ph*1.8,'#b7a67e',null);ctx.restore();}
   }
-  // IPL-0127 Fahrzeug-Staub: land machines kick dust from what they actually
+  // IPL-0128 Fahrzeug-Staub: land machines kick dust from what they actually
   // drove - the tread marks - and the puff draws even when the hull falls
   // back to a marker, because dust belongs to the ground, not the artwork.
   if(!reducedMotion&&e.hp>0&&dust>0&&drives){for(let i=0;i<2;i++){const back=angle+Math.PI,side=angle+Math.PI/2*(i?1:-1),ph=((t0*.9+i*.5+x*.01)%1+1)%1;
@@ -759,7 +759,7 @@ function enemy(ctx,e,reducedMotion,notify,heading=0,bank=0,time=0,rail=false,dus
       oval(ctx,x+Math.sin(t0*1.4+i*2.1)*3+phase*5,y-14-phase*24,3+phase*6.5,2.2+phase*4.5,'#3d4740',null);}
     ctx.restore();
   }
-  // IPL-0127 Treffer-Feedback: the struck unit flares up - a bright emblem
+  // IPL-0128 Treffer-Feedback: the struck unit flares up - a bright emblem
   // star on the body, and on a machine two light dents across the plating.
   if(hit>0){
     ctx.save();ctx.globalAlpha=Math.min(1,hit*1.2);
@@ -779,7 +779,7 @@ function ambient(ctx,theme,time,width,height){
   else if(theme==='marsh'){for(let i=0;i<22;i++){const x=(i*83+t*60)%width,y=(i*127+t*125)%height;line(ctx,[[x,y],[x-4,y+9]],'#d7e7d6',1);}}
   else if(theme==='urban'||theme==='outpost'||theme==='scrub'||theme==='junction'){for(let i=0;i<22;i++){const x=(i*109+t*6)%width,y=((i*83-t*14)%height+height)%height;oval(ctx,x,y,1.4,1.4,'#f3d092',null);}}
   else{for(let i=0;i<4;i++){const x=((i*270+t*7)%(width+220))-110;oval(ctx,x,80+i*(height/4),85,13,'#d9ddbd',null);}}
-  // IPL-0127 Wettergefuehl: rain threads (dense on the marsh, light in the
+  // IPL-0128 Wettergefuehl: rain threads (dense on the marsh, light in the
   // forest) and puddle discs with a glint sliding across - all from the same
   // painter's clock the existing particles already use.
   if(theme==='marsh'||theme==='forest'){
@@ -1281,7 +1281,7 @@ function lifeBar(ctx,x,y,width,fraction){
 }
 export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,theme='road',shotAge=0,effects=[],reducedMotion=false,weatherEffects=true,combatTracers=true,soldierPoses={},towerAims={},groundTracks=[],paths=[path],width=960,height=540,bunkerPosition={x:900,y:400},storyMission=null,storyStage=null,storyTime=0,renderScale=1,artVersion=0,deco=[],zones=[],torches=[],onSpritesReady=null,groundSeed=0}){
   ctx.save();ctx.lineCap='round';ctx.lineJoin='round';const storyArt=storyMission?prepareStoryArt(ctx.canvas?.ownerDocument):null;drawTerrain(ctx,path,theme,{paths,width,height,storyMission,pads,storyArt,renderScale,artVersion,deco,zones,notify:onSpritesReady,groundSeed});drawZoneStates(ctx,zones,state);fieldZone(ctx,path,state,theme);brokenIce(ctx,path,state,theme);drawGroundTracks(ctx,groundTracks,theme);
-  // IPL-0127 Schlacht-Spuren: a painted list of impacts, derived from the
+  // IPL-0128 Schlacht-Spuren: a painted list of impacts, derived from the
   // shots every viewer already receives. Stored against the canvas per field,
   // capped and pruned by the painter's own clock - painted state only.
   if(!reducedMotion&&combatTracers&&!state.ended){
@@ -1307,11 +1307,11 @@ export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,th
     ctx.restore();
   }
   if(storyMission){if(weatherEffects)drawStoryAtmosphere(ctx,storyMission,storyTime,reducedMotion,width,height,path,pads);drawStoryObjective(ctx,storyMission,storyStage,storyTime,reducedMotion,storyArt);}else if(!reducedMotion&&weatherEffects)ambient(ctx,theme,storyTime,width,height);if(!reducedMotion&&weatherEffects)ambientLife(ctx,theme,storyTime,width,height,state.shots,shotAge);const approach=path.length>1?Math.atan2(bunkerPosition.y-path[path.length-2].y,bunkerPosition.x-path[path.length-2].x):0;
-  // IPL-0127 Wellen-Ruhe: between waves, while the field is not ended and the
+  // IPL-0128 Wellen-Ruhe: between waves, while the field is not ended and the
   // bunker lives, the painting is allowed to breathe (chimney, flag, soldier).
   const lull=!state.running&&!state.ended&&(state.hp??100)>0;
   const nowSec=Number.isFinite(storyTime)?storyTime:0;
-  // IPL-0127 Treffer-Feedback: fresh impacts from the same shot list the
+  // IPL-0128 Treffer-Feedback: fresh impacts from the same shot list the
   // tracers paint - position based, no enemy ids, nothing new on the wire.
   const hitMarks=[];
   if(!reducedMotion&&combatTracers&&!state.ended){
@@ -1328,7 +1328,7 @@ export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,th
   ctx.save();ctx.translate(bunkerPosition.x+fx,bunkerPosition.y+fy);bunker(ctx,state,onSpritesReady,approach,Number.isFinite(storyTime)?storyTime:0,!reducedMotion);ctx.restore();
   drawTorches(ctx,torches,theme,storyTime,reducedMotion,onSpritesReady);
   if(!reducedMotion&&weatherEffects&&state.hp>0&&state.hp/Math.max(1,state.maxHp||100)<.35){const t=Number.isFinite(storyTime)?storyTime:0;ctx.save();ctx.globalAlpha=.28;for(let i=0;i<3;i++){const phase=((t*.3+i/3)%1+1)%1;oval(ctx,bunkerPosition.x+20+Math.sin(t+i)*3,bunkerPosition.y-18-phase*25,3+phase*5,2+phase*3,'#465447',null);}ctx.restore();}
-  // IPL-0127: between waves the stack breathes a thin, calm wisp - lighter
+  // IPL-0128: between waves the stack breathes a thin, calm wisp - lighter
   // than the damage smoke and on only when the field itself is at rest.
   if(lull&&!reducedMotion&&weatherEffects){
     const ct=Number.isFinite(storyTime)?storyTime:0;
@@ -1354,7 +1354,7 @@ export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,th
   const selected=state.towers.find(t=>t.pad===state.selectedPad);if(selected&&!state.ended){const p=pads[selected.pad];ctx.save();ctx.beginPath();ctx.arc(p.x,p.y,getTowerRange(selected),0,Math.PI*2);ctx.fillStyle='rgba(139,190,173,.14)';ctx.fill();ctx.globalAlpha=reducedMotion?1:.88+.12*Math.sin(storyTime/.42);ctx.strokeStyle='#c2dfd2';ctx.lineWidth=2.2;ctx.setLineDash([6,5]);ctx.stroke();ctx.restore();}
   if(!reducedMotion)for(const tower of state.towers){const owner=state.players[tower.ownerId],p=pads[tower.pad];if(p&&owner?.active!==false&&owner?.overdrive>0){ctx.beginPath();ctx.ellipse(p.x,p.y,31,27,0,0,Math.PI*2);ctx.strokeStyle='#fff1a3';ctx.lineWidth=3;ctx.setLineDash([5,5]);ctx.stroke();ctx.setLineDash([]);}}
   const selectionPulse=reducedMotion?1:.85+.15*Math.sin(storyTime/.3);
-  // IPL-0127: an upgrade effect landing on this pad pulses its level badge.
+  // IPL-0128: an upgrade effect landing on this pad pulses its level badge.
   // The caller only forwards the effect's own progress - presentation only.
   pads.forEach((p,i)=>{
     let levelFx=null;
@@ -1368,7 +1368,7 @@ export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,th
   // dark on its pad until repaired, and a running repair shows its mark.
   for(const tower of state.towers){const p=pads[tower.pad],maxHp=tower.maxHp;if(!p||!maxHp)continue;const hp=tower.hp??maxHp;if(hp<=0){ctx.save();ctx.globalAlpha=.45;ctx.beginPath();ctx.ellipse(p.x,p.y,26,22,0,0,Math.PI*2);ctx.fillStyle='#101a15';ctx.fill();ctx.restore();}if(hp>0)lifeBar(ctx,p.x,p.y-34,36,hp/maxHp);if(tower.repairing>0){
       oval(ctx,p.x+15,p.y-31,4,4,'#ffe3a8','#192b23',1);
-      // IPL-0127 Reparatur-Funken: kleine Funken spruehen vom Werkstueck -
+      // IPL-0128 Reparatur-Funken: kleine Funken spruehen vom Werkstueck -
       // Phase aus der Maler-Uhr, keine Uhr und kein Zustand auf dem Draht.
       if(!reducedMotion){
         const rt=Number.isFinite(storyTime)?storyTime:0;
@@ -1388,7 +1388,7 @@ export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,th
   // invisibly: the newest player tapped the ground, got "Hero moving to position",
   // and watched nothing happen. A hero you cannot see is a hero you cannot command.
   for(const p of Object.values(state.players))if(p.active!==false){if(state.wave>0&&p.mobileSupply?.remaining>0){ctx.save();ctx.beginPath();ctx.arc(p.x,p.y,22,0,Math.PI*2);ctx.strokeStyle='#89d9ed';ctx.lineWidth=3;ctx.stroke();ctx.restore();}soldier(ctx,p,p.id===me,soldierPoses[p.id],undefined,onSpritesReady);
-    // IPL-0127 Wellen-Ruhe: zwischen den Wellen blickt der Held sich um
+    // IPL-0128 Wellen-Ruhe: zwischen den Wellen blickt der Held sich um
     // und prueft sein Gewehr - zwei kleine Maler-Zeichen aus derselben
     // Uhr wie das Ambient, kein Zustand, kein Pose-Eingriff.
     if(lull&&!reducedMotion&&!(p.downed>0)&&!(soldierPoses[p.id]||{}).moving){
@@ -1431,7 +1431,7 @@ export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,th
     if(e.boss==='bossJuggernaut'&&e.bossFlash>0&&!reducedMotion)burst(ctx,e.x,e.y-20,15,'#cce7a2');
     let hit=0;
     for(const tr of hitMarks){const d=Math.hypot(tr.tx-e.x,tr.ty-e.y);if(d<(e.boss?30:17)&&tr.impact.alpha>hit)hit=tr.impact.alpha;}
-    // IPL-0127: dust reads the tread marks the sampler stamped - actual
+    // IPL-0128: dust reads the tread marks the sampler stamped - actual
     // movement, so a standing column stops puffing between waves.
     let dust=state.running?0.7:0;
     if(Array.isArray(groundTracks)&&groundTracks.length){
@@ -1470,7 +1470,7 @@ export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,th
     oval(ctx,pop.x+Math.sin(age*7)*2,pop.y-8-age*16,5+age*7,4+age*5,`rgba(78,84,78,${(.34*(1-age)).toFixed(3)})`,null);
     ctx.restore();}}
   if(!reducedMotion&&combatTracers)for(const effect of effects)drawAbility(ctx,effect);
-  // IPL-0127 Blitz: a short double flash over the marsh, hard-timed from the
+  // IPL-0128 Blitz: a short double flash over the marsh, hard-timed from the
   // painter's own clock - a weather feeling, not a weather state.
   if(!reducedMotion&&weatherEffects&&!storyMission&&theme==='marsh'){
     const lt=Number.isFinite(storyTime)?storyTime:0,ph=lt%19;
@@ -1482,7 +1482,7 @@ export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,th
   ctx.restore();
 }
 
-// IPL-0127 Schlacht-Spuren: the painter's own list of impacts, keyed by the
+// IPL-0128 Schlacht-Spuren: the painter's own list of impacts, keyed by the
 // canvas and the field's `me` so own and rival lanes keep separate ground.
 // Capped, pruned by the painter's clock, never touching simulation state.
 const scarField=new WeakMap();
@@ -1637,7 +1637,7 @@ function drawAbility(ctx,e){
   }else if(e.kind==='build'||e.kind==='upgrade'||e.kind==='classUpgrade'){
     // V3: a stamp in the emblem's metal - silver ring, iron smoke for a new
     // emplacement, the gold star for a level gained.
-    // IPL-0127 Level-Up-Blitz: a bright bloom punches out of the pad while
+    // IPL-0128 Level-Up-Blitz: a bright bloom punches out of the pad while
     // the effect is fresh, under the ring - the upgrade reads as an event.
     if(t<0.5){
       const bt=1-t*2;

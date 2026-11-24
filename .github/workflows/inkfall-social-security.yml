@@ -8,8 +8,6 @@ on:
       - 'inkfall/tests/**'
       - 'inkfall/functions/**'
       - 'inkfall/package.json'
-      - 'firebase.social-backend.json'
-      - 'database.rules.json'
       - '.github/workflows/inkfall-social-security.yml'
   pull_request:
     paths:
@@ -18,8 +16,6 @@ on:
       - 'inkfall/tests/**'
       - 'inkfall/functions/**'
       - 'inkfall/package.json'
-      - 'firebase.social-backend.json'
-      - 'database.rules.json'
       - '.github/workflows/inkfall-social-security.yml'
 permissions:
   contents: read

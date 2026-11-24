@@ -1,0 +1,62 @@
+name: Pip-Boy 3000 verify
+
+# Prüft den Build des Spiels und die Portalseite des Dashboards. Ohne diesen
+# Lauf bleibt "npm run verify" eine lokale Gewohnheit: der Build schreibt in den
+# ausgelieferten Ordner, ein Fehler dort ist sofort ein weißer Bildschirm.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'PipBoy3000/**'
+      - 'arcade/**'
+      - '.github/workflows/pipboy-verify.yml'
+  pull_request:
+    paths:
+      - 'PipBoy3000/**'
+      - 'arcade/**'
+      - '.github/workflows/pipboy-verify.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pipboy-verify-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: PipBoy3000/package-lock.json
+
+      - name: Abhängigkeiten installieren
+        working-directory: PipBoy3000
+        run: npm ci
+
+      # Hier wird bewusst echt gebaut (nicht --check): nur so lässt sich prüfen,
+      # ob der eingecheckte Stand noch zum Quellstand passt.
+      - name: Bauen und Tests fahren
+        working-directory: PipBoy3000
+        run: |
+          npm run build
+          npm test
+
+      - name: Erzeugte Dateien sind aktuell
+        run: |
+          if [ -n "$(git status --porcelain PipBoy3000)" ]; then
+            echo "::error::Der eingecheckte Build passt nicht zum Quellstand - bitte 'npm run build' ausführen und mit committen."
+            git status --porcelain PipBoy3000
+            git diff --stat PipBoy3000
+            exit 1
+          fi
+
+      - name: Portalseite des Dashboards
+        run: node arcade/tests/portals.test.cjs

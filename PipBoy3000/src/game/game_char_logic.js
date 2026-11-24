@@ -1,0 +1,152 @@
+// [TIMESTAMP] 2026-01-18 13:30:00 - game_char_logic.js - Extended Stat Cap (Soft Cap Logic)
+
+Object.assign(Game, {
+
+    upgradeStat: function(key, e) { 
+        if(e) e.stopPropagation(); 
+        
+        const currentVal = this.state.stats[key] || 1;
+        const maxLimit = 20; // Neues Hard-Cap
+        const softCap = 10;  // Ab hier kostet es mehr
+
+        if (currentVal >= maxLimit) {
+            UI.log(`${key} ist bereits auf dem absoluten Maximum!`, "text-yellow-500");
+            return;
+        }
+
+        // Kostenberechnung: Ab SoftCap kostet ein Punkt 2, sonst 1
+        const cost = (currentVal >= softCap) ? 2 : 1;
+
+        if(this.state.statPoints >= cost) { 
+            this.state.stats[key]++; 
+            this.state.statPoints -= cost; 
+            this.recalcStats();
+            
+            // [FIX] Sofortiges Neuladen des aktuellen Tabs
+            if(typeof UI.renderStats === 'function') {
+                UI.renderStats(Game.state.charTab || 'special');
+            }
+            
+            UI.log(`${key} erhöht auf ${this.state.stats[key]}!`, "text-green-400 font-bold");
+            UI.update(); 
+            this.saveGame(); 
+        } else {
+             UI.log(`Nicht genügend Punkte! (Benötigt: ${cost} ab Level 10)`, "text-red-500");
+        }
+    },
+
+    choosePerk: function(perkId) {
+        if(this.state.perkPoints <= 0) {
+            UI.log("Keine Perk-Punkte verfügbar!", "text-red-500");
+            return;
+        }
+        const perkDef = this.perkDefs.find(p => p.id === perkId);
+        if(!perkDef) return;
+
+        if (Array.isArray(this.state.perks)) {
+            const oldPerks = this.state.perks;
+            this.state.perks = {};
+            oldPerks.forEach(id => this.state.perks[id] = 1);
+        }
+        if (!this.state.perks) this.state.perks = {};
+
+        const currentLvl = this.state.perks[perkId] || 0;
+        const maxLvl = perkDef.max || 1;
+
+        if (currentLvl >= maxLvl) {
+            UI.log(`${perkDef.name} ist bereits auf Max-Level!`, "text-yellow-500");
+            return;
+        }
+
+        this.state.perkPoints--;
+        this.state.perks[perkId] = currentLvl + 1;
+        
+        UI.log(`Perk gelernt: ${perkDef.name} (Stufe ${this.state.perks[perkId]})`, "text-green-400 font-bold");
+        
+        this.recalcStats();
+        this.saveGame();
+        
+        // [FIX] Sofortiges Neuladen der Perks-Liste
+        if(typeof UI.renderStats === 'function') {
+            UI.renderStats('perks');
+        }
+    },
+
+    startCombat: function() { 
+        let pool = []; 
+        let lvl = this.state.lvl; 
+        const dLvl = this.state.dungeonLevel || 0;
+        let difficultyMult = 1 + (dLvl * 0.2);
+        let biome = this.worldData[`${this.state.sector.x},${this.state.sector.y}`]?.biome || 'wasteland'; 
+        let zone = this.state.zone; 
+        
+        if(zone.includes("Supermarkt")) { pool = [this.monsters.raider, this.monsters.ghoul, this.monsters.wildDog]; if(lvl >= 4) pool.push(this.monsters.superMutant); } 
+        else if (zone.includes("Höhle")) { pool = [this.monsters.moleRat, this.monsters.radScorpion, this.monsters.bloatfly]; if(lvl >= 3) pool.push(this.monsters.ghoul); } 
+        // Gegner werden nach Lebendigkeit gefiltert: ein Pool-Eintrag, den es im
+        // Katalog nicht gibt, wurde früher als "Unbekanntes Monster" mit 20 HP
+        // ausgeliefert (siehe docs/ANALYSE.md, B5).
+        else if(biome === 'city') { pool = [this.monsters.raider, this.monsters.ghoul, this.monsters.wildDog]; if(lvl >= 5) pool.push(this.monsters.superMutant); if(lvl >= 8) pool.push(this.monsters.deathclaw); } 
+        else if(biome === 'desert') { pool = [this.monsters.radScorpion, this.monsters.raider, this.monsters.moleRat]; } 
+        else if(biome === 'jungle') { pool = [this.monsters.bloatfly, this.monsters.ghoul, this.monsters.wildDog]; if(lvl >= 4) pool.push(this.monsters.radScorpion); } 
+        else if(biome === 'swamp') { pool = [this.monsters.bloatfly, this.monsters.moleRat]; if(lvl >= 5) pool.push(this.monsters.ghoul); } 
+        else { pool = [this.monsters.moleRat, this.monsters.radRoach, this.monsters.bloatfly]; if(lvl >= 2) pool.push(this.monsters.raider); if(lvl >= 3) pool.push(this.monsters.wildDog); } 
+        
+        if(lvl >= 8 && Math.random() < 0.1) pool = [this.monsters.deathclaw]; 
+        pool = pool.filter(m => m && m.name);
+        if(pool.length === 0) pool = [this.monsters.radRoach]; 
+
+        const template = pool[Math.floor(Math.random()*pool.length)]; 
+        let enemy = { ...template }; 
+        if(isNaN(difficultyMult)) difficultyMult = 1;
+        enemy.hp = Math.floor(enemy.hp * difficultyMult);
+        enemy.maxHp = enemy.hp;
+        enemy.dmg = Math.floor(enemy.dmg * difficultyMult);
+        enemy.loot = Math.floor(enemy.loot * difficultyMult);
+
+        const fortuneLvl = this.getPerkLevel('fortune_finder');
+        if(fortuneLvl > 0) {
+            enemy.loot = Math.floor(enemy.loot * (1 + (fortuneLvl * 0.1)));
+        }
+
+        const isLegendary = Math.random() < 0.05; 
+        if(isLegendary) { 
+            enemy.isLegendary = true; 
+            enemy.name = "Legendäre " + enemy.name; 
+            enemy.hp *= 2; 
+            enemy.maxHp = enemy.hp; 
+            enemy.dmg = Math.floor(enemy.dmg*1.5); 
+            enemy.loot *= 3; 
+            if(Array.isArray(enemy.xp)) enemy.xp = [enemy.xp[0]*3, enemy.xp[1]*3]; 
+        }
+        
+        if(typeof Combat !== 'undefined') { Combat.start(enemy); } 
+        else { console.error("Combat module missing!"); }
+    },
+
+    gambleLegendaryLoot: function(sum) {
+        UI.log(`🎲 Wasteland Gamble: ${sum}`, "text-yellow-400 font-bold");
+        if(sum <= 9) {
+            if(Math.random() < 0.5) { this.state.caps += 50; UI.log("Gewinn: 50 Kronkorken", "text-green-400"); } 
+            else { this.addToInventory('ammo', 10); UI.log("Gewinn: 10x Munition", "text-green-400"); }
+        }
+        else if(sum <= 14) { 
+            this.state.caps += 150;
+            this.addToInventory('stimpack', 1);
+            this.addToInventory('screws', 5);
+            UI.log("Gewinn: 150 KK + Stimpack + Schrott", "text-blue-400");
+        }
+        else {
+            // Jackpot: jetzt über die gemeinsame Erzeugung legendärer Waffen,
+            // damit Präfixe (Brutale, Vampir, Atomare ...) auch hier greifen.
+            const item = (typeof this.createLegendaryItem === 'function')
+                ? this.createLegendaryItem('plasma_rifle')
+                : null;
+            if (item && typeof this.announceLegendary === 'function') {
+                this.announceLegendary(item);
+            }
+            this.state.caps += 300;
+            UI.log("JACKPOT! Legendäre Waffe + 300 KK!", "text-yellow-400 font-bold animate-pulse");
+        }
+        this.saveGame();
+    }
+});

@@ -1,8 +1,9 @@
 # Portal-Auswahl: Abnahme 2.0.0
 
 ## Vor Abschluss
-- [ ] Desktop: alle fünf Portale und Startlinks.
+- [ ] Desktop: alle sechs Portale und Startlinks (Iron Path zuerst).
 - [ ] Mobil: kleine Breiten und Höhen, Wischen ohne blockiertes vertikales Scrollen.
+- [ ] IronPath-Portal: Motiv `arcade/art/ironpath.svg` im Ausschnitt prüfen (object-position 62 %).
 - [ ] Tastatur: Tab, Pfeile, Escape, sichtbarer Fokus.
 - [ ] Intro endet und kann übersprungen werden.
 - [ ] Jede Welt zeigt die eigene Animation.

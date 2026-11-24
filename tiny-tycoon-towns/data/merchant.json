@@ -1,0 +1,7 @@
+{
+  "offersPerDay": 3,
+  "weightByClass": { "scarce": 3, "neutral": 2, "abundant": 1 },
+  "quantity": { "min": 20, "max": 60, "step": 5 },
+  "priceMultiplier": { "min": 2.5, "max": 3.0 },
+  "moods": ["greedy", "friendly", "chatty"]
+}

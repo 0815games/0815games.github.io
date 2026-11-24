@@ -6,7 +6,7 @@ aber ersetzt weder Git noch die GitHub-PR-Historie. Die dazugehörige
 [Arbeitsanweisung](../../AGENTS.md) verlangt, dieses Log vor der Arbeit zu lesen
 und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
 
-Die Einträge IPL-0001 bis IPL-0107 stehen im
+Die Einträge IPL-0001 bis IPL-0108 stehen im
 [Archiv](PATCH-LOG-ARCHIV.md); hier stehen die neuesten 20. Beide Dateien
 zusammen sind lückenlos und doppelfrei - `../scripts/patch.mjs` (Unterbefehl `check`) und
 `../tests/patch-log-archive.test.mjs` prüfen das.
@@ -56,19 +56,6 @@ jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderl
 
 
 
-
-## IPL-0108 – Endless-Bühne Feinschliff: Name oben, Stencil-DEPLOY mit Glow-Rahmen, Militär-Pfeile, zentriertes Fragezeichen (Welle `20261123-endless2`, PR `#370`)
-- **Zeit / Quelle:** 2026-11-23 UTC; Betreiber-Rückmeldung zum ausgelieferten `IPL-0107` (DEPLOY liegt über dem Kartennamen, Fragezeichen im Zufallsbild teilweise abgeschnitten, Pfeile optisch unpassend) plus Vorgabe „Deploy als Military Schrift mit Glow rahmen … Oder erstell ein bild“ und „Lets gooooooo“.
-- **Block / Ziel:** Feinschliff am Endless-Startdialog, kein Block-Thema.
-- **Branch / Basis:** `arena/4748275f-0815games-github-io` ab `007bb594f120aeb1b4025c526a1a356dfa2f57ad` (`main`, Merge PR `#369`). Feature-Commit `b24da2b81b8998d41c7ce5fdcb2cd0caade6eb78` gepusht, PR `#370` eröffnet; Cache-Welle `20261123-endless2` mit Feldnotizen (`patch-notes.mjs`, `RELEASED_PATCHES[0]` = `endless2`, PR `#370`).
-- **Änderungen / Dateien:**
-  - `IronPath/menu-redesign.css`: Kartenname `#endlessSelectedTheme` sitzt jetzt oben am Bild (`.endless-theme-card` mit `align-items:flex-start`, Lichtkante aller 6 Themen-Verläufe nach oben gedreht) – DEPLOY besitzt die Bildunterkante allein. `#endlessDeploy` als Militär-Stencil: dunkle Oliv-Platte, 2-px-Messing-Rahmen mit Außen- und Innen-Glow (`0 0 18px`/`44px`), Schrift in „Arial Black“/Impact mit 0.22em Laufweite und eigenem Buchstaben-Glow, dazu leuchtende Ziel-Ecken oben links/unten rechts. Neue `.endless-arrow`-Platten: olivgrüne Panzerplatte mit vier Nieten (radial-gradient), gefüllte Messing-Doppel-Chevrons als SVG mit Drop-Shadow, Hover mit Glow-Rand.
-  - `IronPath/index.html`: Pfeil-SVGs durch gefüllte Doppel-Chevrons (`viewBox 0 0 48 48`) ersetzt.
-  - `IronPath/assets/endless-random.jpg`: Artwork neu erzeugt – das rostige Messing-Fragezeichen sitzt jetzt exakt im Bildzentrum; bei `background-size:cover` + `center` bleibt es damit auf jeder Bühnengröße zentriert und wird nie angeschnitten.
-  - Tests: `IronPath/tests/menu-redesign.test.mjs` (Anker: Name oben, Stencil-Glow-DEPLOY, 48er-Chevron-SVGs), `IronPath/browser-tests/interface-smoke.cjs` (Geometrie: Name in der oberen Bildhälfte und immer oberhalb von DEPLOY).
-- **Prüfungen:** `node --test IronPath/tests/menu-redesign.test.mjs IronPath/tests/endless-launcher.test.mjs`: 18/18. `patch.mjs check --fast`: 0 Fehler (2 Hinweise vor der Welle). Sichtprüfung über lokale Live-Vorschau durch den Betreiber möglich; Browser-Fahrten laufen mangels lokalem Chromium in der CI. Gesamtsuite folgt auf der Cache-Welle.
-- **Git / PR / Release:** Wird mit Welle und PR-Nummer fortgeschrieben.
-- **Offen / nächster Schritt:** Cache-Welle `20261123-endless2` inkl. Feldnotizen, PR, CI, Merge, Pages-Nachweis. Block E Scheibe 2 bleibt eigenes Paket.
 
 ## IPL-0109 – Endless-Bühne: Standard-Pfeile in Militär-Optik zurück, DEPLOY nur schriftbreit (Welle `20261123-endless3`, PR `#371`)
 - **Zeit / Quelle:** 2026-11-23 UTC; Betreiber-Rückmeldung zu `IPL-0108`: „Die Pfeilge fallen mit optisch gar nicht. Wir gehen wieder zu standart Pfeilen in Militär optik über.“ und „Deploy button soweit sogut. Aber wieso über die gesamte breite? Reicht doch fix in der mitte so breit wie die schrift selbst.“
@@ -317,7 +304,22 @@ jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderl
 - **Git / PR / Release:** Code-Commit + Push, PR `#388`; zweiter Commit: Cache-Welle `20261123-aim5` mit Feldnotizen `aim5` (79 Dateien, Muster `IPL-0104`). CI, Merge und Pages-Auslieferung werden als Ereignis nachgetragen. **Betreiber-Sichtung auf `20261123-aim5`:** Wolkschatten müssen übers Feld ziehen, Windgut muss wirbeln, und beim Schuss muss die Vogelschar auffliegen.
 - **Offen / nächster Schritt:** Reihe „Lebendiges Feld“ vollständig (Scheibe 1 + 2, Feinschliff, mehr Leben, Ambiente). Neue Punkte beschließt der Betreiber.
 
-## IPL-0127 – Lebendiges Feld VI: Rückstoßrauch, Treffer-Flare, Staub, Spuren, Lull und Wetter (Welle `20261123-aim6`, PR `#405`)
+## IPL-0127 – Rückbau des entfernten Testprojekts `ironpathtest`
+
+- **Zeit / Quelle:** 2026-11-24 UTC; Betreiber: „IronPathTest Sachen können entfernt werden, aber so das der Rest noch funktioniert.“ Vorausgegangen war die Feststellung, dass das Firebase-Projekt `ironpathtest` und das Vercel-Projekt `ironpath-release` gelöscht sind.
+- **Block / Ziel:** Kein Spiel-Block, keine Spieländerung. Reiner Rückbau der isolierten Test-/Staging-Kette; das Spiel, `admin.html` und die Wartungsprobe bleiben unverändert auf `iron-path-dc727`.
+- **Branch / Basis:** `arena/3ce6a172-0815games-github-io` ab `aa6bfb9` (`main`, Merge PR `#389`).
+- **Änderungen / Dateien:**
+  - Entfernt: `IronPath/release-tools/build-isolated-test-site.mjs`, `initialize-isolated-test.mjs`, `exercise-isolated-guard.mjs`, `IronPath/browser-tests/release-live-test.cjs`, `IronPath/tests/release-test-site.test.mjs`, `release-test-initialize.test.mjs`, `release-test-live-exercise.test.mjs`. Keine dieser Dateien wurde von einem Workflow, einem `npm`-Skript oder einem Produktions-Asset importiert; der Produktionsweg (`build-pages-site.mjs`, `pages-safety.mjs`, `stage-version.mjs` mit `production-public-config.json`) nutzte die Testkonfiguration nie.
+  - `IronPath/release-tools/README.md`: Der Abschnitt „Using the existing test project“ ist durch einen Rückbau-Abschnitt ersetzt (was entfernt wurde und warum, was ein neuer Testlauf bräuchte); der verbliebene Rest ist ausdrücklich als Historie markiert.
+  - `IronPath/docs/DATENBLATT.md`: Statusabsatz ergänzt; ältere Abschnitte ausdrücklich als Historie eingeordnet.
+  - `IronPath/release-tools/PAGES-ROLLOUT.md`, `FIREBASE-PAGES-ROLLOUT.md`, `IronPath/firebase/FRIENDS-ROLLOUT.md`: Verweise präzisiert — das Projekt ist gelöscht, der Pfad entfernt.
+- **Prüfungen:** Gesamtsuite **1342 Tests, 1341 bestanden, 0 Fehler, 1 übersprungen** nach dem Entfernen der drei Testdateien (vorher 1350/1349). `arcade/tests/portals.test.cjs` unverändert grün. Keine Referenz auf die gelöschten Dateien mehr außer der Rückbau-Dokumentation. Weder CI noch `package.json`-Skripte nannten die entfernten Dateien.
+- **Betrieb (belegt):** Das Vercel-Projekt `ironpath-release` wurde am 2026-11-24 auf Anweisung des Betreibers gelöscht; Vercel bestätigte `deleted successfully`, das anschließende Projektlisting enthält nur noch `ironpath-live-session`. Damit sind die alten Deployments und der öffentliche Alias `https://ironpath-release.vercel.app/` weg. Keine Firebase- oder Rules-Änderung.
+- **Git / PR / Release:** Commit und Push auf dem genannten Branch, PR folgt; Merge, CI-Ergebnis und Pages-Auslieferung werden als eigenes Ereignis nachgetragen. Keine Rules-, Daten- oder Vercel-Änderung in diesem Schritt.
+- **Offen / nächster Schritt:** Ein isolierter Testlauf bräuchte eine **neue** Projekt-ID (Firebase sperrt gelöschte IDs dauerhaft) und neue öffentliche Web-Einstellungen; der Rules-Builder der Testkette fehlt dann ebenfalls. Projekt `ironpath-release` ist in Vercel pausiert, das Dienstkonto-Secret dort gelöscht; `ironpath-live-session` führt kein `IRONPATH_FIREBASE_SERVICE_ACCOUNT` mehr — ob der Session-Endpunkt deshalb antwortet, ist von hier aus nicht geprüft.
+
+## IPL-0128 – Lebendiges Feld VI: Rückstoßrauch, Treffer-Flare, Staub, Spuren, Lull und Wetter (Welle `20261123-aim6`, PR `#405`)
 - **Zeit / Quelle:** Sitzungsdatum 2026-11-21 UTC, Umgebungsuhr 2026-11-24 UTC (getrennt genannt); Betreiber-Auftrag 2026-11-23/24: „1-8 machen wir so“ — acht grafische Pakete, dazu Prestige-Glow umfärben (Betreiber-Wahl im Poll: Amethyst `#b48ce0`; wörtlich zur Farbe: „selbe Farbe wie Upgrade ist schwachsinnig“).
 - **Block / Ziel:** Kein Spiel-Block; reine Darstellung. Kein neuer Zustand auf dem Draht; Treffer, Staub und Spuren werden aus Schussliste, Schussalter und Kettenabdrücken abgeleitet; Reduced-Motion und Wetter-Schalter bleiben harte Gates. Geräteabnahme macht der Betreiber selbst (Entscheid 2026-11-23).
 - **Branch / Basis:** `arena/ae18598b-0815games-github-io` ab `2f736a2eff6e97cf43a54b582480bacc9b36ca78` (`main`, Merge PR `#388`).
@@ -329,4 +331,3 @@ jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderl
 - **Prüfungen:** `node --test IronPath/tests/*.test.mjs`: **1363 Tests, 1362 bestanden, 0 Fehler, 1 übersprungen** (vorhandener Skip), Exit 0; `npm run schnelltor`: „Kein Fehler, 2 Hinweis(e)“; `field-liveliness` 10/10. Nicht geprüft: Gerät/Emulator, Browser-Fahrten (kein lokaler Chromium) — laufen in der CI.
 - **Git / PR / Release:** Feature-Commit `dc1e168` auf `arena/ae18598b-0815games-github-io`, Push, PR `#405` eröffnet (die Planung erwartete `#389`; GitHub vergab `#405` — beide Angaben getrennt). Zweiter Commit: Doku (dieser Eintrag, Archiv-Schiebung `IPL-0107`, AUSBAU-Zeile 13, Feldnotizen `aim6` mit `pr: 405`) und Cache-Welle `20261123-aim6` (`bump aim6 --from aim5 --apply`). CI, Merge und Pages werden als Ereignis nachgetragen. **Betreiber-Sichtung auf `20261123-aim6`:** die acht Pakete gegen die Vorgabe, Amethyst-Halo sichtbar, Upgrade bleibt Gold.
 - **Offen / nächster Schritt:** CI zu PR `#405`, Merge, Pages-Nachweis, Nachtragskommentar; danach Sichtung durch den Betreiber im Spiel.
-

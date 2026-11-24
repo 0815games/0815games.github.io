@@ -47,7 +47,7 @@ test('a prestige tower glows, and a plain one does not',()=>{
 
   const lit=recordingCanvas();
   drawCartoonBattle(lit.ctx,shiny(),opts);
-  // IPL-0127: the prestige halo is amethyst - the upgrade cue keeps its gold,
+  // IPL-0128: the prestige halo is amethyst - the upgrade cue keeps its gold,
   // the halo no longer masquerades as one.
   const glows=lit.sets.filter(([key,value])=>key==='shadowColor'&&/^#b48ce0$/i.test(value));
   assert.ok(glows.length>=1,'a prestige tower asks for light');

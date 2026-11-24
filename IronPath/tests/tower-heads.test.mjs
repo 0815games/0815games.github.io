@@ -64,7 +64,7 @@ test('a head at rest does not translate sideways',()=>{
 
 test('the kick draws a muzzle flash and a flying casing, keyed to the recoil',()=>{
   // beginPath calls the fx adds: one casing oval + one powder puff per muzzle
-  // (IPL-0127, the recoil is the only gate for the smoke) + two flash stars
+  // (IPL-0128, the recoil is the only gate for the smoke) + two flash stars
   // per muzzle. The flak has two muzzles, so it adds seven.
   const extra={0:4,1:4,2:7,3:4};
   for(const type of [0,1,2,3]){

@@ -1,0 +1,49 @@
+# Pip-Boy 3003 — offene Punkte
+# Stand: 24.11.2026 (nach dem Umbau auf Bündel + Tests, siehe ANALYSE.md)
+
+## Dringend
+
+- [ ] ADMIN-ANMELDUNG: src/admin.js enthält Klartext-Zugangsdaten
+      (gatePass, adminUser, adminPass). Auf GitHub Pages sind sie öffentlich
+      abrufbar. Muss aus dem Client raus — Firebase-Admin-Claim oder Cloud
+      Function. Das ist der wichtigste offene Punkt.
+
+## Aus der alten to_do.log — erledigt oder erklärt
+
+- [x] Items werden beim Aufsammeln nicht immer richtig angezeigt
+      -> Ursache gefunden und behoben: sechs Monster-Drops hatten keine
+         Item-Definition und wurden in der Inventaransicht übersprungen
+         (ANALYSE.md B4).
+- [ ] kein Munitionsverbrauch
+      -> erklärt, nicht behoben: der Verbrauchspfad ist korrekt gebaut, aber
+         keine Waffe hat ein ammoType. Braucht eine Design-Entscheidung
+         (ANALYSE.md B9).
+- [ ] POI-Fenster auf der Weltkarte (ohne Funktion, per ESC/X schließbar)
+      -> weiterhin offen. Betrifft ui/ui_view_world.js.
+- [ ] Bewegung sperren, sobald irgendein Menü oder Popup offen ist
+      -> teilweise vorhanden: Game.move prüft isGameOver und inDialog, und
+         elf Overlay-Funktionen setzen inDialog. Es fehlen Stellen, die
+         stattdessen die Klasse 'hidden' togglen.
+- [x] Lockpicking auf Truhen in Dungeons
+      -> vorhanden: openChest ab Dungeon-Ebene 3 startet das Minigame.
+- [ ] Neue und mehr Quests (5 Stück, davon eine Anfängerquest)
+- [ ] Tutorial als Abfolge von Anfängerquests
+- [ ] Quests zum Waffen-Modding
+
+## Aus dem Umbau neu
+
+- [ ] Monsterdaten zusammenführen: data_monsters.js ersetzt den Katalog
+      vollständig statt ihn zu ergänzen (ANALYSE.md B10).
+- [ ] Firebase v9/v10 modular — jetzt möglich, weil ES-Module vorhanden sind.
+- [ ] templates/radio.html (und vault.html) werden von switchView nie geladen.
+      Beide löschen oder Einstieg bauen — siehe BEFUNDE.md Punkt 2.
+- [ ] Munition: usesAmmo wird nie gelesen, der ganze Zweig ist unerreichbar
+      (BEFUNDE.md Punkt 4, verschärft B9).
+- [ ] Supermutant droppt caps als Item, das es nicht gibt (BEFUNDE.md Punkt 5).
+- [ ] Dynamische Tailwind-Klassen (text-${themeColor}-…) fehlen im CSS
+      (BEFUNDE.md Punkt 6).
+- [ ] renderCharStats/renderCharPerks in ui_view_inv.js sind toter Code
+      (BEFUNDE.md Punkt 3).
+- [ ] Spielstand verkleinern: 'explored' wächst um ~45 kB pro Sektor.
+- [x] CI: `.github/workflows/pipboy-verify.yml` baut, testet und prüft, dass der
+      eingecheckte Build zum Quellstand passt; dazu der Portal-Test.

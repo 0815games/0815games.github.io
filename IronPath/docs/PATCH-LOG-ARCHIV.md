@@ -1,6 +1,6 @@
 # Iron Path – Patch-Log: Archiv
 
-Ältere Einträge IPL-0001 bis IPL-0107. Die neuesten 20 stehen in
+Ältere Einträge IPL-0001 bis IPL-0108. Die neuesten 20 stehen in
 [PATCH-LOG.md](PATCH-LOG.md); die Regeln für beide Dateien dort und in
 [`../../AGENTS.md`](../../AGENTS.md). Beim Verschieben wandert ein Eintrag immer
 vollständig einschließlich seiner Ereignis-Nachträge.
@@ -4556,3 +4556,16 @@ sie geprüft wurde.
 - **Prüfungen:** `node --test IronPath/tests/*.test.mjs`: tests 1287 / pass 1286 / skipped 1 / fail 0, Exit 0; der eine ausgelassene Test ist der bekannte Flachklon-Effekt in `release-pages-site.test.mjs` („Pinned ancestor commits require a full Git checkout“) – nach `git fetch --unshallow origin` läuft diese Datei 6/6, die Suite ist damit effektiv vollständig grün. `node IronPath/scripts/patch.mjs check --fast`: 0 Fehler, 2 Hinweise (Stand vor der Cache-Welle). Kein lokaler Chromium: Browser-Fahrten (`command-center`, `interface-smoke`) laufen erst in der CI.
 - **Git / PR / Release:** Ereignis-Nachtrag zu `IPL-0106`: PR `#368` am 2026-11-23 als `3983d9dc72572cff4dc3d67f5f15786cb069efdd` gemergt, Pages-Build `built`, `release-version.json` auf `main` trägt `20261123-blocke1` (Auslieferung im PR-Text belegt). Dieser Eintrag wird mit Welle und PR-Nummer fortgeschrieben.
 - **Offen / nächster Schritt:** Gesamtsuite auf der Welle, CI zu PR `#369`, Merge und Pages-Nachweis. Aus Block E bleibt Scheibe 2 (Treffer-Feedback/Tutorial, Host-/Reconnect-Prüfung im Detail, menschliche Balance mit Block C) ein eigenes späteres Paket.
+
+## IPL-0108 – Endless-Bühne Feinschliff: Name oben, Stencil-DEPLOY mit Glow-Rahmen, Militär-Pfeile, zentriertes Fragezeichen (Welle `20261123-endless2`, PR `#370`)
+- **Zeit / Quelle:** 2026-11-23 UTC; Betreiber-Rückmeldung zum ausgelieferten `IPL-0107` (DEPLOY liegt über dem Kartennamen, Fragezeichen im Zufallsbild teilweise abgeschnitten, Pfeile optisch unpassend) plus Vorgabe „Deploy als Military Schrift mit Glow rahmen … Oder erstell ein bild“ und „Lets gooooooo“.
+- **Block / Ziel:** Feinschliff am Endless-Startdialog, kein Block-Thema.
+- **Branch / Basis:** `arena/4748275f-0815games-github-io` ab `007bb594f120aeb1b4025c526a1a356dfa2f57ad` (`main`, Merge PR `#369`). Feature-Commit `b24da2b81b8998d41c7ce5fdcb2cd0caade6eb78` gepusht, PR `#370` eröffnet; Cache-Welle `20261123-endless2` mit Feldnotizen (`patch-notes.mjs`, `RELEASED_PATCHES[0]` = `endless2`, PR `#370`).
+- **Änderungen / Dateien:**
+  - `IronPath/menu-redesign.css`: Kartenname `#endlessSelectedTheme` sitzt jetzt oben am Bild (`.endless-theme-card` mit `align-items:flex-start`, Lichtkante aller 6 Themen-Verläufe nach oben gedreht) – DEPLOY besitzt die Bildunterkante allein. `#endlessDeploy` als Militär-Stencil: dunkle Oliv-Platte, 2-px-Messing-Rahmen mit Außen- und Innen-Glow (`0 0 18px`/`44px`), Schrift in „Arial Black“/Impact mit 0.22em Laufweite und eigenem Buchstaben-Glow, dazu leuchtende Ziel-Ecken oben links/unten rechts. Neue `.endless-arrow`-Platten: olivgrüne Panzerplatte mit vier Nieten (radial-gradient), gefüllte Messing-Doppel-Chevrons als SVG mit Drop-Shadow, Hover mit Glow-Rand.
+  - `IronPath/index.html`: Pfeil-SVGs durch gefüllte Doppel-Chevrons (`viewBox 0 0 48 48`) ersetzt.
+  - `IronPath/assets/endless-random.jpg`: Artwork neu erzeugt – das rostige Messing-Fragezeichen sitzt jetzt exakt im Bildzentrum; bei `background-size:cover` + `center` bleibt es damit auf jeder Bühnengröße zentriert und wird nie angeschnitten.
+  - Tests: `IronPath/tests/menu-redesign.test.mjs` (Anker: Name oben, Stencil-Glow-DEPLOY, 48er-Chevron-SVGs), `IronPath/browser-tests/interface-smoke.cjs` (Geometrie: Name in der oberen Bildhälfte und immer oberhalb von DEPLOY).
+- **Prüfungen:** `node --test IronPath/tests/menu-redesign.test.mjs IronPath/tests/endless-launcher.test.mjs`: 18/18. `patch.mjs check --fast`: 0 Fehler (2 Hinweise vor der Welle). Sichtprüfung über lokale Live-Vorschau durch den Betreiber möglich; Browser-Fahrten laufen mangels lokalem Chromium in der CI. Gesamtsuite folgt auf der Cache-Welle.
+- **Git / PR / Release:** Wird mit Welle und PR-Nummer fortgeschrieben.
+- **Offen / nächster Schritt:** Cache-Welle `20261123-endless2` inkl. Feldnotizen, PR, CI, Merge, Pages-Nachweis. Block E Scheibe 2 bleibt eigenes Paket.
