@@ -61,3 +61,19 @@ test('a head at rest does not translate sideways',()=>{
   const next=f.log.slice(at+1).find(call=>call[0]==='translate');
   assert.ok(next&&next[1]===0,'no recoil, no travel');
 });
+
+test('the kick draws a muzzle flash and a flying casing, keyed to the recoil',()=>{
+  // beginPath calls the fx adds: casing oval (1) + two flash stars per
+  // muzzle (2 each). The flak has two muzzles, so it adds five.
+  const extra={0:3,1:3,2:5,3:3};
+  for(const type of [0,1,2,3]){
+    const count=recoil=>{
+      const f=field([{pad:0,type,level:1,hp:100}]);
+      f.draw({towerAims:{0:{angle:.7,recoil}}});
+      return f.log.filter(call=>call[0]==='beginPath').length;
+    };
+    const rest=count(0),full=count(1),half=count(.4);
+    assert.equal(full-rest,extra[type],`type ${type} flash and casing add ${extra[type]} strokes at full kick`);
+    assert.equal(half-rest,1,`type ${type} below the flash threshold only the casing flies`);
+  }
+});
