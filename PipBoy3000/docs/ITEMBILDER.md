@@ -67,12 +67,12 @@ Nahkampf:
 | `power_fist` | angetriebene Powerfaust mit Hydraulik |
 | `deathclaw_gauntlet` | Handschuh aus Todeskrallen-Klauen |
 
-## Block 4 — Rüstung (25)  ← naechster Block
+## Block 4 — Rüstung (25)  ← laeuft, Raider und Leder fertig
 
 | Stufe | ids |
 |---|---|
-| Raider | `raider_armor` `raider_helm` `raider_arm_l` `raider_leg_r` |
-| Leder | `leather_armor` `leather_helm` `bracers_leather` `pants_leather` `boots_leather` |
+| Raider ✓ | `raider_armor` `raider_helm` `raider_arm_l` `raider_leg_r` |
+| Leder ✓ | `leather_armor` `leather_helm` `bracers_leather` `pants_leather` `boots_leather` |
 | Metall | `metal_armor` `helmet_metal` `metal_arms` `greaves_metal` |
 | Kampf | `combat_armor` `helmet_combat` `combat_arms` `combat_legs` `boots_combat` |
 | Synth | `synth_armor` `synth_helmet` |
