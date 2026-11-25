@@ -140,33 +140,19 @@ Homescreen und Browser-Tab hat ein eigenes Rohbild und ein eigenes Skript.
 
 | | |
 |---|---|
-| Quelle | `docs/muster/app-icon.svg` (Vektor, kein Rohbild) |
+| Artwork-Quelle | `assets/app-icon-artwork.png` (1024 x 1024, KI-generiert) |
 | Aufbereitung | `node tools/app-icon.mjs` (`npm run icons:app`) |
-| Quelle | `shell/icon-192.png`, `icon-512.png`, `icon-512-maskable.png`, `apple-touch-icon.png`, `favicon.ico`, `icon.svg`, `manifest.webmanifest` |
+| Quellen fuer den Build | `shell/icon-192.png`, `icon-512.png`, `icon-512-maskable.png`, `apple-touch-icon.png`, `favicon.ico`, `icon.svg`, `manifest.webmanifest` |
 | Ausgeliefert | dieselben Namen im Wurzelverzeichnis (Build kopiert) |
 
-Alle Groessen entstehen aus der einen Vektordatei. Wer eine nachpflegt, hat nach
-der naechsten Aenderung zwei verschiedene Icons im Umlauf.
-
-**Zwei Wege, je nach Groesse.** Ab 64 px wird die SVG gerastert; darunter
-zeichnet `tools/app-icon.mjs` eine Pixelformel. Der Grund ist eine Rechnung:
-bei 16 px ist ein Strich von 2.4 Einheiten 0.38 px. Weichgezeichnet wird
-daraus eine graue Flaeche ohne Kontur - das alte Masken-Icon war im
-Browser-Tab genau deshalb ein gruener Fleck (140 Zwischentoene, gemessen).
-Die Pixelformel liefert genau zwei Farben und ist damit auch im Favicon klar.
-
-Die SVG hat dafuer zwei Zweige: `gross` (ab 120 px, mit Innenring) und
-`mittel` (64-119 px, ohne). Beide beschreiben dieselben Radien wie die Formel
-im Werkzeug - `tests/app-icon.test.mjs` haelt die Zahlen zusammen.
-
-Besonderheiten gegenueber den Item-Bildern:
-
-- **kein Rand** bei den normalen Groessen: iOS rundet selbst, ein eigener Rand
-  stuende als schwarzer Rahmen um das gerundete Icon
-- **maskable** skaliert auf 80 % und setzt auf schwarzen Grund - Android
-  beschneidet je nach Launcher Kreis oder Tropfen
-- **`favicon.ico`** schreibt das Skript selbst (PNG-Eintraege, drei Groessen);
-  `sharp` kann kein ICO
+Alle Varianten entstehen reproduzierbar aus dem Artwork. Die weissen Ecken
+werden quadratisch beschnitten, damit iOS selbst abrunden kann. Fuer Android
+liegt das komplette Motiv innerhalb des maskable-Sicherheitskreises auf
+dunklem Grund. Das ICO enthaelt 16, 32 und 48 Pixel; das SVG bettet dasselbe
+Artwork ein. Versionierte URLs helfen gegen Browser-Caches; bereits installierte
+Homescreen-Icons werden je nach Betriebssystem nicht sofort aktualisiert.
+`docs/muster/app-icon.svg` ist nur das historische Vault-Tuer-Motiv und keine
+Quelle fuer den aktuellen Build.
 
 ## Werkzeuge
 

@@ -35,6 +35,15 @@ window.GameData.offenePunkte = [
 // nicht mit dem, was geplant war.
 window.GameData.RELEASED_PATCHES = [
   {
+    version: '14.0.25',
+    datum: '2026-11-25',
+    title: 'Neues App-Icon im Retro-Future-Look',
+    punkte: [
+      'Ein kleiner Ödland-Roboter mit leuchtendem Bildschirmgesicht und Messingdetails ersetzt die Vault-Tür.',
+      'Das neue Artwork gibt es für Android, iPhone und den Browser-Tab. Bereits installierte Icons können vom Gerät zwischengespeichert werden.'
+    ]
+  },
+  {
     version: '14.0.24',
     datum: '2026-11-24',
     title: 'Patch-Notizen öffnen unter dem Header · Menüpunkt „Nach Update suchen" entfernt',
