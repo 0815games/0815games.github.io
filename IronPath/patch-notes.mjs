@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see docs/PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261124-aim9';
+import {getLanguage} from './language.mjs?v=20261124-aim10';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,18 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'aim10',build:'20261124-aim10',pr:451,
+    title:{en:'On the March · Units in the New Ink · Flags Along the Route',de:'Im Aufmarsch · Einheiten in der neuen Tusche · Fahnen am Weg'},
+    shipped:[
+      {en:'The soldier and every enemy - infantry, tank, fighter, locomotive, both bosses - are painted again in the style the map settled on: thick ink outlines, saturated flat colour, high contrast. Same canvas, same facing, the same unit on the field.',de:'Der Soldat und jeder Gegner - Infanterie, Panzer, Jagdflugzeug, Lokomotive, beide Bosse - sind im Bildstil der Karte neu gemalt: dicke Tusche-Konturen, gesättigte Flächen, hoher Kontrast. Gleiche Leinwand, gleiche Blickrichtung, dieselbe Einheit im Feld.'},
+      {en:'Every route the enemies march is lined with flag pairs - red and cream pennants on wooden poles at even intervals, planted on the shoulder clear of the driving surface and of every unit step: spawn to bunker, each lane, each rail line.',de:'Jeder Weg, den die Gegner laufen, steht jetzt voller Flaggenpaare - rote und cremefarbene Wimpel an Holzmästen in gleichem Abstand, auf der Schulter gepflanzt, fern der Fahrbahn und jedes Einheitenschritts: Spawn bis Bunker, jede Spur, jede Schiene.'},
+      {en:'Raised the cache wave to 20261124-aim10, because the marching units changed their paint: no device should fight with yesterdays eyes.',de:'Die Cache-Welle auf 20261124-aim10 erhöht, weil die marschierenden Einheiten ihre Farbe wechselten: Kein Gerät soll mit den Augen von gestern kämpfen.'},
+    ],
+    open:[
+      {en:'How the new soldier and enemies sit against the map is the operators call in the game - palette and pennant colours are one-line changes each way.',de:'Wie Soldat und Gegner zur Karte sitzen, entscheidet der Betreiber im Spiel - Palette und Wimpelfarben sind jeweils eine Zeile Änderung.'},
+    ]
+  },
   {
     id:'aim9',build:'20261124-aim9',pr:445,
     title:{en:'Off the Ground · The Map Stands Up',de:'Vom Boden ab · Die Karte steht auf'},

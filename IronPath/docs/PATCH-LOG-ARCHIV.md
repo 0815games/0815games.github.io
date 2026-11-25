@@ -1,6 +1,6 @@
 # Iron Path – Patch-Log: Archiv
 
-Ältere Einträge IPL-0001 bis IPL-0111. Die neuesten 20 stehen in
+Ältere Einträge IPL-0001 bis IPL-0112. Die neuesten 20 stehen in
 [PATCH-LOG.md](PATCH-LOG.md); die Regeln für beide Dateien dort und in
 [`../../AGENTS.md`](../../AGENTS.md). Beim Verschieben wandert ein Eintrag immer
 vollständig einschließlich seiner Ereignis-Nachträge.
@@ -4607,3 +4607,17 @@ sie geprüft wurde.
 - **Prüfungen:** Zieltests `menu-redesign`/`endless-launcher`/`endless-last-run-rules`/`language`: 38/38; Sicherheitsnetz `account-save-contract`/`active-session`/`rules-publish-dry-run`/`social-cleanup-rules`/`friend-stats-rules-diff`: 22/22. `patch.mjs check --fast`: 0 Fehler (2 Hinweise vor der Welle). Browser-/Emulator-Fahrten laufen in der CI; Sichtprüfung über die lokale Live-Vorschau.
 - **Git / PR / Release:** Wird mit Welle und PR-Nummer fortgeschrieben.
 - **Offen / nächster Schritt:** Cache-Welle `20261123-endless5` inkl. Feldnotizen, PR, CI, Merge, Pages-Nachweis. **Betreiber-Schritt danach:** Regelkandidat gemäß `ENDLESS-LAST-RUN-ROLLOUT.md` veröffentlichen – erst dann schreibt der Client das Feld serverseitig; bis dahin greift der Geräte-Spiegel, und die Zähler laufen unverändert weiter. Block E Scheibe 2 bleibt eigenes Paket.
+
+## IPL-0112 – Endless-Last-Run: Publish-Datei aus dem echten Live-Regel-Export gebaut (PR `#374`)
+- **Zeit / Quelle:** 2026-11-23 UTC; Betreiber lieferte den aktuellen Firebase-Regelsatz als Datei (`live-rules.json`) mit der Vorgabe: Änderungen in einer Datei speichern und GitHub-Link wiedergeben.
+- **Block / Ziel:** Aktivierung der Profil-Schreibung aus `IPL-0111` (letzte Endlos-Runde auf `players/$uid/endlessLastRun`), kein Client-Code geändert.
+- **Branch / Basis:** `arena/5cd3c659-0815games-github-io` ab `aa02ea5330dbcdfd38a06634f5ccb6b7c5371d9f` (`main`, Merge PR `#373`). Feature-Commit `5a965484b571dfb3ad589e87fbaafd7c184b3982` gepusht, PR `#374` eröffnet. Keine Cache-Welle (kein Client-Code).
+- **Änderungen / Dateien:**
+  - `IronPath/firebase/live-rules-20261123.json`: Der vom Betreiber gelieferte Live-Export, byteidentisch als Referenz abgelegt (108.675 Bytes, SHA-256 `7a78078f643918c2120a791763073caf0fecf5e9f52f8355243fe0ffac69629e`, CRLF). Enthält – wie erwartet – die vier Endlos-Zähler und `tutorial`, aber kein `endlessLastRun` bei `$other:{".validate":false}`.
+  - `IronPath/firebase/ENDLESS-LAST-RUN-TO-PUBLISH.json`: Aus exakt diesem Export per `applyEndlessLastRunRules` (`firebase/endless-last-run-candidate.mjs`) erzeugt. Struktureller Diff: **genau ein hinzugefügter Pfad** `/rules/players/$uid/endlessLastRun` (Objekt-Validierung `hasChildren(['waves','bosses','sector'])`, Ganzzahlen `waves` ≤ 100000, `bosses` ≤ 20000, `sector` ≤ 999, `date` ≥ 0, `$other:false`), **0 geändert, 0 entfernt**.
+  - `IronPath/firebase/ENDLESS-LAST-RUN-ROLLOUT.md`: Publish-Anleitung auf die konkreten Dateien und Prüfwerte konkretisiert.
+  - `IronPath/tests/endless-last-run-rules.test.mjs`: Zweiter Test pinnt das Paar (Live-SHA, Publish = Live + exakt dieses Feld per `deepEqual` auf den erneut angewendeten Bau).
+- **Prüfungen:** `node scripts/rules-publish-dry-run.mjs live-rules-20261123.json --candidate ENDLESS-LAST-RUN-TO-PUBLISH.json`: Live 200 Pfade, Kandidat 206 (6 neu), **Blocker 0, Prüfpunkte 0**, Exit 0, 16 Repo-Entwürfe quergeprüft. `node --test tests/endless-last-run-rules.test.mjs`: 2/2. Kein Cache-Stempel nötig (kein Client-Code); Gesamtsuite folgt im PR-Lauf.
+- **Git / PR / Release:** Wird mit PR-Nummer fortgeschrieben. Nach dem Merge stehen beide Dateien auf `main`; der GitHub-Link zur Publish-Datei geht an den Betreiber.
+- **Offen / nächster Schritt:** **Betreiber:** Publish-Datei in der Firebase Console einspielen (Backup liegt als Live-Export im Repo), danach eine Endlos-Runde beenden und `players/<uid>/endlessLastRun` in der Datenbank kontrollieren. Ab dann synchronisiert der bereits ausgelieferte Client (`20261123-endless5`) die letzte Runde auf alle Geräte. Block E Scheibe 2 bleibt eigenes Paket.
+
