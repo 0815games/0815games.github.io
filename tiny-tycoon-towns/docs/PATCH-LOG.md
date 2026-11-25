@@ -963,3 +963,25 @@ Ereignis ergänzt.
   - Der Zwei-Konten-Test auf zwei Geräten steht aus (Nutzer). Im Sandbox-Browser ist Firebase nicht erreichbar, daher keine Live-Prüfung.
   - Die Regeln für `friendRequests` und `friends` sind unverändert. Sie passen zum Ablauf (Anfrage senden, annehmen, ablehnen).
   - Keine Firebase-Regeländerung.
+
+### TTT-0058 – Siedlungen: Regeln und Tests (lokal, noch nicht im Spiel)
+
+- Auftrag des Nutzers: Wohnhäuser mit Bevölkerung, automatische Zuweisung zu Produktionsgebäuden mit
+  manueller Möglichkeit, Tageslohn, fünf sichtbare Stufen. Erste Version nur Arbeitszuweisung, ohne Bedürfnisse.
+- Entscheidungen (Nutzer, 2026-11-25): Zuweisung automatisch, dort wo es sinnvoll ist. Manuell möglich.
+  Fünf Stufen. Lohn je Arbeiter und Tag, automatisch abgezogen (Option B).
+- Neu:
+  - `src/domain/settlement.js`: Stufe je Gebäude, Kapazität, Wachstum (mit Bruchteil), Besetzungsfaktor,
+    Lohn je Minute, automatische und manuelle Zuweisung (Pendelbereich 3 Felder).
+  - `data/settlements.json`: Startwerte (Kapazität 2 bis 10, Wachstum 0,05 je Minute, Lohn 6 je Tag,
+    drei Arbeitsplätze je Produktionsgebäude, Stufen ab Stadtlevel 1, 6, 12, 20, 28).
+  - `tests/settlement.test.mjs`: 9 Tests.
+- Nicht im Spiel: Das Modul wird von keinem Spielcode importiert. Kein Spielstand, keine Anzeige, keine Welle.
+- Tests: `node --test tests/settlement.test.mjs` 9/9 grün. Probe: ohne Pendelbereich-Prüfung wird ein Test rot.
+  `npm test` 161/161 grün.
+- Grenzen / offen:
+  - Die Zahlen sind Startwerte. Lohn, Wachstum und Ertrag müssen in der Balance-Simulation geprüft werden,
+    bevor sie ins Spiel kommen.
+  - Der Besetzungsfaktor (50 bis 100 %) ist eine Annahme. Sie soll mit den Spielern geprüft werden.
+  - Noch nicht umgesetzt: Anbindung an Spielstand und Gebäude-Upgrades, Anzeige, Gestalten der fünf Stufen.
+  - Keine Firebase-Regeländerung. Kein Vercel.
