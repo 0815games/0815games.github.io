@@ -53,25 +53,35 @@
 .soldier-collection-list{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .soldier-collection-item{padding:11px;background:#152b21;border:1px solid #536b55;min-width:0}
 .soldier-collection-item.is-equipped{border-color:#d0b971;background:#304332}
+.soldier-collection-item.has-art{display:grid;grid-template-columns:46px 1fr;gap:8px;align-items:start}
+.soldier-collection-item.has-art>img{align-self:start}
 .soldier-collection-item>div{display:flex;justify-content:space-between;gap:8px;align-items:start}
 .soldier-collection-item strong{color:#f5e4b1;overflow-wrap:anywhere}
 .soldier-collection-item span{font-size:.6rem;color:#d7c68d;letter-spacing:.04em;text-align:right}
 .soldier-collection-item p{font-size:.75rem;line-height:1.4;color:#ccd7c1;margin:6px 0 0}
-/* Paper doll: the figure stands between her three slot cards. */
-.soldier-doll{position:relative;display:grid;grid-template-columns:minmax(92px,1fr) minmax(130px,180px) minmax(92px,1fr);grid-template-areas:"gear figure weapon" "gadget gadget gadget";gap:10px;align-items:center}
+/* Paper doll: an RPG loadout board — weapon in her hand, vest on her chest,
+   boots at her feet, spare gear at the hip, gadgets along the belt. */
+.soldier-doll{position:relative;display:grid;grid-template-columns:minmax(92px,1fr) minmax(130px,180px) minmax(92px,1fr);grid-template-areas:"weapon figure vest" "boots figure gear" "gadget gadget gadget";gap:10px;align-items:stretch}
 .soldier-doll>img{grid-area:figure;justify-self:center;width:100%;max-width:180px;aspect-ratio:1;object-fit:cover;border:1px solid #a7ad80;border-radius:4px;background:#10231c}
 .soldier-slot{display:grid;gap:4px;align-content:start;min-height:96px;margin:0;padding:10px;background:#152b21;border:1px solid #536b55;color:#f3edda;text-align:left;cursor:pointer}
 .soldier-slot:hover,.soldier-slot:focus-visible{border-color:#d0b971;background:#1e3529}
 .soldier-slot[aria-expanded=true]{border-color:#d0b971;background:#2e4636}
-.soldier-slot[data-slot=gear]{grid-area:gear}
-.soldier-slot[data-slot=weapon]{grid-area:weapon}
-.soldier-slot[data-slot=gadget]{grid-area:gadget;justify-self:center;min-width:min(260px,100%)}
+.soldier-slot[data-place=weapon]{grid-area:weapon}
+.soldier-slot[data-place=vest]{grid-area:vest}
+.soldier-slot[data-place=boots]{grid-area:boots}
+.soldier-slot[data-place=gear]{grid-area:gear}
+.soldier-slot[data-place=gadget]{grid-area:gadget;justify-self:center;min-width:min(260px,100%)}
+.soldier-slot-art{width:100%;aspect-ratio:1.7;object-fit:cover;border:1px solid #6d7c5a;border-radius:3px;background:#0e1f18}
+.soldier-slot[aria-expanded=true] .soldier-slot-art,.soldier-slot:hover .soldier-slot-art{border-color:#d0b971}
+.soldier-choice-art{width:46px;height:46px;object-fit:cover;border:1px solid #6d7c5a;border-radius:3px;background:#0e1f18}
 .soldier-slot-label{font-size:.6rem;letter-spacing:.14em;color:#e1c683}
 .soldier-slot strong{color:#f5e4b1;overflow-wrap:anywhere}
 .soldier-slot-effect{font-size:.68rem;line-height:1.4;color:#aebfa6}
 .soldier-slot-picker{display:grid;gap:8px;margin-top:10px;padding:12px;background:#152b21;border:1px solid #61775b}
 .soldier-slot-picker h4{margin:0;font:700 .95rem Georgia,serif;color:#f0e8cf}
 .soldier-slot-picker p{margin:0;font-size:.75rem;line-height:1.45;color:#ccd7c1}
+.soldier-slot-choice{grid-template-columns:46px 1fr auto;gap:8px;align-items:center}
+.soldier-slot-choice{display:grid}
 .soldier-slot-picker button{min-height:40px;margin:0;background:#cdb977;color:#192d20;border-color:#dec988}
 .soldier-slot-picker button.is-secondary{background:#1d3229;color:#d5e0cd;border-color:#61775b}
 .soldier-slot-picker [role=status]{font-size:.72rem;color:#e1c683}
@@ -79,8 +89,8 @@
 @media(max-width:640px){
  .soldier-hero{padding:14px 16px}
  .soldier-body{grid-template-columns:1fr;padding:12px}
- /* The doll stacks on the phone: figure first, then the three slots. */
- .soldier-doll{grid-template-columns:1fr;grid-template-areas:"figure" "gear" "weapon" "gadget"}
+ /* The doll stacks on the phone: figure first, then each place. */
+ .soldier-doll{grid-template-columns:1fr;grid-template-areas:"figure" "weapon" "vest" "boots" "gear" "gadget"}
  .soldier-doll>img{max-width:clamp(110px,38vw,150px)}
  .soldier-collection-list{grid-template-columns:1fr}
 }

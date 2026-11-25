@@ -1,18 +1,47 @@
-import {soldierProfile} from '../core/soldier-profile.mjs?v=20261121-fund1';
+import {soldierProfile} from '../core/soldier-profile.mjs?v=20261121-dossier1';
 import {characterProgress} from '../core/progression.mjs?v=20261105-prestige1';
-import {renderRankInsignia,rankForLevel,rankTooltip} from '../core/rank-insignia.mjs?v=20261121-fund1';
+import {renderRankInsignia,rankForLevel,rankTooltip} from '../core/rank-insignia.mjs?v=20261121-dossier1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
-import {decodeWorkshop} from '../workshop/workshop-wire.mjs?v=20261121-fund1';
-import {slotOf} from '../workshop/workshop-model.mjs?v=20261121-fund1';
+import {decodeWorkshop} from '../workshop/workshop-wire.mjs?v=20261121-dossier1';
+import {slotOf} from '../workshop/workshop-model.mjs?v=20261121-dossier1';
 import {WORKSHOP_CATALOG} from '../workshop/workshop-catalog.mjs?v=20261108-balance2';
 import {PRESTIGE,isPrestige} from '../core/prestige.mjs?v=20261112-pressure1';
-import {readArmory,ITEMS} from '../core/armory.mjs?v=20261121-fund1';
+import {readArmory,ITEMS} from '../core/armory.mjs?v=20261121-dossier1';
 // The Field Dossier is the character hub: the soldier stands between her
 // three loadout slots (paper doll), each card names what she wears and opens
 // an inline picker. Every change goes through the account workshop service -
 // this screen never writes a save itself.
-const SLOTS=['gear','weapon','gadget'];
-const SLOT_BUTTONS={gear:'soldierSlotGear',weapon:'soldierSlotWeapon',gadget:'soldierSlotGadget'};
+// The dossier shows five anatomical places around the figure: the weapon in
+// her hand, the vest on her chest, boots at her feet, spare gear at the hip
+// and the gadgets along the belt. The mechanics stay three-slot (slotOf) —
+// the split is presentation only, and every place opens its slot's picker.
+const PLACE_BUTTONS={weapon:'soldierSlotWeapon',vest:'soldierSlotVest',boots:'soldierSlotBoots',gear:'soldierSlotGear',gadget:'soldierSlotGadget'};
+const PLACE_SLOT={weapon:'weapon',vest:'gear',boots:'gear',gear:'gear',gadget:'gadget'};
+// Item artwork in the reference style of assets/armory-kit.jpg. Keys without
+// an image yet simply render the text card (artwork lands with the piece).
+const ITEM_ART={
+ 'legacy-1':'assets/equip-scope.jpg?v=20261121-dossier1',
+ 'legacy-2':'assets/equip-vest.jpg?v=20261121-dossier1',
+ 'legacy-3':'assets/equip-boots.jpg?v=20261121-dossier1',
+ 'legacy-4':'assets/equip-binoculars.jpg?v=20261121-dossier1',
+ 'legacy-5':'assets/equip-fieldradio.jpg?v=20261121-dossier1',
+ 'legacy-6':'assets/equip-satchel.jpg?v=20261121-dossier1',
+ 'legacy-7':'assets/equip-pouch.jpg?v=20261121-dossier1',
+ 'legacy-8':'assets/equip-manual.jpg?v=20261121-dossier1',
+ 'legacy-9':'assets/equip-badge.jpg?v=20261121-dossier1',
+ 'legacy-10':'assets/equip-tankkit.jpg?v=20261121-dossier1',
+};
+const artOf=id=>ITEM_ART[id]||'';
+// Which anatomical place wears this piece. Presentation only — the equip
+// mechanics still go through slotOf (weapon/gear/gadget), never this.
+function placeOf(id){
+ const slot=slotOf(id);
+ if(slot==='weapon')return 'weapon';
+ if(slot==='gadget')return 'gadget';
+ if(id==='legacy-3'||id==='boots')return 'boots';
+ if(id==='legacy-2'||id==='prestige-convoy-plate')return 'vest';
+ return 'gear';
+}
 export function createSoldierScreen({document,getProfile,translate:tr,getPortrait=null,onArmory,onSkills,workshopService=null,onProfile=()=>{}}){
  const $=id=>document.getElementById(id),dialog=$('soldierDialog');
  let openSlot=null,working=false,status='';
@@ -60,6 +89,8 @@ export function createSoldierScreen({document,getProfile,translate:tr,getPortrai
   if(!candidates.length)box.append(el('p','',tr('No gear for this slot yet. Craft it in the Armory workshop.')));
   for(const id of candidates){
    const isTaken=taken.includes(id),row=el('div','soldier-slot-choice');
+   const art=artOf(id);
+   if(art){const img=el('img','soldier-choice-art');img.src=art;img.alt='';row.append(img);}
    row.append(el('strong','',itemName(id)));
    const button=el('button',isTaken?'is-secondary':'',isTaken?tr('TAKEN'):tr('TAKE'));
    button.type='button';button.disabled=working;
@@ -73,28 +104,30 @@ export function createSoldierScreen({document,getProfile,translate:tr,getPortrai
   $('soldierNameDisplay').textContent=data.name;$('soldierLevelDisplay').textContent=tr('LEVEL {level}',{level:data.level});const rank=rankForLevel(data.level);renderRankInsignia(document,$('soldierRank'),{level:data.level},{size:30});$('soldierRankName').textContent=tr(rank.name);$('soldierRank').title=rankTooltip(data.level);$('soldierPortrait').src=(typeof getPortrait==='function'?getPortrait():null)||(data.gender==='male'?'assets/soldier-male.jpg':'assets/soldier-female.jpg');
   $('soldierAbility').textContent=data.classId&&data.className?`${tr(data.className)} · ${tr(data.ability)}`:tr(data.ability);
   const progress=characterProgress(profile.xp||0);$('soldierXpBar').value=progress.current;$('soldierXpBar').max=progress.required;$('soldierXpText').textContent=`${progress.current} / ${progress.required} XP`;$('soldierDamage').textContent=String(data.damage);$('soldierRange').textContent=String(data.range);$('soldierMovement').textContent=String(data.movement);$('soldierCooldown').textContent=data.cooldown===null?'—':tr('{seconds} s',{seconds:data.cooldown});
-  // The paper doll: three slot cards around the portrait, plus the legacy
-  // one-slot note for gear that still counts from the old armory.
+  // The paper doll: five anatomical places around the portrait, plus the
+  // legacy one-slot note for gear that still counts from the old armory.
   const workshop=workshopOf(profile);
-  for(const slot of SLOTS){
-   const buttonId=SLOT_BUTTONS[slot];
-   // Every worn piece of this category shows on its card at once — the old
+  for(const [place,buttonId] of Object.entries(PLACE_BUTTONS)){
+   // Every worn piece of this place shows on its card at once — the old
    // one-item-per-slot limit is gone (IPL-0137).
-   const worn=workshop?workshop.equipped.filter(id=>slotOf(id)===slot):[];
+   const worn=workshop?workshop.equipped.filter(id=>placeOf(id)===place):[];
    $(buttonId+'Name').textContent=worn.length?worn.map(itemName).join(' · '):tr('NOTHING TAKEN');
    $(buttonId+'Effect').textContent=worn.length?worn.map(itemEffect).filter(Boolean).join(' '):'';
-   $(buttonId).setAttribute('aria-expanded',String(openSlot===slot));
+   // The place shows the artwork of what she wears; empty places stay text.
+   const artNode=$(buttonId+'Art'),artId=worn.find(id=>artOf(id));
+   if(artId){artNode.src=artOf(artId);artNode.hidden=false;}else{artNode.hidden=true;artNode.removeAttribute?.('src');}
+   $(buttonId).setAttribute('aria-expanded',String(openSlot===PLACE_SLOT[place]));
   }
   $('soldierInventoryCount').textContent=tr('{count} pieces owned',{count:workshop?workshop.owned.length:0});
   const armory=readArmory(profile.armory),legacyItem=armory.equipped?ITEMS[armory.equipped-1]:null;
   $('soldierLegacyNote').hidden=!legacyItem;
   if(legacyItem)$('soldierLegacyNote').textContent=tr('Existing equipment: {name} - still counts in your combat profile.',{name:tr(legacyItem.name)});
   renderPicker(workshop);
-  const items=data.inventory.filter(item=>item.owned),list=$('soldierCollectionList');$('soldierCollectionEmpty').hidden=items.length>0;list.replaceChildren();for(const item of items){const row=document.createElement('li'),heading=document.createElement('div'),name=document.createElement('strong'),statusTag=document.createElement('span'),effect=document.createElement('p');row.className='soldier-collection-item';if(item.equipped)row.classList.add('is-equipped');name.textContent=tr(item.name);statusTag.textContent=tr(item.equipped?'EQUIPPED':'UNLOCKED');heading.append(name,statusTag);effect.textContent=tr(item.description);row.append(heading,effect);list.append(row);}
+  const items=data.inventory.filter(item=>item.owned),list=$('soldierCollectionList');$('soldierCollectionEmpty').hidden=items.length>0;list.replaceChildren();for(const item of items){const row=document.createElement('li'),heading=document.createElement('div'),name=document.createElement('strong'),statusTag=document.createElement('span'),effect=document.createElement('p');row.className='soldier-collection-item';if(item.equipped)row.classList.add('is-equipped');name.textContent=tr(item.name);statusTag.textContent=tr(item.equipped?'EQUIPPED':'UNLOCKED');heading.append(name,statusTag);effect.textContent=tr(item.description);const art=artOf(`legacy-${item.id}`);if(art){row.classList.add('has-art');const img=document.createElement('img');img.className='soldier-choice-art';img.src=art;img.alt='';const body=document.createElement('div');body.append(heading,effect);row.append(img,body);}else row.append(heading,effect);list.append(row);}
  }
  function close(){if(dialog.open)dialog.close();}
- for(const slot of SLOTS){
-  const button=$(SLOT_BUTTONS[slot]);
+ for(const [place,buttonId] of Object.entries(PLACE_BUTTONS)){
+  const slot=PLACE_SLOT[place],button=$(buttonId);
   button.onclick=()=>{if(openSlot===slot)openSlot=null;else openSlot=slot;status='';render();};
   button.onkeydown=event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();button.onclick();}};
  }
