@@ -18,9 +18,9 @@
     "soil": { "wearPerUnit": 0.002, "regenPerMin": 0.01, "floor": 0.4, "renewBelow": 60 }
   },
   "storage": { "base": 500, "perWarehouseLevel": 250, "maxWarehouseLevel": 20 },
-  "townLevelThresholds": [0, 2000, 6000, 16000, 162000, 243092, 411982, 690937, 1155563, 1938000, 3060000, 4896000],
+  "townLevelThresholds": [0, 2000, 6000, 16000, 765000, 918000, 1098000, 1323000, 1584000, 1980000],
   "gridSizeByTownLevel": { "1": 6, "3": 7, "5": 8, "8": 9, "10": 10 },
-  "xp": { "buildingPlaced": 20, "upgradePerNewLevel": 5, "merchantPurchase": 2, "convoyDelivered": 25 },
+  "xp": { "buildingPlaced": 20, "upgradePerNewLevel": 5, "merchantPurchase": 2, "convoyDelivered": 25, "perCoin": 1 },
   "offline": { "baseCapHours": 8, "maxCapHours": 16, "adBonusHours": 4 },
   "save": { "debounceSeconds": 60 }
 }

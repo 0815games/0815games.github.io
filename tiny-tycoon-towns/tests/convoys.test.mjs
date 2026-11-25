@@ -140,7 +140,7 @@ test('settling an arrived export pays coins, grants XP and marks the convoy sett
   const expected = exportPayout({ qty: 20, basePrice: data.resources.grain.basePrice, distance: 2 });
   assert.equal(r.state.coins, coinsBefore + expected.coins);
   assert.equal(r.payout.crowns, expected.crowns);
-  assert.equal(r.state.townXp, xpBefore + 25);
+  assert.equal(r.state.townXp, xpBefore + 25 + Math.floor(expected.coins * data.economy.xp.perCoin));
 });
 
 test('settling is idempotent: a second call changes nothing', () => {

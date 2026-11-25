@@ -1,6 +1,6 @@
 // Platzierungsregeln: Welches Gelände ein Gebäude braucht, und wie Felder der Farm funktionieren.
 // Reine Funktionen ohne Zustandsänderung. Alle Regeln stehen in data/buildings.json („placement“).
-import { inBounds, keyOf, isUnlocked } from './grid.js?v=20261125-eco1';
+import { inBounds, keyOf, isUnlocked } from './grid.js?v=20261125-bal1';
 
 const N4 = [[1, 0], [-1, 0], [0, 1], [0, -1]];
 const N8 = [...N4, [1, 1], [1, -1], [-1, 1], [-1, -1]];

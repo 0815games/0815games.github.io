@@ -4,6 +4,16 @@
 
 export const RELEASED_PATCHES = [
   {
+    build: '20261125-bal1',
+    date: '2026-11-25',
+    items: [
+      {
+        de: 'Balance: Stadtlevel wächst jetzt mit deinem Ertrag, nicht nur mit Bauen. Das Raster bleibt nicht mehr stehen, wenn die Fläche voll ist. Höchststufe ist 10, danach kommen die Freibriefe.',
+        en: 'Balance: town level now grows with your earnings, not only with building. The grid no longer stalls when the land is full. The top level is 10; charters come after that.',
+      },
+    ],
+  },
+  {
     build: '20261125-eco1',
     date: '2026-11-25',
     items: [

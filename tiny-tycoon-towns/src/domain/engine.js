@@ -1,16 +1,16 @@
 // Game engine: state creation, player actions and time advance.
 // Every exported action is (state, input, ctx) -> { state, events, error? }.
 // The input state is never mutated.
-import { generateTerrain } from './terrain.js?v=20261125-eco1';
-import { GRID, HALL, keyOf, parseKey, inBounds, isUnlocked } from './grid.js?v=20261125-eco1';
-import { checkPlacement, fieldsOf, fieldSlots } from './placement.js?v=20261125-eco1';
+import { generateTerrain } from './terrain.js?v=20261125-bal1';
+import { GRID, HALL, keyOf, parseKey, inBounds, isUnlocked } from './grid.js?v=20261125-bal1';
+import { checkPlacement, fieldsOf, fieldSlots } from './placement.js?v=20261125-bal1';
 import {
   classOf, buildCost, productionMultiplier, townLevelFor,
   storageCap, throughputPerMin, sellPrice, ratePerMin,
   FULL, fishingGround, soilOf, fishStock, forestHealth,
-} from './economy.js?v=20261125-eco1';
-import { merchantOffers } from './merchant.js?v=20261125-eco1';
-import { arriveConvoys, payoutFor } from './convoys.js?v=20261125-eco1';
+} from './economy.js?v=20261125-bal1';
+import { merchantOffers } from './merchant.js?v=20261125-bal1';
+import { arriveConvoys, payoutFor } from './convoys.js?v=20261125-bal1';
 
 export const SCHEMA_VERSION = 1;
 export const BIOMES = ['riverlands', 'deepwoods', 'highlands', 'coast'];
@@ -156,7 +156,7 @@ export function upgradeBuilding(state, { x, y }, ctx) {
   sb.level += 1;
 
   const events = [{ type: 'upgraded', x, y, buildingId: b.id, level: sb.level }];
-  const lu = addXp(s, data.economy.xp.upgradePerNewLevel * sb.level * sb.level, data);
+  const lu = addXp(s, data.economy.xp.upgradePerNewLevel * sb.level, data);
   if (lu) events.push(lu);
   return { state: s, events };
 }
@@ -233,7 +233,7 @@ export function settleConvoyAction(state, { id }, ctx) {
     const cap = storageCap(s, data);
     s.stock[convoy.resource] = Math.min(cap, (s.stock[convoy.resource] ?? 0) + payout.goods);
   }
-  const lu = addXp(s, payout.xp, data);
+  const lu = addXp(s, payout.xp + payout.coins * data.economy.xp.perCoin, data);
   const events = [{ type: 'convoy_settled', id, coins: payout.coins, crowns: payout.crowns, goods: payout.goods }];
   if (lu) events.push(lu);
   return { state: s, events, payout };
@@ -366,6 +366,8 @@ function sell(s, dt, data, events) {
     s.coins += coins;
     s.lifetimeCoins += coins;
     events.push({ type: 'sold', coins, units });
+    const lu = addXp(s, coins * data.economy.xp.perCoin, data);
+    if (lu) events.push(lu);
   }
 }
 
