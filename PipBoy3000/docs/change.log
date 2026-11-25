@@ -1,5 +1,52 @@
 # CHANGELOG
 
+## v14.0.14 (Patch-Ablauf, Update-Fenster im Spiel, 2026-11-24)
+Auftrag: "Schau dir bitte mal als Referenz zum Patch-System IronPath und Tiny
+Tycoon Towns im Repo an. Ich moechte einen gleichen Ablauf zum Patchen und
+Update. Neue Versionen mit Benachrichtigung was gemacht wurde (Spiel UI
+Popup-Fenster etc) und Neuladen der Dateien - volles Programm."
+
+PipBoy3000 hatte von alledem nichts: der Versionsstempel lebte an vier
+Stellen, die niemand gegeneinander prueft, ein Release war Handarbeit, und ein
+offener Tab erfuhr von einer neuen Version nie etwas.
+
+- [NEU] **`tools/patch.mjs`** - ein Werkzeug mit zwei Unterbefehlen, Nachbau
+  von `IronPath/scripts/patch.mjs` und `tiny-tycoon-towns/scripts/patch.mjs`.
+  `check` prueft Stempel, Notizen, Geheimnisse, Struktur und optional die
+  Suite; `bump` zaehlt die Version hoch und schreibt alle Quellen, die sie
+  tragen. Schreibt nur mit `--apply`, merged und deployed nie.
+- [FIX] **Der Stempel wird jetzt gemessen.** Zehn Anker: `shell/Version`,
+  `package.json`, `build.json`, `Version`, die drei `?v=`-Verweise und der
+  Meta-Stempel in `index.html`, der oberste Patch-Notizen-Eintrag und der
+  Changelog. Beim Bau des Werkzeugs stand `build.json` noch auf der vorigen
+  Version, waehrend `shell/Version` schon weiter war - genau der Zustand, den
+  vorher niemand sehen konnte.
+- [NEU] **`bump` schreibt nur Quellen.** Ein erster Entwurf schrieb auch
+  `index.html`, `app.js` und `docs/BALANCING.md` mit - also erzeugte Dateien.
+  Arbeit, die der naechste Build verwirft. Jetzt: `bump` (Quellen),
+  `node build.mjs` (Artefakte), `check` (beide Seiten gegeneinander).
+- [NEU] **Patch-Notizen im Spiel** (`src/ui/ui_patch_notes.js`): zwei Reiter,
+  VEROEFFENTLICHT und NOCH OFFEN, mit dem installierten Build daneben. Neu im
+  Spielmenue unter PATCH-NOTIZEN und auf dem Login-Bildschirm. Die fruehere
+  LOGS-Ansicht (blau, Markdown per `fetch`) ist ersetzt - Blau kommt im
+  Entwurf nicht vor, und ohne Netz stand dort eine Fehlermeldung.
+- [NEU] **Update-Pruefung und kontrolliertes Neuladen**
+  (`src/ui/ui_update.js`): prueft beim Start und danach alle 60 Sekunden
+  `build.json`, meldet eine neue Fassung ueber einen Balken unten und laedt
+  neu - aber nur, wenn kein Dialog offen ist, kein Kampf laeuft und der
+  Spielstand gespeichert ist. Ein Cache-Brecher je Anfrage, ein
+  Versuchsmarker in der Adresse gegen Neuladeschleifen, und ein NEUE VERSION
+  GELADEN-Hinweis nach dem Sprung.
+- [FIX] **ESC im Handbuch tat nichts.** Der Knopf sagte seit jeher
+  "SCHLIESSEN (ESC)", `_trapEscKey()` kennt aber nur `#dialog-overlay`.
+  Handbuch und Patch-Notizen haben jetzt einen eigenen ESC-Weg.
+- [NEU] **`tests/patch-ablauf.test.mjs` (13 Tests)** - nicht "ist die Funktion
+  da", sondern: bewegt ein Bump auf einer Kopie jeden Anker, faellt ein
+  absichtlich stehen gelassener Anker auf, und laedt die Seite bei offenem
+  Dialog, laufendem Kampf oder offener Speicherung wirklich nicht neu.
+  Gegenprobe: der `return`/`continue`-Fehler im Planer und der gierige
+  Notizen-Anker wurden von diesen Tests gefunden, nicht von mir.
+
 ## v14.0.13 (Eine Schrift im ganzen Spiel, Item-Bild im Charaktermenue, 2026-11-24)
 Zwei Rueckmeldungen: "Beim Anklicken der Gegenstaende am Charakter im
 Charaktermenue Status oeffnet sich die Detailansicht der Items. Hier ist kein

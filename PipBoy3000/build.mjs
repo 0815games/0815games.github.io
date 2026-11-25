@@ -225,6 +225,17 @@ async function renderShell(file, version, {game}) {
     `    <link rel="stylesheet" href="app.css?v=${version}">\n    <link rel="stylesheet" href="style.css?v=${version}">\n`
   );
 
+  // Der Build-Stempel in der Seite. Ohne ihn weiss das laufende Spiel nicht,
+  // welche Fassung es selbst ist - die Update-Pruefung (src/ui/ui_update.js)
+  // vergleicht genau diesen Wert mit build.json auf dem Server. Die Quelle
+  // traegt einen Platzhalter, hier wird die echte Version eingesetzt.
+  if (game) {
+    if (!/<meta name="pipboy-build" content="[^"]*">/.test(html)) {
+      fail('shell/index.html: <meta name="pipboy-build"> fehlt.');
+    }
+    html = html.replace(/(<meta name="pipboy-build" content=")[^"]*(")/, `$1${version}$2`);
+  }
+
   if (game) {
     // Die Hüllseite enthält nur noch Marker, keinen dynamischen Ladeteil. Damit
     // kann der Build nichts mitten in einem Block abschneiden - genau das war

@@ -773,9 +773,31 @@ Object.assign(UI, {
         }
     },
     
+    // Handbuch und Patch-Notizen sind eigene Overlays, keine Dialoge. Sie
+    // brauchen deshalb einen eigenen ESC-Weg: der Knopf im Handbuch sagt seit
+    // jeher "SCHLIESSEN (ESC)", und ESC tat nichts, weil _trapEscKey nur
+    // #dialog-overlay kennt.
+    _trapEigeneOverlays: function() {
+        if (this._eigenerEscHandler) document.removeEventListener('keydown', this._eigenerEscHandler);
+        this._eigenerEscHandler = (e) => {
+            if (e.key !== 'Escape') return;
+            const manual = document.getElementById('manual-overlay');
+            const notizen = document.getElementById('patch-notes-overlay');
+            if (manual && !manual.classList.contains('hidden')) {
+                e.preventDefault(); e.stopPropagation();
+                manual.classList.add('hidden'); manual.style.display = 'none';
+            } else if (notizen && !notizen.classList.contains('hidden')) {
+                e.preventDefault(); e.stopPropagation();
+                if (typeof UI.hidePatchNotes === 'function') UI.hidePatchNotes();
+            }
+        };
+        document.addEventListener('keydown', this._eigenerEscHandler);
+    },
+
     showManualOverlay: async function() {
         const overlay = document.getElementById('manual-overlay');
         const content = document.getElementById('manual-content');
+        if (overlay) this._trapEigeneOverlays();
         if(this.els.navMenu) { this.els.navMenu.classList.add('hidden'); this.els.navMenu.style.display = 'none'; }
         if(overlay && content) {
             content.innerHTML = '<div class="text-center animate-pulse">Lade Handbuch...</div>';
@@ -799,16 +821,13 @@ Object.assign(UI, {
         }
     },
 
-    showChangelogOverlay: async function() {
-        const overlay = document.getElementById('changelog-overlay');
-        const content = document.getElementById('changelog-content');
-        if(overlay && content) {
-            content.textContent = 'Lade Daten...';
-            overlay.style.display = 'flex'; overlay.classList.remove('hidden');
-            const verDisplay = document.getElementById('version-display'); 
-            const ver = verDisplay ? verDisplay.textContent.trim() : Date.now();
-            try { const res = await fetch(`docs/change.log?v=${ver}`); if (!res.ok) throw new Error("Logfile nicht gefunden"); const text = await res.text(); content.textContent = text; } catch(e) { content.textContent = `Fehler beim Laden: ${e.message}`; }
-        }
+    // Die fruehere LOGS-Ansicht (blau, Markdown aus docs/change.log) ist
+    // ersetzt: Blau kommt im Entwurf nicht vor, und eine Datei per fetch zu
+    // lesen hiess, ohne Netz stand dort eine Fehlermeldung. Die Inhalte
+    // stehen jetzt in src/ui/ui_patch_notes.js und werden im Pip-Boy-Stil
+    // gezeichnet - mit dem laufenden Build daneben.
+    showChangelogOverlay: function() {
+        if (typeof UI.showPatchNotes === 'function') UI.showPatchNotes();
     },
 
     enterVault: function() { 
