@@ -70,7 +70,8 @@ if (!commandCenterToken) throw new Error('account.js does not import command-cen
     await page.locator('#multiplayerPromptActions [data-action="later"]').click();
     assert.equal(await page.locator('#multiplayerPrompt').isHidden(),true);
     assert.match(await page.locator('#inviteNotification').textContent(),/1/,'putting the card aside keeps the invitation');
-    await page.locator('#menuTutorial').click();
+    await page.locator('#menuSettings').click();
+    await page.locator('#menuTutorial').click(); // closes Settings, opens the dossier
     await page.locator('#tutorialDossier[open]').waitFor({state:'visible',timeout:15000});
     await page.locator('#dossierAccept').click();
     mark('first-run field');
@@ -717,16 +718,18 @@ if (!commandCenterToken) throw new Error('account.js does not import command-cen
       await page.locator('#endRun').click(); await page.locator('#gameConfirmAccept').click();
       await page.locator('#runResults').waitFor({state: 'visible'});
       await page.locator('#runResults').evaluate(dialog => dialog.close());
-      await page.waitForSelector('#menuTutorial', {state: 'visible'});
+      await page.waitForSelector('#menuSettings', {state: 'visible'});
     };
     // Back to the Command Center with the real control: both restart buttons live there.
     // A synthetic click: the field layout sits over the workspace nav, and this only
     // needs to trigger the same handler a tap would.
     await page.locator('#backToCommand').evaluate(button=>button.click());
-    await page.waitForSelector('#menuTutorial',{state:'visible'});
+    await page.waitForSelector('#menuSettings',{state:'visible'});
+    await page.waitForSelector('#menuTutorial',{state:'attached'});
     // (a) FIELD TUTORIAL in the Command Center opens the dossier, then launches the first run.
     await restartOnce('field tutorial', async () => {
-      await page.locator('#menuTutorial').click();
+      await page.locator('#menuSettings').click();
+      await page.locator('#menuTutorial').click(); // closes Settings, opens the dossier
       await page.locator('#tutorialDossier[open]').waitFor({state: 'visible', timeout: 10000});
       await page.locator('#dossierAccept').click();
     });
