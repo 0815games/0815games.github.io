@@ -37,7 +37,7 @@ import { tutorialResume, tutorialStored, TUTORIAL_STORE_OFFSET, CHECK_LABELS } f
 test('tutorialResume: new towns get the offer, old finished accounts get nothing, progress resumes', () => {
   assert.equal(tutorialResume(0), 'offer', 'neue Stadt: einmal anbieten');
   assert.equal(tutorialResume(3), 3, 'alter Lauf in Arbeit');
-  assert.equal(tutorialResume(8), null, 'alter Lauf fertig: nicht noch einmal');
+  assert.equal(tutorialResume(8), 'offer', 'alte, abgeschlossene Konten bekommen das Angebot einmal');
   assert.equal(tutorialResume(tutorialStored(0)), 0);
   assert.equal(tutorialResume(tutorialStored(9)), 9, 'neuer Lauf wird fortgesetzt');
   assert.equal(tutorialResume(tutorialStored(TUTORIAL_STEPS.length)), null, 'neuer Lauf fertig');

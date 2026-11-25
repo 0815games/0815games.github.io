@@ -70,8 +70,8 @@ export const TUTORIAL_STEPS = Object.freeze([
 ]);
 
 // Gespeichert wird state.tutorialStep:
-//   0 = noch nicht angeboten, 1 bis 7 = alter Lauf in Arbeit, 8 = alter Lauf fertig,
-//   100 + Schritt = neuer Lauf (100 + Länge = fertig).
+//   0 oder 8 = Angebot noch nicht gemacht (8 ist der Stand alter, abgeschlossener Konten),
+//   1 bis 7 = alter Lauf in Arbeit, 100 + Schritt = neuer Lauf (100 + Länge = fertig).
 export const TUTORIAL_STORE_OFFSET = 100;
 
 export const CHECK_LABELS = Object.freeze({
@@ -83,7 +83,7 @@ export const CHECK_LABELS = Object.freeze({
 /** Was beim Start passiert: 'offer' (Angebot zeigen), eine Schrittnummer oder null (nichts mehr). */
 export function tutorialResume(stored) {
   const v = Number(stored) || 0;
-  if (v === 0) return 'offer';
+  if (v === 0 || v === 8) return 'offer';
   if (v >= 1 && v <= 7) return v;
   if (v >= TUTORIAL_STORE_OFFSET && v - TUTORIAL_STORE_OFFSET < TUTORIAL_STEPS.length) return v - TUTORIAL_STORE_OFFSET;
   return null;

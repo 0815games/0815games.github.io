@@ -727,6 +727,12 @@ function startGame() {
     toast('Tipp: Wähle eine Wiese und baue deinen ersten Hof.');
   }
   // Nach einem Update einmal die Neuerungen zeigen. Danach (oder bei Neuinstallation) das Tutorial.
+  startupDialogs();
+}
+
+/** Reihenfolge beim Start: erst das Tutorial-Angebot (für alle, einmal), dann Neuerungen, dann ein laufendes Tutorial. */
+function startupDialogs() {
+  if (tutorialResume(state.tutorialStep ?? 0) === 'offer') return offerTutorial();
   if (!showWhatsNewIfUpdated()) maybeStartTutorial();
 }
 
@@ -868,8 +874,7 @@ function showHelp() {
 function maybeStartTutorial() {
   if (!state) return;
   const r = tutorialResume(state.tutorialStep ?? 0);
-  if (r === 'offer') return offerTutorial();
-  if (r !== null) showTutorialStep(r);
+  if (r !== null && r !== 'offer') showTutorialStep(r);
 }
 
 function offerTutorial() {
@@ -883,9 +888,13 @@ function offerTutorial() {
   $('#tut-offer-yes').addEventListener('click', () => {
     closeDialog();
     saveTutorialStep(0);
-    showTutorialStep(0);
+    // Gibt es Neuerungen, kommt das Tutorial danach (maybeStartTutorial nach dem OK).
+    if (!showWhatsNewIfUpdated()) showTutorialStep(0);
   });
-  $('#tut-offer-no').addEventListener('click', closeDialog);
+  $('#tut-offer-no').addEventListener('click', () => {
+    closeDialog();
+    showWhatsNewIfUpdated();
+  });
   $('#tut-offer-yes').focus();
 }
 
