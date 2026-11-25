@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## v14.0.20 (zwei Loecher im AFK-Schutz, 2026-11-24)
+- [FIX] Ein Tipp irgendwo auf den Bildschirm setzte die AFK-Uhr zurueck, aber
+  das offene Fenster merkte es nicht und meldete trotzdem ab. Jetzt schliesst
+  es bei echter Eingabe.
+- [FIX] Bei offenem Fenster reagierte das Spiel dahinter auf Tastendruecke.
+  `handleKeyDown` steigt jetzt aus, solange `body.fenster-offen` steht; Escape
+  bleibt fuers offene Menue zustaendig.
+
 ## v14.0.19 (Durchsicht der Fenster, 2026-11-24)
 Kein neues Feature - nachgesehen, ob das Ausgelieferte wirklich haelt.
 

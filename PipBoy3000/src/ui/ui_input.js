@@ -295,6 +295,17 @@ Object.assign(UI, {
     handleKeyDown: function(e) {
         if (this.deleteMode) return;
 
+        // Steht ein Fenster (AFK, Update) oder die Permadeath-Warnung, gehoert
+        // die Tastatur dem Fenster. Sonst bewegt Escape oder eine Pfeiltaste
+        // das Spiel DAHINTER - und im Update-Fall steht dann "SPAETER" ueber
+        // einer Ansicht, die man schon verlassen hat. Escape bleibt fuer das
+        // offene Menue zustaendig, damit man sich nicht aussperrt.
+        if (!e.__fenster && typeof document !== 'undefined' && document.body &&
+            document.body.classList.contains('fenster-offen')) {
+            const menueOffen = this.els.navMenu && !this.els.navMenu.classList.contains('hidden');
+            if (e.key !== 'Escape' || !menueOffen) return;
+        }
+
         if (this.charSelectMode) {
             if (e.key === 'ArrowUp') this.navigateCharSlot(-1);
             else if (e.key === 'ArrowDown') this.navigateCharSlot(1);
