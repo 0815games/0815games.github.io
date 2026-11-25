@@ -1011,3 +1011,23 @@ Ereignis ergänzt.
   - Lohn: Bei zu wenig Münzen bleibt die Arbeiterzahl gleich. Gehen Arbeiter bei fehlendem Lohn? Nicht umgesetzt.
   - Die Balance-Simulation kennt Siedlungen noch nicht. Ohne sie sind Lohn, Wachstum und Bonus Schätzungen.
   - Die Produktionsrate in der Anzeige (`ratePerMin`) berücksichtigt den Besetzungsfaktor noch nicht.
+
+### TTT-0060 – Siedlungen: Zuweisung im Spiel (lokal, nicht veröffentlicht)
+
+- Auftrag des Nutzers: „Weiter“, also Schritt 2 (Anzeige und Zuweisung im Spiel).
+- Neu:
+  - Produktionsgebäude: Abschnitt „Arbeiter“ im Feld-Fenster. Zeigt Besetzung (X von 3), Faktor, manuell und
+    automatisch. Darunter die Wohnhäuser im Umkreis von 3 Feldern mit Bewohnern und freien Plätzen, „−“ und „+“.
+  - Wohnhaus: Bewohner p / Kapazität, Zahl der Arbeiter in Betrieben, freie Bewohner.
+  - Produktionsrate im Fenster berücksichtigt jetzt den Besetzungsfaktor.
+  - Fehlertexte für die neuen Fehler (`tooFar`, `noRoom`, `notHouse`, `notProducer`, `badAmount`).
+  - `src/domain/engine.js`: `staffing(state, data)` als Lesezugriff für die Anzeige.
+  - `src/main.js`: Aktion `worker` ruft `setWorkerAssignment` über die übliche `dispatch`-Schiene auf.
+- Tests: `tests/settlement.test.mjs` 14 Tests (eins neu für `staffing`). `npm test` 165/165 grün (Zählung nach dem
+  neuen Test: siehe Lauf unten). `npm run check` ohne Fehler.
+- Grenzen / offen:
+  - Die Anzeige ist nicht im Browser geprüft. Firebase ist in der Sandbox nicht erreichbar, das Spiel startet dort
+    nicht. Die Logik ist mit Tests belegt, das Aussehen nicht.
+  - Gestalten der fünf Stufen (Schritt 3) fehlen.
+  - Die Frage „Betrieb ohne Arbeiter: normal oder null?“ ist offen. Aktuell gilt normal + Bonus bei voller Besetzung.
+  - Keine Welle, keine Veröffentlichung, keine Firebase-Regeländerung.

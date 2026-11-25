@@ -425,6 +425,11 @@ function sell(s, dt, data, events) {
  * (offline cap). Time beyond the cap is discarded.
  * ctx: { data, maxElapsedSec, dateKey? }
  */
+/** Lesezugriff für die Anzeige: wer wohnt, wer arbeitet wo (ohne den Spielstand zu ändern). */
+export function staffing(state, data) {
+  return workforce(state, data);
+}
+
 /**
  * Manuelle Zuweisung: n Arbeiter aus dem Haus in das Produktionsgebäude. n = 0 hebt sie auf.
  * Abgelehnt wird, was außerhalb des Pendelbereichs liegt oder kein Platz mehr hat.

@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import {
   stageFor, houseCapacity, growHouse, staffFactor, wageDue, assignWorkers,
 } from '../src/domain/settlement.js';
-import { createTown, placeBuilding, advance, setWorkerAssignment } from '../src/domain/engine.js';
+import { createTown, placeBuilding, advance, setWorkerAssignment, staffing } from '../src/domain/engine.js';
 import { isUnlocked } from '../src/domain/grid.js';
 
 const cfg = JSON.parse(readFileSync(new URL('../data/economy.json', import.meta.url), 'utf8')).settlements;
@@ -169,4 +169,24 @@ test('wages come out of the coins only for workers who are employed', () => {
   const before = staffed.coins;
   const after = advance(staffed, staffed.lastTick + 1440 * 60_000, ctx).state;
   assert.equal(Math.round(after.coins), Math.round(before - cfg.wagePerWorkerPerDay), 'ein Arbeiter kostet einen Tageslohn');
+});
+
+test('staffing shows the assignment the panel uses, without changing the town', () => {
+  const { t, house } = townWithHouse();
+  const [hx, hy] = house.split(',').map(Number);
+  const near = Object.keys(t.tiles).find((k) => {
+    const [x, y] = k.split(',').map(Number);
+    return inStart(k) && Math.abs(x - hx) + Math.abs(y - hy) === 1 && !t.tiles[k].building && t.tiles[k].terrain === 'meadow';
+  });
+  const [nx, ny] = near.split(',').map(Number);
+  const built = placeBuilding({ ...t, stock: { ...t.stock, lumber: 500 } }, { x: nx, y: ny, buildingId: 'farm' }, ctx).state;
+  // Das neue Haus hat einen Bewohner: mehr als einen kann niemand zuweisen.
+  const s = setWorkerAssignment(built, { producer: near, house, n: 1 }, ctx).state;
+  const wf = staffing(s, data);
+  assert.equal(wf.byProducer[near], 1);
+  assert.equal(wf.byHouse[house], 1);
+  assert.equal(s.tiles[near].building.manual[0].n, 1, 'die Zuweisung liegt im Spielstand');
+  const over = setWorkerAssignment(s, { producer: near, house, n: 2 }, ctx);
+  assert.equal(over.error, 'noRoom', 'mehr Bewohner als vorhanden wird abgelehnt');
+  assert.equal(staffing(built, data).byProducer[near], 0, 'vorher kein Arbeiter');
 });

@@ -3,7 +3,7 @@
 import {
   createTown, newSeed, chooseBiome, placeBuilding, upgradeBuilding,
   toggleSell, buyOffer, advance, hydrateTown, setTutorialStep, settleConvoyAction,
-  plantField, removeField, renewField,
+  plantField, removeField, renewField, setWorkerAssignment, staffing,
 } from './domain/engine.js?v=20261125-bal7';
 import { forestHealth, fishStock, fishingGround, soilOf, FULL } from './domain/economy.js?v=20261125-bal7';
 import {
@@ -14,7 +14,7 @@ import { tradeFormHtml, convoyListHtml, previewFor } from './trade-ui.js?v=20261
 import {
   productionMultiplier, ratePerMin, buildCost, storageCap, classOf,
 } from './domain/economy.js?v=20261125-bal7';
-import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261125-bal7';
+import { GRID, keyOf, inBounds, isUnlocked, gridSize } from './domain/grid.js?v=20261125-bal7';
 import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261125-bal7';
 import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261125-bal7';
 import {
@@ -32,7 +32,7 @@ import { createVersionUI } from './version-ui.mjs?v=20261125-bal7';
 import { startAfkWatch, showAfkOverlay } from './afk.js?v=20261125-bal7';
 import { fullResources, fillPercent } from './stock-dock.js?v=20261125-bal7';
 import { nextRequestToShow, requestBadgeLabel, canShowRequestPopup } from './friend-requests.js?v=20261125-bal7';
-import { houseCapacity } from './domain/settlement.js?v=20261125-bal7';
+import { houseCapacity, staffFactor } from './domain/settlement.js?v=20261125-bal7';
 
 const BUILD = '20261125-bal7';
 console.info(`Tiny Tycoon Towns ${BUILD}`);
@@ -56,6 +56,11 @@ const ERR_DE = {
   noStock: 'So viel hast du nicht auf Lager.',
   convoyLimit: 'Es sind schon zwei Konvois unterwegs. Warte, bis einer ankommt.',
   noConvoy: 'Diesen Konvoi gibt es nicht.',
+  notProducer: 'Hier arbeiten keine Bewohner. Das ist kein Produktionsgebäude.',
+  notHouse: 'Hier wohnt niemand.',
+  badAmount: 'So viele Arbeiter sind nicht möglich.',
+  tooFar: 'Das Haus ist zu weit weg. Arbeiter pendeln höchstens 3 Felder.',
+  noRoom: 'Dort ist kein Platz mehr, oder das Haus hat keine freien Bewohner.',
   alreadySettled: 'Dieser Konvoi ist schon abgerechnet.',
   notArrived: 'Dieser Konvoi ist noch unterwegs.',
   outOfBounds: 'Dieses Feld gibt es nicht.',
@@ -674,6 +679,11 @@ function onPanelClick(e) {
   const { x, y } = selected;
   if (action === 'build') dispatch(placeBuilding(state, { x, y, buildingId: id }, ctx()), 'Gebaut.');
   if (action === 'upgrade') dispatch(upgradeBuilding(state, { x, y }, ctx()), 'Aufgewertet.');
+  if (action === 'worker') {
+    const n = Number(btn.dataset.n);
+    const house = keyOf(Number(btn.dataset.tx), Number(btn.dataset.ty));
+    dispatch(setWorkerAssignment(state, { producer: keyOf(x, y), house, n }, ctx()), n > 0 ? 'Arbeiter zugewiesen.' : 'Zuweisung aufgehoben.');
+  }
   if (action === 'plant') {
     dispatch(plantField(state, { fx: x, fy: y, x: Number(btn.dataset.tx), y: Number(btn.dataset.ty) }, ctx()), 'Feld angelegt.');
   }
@@ -1018,6 +1028,58 @@ function missingText(c) {
   return miss.length ? `Dir fehlen: ${miss.join(' und ')}` : '';
 }
 
+/** Wohnhaus: Bewohner, Kapazität und in welchen Betrieben sie arbeiten. */
+function houseHtml(b, x, y) {
+  const cfg = data.economy.settlements;
+  const cap = houseCapacity(b.level, cfg);
+  const wf = staffing(state, data);
+  const key = keyOf(x, y);
+  const employed = wf.byHouse[key] ?? 0;
+  const pop = b.pop ?? cfg.startPop;
+  return `<p>Bewohner: <strong>${pop} / ${cap}</strong></p>
+    <p class="small">Arbeiten in Betrieben: <strong>${employed}</strong> · frei: <strong>${Math.max(0, pop - employed)}</strong></p>
+    <p class="small">Die Zuweisung geschieht im Betrieb: dort siehst du, wer dort arbeitet.</p>`;
+}
+
+/**
+ * Produktionsgebäude: Arbeiter von X von Y, und die Wohnhäuser in Reichweite mit „−“ und „+“.
+ * Automatisch zugewiesene Arbeiter sind die Differenz zur manuellen Zuweisung.
+ */
+function workersHtml(b, x, y) {
+  const cfg = data.economy.settlements;
+  const wf = staffing(state, data);
+  const key = keyOf(x, y);
+  const n = wf.byProducer[key] ?? 0;
+  const manual = b.manual ?? [];
+  const manualSum = manual.reduce((a, m) => a + m.n, 0);
+  const factor = staffFactor(n, cfg.workSlots, cfg);
+  let html = `<section class="workers"><h3>Arbeiter</h3>
+    <p>Besetzt: <strong>${n} / ${cfg.workSlots}</strong> · Faktor ${multiplierText(factor)}</p>
+    <p class="small">davon manuell ${manualSum}, automatisch ${Math.max(0, n - manualSum)}</p><ul class="friend-list">`;
+  let any = false;
+  for (let dy = -cfg.commuteDistance; dy <= cfg.commuteDistance; dy++) {
+    for (let dx = -cfg.commuteDistance; dx <= cfg.commuteDistance; dx++) {
+      if (Math.abs(dx) + Math.abs(dy) > cfg.commuteDistance) continue;
+      const hx = x + dx, hy = y + dy;
+      const hk = keyOf(hx, hy);
+      const ht = state.tiles[hk];
+      if (!inBounds(hx, hy) || ht?.building?.id !== 'house') continue;
+      any = true;
+      const mine = manual.find((m) => m.house === hk)?.n ?? 0;
+      const pop = ht.building.pop ?? cfg.startPop;
+      const free = Math.max(0, pop - (wf.byHouse[hk] ?? 0) + mine);
+      html += `<li class="friend-card"><span>Haus ${hx + 1}, ${hy + 1} · ${pop} Bewohner · ${free} frei</span>
+        <span class="friend-actions">
+          <button type="button" class="ghost" data-action="worker" data-tx="${hx}" data-ty="${hy}" data-n="${Math.max(0, mine - 1)}" ${mine > 0 ? '' : 'disabled'} aria-label="Einen Arbeiter weniger">−</button>
+          <strong>${mine}</strong>
+          <button type="button" class="ghost" data-action="worker" data-tx="${hx}" data-ty="${hy}" data-n="${mine + 1}" ${free > 0 && n < cfg.workSlots ? '' : 'disabled'} aria-label="Einen Arbeiter mehr">+</button>
+        </span></li>`;
+    }
+  }
+  if (!any) html += '<li class="small muted">Kein Wohnhaus in Reichweite (3 Felder).</li>';
+  return `${html}</ul></section>`;
+}
+
 function buildingDetails(b, x, y) {
   const def = data.buildings[b.id];
   const m = productionMultiplier(state, x, y, b.id, data);
@@ -1035,15 +1097,16 @@ function buildingDetails(b, x, y) {
     html += `<p class="small">Fischbestand am Fangplatz: <strong>${f} %</strong>${f < 40 ? ' · Der Bestand sinkt. Er erholt sich langsam.' : ''}</p>`;
   }
   if (b.id === 'house') {
-    html += `<p>Bewohner: <strong>${b.pop ?? 0} / ${houseCapacity(b.level, data.economy.settlements)}</strong></p>`;
-    html += '<p class="small">Bewohner arbeiten automatisch in Gebäuden in der Nähe. Die Zuweisung folgt in einer späteren Version.</p>';
+    html += houseHtml(b, x, y);
   } else if (def.resource) {
-    const rate = ratePerMin(state, x, y, data);
+    const cfg = data.economy.settlements;
+    const rate = ratePerMin(state, x, y, data) * staffFactor(staffing(state, data).byProducer[keyOf(x, y)] ?? 0, cfg.workSlots, cfg);
     html += `<p>Produktion: <strong>${fmtRate(rate)} ${esc(data.resources[def.resource].name.de)} / min</strong></p>`;
     html += `<p class="small">Faktor ${multiplierText(m)} (Biom, Stadtlevel, Gelände, Nachbarn)</p>`;
   } else {
     html += `<p class="small">${def.id === 'warehouse' ? 'Erhöht die Lagerkapazität um 250 je Stufe.' : 'Erhöht den Verkaufsdurchsatz um 40 pro Minute je Stufe.'}</p>`;
   }
+  if (def.resource && def.baseRatePerMin > 0) html += workersHtml(b, x, y);
   if (def.perField) html += farmFieldsHtml(b, x, y);
   if (b.level < def.maxLevel) {
     const c = buildCost(b.id, b.level, data);
