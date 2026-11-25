@@ -125,6 +125,24 @@ Object.assign(UI, {
                     </div>
                 </div>
 
+                <!-- Bestaetigung fuer den Navigations-Marker. Versteckt, bis
+                     ein Klick einen Marker setzt (Navigation.bestaetigungZeigen).
+                     Kein Ziel ohne diesen Knopf: die Karte wird mit einem
+                     Finger gezogen, ein Klick allein waere mehrdeutig. -->
+                <div id="nav-bestaetigung" class="hidden absolute bottom-32 left-0 w-full justify-center z-30 px-3" style="display: none;">
+                    <div class="bg-black/95 border-2 border-yellow-500 px-4 py-3 shadow-[0_0_20px_rgba(255,215,0,0.4)] flex flex-col gap-2 w-full max-w-sm">
+                        <div class="text-[10px] tracking-[0.3em] text-yellow-600 uppercase">Ziel markiert</div>
+                        <div class="flex items-baseline justify-between gap-3">
+                            <span class="text-2xl font-bold text-yellow-400" id="nav-bestaetigung-ziel">[0, 0]</span>
+                            <span class="text-sm text-green-600 text-right" id="nav-bestaetigung-weg">N · 0 Felder</span>
+                        </div>
+                        <div class="flex gap-2 mt-1">
+                            <button id="nav-bestaetigung-ok" onclick="Navigation.bestaetigen()" class="action-button flex-1 border-[#39ff14] text-[#39ff14] py-2 font-bold">ZIEL SETZEN</button>
+                            <button onclick="Navigation.verwerfen()" class="action-button px-3 border-green-800 text-green-600 py-2">VERWERFEN</button>
+                        </div>
+                    </div>
+                </div>
+
                 <button onclick="UI.switchView('map')" class="absolute top-4 right-4 z-30 bg-red-900/20 border border-red-500/50 text-red-500 w-10 h-10 flex items-center justify-center hover:bg-red-900 hover:text-black transition-colors text-xl font-bold shadow-lg">✕</button>
             </div>
         `;

@@ -48,7 +48,12 @@ export const ORDER = [
   // Patch-Notizen und Update-Pruefung. Beide nur Darstellung, aber sie
   // gehoeren ans Ende: ui_update.js liest beim Start Game.state und Combat.
   'src/ui/ui_patch_notes.js',
-  'src/ui/ui_update.js'
+  'src/ui/ui_update.js',
+  // Navigation (Marker, Bestaetigung, Richtungspfeil). Vor ui_view_world.js
+  // nicht moeglich - das ist eine spaetere Datei und ruft Navigation beim
+  // Klick und beim Zeichnen. Deshalb hier, und ui_view_world.js findet es
+  // zur Laufzeit.
+  'src/ui/ui_navigation.js'
 ];
 
 // Bewusste Überschreibungen. Jede Zeile ist eine Entscheidung, keine Zufallslage:

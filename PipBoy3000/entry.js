@@ -35,3 +35,4 @@ import './src/ui/ui_render_minigames.js';
 import './src/ui/ui_render_overlays.js';
 import './src/ui/ui_patch_notes.js';
 import './src/ui/ui_update.js';
+import './src/ui/ui_navigation.js';
