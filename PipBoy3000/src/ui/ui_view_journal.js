@@ -43,14 +43,10 @@ Object.assign(UI, {
         ensureButton('wiki-btn-perks', 'PERKS', 'perks');
         ensureButton('wiki-btn-quests', 'QUESTS', 'quests');
 
-        const getIcon = (type) => {
-            const map = {
-                'weapon': '🔫', 'body': '🛡️', 'head': '🪖', 'legs': '👖', 'feet': '🥾', 'arms': '🦾',
-                'back': '🎒', 'consumable': '💉', 'junk': '⚙️', 'component': '🔩', 'ammo': '🧨',
-                'blueprint': '📜', 'tool': '⛺', 'misc': '📦'
-            };
-            return map[type] || '❓';
-        };
+        // Kategorie-Symbol kommt aus der zentralen Tabelle (ui_item_symbol.js).
+        // Die Item-Zeilen selbst zeigen das Item-Bild, damit Wiki und Inventar
+        // dasselbe Bild benutzen.
+        const getIcon = (type) => UI.itemTypEmoji(type);
 
         const categories = ['monsters', 'items', 'crafting', 'locs', 'perks', 'quests'];
         categories.forEach(cat => {
@@ -123,9 +119,12 @@ Object.assign(UI, {
                         if(item.bonus) stats.push(`<span class="text-cyan-300">${JSON.stringify(item.bonus).replace(/["{}]/g, '').replace(/:/g, '+')}</span>`);
                         html += `
                             <div class="flex flex-col border-b border-green-900/50 py-3 hover:bg-green-900/20 px-2">
-                                <div class="flex justify-between items-center">
-                                    <span class="font-bold text-green-100 text-sm">${item.name}</span>
-                                    <div class="text-xs font-mono flex gap-2 opacity-90">${stats.join(' | ')}</div>
+                                <div class="flex justify-between items-center gap-2">
+                                    <div class="flex items-center gap-2 min-w-0">
+                                        ${UI.itemSymbol(item.id, item.type, 'klein')}
+                                        <span class="font-bold text-green-100 text-sm truncate">${item.name}</span>
+                                    </div>
+                                    <div class="text-xs font-mono flex gap-2 opacity-90 shrink-0">${stats.join(' | ')}</div>
                                 </div>
                                 <div class="text-sm text-gray-400 italic pl-2 border-l-2 border-green-700/50 mt-1">${item.desc || "Keine Daten."}</div>
                             </div>`;
@@ -146,8 +145,11 @@ Object.assign(UI, {
                     }).join(', ');
                     html += `
                         <div class="border border-green-800 p-3 mb-2 bg-black flex justify-between items-center ${isKnown ? '' : 'opacity-50 grayscale'}">
-                            <div>
-                                <div class="font-bold text-lg ${isKnown ? 'text-yellow-400' : 'text-gray-500'}">${outName}</div>
+                            <div class="min-w-0">
+                                <div class="flex items-center gap-2">
+                                    ${r.out === 'AMMO' ? UI.itemSymbol('ammo', 'ammo', 'mittel') : UI.itemSymbol(r.out, item ? item.type : null, 'mittel')}
+                                    <div class="font-bold text-lg ${isKnown ? 'text-yellow-400' : 'text-gray-500'}">${outName}</div>
+                                </div>
                                 <div class="text-xs text-green-400 font-mono italic mt-1">Benötigt: ${reqs}</div>
                             </div>
                             <div class="flex flex-col items-end">

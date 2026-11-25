@@ -212,3 +212,14 @@ Object.assign(window.GameData.items, {
 });
 
 if(typeof Game !== 'undefined') Game.items = window.GameData.items;
+
+// Die ID eines Items ist sein Schluessel im Katalog, nicht ein Feld darin. Wer
+// itemDef.id liest, bekam deshalb undefined - im Inventar hat das dazu
+// gefuehrt, dass itemSymbol kein Bild fand und nur das Typ-Emoji zeigte.
+// Statt jede Aufrufstelle zu heilen, traegt hier jede Definition ihre eigene
+// ID. data_items.js laeuft vor data_core.js-Ergaenzungen und vor ui/ - danach
+// aendert niemand die Schluessel.
+Object.keys(window.GameData.items).forEach(k => {
+    const def = window.GameData.items[k];
+    if(def && typeof def === 'object' && !def.id) def.id = k;
+});

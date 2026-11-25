@@ -185,13 +185,28 @@ Object.assign(UI, {
 
     renderCharacterVisuals: function(container) {
         const p = Game.state; const eq = p.equip || {};
-        const renderSlot = (slotName, item, iconFallback) => {
+        // Symbol kommt aus UI.itemSymbol: frueher stand hier ein Emoji pro Slot
+        // (🧢/👊/👕) und das angelegte Item brachte sein eigenes icon-Feld mit.
+        // Damit sah dieselbe Rohrpistole auf der Charakterseite anders aus als
+        // im Rucksack. Die ID steht im Ausruestungsobjekt, notfalls wird sie
+        // ueber den Namen im Katalog gesucht.
+        const slotBild = (slotName, item) => {
+            if (!item) return `<div class="opacity-30">${UI.itemSymbol(null, slotName, 'mittel')}</div>`;
+            let id = item.id;
+            if (!id) {
+                const key = Object.keys(Game.items).find(k => Game.items[k].name === item.name);
+                id = key || null;
+            }
+            const typ = (item.props && item.props.type) || item.type || slotName;
+            return UI.itemSymbol(id, typ, 'mittel');
+        };
+        const renderSlot = (slotName, item) => {
             const hasItem = !!item;
             const name = hasItem ? (item.props?.name || item.name) : "LEER";
             return `
                 <div class="flex flex-col items-center justify-center p-2 border-2 ${hasItem ? 'border-green-500 bg-green-900/20' : 'border-green-900/50'} rounded min-h-[80px] z-10 relative cursor-pointer hover:bg-green-900/40 transition-colors" onclick="UI.openEquipMenu('${slotName}')">
                     <div class="text-[8px] uppercase opacity-50 mb-1 pointer-events-none">${slotName}</div>
-                    <div class="text-2xl mb-1 pointer-events-none">${hasItem && item.icon ? item.icon : iconFallback}</div>
+                    <div class="mb-1 pointer-events-none">${slotBild(slotName, item)}</div>
                     <div class="text-[9px] text-center font-bold truncate w-full pointer-events-none">${name}</div>
                 </div>
             `;
@@ -214,13 +229,13 @@ Object.assign(UI, {
                     </div>
                 </div>
                 <div class="grid grid-cols-3 grid-rows-4 gap-2 w-full relative mt-2 z-10">
-                    <div class="col-start-2 row-start-1">${renderSlot('head', eq.head, '🧢')}</div>
-                    <div class="col-start-1 row-start-2">${renderSlot('weapon', eq.weapon, '👊')}</div>
-                    <div class="col-start-2 row-start-2">${renderSlot('body', eq.body, '👕')}</div>
-                    <div class="col-start-3 row-start-2">${renderSlot('arms', eq.arms, '💪')}</div>
-                    <div class="col-start-2 row-start-3">${renderSlot('legs', eq.legs, '👖')}</div>
-                    <div class="col-start-3 row-start-3">${renderSlot('back', eq.back, '🎒')}</div>
-                    <div class="col-start-2 row-start-4">${renderSlot('feet', eq.feet, '🥾')}</div>
+                    <div class="col-start-2 row-start-1">${renderSlot('head', eq.head)}</div>
+                    <div class="col-start-1 row-start-2">${renderSlot('weapon', eq.weapon)}</div>
+                    <div class="col-start-2 row-start-2">${renderSlot('body', eq.body)}</div>
+                    <div class="col-start-3 row-start-2">${renderSlot('arms', eq.arms)}</div>
+                    <div class="col-start-2 row-start-3">${renderSlot('legs', eq.legs)}</div>
+                    <div class="col-start-3 row-start-3">${renderSlot('back', eq.back)}</div>
+                    <div class="col-start-2 row-start-4">${renderSlot('feet', eq.feet)}</div>
                     <div class="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none z-0">
                         <canvas id="char-silhouette-canvas" width="240" height="300"></canvas>
                     </div>
