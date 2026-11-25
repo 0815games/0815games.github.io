@@ -666,3 +666,31 @@ Ereignis ergänzt.
   - Cloud-Speichern: Die Ursache ist nicht bestätigt. Benötigt wird die Fehlermeldung aus der Konsole
     (Zeile mit „Cloud“ oder „permission_denied“, mit Pfad).
   - Test der Leiste und des Handels auf Mobile und Desktop (Nutzer).
+
+### TTT-0045 – Freundschaftsanfragen: Popup beim Spielen, Hinweis am Menü (Welle `20261125-anfrage1`)
+
+- Zeit / Quelle: Sitzung 2026-11-25 (UTC). Nutzerwunsch wörtlich: Der andere Spieler soll aktiv
+  sehen, dass eine Anfrage da ist. Solange er spielt, ein Popup zum Bestätigen oder Ablehnen. Ist er
+  offline, soll er es am Menü rechts oben optisch erkennen.
+- Branch / Basis: `arena/2f0471fb-0815games-github-io`, Basis `362b091` (`main`).
+- Änderungen / Dateien:
+  - `src/friend-requests.js` (neu): Auswahl der nächsten Anfrage, Beschriftung des Menü-Hinweises.
+  - `tests/friend-requests.test.mjs` (neu, 2 Tests).
+  - `src/main.js`: globaler Anfrage-Watch solange angemeldet (`startRequestWatch`, `stopRequestWatch`),
+    roter Punkt am Menü (`renderRequestBadge`), Popup mit Annehmen, Ablehnen, Später
+    (`maybeShowRequestPopup`, `showRequestPopup`). Der Tick prüft erneut, falls ein anderes Fenster offen ist.
+  - `index.html`: Punkt `#menu-badge` im Menü-Knopf. `style.css`: Punkt, Pulsieren (nur ohne reduzierte Bewegung).
+  - `src/patch-notes.mjs`: Stadtchronik `20261125-anfrage1` (DE/EN).
+  - Cache-Welle `20261125-anfrage1`.
+- Verhalten:
+  - Popup nur beim Spielen (Stand geladen) und nur, wenn kein anderes Fenster offen ist. Sonst wird es
+    beim nächsten Tick gezeigt. Jede Anfrage erscheint pro Sitzung einmal, „Später“ schiebt sie in den Menü-Hinweis.
+  - Der Menü-Punkt zeigt alle offenen Anfragen. Er hängt an der Datenbank, nicht an der Sitzung, also erscheint er nach dem Anmelden wieder.
+- Prüfungen (lokal, Node 22.22.3):
+  - `npm test`: 128 Tests, 128 pass, 0 fail, Exit 0 (Unit).
+  - `npm run check`: Exit 0, kein Fehler.
+  - Nicht geprüft: Browser-Darstellung, zwei echte Konten mit Popup. Die Regeln für Freundesanfragen
+    sind laut Nutzer funktionsfähig, daran ändert dieser Schritt nichts.
+- Git / PR / Veröffentlichung: Commit folgt. Nicht veröffentlicht.
+- Offen / nächster Schritt: Zwei-Konten-Test (Nutzer): A schickt eine Anfrage an B. Erwartet: B sieht
+  das Popup beim Spielen, B meldet sich ab, A schickt erneut, B meldet sich wieder an, erwartet: roter Punkt am Menü.
