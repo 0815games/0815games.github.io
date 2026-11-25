@@ -180,6 +180,14 @@
         "spent": {
           ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000"
         },
+        "crowns": {
+          ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000"
+        },
+        "creditedConvoys": {
+          "$convoyId": {
+            ".validate": "$convoyId.length <= 128 && newData.val() == true"
+          }
+        },
         "perks": {
           "$perk": {
             ".validate": "$perk.matches(/^(yield|storage|market|startCoins|memory|express)$/) && newData.isNumber() && newData.val() >= 0 && newData.val() <= 5"

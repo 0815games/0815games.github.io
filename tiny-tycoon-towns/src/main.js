@@ -2,28 +2,31 @@
 // No game rules live here. Firebase is only touched through ./cloud.js.
 import {
   createTown, newSeed, chooseBiome, placeBuilding, upgradeBuilding,
-  toggleSell, buyOffer, advance, hydrateTown, setTutorialStep,
-} from './domain/engine.js?v=20261124-zentrieren';
+  toggleSell, buyOffer, advance, hydrateTown, setTutorialStep, settleConvoyAction,
+} from './domain/engine.js?v=20261124-konvoi1';
+import { startConvoy } from './domain/convoys.js?v=20261124-konvoi1';
+import { tradeFormHtml, convoyListHtml, previewFor } from './trade-ui.js?v=20261124-konvoi1';
 import {
   productionMultiplier, ratePerMin, buildCost, storageCap, classOf,
-} from './domain/economy.js?v=20261124-zentrieren';
-import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261124-zentrieren';
-import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261124-zentrieren';
-import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261124-zentrieren';
+} from './domain/economy.js?v=20261124-konvoi1';
+import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261124-konvoi1';
+import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261124-konvoi1';
+import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261124-konvoi1';
 import {
   PERKS, canFoundCharter, grantCharters, buyPerk, perkEffect, perkLevel, availableCharters, emptyCharter,
-  applyCharterToData,
-} from './domain/charters.js?v=20261124-zentrieren';
+  applyCharterToData, reconcileCrowns,
+} from './domain/charters.js?v=20261124-konvoi1';
 const SEEN_NOTES_KEY = 'ttt:notes-seen';
-import { withTimeout } from './async-util.js?v=20261124-zentrieren';
-import { checkTownName } from './town-names.js?v=20261124-zentrieren';
-import { friendsShell, mountFriends } from './friends-ui.js?v=20261124-zentrieren';
-import { createBoard } from './world/board.js?v=20261124-zentrieren';
-import { createLoginScene } from './world/login-scene.js?v=20261124-zentrieren';
-import { TUTORIAL_STEPS, HELP_SECTIONS } from './tutorial.js?v=20261124-zentrieren';
-import { createVersionUI } from './version-ui.mjs?v=20261124-zentrieren';
+import { withTimeout } from './async-util.js?v=20261124-konvoi1';
+import { checkTownName } from './town-names.js?v=20261124-konvoi1';
+import { friendsShell, mountFriends } from './friends-ui.js?v=20261124-konvoi1';
+import { createBoard } from './world/board.js?v=20261124-konvoi1';
+import { createLoginScene } from './world/login-scene.js?v=20261124-konvoi1';
+import { TUTORIAL_STEPS, HELP_SECTIONS } from './tutorial.js?v=20261124-konvoi1';
+import { createVersionUI } from './version-ui.mjs?v=20261124-konvoi1';
+import { startAfkWatch, showAfkOverlay } from './afk.js?v=20261124-konvoi1';
 
-const BUILD = '20261124-zentrieren';
+const BUILD = '20261124-konvoi1';
 console.info(`Tiny Tycoon Towns ${BUILD}`);
 const LAST_BIOME_KEY = 'ttt.lastBiome';
 const LOCAL_KEY = (uid) => `ttt.save.v1.${uid}`;
@@ -39,6 +42,14 @@ const MOOD_DE = {
   chatty: 'Eberhard plaudert: Stell dir vor, was ich unterwegs gesehen habe!',
 };
 const ERR_DE = {
+  noPartner: 'Diese Partnerstadt gibt es nicht.',
+  badDirection: 'Wähle Verkaufen oder Kaufen.',
+  badQuantity: 'Die Menge muss zwischen 10 und 100 liegen.',
+  noStock: 'So viel hast du nicht auf Lager.',
+  convoyLimit: 'Es sind schon zwei Konvois unterwegs. Warte, bis einer ankommt.',
+  noConvoy: 'Diesen Konvoi gibt es nicht.',
+  alreadySettled: 'Dieser Konvoi ist schon abgerechnet.',
+  notArrived: 'Dieser Konvoi ist noch unterwegs.',
   outOfBounds: 'Dieses Feld gibt es nicht.',
   locked: 'Dieses Feld ist noch gesperrt. Mehr Fläche gibt es mit höherem Stadtlevel.',
   occupied: 'Hier steht schon etwas.',
@@ -93,9 +104,9 @@ const REMOTE_TIMEOUT_MS = 10_000;
 // ---------- Boot and account ----------
 
 async function loadData() {
-  const names = ['resources', 'biomes', 'buildings', 'economy', 'merchant'];
+  const names = ['resources', 'biomes', 'buildings', 'economy', 'merchant', 'npcs'];
   const parts = await Promise.all(names.map((n) =>
-    fetch(`data/${n}.json?v=20261124-zentrieren`).then((r) => {
+    fetch(`data/${n}.json?v=20261124-konvoi1`).then((r) => {
       if (!r.ok) throw new Error(`data/${n}.json: HTTP ${r.status}`);
       return r.json();
     })));
@@ -141,7 +152,7 @@ async function boot() {
   window.addEventListener('offline', updateSync);
 
   try {
-    cloud = await import('./cloud.js?v=20261124-zentrieren');
+    cloud = await import('./cloud.js?v=20261124-konvoi1');
   } catch {
     showFatal('Das Konto-System konnte nicht geladen werden. Ohne Anmeldung lässt sich nicht spielen. Bitte Verbindung prüfen und neu laden.');
     return;
@@ -192,11 +203,16 @@ async function enterAccount(user) {
     releaseCurrentSession();
     endTutorial();
     renderSignedOut();
-    showLoginScreen('login');
+    if (afkStop) { afkStop(); afkStop = null; }
+    const notice = nextLoginNotice;
+    nextLoginNotice = null;
+    showLoginScreen('login', notice && !notice.afk ? notice.text : '');
+    if (notice?.afk) showAfkOverlay(notice.text);
     return;
   }
   hideLoginScreen();
   closeDialog();
+  if (!afkStop) afkStop = startAfkWatch(onAfkTimeout);
   if (uid === user.uid && state) return; // token refresh, nothing to load
   if (activeUid !== user.uid) {
     if (activeUid) releaseCurrentSession(); // anderes Konto: alte Sitzung freigeben
@@ -385,6 +401,7 @@ function showLoginScreen(mode, msg = '') {
     <p id="auth-msg" class="warn small" role="alert">${esc(msg)}</p>
     <button type="submit" class="primary">${isLogin ? 'Anmelden' : 'Konto erstellen'}</button>
     <button type="button" id="auth-switch" class="ghost">${isLogin ? 'Neu hier? Konto erstellen' : 'Schon registriert? Anmelden'}</button>
+    <a class="auth-admin-link" href="admin.html">Betreiber-Bereich</a>
   </form>`;
   $('#auth-switch').addEventListener('click', () => showLoginScreen(isLogin ? 'register' : 'login'));
   $('#auth-form').addEventListener('submit', async (e) => {
@@ -593,6 +610,7 @@ function bindStatic() {
   $('#help-btn').addEventListener('click', showHelp);
   $('#friends-btn').addEventListener('click', openFriends);
   $('#charter-btn').addEventListener('click', openCharters);
+  $('#trade-btn').addEventListener('click', openTrade);
   $('#visit-exit').addEventListener('click', endVisit);
   window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && visit) endVisit(); });
   // Menü oben rechts: öffnet und schließt die Schaltflächen Hilfe, Stadtchronik, Neu beginnen, Abmelden.
@@ -780,6 +798,7 @@ function tick() {
   const r = advance(state, Date.now(), ctx());
   state = r.state;
   cloudDirty = true;
+  if (r.events.some((e) => e.type === 'convoy_arrive')) toast('Ein Konvoi ist angekommen. Rechne ihn im Handel ab.');
   board?.gain(state.coins - coinsBefore);
   renderHud();
   updateStockNumbers();
@@ -1063,8 +1082,8 @@ const SESSION_ID = (() => {
   }
 })();
 const HEARTBEAT_MS = 30_000;
-const SESSION_TAKEN_TEXT = 'Dieses Konto ist gerade in einem anderen Fenster oder auf einem anderen Gerät geöffnet. Schließe das andere Fenster oder übernimm die Sitzung hier.';
-const SESSION_LOST_TEXT = 'Dieses Konto wurde in einem anderen Fenster oder auf einem anderen Gerät übernommen. Hier wird nichts mehr gespeichert, bis du es hier übernimmst.';
+const SESSION_TAKEN_TEXT = 'Dieses Konto ist gerade in einem anderen Fenster oder auf einem anderen Gerät geöffnet. Abmelden oder hierbleiben? Hierbleiben beendet die Sitzung dort.';
+const SESSION_LOST_TEXT = 'Dieses Konto ist jetzt auf einem anderen Gerät geöffnet. Melde dich hier erneut an, um weiterzuspielen.';
 let activeUid = null;       // Konto, dessen Sitzung dieses Fenster hält
 let sessionLost = false;    // true, sobald ein anderes Fenster übernommen hat: nichts mehr speichern
 let sessionUnwatch = null;
@@ -1147,37 +1166,57 @@ function releaseCurrentSession() {
   if (prev) cloud.releaseSession(prev, SESSION_ID).catch(() => { /* Ablauf nach 2 Minuten greift */ });
 }
 
-function onSessionLost(sessionUid) {
+// AFK und Sitzungswechsel. Der Hinweis erscheint nach dem Abmelden auf dem Anmeldebildschirm.
+let afkStop = null;
+let nextLoginNotice = null; // { text, afk }
+const AFK_TEXT = 'Du warst 5 Minuten inaktiv und wurdest abgemeldet. Deine Stadt ist gesichert.';
+
+/** AFK: Stadt sichern, abmelden, Hinweis auf dem Anmeldebildschirm. */
+async function onAfkTimeout() {
+  if (!currentUser) return;
+  flushNow();
+  nextLoginNotice = { text: AFK_TEXT, afk: true };
+  try {
+    await cloud.logout();
+  } catch {
+    nextLoginNotice = null;
+    toast('Abmelden fehlgeschlagen. Du bist noch angemeldet.', 'error');
+  }
+}
+
+/** Ein anderes Gerät hat das Konto übernommen. Dieses Gerät meldet sich ohne Rückfrage ab. */
+async function onSessionLost(sessionUid) {
   if (sessionLost || activeUid !== sessionUid) return;
-  sessionLost = true;
+  sessionLost = true; // bleibt gesetzt, bis die Abmeldung durch ist: nichts speichern
   stopSessionGuard();
   activeUid = null;
-  setPanelHtml(`<p class="warn">${esc(SESSION_LOST_TEXT)}</p>`);
-  openDialog(`<div class="dlg-body">
-    <h2 id="dlg-title">Sitzung übernommen</h2>
-    <p>${esc(SESSION_LOST_TEXT)}</p>
-    <p class="row">
-      <button type="button" id="lost-logout">Abmelden</button>
-      <button type="button" id="lost-take" class="primary">Hier übernehmen</button>
-    </p>
+  nextLoginNotice = { text: SESSION_LOST_TEXT, afk: false };
+  try {
+    await cloud.logout();
+  } catch {
+    nextLoginNotice = null;
+    toast('Abmelden fehlgeschlagen. Hier wird nichts mehr gespeichert.', 'error');
+  }
+}
+
+/** Konto ist woanders offen. Die Rückfrage gibt es nur auf dem neu anmeldenden Gerät. */
+function showSessionTaken(sessionUid) {
+  openDialog(`<div class="dlg-body confirm">
+    <h2 id="dlg-title">Konto ist schon offen</h2>
+    <p>${esc(SESSION_TAKEN_TEXT)}</p>
+    <div class="confirm-row">
+      <button type="button" id="session-logout">Abmelden</button>
+      <button type="button" id="session-stay" class="primary">Hierbleiben</button>
+    </div>
   </div>`);
-  $('#dlg').addEventListener('cancel', (e) => e.preventDefault(), { once: true });
-  $('#dlg').dataset.persist = '1'; // Entscheidung erzwingen: nicht per Klick daneben schließen
-  $('#lost-take').addEventListener('click', () => takeOverSession(sessionUid));
-  $('#lost-logout').addEventListener('click', async () => {
+  const dlg = $('#dlg');
+  dlg.dataset.persist = '1'; // Entscheidung erzwingen: nicht per Klick oder Escape schließen
+  dlg.addEventListener('cancel', (e) => e.preventDefault(), { once: true });
+  $('#session-stay').addEventListener('click', () => takeOverSession(sessionUid));
+  $('#session-logout').addEventListener('click', async () => {
     closeDialog();
     try { await cloud.logout(); } catch { toast('Abmelden fehlgeschlagen.', 'error'); }
   });
-}
-
-function showSessionTaken(sessionUid) {
-  setPanelHtml(`<p class="warn">${esc(SESSION_TAKEN_TEXT)}</p>
-    <p class="row">
-      <button type="button" id="session-take" class="primary">Hier übernehmen</button>
-      <button type="button" id="session-retry">Erneut prüfen</button>
-    </p>`);
-  $('#session-take').addEventListener('click', () => takeOverSession(sessionUid));
-  $('#session-retry').addEventListener('click', () => { uid = null; void onUser(currentUser); });
 }
 
 /** Übernimmt die Sitzung für dieses Fenster und lädt den Stand neu (der neuere Stand gewinnt). */
@@ -1321,8 +1360,8 @@ async function startVisit(friendUid, friendName) {
   }
   endVisit();
   const town = hydrateTown(raw);
-  const model = { state: advance(town, Date.now(), ctx(baseData)).state };
-  visit = { uid: friendUid, model, board: null, timer: null };
+  const model = { state: advance(town, Date.now(), ctx(baseData)).state, at: Date.now() };
+  visit = { uid: friendUid, model, board: null, timer: null, refreshing: false, lastError: false };
   $('#visit-name').textContent = town.name;
   $('#visit').hidden = false;
   visit.board = createBoard($('#visit-board'), {
@@ -1338,10 +1377,35 @@ async function startVisit(friendUid, friendName) {
   updateVisitInfo();
   visit.timer = setInterval(() => {
     if (!visit || visit.model !== model) return;
+    if (Date.now() - model.at >= VISIT_REFRESH_MS && !visit.refreshing) void refreshVisit(friendUid, model);
     model.state = advance(model.state, Date.now(), ctx(baseData)).state;
     visit.board?.redraw();
     updateVisitInfo();
   }, 1000);
+}
+
+// Besuch: der Stand kommt alle 30 s frisch aus der Cloud. Nur lesen, nichts wird zurückgeschrieben.
+// Der Anzeigestand ist damit höchstens etwa 60 s alt. Fällt das Laden aus, bleibt der alte Stand sichtbar und wird als veraltet markiert.
+const VISIT_REFRESH_MS = 30_000;
+const VISIT_STALE_MS = 60_000;
+
+async function refreshVisit(friendUid, model) {
+  if (!visit || visit.model !== model) return;
+  visit.refreshing = true;
+  try {
+    const raw = await withTimeout(cloud.loadTown(friendUid), REMOTE_TIMEOUT_MS, 'Besuch aktualisieren');
+    if (visit && visit.model === model && raw) {
+      model.state = advance(hydrateTown(raw), Date.now(), ctx(baseData)).state;
+      model.at = Date.now();
+      visit.lastError = false;
+      visit.board?.redraw();
+    }
+  } catch {
+    if (visit && visit.model === model) visit.lastError = true;
+  } finally {
+    if (visit && visit.model === model) visit.refreshing = false;
+    updateVisitInfo();
+  }
 }
 
 function endVisit() {
@@ -1356,7 +1420,9 @@ function updateVisitInfo() {
   const st = visit?.model.state;
   if (!st) return;
   const count = Object.values(st.tiles).filter((t) => t.building).length;
-  $('#visit-info').textContent = `Level ${st.townLevel} · 🪙 ${Math.floor(st.coins)} · 🏠 ${count} Gebäude`;
+  const age = Math.max(0, Math.round((Date.now() - visit.model.at) / 1000));
+  const stale = visit.lastError && age > VISIT_STALE_MS / 1000 ? ' · veraltet, keine Verbindung' : '';
+  $('#visit-info').textContent = `Level ${st.townLevel} · 🪙 ${Math.floor(st.coins)} · 🏠 ${count} Gebäude · Stand vor ${age} s${stale}`;
 }
 
 function describeIn(st, x, y) {
@@ -1405,6 +1471,81 @@ async function loadCharterFor(forUid) {
   }
 }
 
+// ---------- Handel mit Nachbarstädten (Konvois) ----------
+function openTrade() {
+  if (!state || !uid) {
+    toast('Melde dich an und lade deine Stadt, dann öffnet sich der Handel.', 'error');
+    return;
+  }
+  if (!baseData?.npcs) {
+    toast('Die Handelsdaten fehlen. Lade das Spiel neu.', 'error');
+    return;
+  }
+  void syncCrowns();
+  const dlg = openDialog(`<div class="dlg-body">${tradeFormHtml(data, charter?.crowns ?? 0)}<p class="row"><button type="button" id="trade-close" class="ghost">Schließen</button></p></div>`);
+  const form = dlg.querySelector('#trade-form');
+  const readForm = () => {
+    const fd = new FormData(form);
+    const partner = data.npcs.towns.find((t) => t.id === fd.get('partner'));
+    return {
+      partner,
+      direction: fd.get('direction'),
+      resource: fd.get('resource'),
+      qty: Number(fd.get('qty')),
+    };
+  };
+  const paintPreview = () => {
+    const f = readForm();
+    const preview = dlg.querySelector('#trade-preview');
+    if (!f.partner || !Number.isInteger(f.qty) || f.qty < 10 || f.qty > 100) {
+      preview.textContent = 'Menge zwischen 10 und 100 wählen.';
+      return;
+    }
+    const p = previewFor({ ...f, data });
+    preview.textContent = `Dauer: ${fmtTradeDuration(p.durationMin)}. ${p.text}`;
+  };
+  const paintList = () => {
+    const list = dlg.querySelector('#trade-list');
+    if (list) list.innerHTML = convoyListHtml(state, data, Date.now());
+  };
+  form.addEventListener('input', paintPreview);
+  form.addEventListener('change', paintPreview);
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const f = readForm();
+    const msg = dlg.querySelector('#trade-msg');
+    msg.textContent = '';
+    const r = startConvoy(state, { partner: f.partner, direction: f.direction, resource: f.resource, qty: f.qty },
+      { data, nowMs: Date.now() });
+    if (r.error) {
+      msg.textContent = ERR_DE[r.error] ?? 'Konvoi nicht möglich.';
+      return;
+    }
+    dispatch(r, 'Konvoi ist losgefahren.');
+    paintList();
+  });
+  dlg.addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-settle]');
+    if (btn) {
+      dispatch(settleConvoyAction(state, { id: btn.dataset.settle }, ctx()), 'Konvoi abgerechnet.');
+      paintList();
+      void syncCrowns();
+    }
+    if (e.target.closest('#trade-close')) closeDialog();
+  });
+  paintPreview();
+  paintList();
+  const timer = setInterval(() => {
+    if (!dlg.open) return;
+    paintList();
+  }, 1000);
+  dlg.addEventListener('close', () => clearInterval(timer), { once: true });
+}
+
+function fmtTradeDuration(min) {
+  return `${Math.floor(min / 60)} h ${min % 60} min`;
+}
+
 function openCharters() {
   if (!state || !uid) {
     toast('Melde dich an und lade deine Stadt, dann öffnen sich die Freibriefe.', 'error');
@@ -1419,6 +1560,21 @@ function openCharters() {
     });
   };
   paint();
+}
+
+/** Kronen abgerechneter Konvois dem Konto gutschreiben. Speichert nur, wenn sich etwas ändert. */
+async function syncCrowns() {
+  if (!state || !uid || !charterLoaded || !charter) return;
+  const r = reconcileCrowns(charter, state);
+  if (!r.changed) return;
+  try {
+    await cloud.saveCharter(uid, r.charter);
+    charter = r.charter;
+    document.querySelectorAll('[data-crowns]').forEach((el) => { el.textContent = String(charter.crowns); });
+  } catch (err) {
+    // Die Gutschrift bleibt offen und wird beim nächsten Abgleich erneut versucht.
+    toast(cloud.dbErrorDe(err), 'error');
+  }
 }
 
 function charterHtml() {
@@ -1463,7 +1619,9 @@ async function foundCharter() {
   );
   if (!yes || !state || !uid || !charterLoaded) return;
   // Zuerst den Gewinn sichern, dann erst die Stadt neu starten.
-  const next = grantCharters(charter, state);
+  // Ausstehende Kronen vorher sichern, weil die Stadt danach neu startet.
+  const recon = reconcileCrowns(charter, state).charter;
+  const next = grantCharters(recon, state);
   try {
     await cloud.saveCharter(uid, next);
   } catch (err) {

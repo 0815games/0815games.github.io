@@ -1,6 +1,6 @@
 // Freunde im Spiel-Design: eigene Stadt mit Code, Einladung per Name oder Code, Anfragen, klappbare Freundesliste.
 // Die Daten kommen aus cloud.js. Dieses Modul zeigt nur an und ruft Aktionen auf.
-import * as cloud from './cloud.js?v=20261124-zentrieren';
+import * as cloud from './cloud.js?v=20261124-konvoi1';
 
 const esc = (v) => String(v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -97,14 +97,16 @@ export function mountFriends(dlg, ctx) {
       <button type="button" class="primary" id="send-req">Anfrage senden</button>
     </div>`;
     $('#send-req').addEventListener('click', async (ev) => {
-      ev.currentTarget.disabled = true;
+      // currentTarget ist nach dem await null, deshalb vorher merken.
+      const btn = ev.currentTarget;
+      btn.disabled = true;
       try {
         await cloud.sendFriendRequest(ctx.me, ctx.myName(), hit.uid);
         ctx.toast('Anfrage gesendet.');
         $('#invite-result').innerHTML = '';
         $('#invite-q').value = '';
       } catch (err) {
-        ev.currentTarget.disabled = false;
+        btn.disabled = false;
         showMsg(cloud.dbErrorDe(err));
       }
     });

@@ -1,0 +1,13 @@
+{
+  "_hinweis": "Vorschlag für die 8 Startstädte. Namen und Vorlieben sind noch nicht vom Nutzer bestätigt (GAME_PLAN 4.13 nennt nur die Anzahl).",
+  "towns": [
+    { "id": "eichenfeld", "name": "Eichenfeld", "biome": "deepwoods", "distance": 2, "likes": "honey" },
+    { "id": "moosbach", "name": "Moosbach", "biome": "riverlands", "distance": 3, "likes": "grain" },
+    { "id": "kiesbach", "name": "Kiesbach", "biome": "highlands", "distance": 4, "likes": "stone" },
+    { "id": "sonnwiek", "name": "Sonnwiek", "biome": "riverlands", "distance": 5, "likes": "fish" },
+    { "id": "tannbruck", "name": "Tannbrück", "biome": "deepwoods", "distance": 6, "likes": "lumber" },
+    { "id": "salzhafen", "name": "Salzhafen", "biome": "coast", "distance": 7, "likes": "salt" },
+    { "id": "huegelstein", "name": "Hügelstein", "biome": "highlands", "distance": 8, "likes": "iron" },
+    { "id": "wiesenau", "name": "Wiesenau", "biome": "coast", "distance": 10, "likes": "pearls" }
+  ]
+}

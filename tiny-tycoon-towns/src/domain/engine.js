@@ -1,13 +1,14 @@
 // Game engine: state creation, player actions and time advance.
 // Every exported action is (state, input, ctx) -> { state, events, error? }.
 // The input state is never mutated.
-import { generateTerrain } from './terrain.js?v=20261124-zentrieren';
-import { GRID, HALL, keyOf, parseKey, inBounds, isUnlocked } from './grid.js?v=20261124-zentrieren';
+import { generateTerrain } from './terrain.js?v=20261124-konvoi1';
+import { GRID, HALL, keyOf, parseKey, inBounds, isUnlocked } from './grid.js?v=20261124-konvoi1';
 import {
   classOf, buildCost, productionMultiplier, townLevelFor,
   storageCap, throughputPerMin, sellPrice,
-} from './economy.js?v=20261124-zentrieren';
-import { merchantOffers } from './merchant.js?v=20261124-zentrieren';
+} from './economy.js?v=20261124-konvoi1';
+import { merchantOffers } from './merchant.js?v=20261124-konvoi1';
+import { arriveConvoys, payoutFor } from './convoys.js?v=20261124-konvoi1';
 
 export const SCHEMA_VERSION = 1;
 export const BIOMES = ['riverlands', 'deepwoods', 'highlands', 'coast'];
@@ -100,6 +101,8 @@ export function hydrateTown(raw) {
   s.townXp ??= 0;
   s.lifetimeCoins ??= 0;
   s.tutorialStep ??= 0;
+  s.convoys ??= [];
+  s.convoySeq ??= 0;
   return s;
 }
 
@@ -151,6 +154,36 @@ export function upgradeBuilding(state, { x, y }, ctx) {
   const lu = addXp(s, data.economy.xp.upgradePerNewLevel * sb.level * sb.level, data);
   if (lu) events.push(lu);
   return { state: s, events };
+}
+
+/**
+ * Rechnet einen angekommenen Konvoi ab. Idempotent: Die Konvoi-ID ist der Schlüssel, ein zweiter Aufruf
+ * ändert nichts. Kronen gehen nicht in den Stadtstand, sie werden in `payout.crowns` zurückgegeben
+ * und vom Konto gutgeschrieben (Scheibe 5).
+ */
+export function settleConvoyAction(state, { id }, ctx) {
+  const { data } = ctx;
+  const idx = (state.convoys ?? []).findIndex((c) => c.id === id);
+  if (idx < 0) return fail(state, 'noConvoy');
+  const convoy = state.convoys[idx];
+  if (convoy.status === 'settled') return fail(state, 'alreadySettled');
+  if (convoy.status !== 'arrived') return fail(state, 'notArrived');
+
+  const payout = payoutFor(state, convoy, data);
+  const s = clone(state);
+  const c = s.convoys[idx];
+  c.status = 'settled';
+  c.payout = payout;
+  s.coins += payout.coins;
+  s.lifetimeCoins += payout.coins;
+  if (payout.goods > 0) {
+    const cap = storageCap(s, data);
+    s.stock[convoy.resource] = Math.min(cap, (s.stock[convoy.resource] ?? 0) + payout.goods);
+  }
+  const lu = addXp(s, payout.xp, data);
+  const events = [{ type: 'convoy_settled', id, coins: payout.coins, crowns: payout.crowns, goods: payout.goods }];
+  if (lu) events.push(lu);
+  return { state: s, events, payout };
 }
 
 export function toggleSell(state, { resource }) {
@@ -260,7 +293,9 @@ export function advance(state, nowMs, ctx) {
     sell(s, dt, data, events);
   }
   if (nowMs > s.lastTick) s.lastTick = nowMs;
+  const arr = arriveConvoys(s, nowMs);
+  events.push(...arr.events);
 
-  return { state: s, events, appliedSec: dt, capped: elapsed > dt };
+  return { state: arr.state, events, appliedSec: dt, capped: elapsed > dt };
 }
 

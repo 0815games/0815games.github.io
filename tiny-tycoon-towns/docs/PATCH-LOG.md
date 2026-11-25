@@ -526,3 +526,83 @@ Ereignis ergänzt.
 - Nachweisgrad: Unit-Test und Bot-Simulation. Der Klick-Fix ist nicht automatisch getestet. Browser-Test auf dem Preview steht aus.
 - Grenzen: Der Bot füllt das Raster mit Lagern und baut keine Eisenmine. Ob der Stillstand bei Stufe 9 im echten Spiel auftritt, ist offen. Stufe 5 in Riverlands liegt unter dem Ziel.
 - Offen / nächster Schritt: Betreiber testet den Klick auf dem Preview. Danach Entscheidung über Riverlands (Stillstand auf Stufe 9) und über das Raster ab Stufe 10.
+
+### TTT-0040 – Konvois Scheiben 3 bis 5, Kronen-Konto, Welle `20261124-konvoi1`
+
+- Zeit / Quelle: Sitzung 2026-11-24 (UTC). Commit-Zeiten aus Git.
+- Block / Ziel: Nutzerwunsch: „großes Update-Paket“ mit den offenen Konvoi-Scheiben. Scheibe 3
+  (Abrechnung), Scheibe 4 (Handels-Dialog), Scheibe 5 (Kronen-Konto).
+- Branch / Basis: `arena/f8bf0bda-0815games-github-io`, Basis `964ebf5` (`main`).
+- Änderungen / Dateien (Scheibe 5 in diesem Eintrag, Scheiben 3 und 4 in früheren Commits):
+  - `src/domain/charters.js`: `emptyCharter` um `crowns` und `creditedConvoys` ergänzt,
+    neu `reconcileCrowns` (idempotent je Konvoi-ID, holt Gutschriften nach).
+  - `src/main.js`: `syncCrowns` (speichert nur bei Änderung), Abgleich beim Abrechnen, Abgleich
+    vor dem Gründen eines Freibriefs, Kronenstand im Handels-Dialog.
+  - `src/trade-ui.js`: Kronenstand im Dialog (`data-crowns`).
+  - `firebase/database.rules.json`: `charters/$uid.crowns` (0 bis 100000) und
+    `charters/$uid.creditedConvoys/$convoyId` (`true`, Länge bis 128). `$other` bleibt gesperrt.
+  - `tests/crowns.test.mjs` (neu, 4 Tests), `tests/trade-ui.test.mjs` (+1 Test).
+  - `src/patch-notes.mjs`: Stadtchronik-Eintrag `20261124-konvoi1` (DE/EN) und offener Punkt
+    zur Regel-Veröffentlichung.
+  - Cache-Welle `20261124-konvoi1` über 19 Dateien (`scripts/patch.mjs bump --apply`, nur `?v=`).
+  - `release-version.json`: `20261124-konvoi1`.
+- Prüfungen (lokal, Node 22.22.3):
+  - `npm test`: 116 Tests, 116 pass, 0 fail, Exit 0 (Unit; Regel-Dry-Run inklusive).
+  - `npm run check`: Exit 0, kein Fehler. Hinweis: flacher Klon, Vorfahren-Prüfungen abgeschnitten.
+  - Nicht geprüft: Browser, Emulator, Live-Regeln. Die Regel-Erweiterung ist nur als Datei und
+    im Dry-Run belegt.
+- Git / PR / Veröffentlichung:
+  - Scheibe 3: Commit `8a99f64` (TTT-0038), gepusht.
+  - Scheibe 4: Commit `15aa42d` (TTT-0039), gepusht.
+  - Scheibe 5 und dieser Eintrag: Commit `960ac9b` (Kronen-Konto, Welle, Tests), lokal. Das
+    Push und der PR-Stand folgen im Schritt danach.
+  - Firebase-Regeln: **nicht veröffentlicht**. Ohne Veröffentlichung wird das Kronen-Feld beim
+    Speichern abgelehnt. Die Gutschrift wird dann nicht gespeichert und beim nächsten Abgleich
+    erneut versucht. Betreiber: `docs/FIREBASE.md`, Schritte 1 bis 4.
+- Lücke im Log: Die Kennungen TTT-0031 bis TTT-0037 und die Commits zu TTT-0035 bis TTT-0037
+  (Konvoi-Plan, Scheibe 1, Scheibe 2) stehen nicht eigenständig im Log. Die Kennung TTT-0040
+  ist die nächste freie Nummer nach den Commit-Texten (`git log --oneline`). Die Nachträge
+  folgen separat, nicht jetzt.
+- Offen / nächster Schritt:
+  - Betreiber: Regeln veröffentlichen (siehe oben), danach Gutschrift im Handels-Dialog prüfen.
+  - Nutzer: Konvoi-Werte am Gerät testen. Dauer, Distanzsteuer, Eilpost.
+  - Offen aus dem Konvoi-Plan: Reziprozitäts-Bonus (+25 %) ist noch nicht entschieden.
+  - Scheibe 6: noch nicht geplant.
+
+### Ereignis-Nachtrag zu TTT-0040
+
+- Push: `960ac9b` und `654b595` auf `arena/f8bf0bda-0815games-github-io` gepusht (`15aa42d..654b595`).
+  PR #442 ist offen. Nicht gemergt.
+- Vercel: Projekt für dieses Spiel nicht vorhanden. Die Liste zeigt nur `ironpath-live-session`
+  (IronPath, nicht dieses Spiel) und keine Deployments. Es wurde nichts deployed und kein Projekt
+  angelegt. Die Preview-Prüfung steht aus, bis ein Projekt für dieses Spiel festgelegt ist.
+- Firebase-Regeln: weiterhin nicht veröffentlicht.
+
+### TTT-0042 – AFK-Modus und Sitzungsmeldung nur auf dem neuen Gerät (Welle `20261124-konvoi1`)
+
+- Zeit / Quelle: Sitzung 2026-11-25 (UTC). Nutzerwunsch wörtlich: „AFK Modus nach 5 Minuten
+  Inaktivität, abmelden, zurück zum Loginbildschirm, passendes Popup, volle Hütte für AFK“ und
+  „Beim Anmelden im 2. Gerät erscheint die Meldung auf beiden Geräten. Nur auf dem neuen Gerät.“
+- Branch / Basis: `arena/f8bf0bda-0815games-github-io`, Basis `964ebf5` (`main`).
+- Änderungen / Dateien:
+  - `src/afk.js` (neu): Zeitlogik (`isAfk`, `startAfkWatch`) und Vollbild-Hinweis (`showAfkOverlay`).
+  - `src/main.js`: AFK-Abmeldung (`onAfkTimeout`), Abmeldung ohne Rückfrage auf dem alten Gerät
+    (`onSessionLost`), Rückfrage „Abmelden oder hierbleiben“ nur auf dem neuen Gerät
+    (`showSessionTaken`), Hinweis auf dem Anmeldebildschirm.
+  - `style.css`: Stil des AFK-Overlays (Mond, Zzz-Animation, reduzierte Bewegung respektiert).
+  - `tests/afk.test.mjs` (neu, 5 Tests). `src/patch-notes.mjs`: Stadtchronik DE/EN.
+- Verhalten:
+  - 5 Minuten ohne Tastatur, Maus, Touch oder Scrollen: Stadt sichern, abmelden, Overlay „Deine
+    Stadt schläft“ über dem Anmeldebildschirm.
+  - Neues Gerät, Konto offen: Dialog nur dort, Buttons „Abmelden“ und „Hierbleiben“.
+  - Altes Gerät: wird ohne Dialog abgemeldet. Auf dem Anmeldebildschirm steht ein kurzer Text
+    „Dieses Konto ist jetzt auf einem anderen Gerät geöffnet.“ Das ist eine Entscheidung, die
+    der Nutzer prüfen soll.
+- Prüfungen (lokal, Node 22.22.3):
+  - `npm test`: 121 Tests, 121 pass, 0 fail, Exit 0 (Unit). Die Stopp-Regel war zuerst rot
+    (`check()` nach `stop()` konnte auslösen) und ist behoben.
+  - `npm run check`: Exit 0, kein Fehler.
+  - Nicht geprüft: Browser, zwei echte Geräte, Firebase-Sitzungen end-to-end.
+- Git / PR / Veröffentlichung: Commit folgt im Schritt danach. Nicht veröffentlicht.
+- Offen / nächster Schritt: Auf zwei Geräten prüfen (Nutzer). Prüfen, ob der Hinweis auf dem
+  alten Gerät gewünscht ist oder ganz wegfallen soll.
