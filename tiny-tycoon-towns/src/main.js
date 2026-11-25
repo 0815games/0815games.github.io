@@ -3,30 +3,31 @@
 import {
   createTown, newSeed, chooseBiome, placeBuilding, upgradeBuilding,
   toggleSell, buyOffer, advance, hydrateTown, setTutorialStep, settleConvoyAction,
-} from './domain/engine.js?v=20261124-konvoi1';
-import { startConvoy } from './domain/convoys.js?v=20261124-konvoi1';
-import { tradeFormHtml, convoyListHtml, previewFor } from './trade-ui.js?v=20261124-konvoi1';
+} from './domain/engine.js?v=20261125-lager1';
+import { startConvoy } from './domain/convoys.js?v=20261125-lager1';
+import { tradeFormHtml, convoyListHtml, previewFor } from './trade-ui.js?v=20261125-lager1';
 import {
   productionMultiplier, ratePerMin, buildCost, storageCap, classOf,
-} from './domain/economy.js?v=20261124-konvoi1';
-import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261124-konvoi1';
-import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261124-konvoi1';
-import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261124-konvoi1';
+} from './domain/economy.js?v=20261125-lager1';
+import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261125-lager1';
+import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261125-lager1';
+import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261125-lager1';
 import {
   PERKS, canFoundCharter, grantCharters, buyPerk, perkEffect, perkLevel, availableCharters, emptyCharter,
   applyCharterToData, reconcileCrowns,
-} from './domain/charters.js?v=20261124-konvoi1';
+} from './domain/charters.js?v=20261125-lager1';
 const SEEN_NOTES_KEY = 'ttt:notes-seen';
-import { withTimeout } from './async-util.js?v=20261124-konvoi1';
-import { checkTownName } from './town-names.js?v=20261124-konvoi1';
-import { friendsShell, mountFriends } from './friends-ui.js?v=20261124-konvoi1';
-import { createBoard } from './world/board.js?v=20261124-konvoi1';
-import { createLoginScene } from './world/login-scene.js?v=20261124-konvoi1';
-import { TUTORIAL_STEPS, HELP_SECTIONS } from './tutorial.js?v=20261124-konvoi1';
-import { createVersionUI } from './version-ui.mjs?v=20261124-konvoi1';
-import { startAfkWatch, showAfkOverlay } from './afk.js?v=20261124-konvoi1';
+import { withTimeout } from './async-util.js?v=20261125-lager1';
+import { checkTownName } from './town-names.js?v=20261125-lager1';
+import { friendsShell, mountFriends } from './friends-ui.js?v=20261125-lager1';
+import { createBoard } from './world/board.js?v=20261125-lager1';
+import { createLoginScene } from './world/login-scene.js?v=20261125-lager1';
+import { TUTORIAL_STEPS, HELP_SECTIONS } from './tutorial.js?v=20261125-lager1';
+import { createVersionUI } from './version-ui.mjs?v=20261125-lager1';
+import { startAfkWatch, showAfkOverlay } from './afk.js?v=20261125-lager1';
+import { fullResources, fillPercent } from './stock-dock.js?v=20261125-lager1';
 
-const BUILD = '20261124-konvoi1';
+const BUILD = '20261125-lager1';
 console.info(`Tiny Tycoon Towns ${BUILD}`);
 const LAST_BIOME_KEY = 'ttt.lastBiome';
 const LOCAL_KEY = (uid) => `ttt.save.v1.${uid}`;
@@ -106,7 +107,7 @@ const REMOTE_TIMEOUT_MS = 10_000;
 async function loadData() {
   const names = ['resources', 'biomes', 'buildings', 'economy', 'merchant', 'npcs'];
   const parts = await Promise.all(names.map((n) =>
-    fetch(`data/${n}.json?v=20261124-konvoi1`).then((r) => {
+    fetch(`data/${n}.json?v=20261125-lager1`).then((r) => {
       if (!r.ok) throw new Error(`data/${n}.json: HTTP ${r.status}`);
       return r.json();
     })));
@@ -152,7 +153,7 @@ async function boot() {
   window.addEventListener('offline', updateSync);
 
   try {
-    cloud = await import('./cloud.js?v=20261124-konvoi1');
+    cloud = await import('./cloud.js?v=20261125-lager1');
   } catch {
     showFatal('Das Konto-System konnte nicht geladen werden. Ohne Anmeldung lässt sich nicht spielen. Bitte Verbindung prüfen und neu laden.');
     return;
@@ -586,6 +587,8 @@ function bindStatic() {
   });
   $('#panel').addEventListener('click', onPanelClick);
   $('#stock-btn').addEventListener('click', openStock);
+  $('#dock-toggle').addEventListener('click', () => setDockOpen($('#dock-body').hidden));
+  setDockOpen(window.matchMedia?.('(min-width: 900px)').matches ?? false); // Desktop offen, Mobile eingeklappt
   $('#stock-close').addEventListener('click', () => $('#stock-sheet').close());
   $('#stock-sheet').addEventListener('click', onPanelClick); // Händler: Kaufen
   // Klick auf den abgedunkelten Hintergrund schließt Dialoge (außer, wo eine Entscheidung nötig ist).
@@ -885,6 +888,7 @@ function renderStock() {
 
 function updateStockNumbers() {
   if (!state) return;
+  renderDock();
   const cap = storageCap(state, data);
   const rates = totalRates();
   for (const li of document.querySelectorAll('#stock li[data-res]')) {
@@ -893,6 +897,39 @@ function updateStockNumbers() {
     li.querySelector('[data-rate]').textContent = rates[r] ? `+${fmtRate(rates[r])}/min` : '';
     li.querySelector('[data-bar]').style.width = `${Math.min(100, state.stock[r] / cap * 100).toFixed(1)}%`;
   }
+}
+
+/** Lager unten links: Kopf mit Münzen, bei vollem Lager rot mit „!“. Die Liste klappt auf Mobile ein. */
+function renderDock() {
+  if (!state) return;
+  const cap = storageCap(state, data);
+  const ids = Object.keys(data.resources);
+  const full = fullResources(state.stock, cap, ids);
+  const rates = totalRates();
+  $('#stock-dock').classList.toggle('is-full', full.length > 0);
+  $('#dock-coins').textContent = fmt0(state.coins);
+  const alert = $('#dock-alert');
+  alert.hidden = full.length === 0;
+  alert.title = full.length ? 'Lager voll: ' + full.map((r) => data.resources[r].name.de).join(', ') : '';
+  $('#dock-list').innerHTML = ids.map((r) => {
+    const res = data.resources[r];
+    const amount = state.stock[r];
+    const isFull = amount >= cap;
+    const rate = rates[r] ? ` <span class="dock-rate">+${fmtRate(rates[r])}/min</span>` : '';
+    const fullTag = isFull ? ' <span class="dock-full">voll</span>' : '';
+    return `<li data-res="${r}" class="${isFull ? 'is-full' : ''}">
+      <span class="dock-name"><span aria-hidden="true">${res.icon}</span> ${esc(res.name.de)}${rate}</span>
+      <span class="dock-amount">${fmt0(amount)} / ${fmt0(cap)}${fullTag}</span>
+      <span class="dock-bar" aria-hidden="true"><span style="width:${fillPercent(amount, cap).toFixed(1)}%"></span></span>
+    </li>`;
+  }).join('');
+}
+
+function setDockOpen(open) {
+  $('#dock-body').hidden = !open;
+  const t = $('#dock-toggle');
+  t.setAttribute('aria-expanded', String(open));
+  t.textContent = open ? '▾' : '▴';
 }
 
 function renderPanel() {

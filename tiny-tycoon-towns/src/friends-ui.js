@@ -1,6 +1,6 @@
 // Freunde im Spiel-Design: eigene Stadt mit Code, Einladung per Name oder Code, Anfragen, klappbare Freundesliste.
 // Die Daten kommen aus cloud.js. Dieses Modul zeigt nur an und ruft Aktionen auf.
-import * as cloud from './cloud.js?v=20261124-konvoi1';
+import * as cloud from './cloud.js?v=20261125-lager1';
 
 const esc = (v) => String(v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 

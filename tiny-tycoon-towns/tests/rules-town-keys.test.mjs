@@ -43,3 +43,11 @@ test('convoy entries carry the fields the convoy rule needs', () => {
   const c = r.state.convoys[0];
   for (const key of ['id', 'status', 'departAt', 'arriveAt']) assert.ok(key in c, `Konvoi ohne ${key}`);
 });
+
+// Gleiche Falle bei Freundesanfragen: Steht unter einem Knoten ein $other mit .validate: false,
+// werden alle Kinder ohne eigene Regel abgelehnt. Ursache von „permission_denied“ beim Freundschaftsanfragen.
+test('a friend request payload has its own rule for every field, so $other does not reject it', () => {
+  const from = rules.rules.friendRequests['$to']['$from'];
+  assert.equal(from['$other']['.validate'], false);
+  for (const key of ['name', 'at']) assert.ok(key in from, `Freundesanfrage: Feld ${key} ohne eigene Regel`);
+});

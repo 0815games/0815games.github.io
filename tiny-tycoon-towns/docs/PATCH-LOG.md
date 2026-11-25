@@ -638,3 +638,31 @@ Ereignis ergänzt.
   Test des Agenten.
 - Offen: Test auf Live-Daten (Stadt speichern, Konvoi starten und abrechnen, neu laden). Ergebnis
   ins Log eintragen, sobald vorhanden.
+
+### TTT-0044 – Lager-Leiste, Handel-Schalter, Freundesanfragen-Regel (Welle `20261125-lager1`)
+
+- Zeit / Quelle: Sitzung 2026-11-25 (UTC). Nutzermeldung mit Konsolenausgabe: Freundesanfrage
+  `permission_denied`, „Cloud Save fehlgeschlagen“, und Wünsche zu Handel und Lager.
+- Ursache Freundesanfragen: In `friendRequests/$to/$from` stand ein `$other` mit `.validate: false`.
+  `name` und `at` hatten keine eigene Regel und wurden deshalb abgelehnt. Behoben durch eigene
+  Regeln für `name` und `at`.
+- Änderungen / Dateien:
+  - `firebase/database.rules.json`: `name` (Text, höchstens 24 Zeichen), `at` (Zahl) unter
+    `friendRequests`.
+  - `tests/rules-town-keys.test.mjs`: Wächter für Freundesanfragen (Probe: ohne `name` schlägt er fehl).
+  - `src/stock-dock.js` (neu) und `tests/stock-dock.test.mjs` (neu, 2 Tests).
+  - `index.html`: Lager-Leiste unten links statt des einzelnen Knopfs.
+  - `src/main.js`: `renderDock`, Ausklappen (Mobile eingeklappt, Desktop offen), Tipp öffnet die Gesamtansicht.
+  - `style.css`: Leiste, roter Zustand mit „!“, Handel-Schalter.
+  - `src/patch-notes.mjs`: Stadtchronik `20261125-lager1` (DE/EN), offene Punkte.
+  - Cache-Welle `20261125-lager1` (`scripts/patch.mjs bump --apply`, nur `?v=`).
+- Prüfungen (lokal, Node 22.22.3):
+  - `npm test`: 127 Tests, 127 pass, 0 fail, Exit 0 (Unit). Der Regel-Wächter war vorher rot.
+  - `npm run check`: Exit 0, kein Fehler. Hinweis: Werkzeug liest nur `##`-Überschriften, der Eintrag ist `###`.
+  - Nicht geprüft: Browser-Darstellung (kein Browser im Agenten), Firebase-Emulator (nicht verfügbar).
+- Git / PR / Veröffentlichung: Commit folgt. Regeln **nicht** in Firebase veröffentlicht, Betreiber
+  muss `firebase/database.rules.json` erneut einspielen (Raw-Link wie gehabt).
+- Offen / nächster Schritt:
+  - Cloud-Speichern: Die Ursache ist nicht bestätigt. Benötigt wird die Fehlermeldung aus der Konsole
+    (Zeile mit „Cloud“ oder „permission_denied“, mit Pfad).
+  - Test der Leiste und des Handels auf Mobile und Desktop (Nutzer).
