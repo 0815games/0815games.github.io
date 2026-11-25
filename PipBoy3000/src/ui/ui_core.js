@@ -273,6 +273,13 @@ const UI = {
             toastCont.classList.add('w-auto', 'items-end', 'max-w-full', 'md:max-w-[400px]'); 
         }
 
+        // Versionspruefung anwerfen, sobald die Oberflaeche steht. Sie laeuft
+        // danach alle 60 s und meldet eine neue Fassung ueber den Balken unten.
+        // Fehler hier duerfen den Start nicht aufhalten.
+        if (typeof this.starteUpdatePruefung === 'function') {
+            try { this.starteUpdatePruefung(); } catch (e) { console.warn('Update-Pruefung:', e && e.message); }
+        }
+
         this.els = {
             touchArea: document.getElementById('main-content'),
             view: document.getElementById('view-container'),

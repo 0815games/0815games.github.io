@@ -44,7 +44,11 @@ export const ORDER = [
   'src/ui/ui_render_core.js',
   'src/ui/ui_render_views.js',
   'src/ui/ui_render_minigames.js',
-  'src/ui/ui_render_overlays.js'
+  'src/ui/ui_render_overlays.js',
+  // Patch-Notizen und Update-Pruefung. Beide nur Darstellung, aber sie
+  // gehoeren ans Ende: ui_update.js liest beim Start Game.state und Combat.
+  'src/ui/ui_patch_notes.js',
+  'src/ui/ui_update.js'
 ];
 
 // Bewusste Überschreibungen. Jede Zeile ist eine Entscheidung, keine Zufallslage:

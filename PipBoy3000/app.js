@@ -1649,6 +1649,13 @@
         toastCont.classList.remove("w-72", "md:w-96");
         toastCont.classList.add("w-auto", "items-end", "max-w-full", "md:max-w-[400px]");
       }
+      if (typeof this.starteUpdatePruefung === "function") {
+        try {
+          this.starteUpdatePruefung();
+        } catch (e) {
+          console.warn("Update-Pruefung:", e && e.message);
+        }
+      }
       this.els = {
         touchArea: document.getElementById("main-content"),
         view: document.getElementById("view-container"),
@@ -10037,9 +10044,33 @@
         }
       }
     },
+    // Handbuch und Patch-Notizen sind eigene Overlays, keine Dialoge. Sie
+    // brauchen deshalb einen eigenen ESC-Weg: der Knopf im Handbuch sagt seit
+    // jeher "SCHLIESSEN (ESC)", und ESC tat nichts, weil _trapEscKey nur
+    // #dialog-overlay kennt.
+    _trapEigeneOverlays: function() {
+      if (this._eigenerEscHandler) document.removeEventListener("keydown", this._eigenerEscHandler);
+      this._eigenerEscHandler = (e) => {
+        if (e.key !== "Escape") return;
+        const manual = document.getElementById("manual-overlay");
+        const notizen = document.getElementById("patch-notes-overlay");
+        if (manual && !manual.classList.contains("hidden")) {
+          e.preventDefault();
+          e.stopPropagation();
+          manual.classList.add("hidden");
+          manual.style.display = "none";
+        } else if (notizen && !notizen.classList.contains("hidden")) {
+          e.preventDefault();
+          e.stopPropagation();
+          if (typeof UI.hidePatchNotes === "function") UI.hidePatchNotes();
+        }
+      };
+      document.addEventListener("keydown", this._eigenerEscHandler);
+    },
     showManualOverlay: async function() {
       const overlay = document.getElementById("manual-overlay");
       const content = document.getElementById("manual-content");
+      if (overlay) this._trapEigeneOverlays();
       if (this.els.navMenu) {
         this.els.navMenu.classList.add("hidden");
         this.els.navMenu.style.display = "none";
@@ -10066,24 +10097,13 @@
         }
       }
     },
-    showChangelogOverlay: async function() {
-      const overlay = document.getElementById("changelog-overlay");
-      const content = document.getElementById("changelog-content");
-      if (overlay && content) {
-        content.textContent = "Lade Daten...";
-        overlay.style.display = "flex";
-        overlay.classList.remove("hidden");
-        const verDisplay = document.getElementById("version-display");
-        const ver = verDisplay ? verDisplay.textContent.trim() : Date.now();
-        try {
-          const res = await fetch(`docs/change.log?v=${ver}`);
-          if (!res.ok) throw new Error("Logfile nicht gefunden");
-          const text = await res.text();
-          content.textContent = text;
-        } catch (e) {
-          content.textContent = `Fehler beim Laden: ${e.message}`;
-        }
-      }
+    // Die fruehere LOGS-Ansicht (blau, Markdown aus docs/change.log) ist
+    // ersetzt: Blau kommt im Entwurf nicht vor, und eine Datei per fetch zu
+    // lesen hiess, ohne Netz stand dort eine Fehlermeldung. Die Inhalte
+    // stehen jetzt in src/ui/ui_patch_notes.js und werden im Pip-Boy-Stil
+    // gezeichnet - mit dem laufenden Build daneben.
+    showChangelogOverlay: function() {
+      if (typeof UI.showPatchNotes === "function") UI.showPatchNotes();
     },
     enterVault: function() {
       if (Game.state) Game.state.inDialog = true;
@@ -10283,4 +10303,329 @@
       }
     }
   });
+
+  // src/ui/ui_patch_notes.js
+  window.GameData = window.GameData || {};
+  window.GameData.offenePunkte = [
+    "Geräteabnahme: die Ansichten wurden im Browser mit Test-Doubles und als gerenderte Bilder geprüft, nicht auf einem echten Telefon.",
+    "Befund 8 aus docs/BEFUNDE.md: *.log in .gitignore trifft auch docs/change.log, der build.json-Hash deckt style.css nicht ab, src/admin.js hat keine Tests.",
+    "deployCamp verbraucht den Bausatz nicht; Nuka Cola heilt 15 statt der angegebenen 10.",
+    "Der RAD-Balken nutzt noch einen Platzhalter (+1000) statt des echten Strahlungswerts."
+  ];
+  window.GameData.RELEASED_PATCHES = [
+    {
+      version: "14.0.14",
+      datum: "2026-11-24",
+      title: "Patch-Ablauf · Update-Fenster im Spiel",
+      punkte: [
+        "Ein Patch-Werkzeug für das ganze Projekt: node tools/patch.mjs check prüft Stempel, Notizen, Geheimnisse und Bündel; bump zählt die Version hoch und schreibt alle Stellen, die sie tragen.",
+        "Der Stempel steht jetzt an zehn Stellen und wird gegeneinander geprüft. Vorher liefen shell/Version und build.json auseinander, ohne dass es auffiel.",
+        "Neues Fenster PATCH-NOTIZEN im Spielmenü: zeigt genau diese Liste, mit dem laufenden Build oben.",
+        "Neues Fenster UPDATE: prüft beim Start und danach alle 60 Sekunden, ob eine neue Version auf dem Server liegt, und lädt die Seite kontrolliert neu - aber nur, wenn kein Dialog offen ist und der Spielstand gespeichert ist."
+      ],
+      offen: [
+        "Zwei Geräte gleichzeitig: das Neuladen fragt vorher, ob noch Speicherungen laufen. Auf einem echten Telefon mit wackligem Netz ist das die Stelle, die Ärger machen kann."
+      ]
+    },
+    {
+      version: "14.0.13",
+      datum: "2026-11-24",
+      title: "Eine Schrift im ganzen Spiel · Item-Bild im Charaktermenü",
+      punkte: [
+        "font-vt323 war an 22 Stellen im Quellcode benutzt und nirgends definiert - alle fielen auf die Systemschrift zurück. Jetzt ist die Terminal-Schrift der Standard.",
+        "Sechs Leucht-Klassen (glow-text, text-shadow-*) existierten nicht; jede Überschrift, die leuchten sollte, leuchtete nicht.",
+        "Karte und Kampffeld beschrifteten sich in der Systemschrift; jetzt VT323.",
+        "Kein weißer Text mehr: 20 Stellen weiß und 10-mal Aufhellen beim Darüberfahren sind Leuchtgrün.",
+        "Das Item-Bild im Charaktermenü: alte Spielstände trugen keine id, deshalb stand dort ein Ersatz-Emoji. Wird beim Laden repariert."
+      ],
+      offen: [
+        "Die Schrift kommt von Google Fonts. Ohne Netz zeigt das Spiel die Ersatzschrift des Geräts."
+      ]
+    }
+  ];
+  window.UI = window.UI || {};
+  window.UI.showPatchNotes = function(reiter) {
+    const overlay = document.getElementById("patch-notes-overlay");
+    const inhalt = document.getElementById("patch-notes-content");
+    if (!overlay || !inhalt) return;
+    if (typeof Game !== "undefined" && Game.state) Game.state.inDialog = true;
+    if (typeof this.els === "object" && this.els && this.els.navMenu) {
+      this.els.navMenu.classList.add("hidden");
+      this.els.navMenu.style.display = "none";
+    }
+    const tab = reiter === "offen" ? "offen" : "veroeffentlicht";
+    const eintraege = window.GameData.RELEASED_PATCHES || [];
+    const offen = window.GameData.offenePunkte || [];
+    const build = (document.querySelector('meta[name="pipboy-build"]') || {}).content || "?";
+    const kopf = `
+        <div class="flex items-center justify-between border-b-2 border-green-800 pb-2 mb-3">
+            <div>
+                <div class="text-[10px] tracking-[0.3em] text-green-700 uppercase">Vault-Tec // Änderungsprotokoll</div>
+                <h2 class="text-3xl font-bold text-[#39ff14] glow-text leading-none mt-1">PATCH-NOTIZEN</h2>
+            </div>
+            <div class="text-right text-sm text-green-600">
+                <div>INSTALLIERT</div>
+                <div class="text-[#39ff14] font-bold text-lg leading-none">v${build}</div>
+            </div>
+        </div>
+        <div class="flex border-b-2 border-green-800 mb-3">
+            <button onclick="UI.showPatchNotes('veroeffentlicht')" class="flex-1 py-2 uppercase tracking-widest text-lg ${tab === "veroeffentlicht" ? "bg-[#39ff14] text-black font-bold" : "bg-[#001100] text-green-600 hover:text-green-300"}">VERÖFFENTLICHT</button>
+            <button onclick="UI.showPatchNotes('offen')" class="flex-1 py-2 uppercase tracking-widest text-lg ${tab === "offen" ? "bg-[#39ff14] text-black font-bold" : "bg-[#001100] text-green-600 hover:text-green-300"}">NOCH OFFEN</button>
+        </div>
+    `;
+    let rumpf = "";
+    if (tab === "veroeffentlicht") {
+      rumpf = eintraege.map((eintrag, index) => {
+        const aktuell = index === 0;
+        const punkte = (eintrag.punkte || []).map((p) => `<li class="mb-1 leading-snug">${p}</li>`).join("");
+        const offenePunkte = (eintrag.offen || []).map((p) => `<li class="mb-1 leading-snug">${p}</li>`).join("");
+        return `
+                <article class="border border-green-800 bg-[#001100]/60 p-3 mb-3 ${aktuell ? "border-l-4 border-l-[#39ff14]" : ""}">
+                    <div class="flex items-baseline justify-between gap-2 mb-1">
+                        <span class="text-sm text-green-700 tracking-widest">v${eintrag.version} · ${eintrag.datum}</span>
+                        ${aktuell ? '<span class="text-[10px] bg-[#39ff14] text-black px-1 font-bold tracking-widest">NEU</span>' : ""}
+                    </div>
+                    <h3 class="text-xl font-bold text-[#39ff14] leading-tight mb-2">${eintrag.title}</h3>
+                    <ul class="text-base text-green-300 list-none">${punkte}</ul>
+                    ${offenePunkte ? `<div class="mt-2 pt-2 border-t border-green-900/60"><div class="text-[10px] tracking-[0.2em] text-yellow-600 uppercase mb-1">Dabei aufgefallen</div><ul class="text-sm text-yellow-200/80 list-none">${offenePunkte}</ul></div>` : ""}
+                </article>
+            `;
+      }).join("");
+    } else {
+      rumpf = `
+            <div class="border border-yellow-800 bg-[#0f0f00]/60 p-3">
+                <div class="text-[10px] tracking-[0.3em] text-yellow-600 uppercase mb-2">Bekannt und nicht behoben</div>
+                <ul class="text-base text-yellow-200/90 list-none space-y-2">
+                    ${offen.map((punkt) => `<li class="flex gap-2"><span class="text-yellow-500">▸</span><span>${punkt}</span></li>`).join("")}
+                </ul>
+            </div>
+        `;
+    }
+    inhalt.innerHTML = kopf + rumpf;
+    overlay.style.display = "flex";
+    overlay.classList.remove("hidden");
+  };
+  window.UI.hidePatchNotes = function() {
+    const overlay = document.getElementById("patch-notes-overlay");
+    if (overlay) {
+      overlay.classList.add("hidden");
+      overlay.style.display = "none";
+    }
+    if (typeof Game !== "undefined" && Game.state) Game.state.inDialog = false;
+  };
+
+  // src/ui/ui_update.js
+  var BUILD_MUSTER = /^\d+\.\d+\.\d+$/;
+  function createProbe({ url, build, fetcher = globalThis.fetch, timeoutMs = 8e3 }) {
+    if (!BUILD_MUSTER.test(build) || typeof fetcher !== "function") throw new Error("Ungueltige Versionssonde");
+    let zaehler = 0;
+    return async function probe() {
+      const steuerung = new AbortController();
+      const abbruch = setTimeout(() => steuerung.abort(), timeoutMs);
+      try {
+        const ziel = new URL(url, window.location.href);
+        ziel.searchParams.set("probe", `${Date.now()}-${++zaehler}`);
+        const antwort = await fetcher(ziel.href, { cache: "no-store", signal: steuerung.signal });
+        if (!antwort || !antwort.ok) return { art: "unerreichbar" };
+        const text = await antwort.text();
+        let daten;
+        try {
+          daten = JSON.parse(text);
+        } catch {
+          return { art: "unerreichbar" };
+        }
+        const veroeffentlicht = daten && typeof daten.version === "string" && BUILD_MUSTER.test(daten.version) ? daten.version : null;
+        if (!veroeffentlicht) return { art: "unerreichbar" };
+        return veroeffentlicht === build ? { art: "aktuell", build: veroeffentlicht } : { art: "veraltet", build: veroeffentlicht };
+      } catch {
+        return { art: "unerreichbar" };
+      } finally {
+        clearTimeout(abbruch);
+      }
+    };
+  }
+  function updateBlockers() {
+    const gruende = [];
+    if (typeof Game === "undefined" || !Game.state) {
+      return gruende;
+    }
+    if (Game.state.inDialog) gruende.push("dialog");
+    if (Game.isDirty) gruende.push("speichert");
+    if (Game.saveTimer) gruende.push("speichert");
+    if (typeof Combat !== "undefined" && Combat.enemy) gruende.push("kampf");
+    return gruende;
+  }
+  var TEXTE = {
+    verfuegbar: "NEUE VERSION {build} VERFUEGBAR",
+    wartet: "NEUE VERSION BEREIT - {grund}",
+    laedt: "NEUE VERSION WIRD GELADEN...",
+    aktuell: "AKTUELLE VERSION",
+    unerreichbar: "VERSIONSPRUEFUNG NICHT ERREICHBAR",
+    geladen: "NEUE VERSION {build} GELADEN",
+    jetzt: "JETZT LADEN",
+    spaeter: "SPAETER"
+  };
+  var GRUND = {
+    dialog: "Dialog offen",
+    speichert: "Spielstand wird gespeichert",
+    kampf: "Kampf laeuft"
+  };
+  function createUpdateUI({ document: document2, window: window2, fetcher = window2?.fetch?.bind(window2) } = {}) {
+    const meta = document2.querySelector('meta[name="pipboy-build"]');
+    const build = meta ? meta.getAttribute("content") : null;
+    const balken = document2.getElementById("update-banner");
+    const text = document2.getElementById("update-banner-text");
+    const jetzt = document2.getElementById("update-banner-now");
+    const spaeter = document2.getElementById("update-banner-later");
+    if (!build || !BUILD_MUSTER.test(build) || !balken || !text) return null;
+    const probe = createProbe({ url: "build.json", build, fetcher });
+    let zustand = null;
+    let pruefungLaeuft = false;
+    let timer = null;
+    let ziel = null;
+    const sagen = (schluessel, werte = {}) => Object.entries(werte).reduce((satz, [name, wert]) => satz.replace(`{${name}}`, String(wert)), TEXTE[schluessel] || "");
+    function zeichnen() {
+      if (!zustand) {
+        balken.hidden = true;
+        return;
+      }
+      balken.hidden = false;
+      if (zustand.art === "veraltet") {
+        const gruende = zustand.blocker || [];
+        text.textContent = gruende.length ? sagen("wartet", { grund: gruende.map((g) => GRUND[g] || g).join(", ") }) : sagen("verfuegbar", { build: zustand.build });
+        text.className = "text-yellow-400";
+        jetzt.hidden = gruende.length > 0;
+      } else if (zustand.art === "laedt") {
+        text.textContent = sagen("laedt");
+        text.className = "text-yellow-400 animate-pulse";
+        jetzt.hidden = true;
+      } else if (zustand.art === "geladen") {
+        text.textContent = sagen("geladen", { build: zustand.build });
+        text.className = "text-[#39ff14]";
+        jetzt.hidden = true;
+      } else if (zustand.art === "aktuell") {
+        balken.hidden = true;
+        return;
+      } else {
+        text.textContent = sagen("unerreichbar");
+        text.className = "text-green-700";
+        jetzt.hidden = true;
+      }
+      if (spaeter) spaeter.hidden = zustand.art !== "veraltet" && zustand.art !== "unerreichbar";
+      if (jetzt) jetzt.textContent = TEXTE.jetzt;
+    }
+    function neuLaden(zielBuild) {
+      if (!BUILD_MUSTER.test(zielBuild)) return false;
+      const adresse = new URL(window2.location.href);
+      adresse.searchParams.set("_pb_auf", zielBuild);
+      adresse.searchParams.set("_pb_von", build);
+      adresse.searchParams.set("_pb_nonce", String(Date.now()));
+      zustand = { art: "laedt" };
+      zeichnen();
+      window2.location.replace(adresse.href);
+      return true;
+    }
+    function geladenPruefen() {
+      const adresse = new URL(window2.location.href);
+      const auf = adresse.searchParams.get("_pb_auf");
+      const von = adresse.searchParams.get("_pb_von");
+      const versuch = auf === build && BUILD_MUSTER.test(von || "") && von !== build;
+      if (versuch) zustand = { art: "geladen", build };
+      if (auf !== null || von !== null || adresse.searchParams.has("_pb_nonce")) {
+        adresse.searchParams.delete("_pb_auf");
+        adresse.searchParams.delete("_pb_von");
+        adresse.searchParams.delete("_pb_nonce");
+        try {
+          window2.history.replaceState(window2.history.state, "", adresse.href);
+        } catch {
+        }
+      }
+      zeichnen();
+      return versuch;
+    }
+    async function pruefen() {
+      if (pruefungLaeuft) return false;
+      pruefungLaeuft = true;
+      try {
+        const ergebnis = await probe();
+        if (ergebnis.art === "aktuell") {
+          if (!zustand || zustand.art !== "geladen") {
+            zustand = null;
+            zeichnen();
+          }
+          return false;
+        }
+        if (ergebnis.art === "veraltet") {
+          const blocker = updateBlockers();
+          zustand = { art: "veraltet", build: ergebnis.build, blocker };
+          ziel = ergebnis.build;
+          const adresse = new URL(window2.location.href);
+          const versucht = adresse.searchParams.get("_pb_auf");
+          if (blocker.length === 0 && versucht !== ergebnis.build) {
+            window2.setTimeout(() => neuLaden(ergebnis.build), 1200);
+          }
+          zeichnen();
+          return true;
+        }
+        zustand = { art: "unerreichbar" };
+        zeichnen();
+        return false;
+      } finally {
+        pruefungLaeuft = false;
+      }
+    }
+    function beiSichtbarkeit() {
+      if (document2.visibilityState !== "hidden") void pruefen();
+    }
+    function start() {
+      geladenPruefen();
+      void pruefen();
+      timer = window2.setInterval(() => void pruefen(), 6e4);
+      document2.addEventListener("visibilitychange", beiSichtbarkeit);
+      window2.addEventListener("pageshow", beiSichtbarkeit);
+    }
+    function stop() {
+      if (timer !== null) window2.clearInterval(timer);
+      timer = null;
+      document2.removeEventListener("visibilitychange", beiSichtbarkeit);
+      window2.removeEventListener("pageshow", beiSichtbarkeit);
+    }
+    if (jetzt) jetzt.onclick = () => {
+      if (ziel) neuLaden(ziel);
+    };
+    if (spaeter) spaeter.onclick = () => {
+      balken.hidden = true;
+    };
+    return Object.freeze({ start, stop, pruefen, get build() {
+      return build;
+    }, get zustand() {
+      return zustand;
+    } });
+  }
+  window.UI = window.UI || {};
+  window.UI.updateUI = null;
+  window.UI.starteUpdatePruefung = function() {
+    if (this.updateUI) return this.updateUI;
+    try {
+      this.updateUI = createUpdateUI({ document, window });
+      if (this.updateUI) this.updateUI.start();
+    } catch (e) {
+      console.warn("Update-Pruefung nicht gestartet:", e && e.message);
+    }
+    return this.updateUI;
+  };
+  window.UI.pruefeVersion = function(vonHand) {
+    const ui = this.starteUpdatePruefung();
+    if (!ui) {
+      if (typeof this.toast === "function") this.toast("Update-Prüfung nicht verfügbar", "text-red-400");
+      return;
+    }
+    if (vonHand && typeof this.toast === "function") this.toast("Prüfe Version...", "text-green-400");
+    void ui.pruefen().then((veraltet) => {
+      if (!vonHand || typeof this.toast !== "function") return;
+      if (veraltet) this.toast("Neue Version gefunden - siehe Hinweis unten", "text-yellow-400");
+      else if (!ui.zustand || ui.zustand.art === "aktuell") this.toast("Du spielst die aktuelle Version", "text-green-400");
+      else this.toast("Version nicht erreichbar", "text-red-400");
+    });
+  };
 })();
