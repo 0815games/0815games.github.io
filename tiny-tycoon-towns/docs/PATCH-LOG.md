@@ -1090,3 +1090,16 @@ Ereignis ergänzt.
     Bitte am Gerät prüfen, ob sie bei Zoom 0,75 und darüber lesbar sind und nichts verdecken.
   - Stufe 4 und 5 haben keine eigenen Akzente, nur die gemeinsamen Teile.
   - Keine Welle, keine Veröffentlichung, keine Firebase-Regeländerung.
+
+### TTT-0064 – Siedlungen: Akzente für Stufe 4 und 5 (lokal, nicht veröffentlicht)
+
+- Auftrag des Nutzers: „Stufe 4 und 5 machen Akzente“, also eigene Teile je Stufe bei jedem Gebäude.
+- Neu in `src/world/art.js`:
+  - Stufe 4: das Requisit des Gebäudes (`ACCENT`) wird vorne rechts noch einmal gesetzt, verschoben um 0,6 Feld.
+  - Stufe 5: goldene Umrandung um beide Requisits vorne, zusätzlich zur bisherigen Kante und dem Funkeln.
+- Tests: `tests/world-stages.test.mjs` 6 Tests. Neu: Stufe 4 und 5 fügen je etwas hinzu, die beiden unterscheiden sich,
+  und der Stufe-4-Akzent ist je Gebäude verschieden.
+- `npm test` grün, `npm run check` ohne Fehler.
+- Grenzen / offen:
+  - Nicht im Browser angesehen. Ob die Kopie bei Stufe 4 das Gebäude verdeckt oder über die Kachel hinausragt, ist am Gerät zu prüfen.
+  - Keine Welle, keine Veröffentlichung, keine Firebase-Regeländerung.

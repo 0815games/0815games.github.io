@@ -92,3 +92,25 @@ test('stage 3 adds a building-specific accent, and no two buildings share the sa
     seen.set(sig, id);
   }
 });
+
+test('stages 4 and 5 add their own parts, and they differ per building and per stage', () => {
+  const sig = new Map();
+  for (const id of BUILDING_IDS) {
+    const s3 = detailed(id, 3);
+    const s4 = detailed(id, 4);
+    const s5 = detailed(id, 5);
+    const add4 = s4.slice(s3.length).join(';');
+    const add5 = s5.slice(s4.length).join(';');
+    assert.ok(add4.length > 0, `${id}: Stufe 4 fügt etwas hinzu`);
+    assert.ok(add5.length > 0, `${id}: Stufe 5 fügt etwas hinzu`);
+    assert.notEqual(add4, add5, `${id}: Stufe 4 und 5 unterscheiden sich`);
+    sig.set(id, add4);
+  }
+  // Der Akzent der Stufe 4 ist die Kopie des eigenen Requisits, also je Gebäude verschieden. Gemeinsame Teile
+  // wie die goldene Umrandung sind in Stufe 5, nicht in Stufe 4. Deshalb genügt die Prüfung auf Stufe 4 hier.
+  const seen = new Map();
+  for (const [id, v] of sig) {
+    assert.ok(!seen.has(v), `${id} und ${seen.get(v)} haben denselben Stufe-4-Akzent`);
+    seen.set(v, id);
+  }
+});

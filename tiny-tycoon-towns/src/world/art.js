@@ -805,6 +805,12 @@ function stageDecor(ctx, c, id, stage, t, env) {
     ACCENT[id]?.(ctx, c);
   }
   if (stage >= 4) {
+    // Stufe 4: der Akzent wird vorne rechts noch einmal gesetzt (verschoben um 0,6 Feld).
+    const shift = P(c, 0.6, 0, 0);
+    ctx.save();
+    ctx.translate(shift.x - c.x, shift.y - c.y);
+    ACCENT[id]?.(ctx, c);
+    ctx.restore();
     box(ctx, c, 0.16, 0.24, -0.1, -0.02, 28, 50, '#8a5a44', '#6d4632', '#7c4f3b');
     const glow = env.night > 0.3 ? '#ffe08a' : '#ffd76a';
     for (const v of [-0.3, 0.3]) {
@@ -816,6 +822,17 @@ function stageDecor(ctx, c, id, stage, t, env) {
     }
   }
   if (stage >= 5) {
+    // Stufe 5: goldene Umrandung um beide Akzente vorne.
+    ctx.strokeStyle = '#e8b530';
+    ctx.lineWidth = 1.6;
+    for (const sh of [0, 0.6]) {
+      const q = [P(c, -0.47 + sh, 0.19, 22), P(c, -0.17 + sh, 0.19, 22), P(c, -0.17 + sh, 0.35, 22), P(c, -0.47 + sh, 0.35, 22)];
+      ctx.beginPath();
+      ctx.moveTo(q[0].x, q[0].y);
+      for (const r of q.slice(1)) ctx.lineTo(r.x, r.y);
+      ctx.closePath();
+      ctx.stroke();
+    }
     ctx.strokeStyle = '#e8b530';
     ctx.lineWidth = 2;
     const pts = [P(c, -0.4, -0.4, 1), P(c, 0.4, -0.4, 1), P(c, 0.4, 0.4, 1), P(c, -0.4, 0.4, 1)];
