@@ -151,7 +151,10 @@ Object.assign(UI, {
                 div.className = `border ${canCraft ? 'border-green-600 bg-green-900/10' : 'border-gray-800 bg-black opacity-50'} p-3 flex justify-between items-center transition-all hover:bg-green-900/20`;
                 div.innerHTML = `
                     <div>
-                        <div class="font-bold ${canCraft ? 'text-green-300' : 'text-gray-500'} text-lg">${outItem.name}</div>
+                        <div class="flex items-center gap-2">
+                            ${UI.itemSymbol(recipe.out, outItem.type, 'mittel')}
+                            <div class="font-bold ${canCraft ? 'text-green-300' : 'text-gray-500'} text-lg">${outItem.name}</div>
+                        </div>
                         <div class="grid grid-cols-2 gap-x-4 mt-1 border-l-2 border-green-900 pl-2">${reqHtml}</div>
                     </div>
                     <button class="action-button text-sm px-4 py-2 border-2 ${canCraft ? 'border-green-500 text-green-500 hover:bg-green-500 hover:text-black font-bold' : 'border-gray-600 text-gray-600 cursor-not-allowed'}" onclick="Game.craftItem('${recipe.id}')" ${canCraft ? '' : 'disabled'}>FERTIGEN</button>
@@ -183,7 +186,7 @@ Object.assign(UI, {
                     const div = document.createElement('div');
                     div.className = "flex justify-between items-center p-3 border border-orange-800 bg-orange-900/10 hover:bg-orange-900/20 transition-colors";
                     div.innerHTML = `
-                        <div class="font-bold text-orange-300">${name} <span class="text-xs text-orange-600 font-normal ml-2">(${entry.item.count}x)</span></div>
+                        ${UI.itemReihe(entry.item, entry.def, 'text-orange-300', 'mittel')}
                         <button class="border border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-black px-3 py-1 text-xs font-bold transition-colors uppercase" onclick="Game.scrapItem(${entry.idx})">ZERLEGEN</button>
                     `;
                     listContent.appendChild(div);
@@ -474,7 +477,9 @@ Object.assign(UI, {
             .filter(entry => entry.qty > 0)
             .sort((a, b) => (a.item.cost || 1) - (b.item.cost || 1));
 
-        const createRow = (icon, name, qty, price, key, isAmmo = false) => {
+        // `symbol` ist fertiges HTML aus UI.itemSymbol - dort steckt das Item-Bild
+        // mit Emoji-Rueckfall, damit Regal und Inventar dasselbe zeigen.
+        const createRow = (symbol, name, qty, price, key, isAmmo = false) => {
             const canBuy = myCaps >= price;
             
             let colorText = isAmmo ? 'text-blue-300' : 'text-yellow-200';
@@ -503,7 +508,7 @@ Object.assign(UI, {
 
             row.innerHTML = `
                 <div class="flex items-center gap-3 p-2 flex-grow overflow-hidden pointer-events-none">
-                    <div class="text-3xl w-12 h-12 flex items-center justify-center bg-black/40 border border-white/10 rounded">${icon}</div>
+                    <div class="w-12 h-12 flex items-center justify-center bg-black/40 border border-white/10 rounded">${symbol}</div>
                     <div class="flex flex-col truncate">
                         <span class="font-bold text-lg font-vt323 truncate leading-none pt-1 ${colorText}">${name}</span>
                         <span class="text-xs ${colorSub} font-mono uppercase">Vorrat: ${qty} | Preis: ${price} KK</span>
@@ -520,7 +525,8 @@ Object.assign(UI, {
 
         if(ammoRows.length > 0) {
             ammoRows.forEach(entry => {
-                container.appendChild(createRow("🧨", "10x " + entry.item.name.toUpperCase(),
+                container.appendChild(createRow(UI.itemSymbol(entry.id, 'ammo', 'gross'),
+                    "10x " + entry.item.name.toUpperCase(),
                     entry.qty, (entry.item.cost || 1) * 10, entry.id, true));
             });
             container.innerHTML += `<div class="h-px bg-yellow-900/50 my-4 mx-2"></div>`;
@@ -556,9 +562,8 @@ Object.assign(UI, {
                 container.appendChild(header);
 
                 cat.items.forEach(data => {
-                    let icon = "📦";
-                    if(data.type==='weapon') icon="🔫"; if(data.type==='body') icon="🛡️"; if(data.type==='consumable') icon="💉";
-                    container.appendChild(createRow(icon, data.name, stock[data.key], data.cost, data.key, false));
+                    container.appendChild(createRow(UI.itemSymbol(data.key, data.type, 'gross'),
+                        data.name, stock[data.key], data.cost, data.key, false));
                 });
             }
         }
@@ -598,7 +603,10 @@ Object.assign(UI, {
 
             div.innerHTML = `
                 <div class="flex items-center gap-3 p-2 flex-grow overflow-hidden pointer-events-none">
-                    <div class="text-green-500 font-bold text-lg font-vt323 truncate">${name} <span class="text-green-800 text-sm font-sans">x${item.count}</span></div>
+                    <div class="flex items-center gap-2 overflow-hidden">
+                        ${UI.itemSymbol(item.id, def.type, 'mittel')}
+                        <div class="text-green-500 font-bold text-lg font-vt323 truncate">${name} <span class="text-green-800 text-sm font-sans">x${item.count}</span></div>
+                    </div>
                 </div>
                 <div class="h-full flex flex-col justify-center items-end border-l-2 border-green-800 bg-black/30 min-w-[100px] pointer-events-none">
                     <div class="font-bold text-green-400 text-lg w-full text-center border-b border-green-900 font-vt323">${sellPrice}</div>

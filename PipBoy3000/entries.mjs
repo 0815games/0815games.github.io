@@ -24,6 +24,7 @@ export const ORDER = [
   'src/data/data_minigames.js',
   'src/network.js',
   'src/ui/ui_core.js',
+  'src/ui/ui_item_symbol.js',
   'src/game/game_core.js',
   'src/game/game_map.js',
   'src/game/world_air.js',

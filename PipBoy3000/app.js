@@ -1945,6 +1945,69 @@
   window.UI = UI2;
   console.log("UI Core Loaded.");
 
+  // src/ui/ui_item_symbol.js
+  window.UI = window.UI || {};
+  window.UI.itemTypEmoji = function(type) {
+    switch (type) {
+      case "weapon":
+        return "🔫";
+      case "body":
+        return "🛡️";
+      case "head":
+        return "🪖";
+      case "legs":
+        return "👖";
+      case "feet":
+        return "🥾";
+      case "arms":
+        return "🦾";
+      case "back":
+        return "🎒";
+      case "consumable":
+        return "💉";
+      case "junk":
+        return "⚙️";
+      case "component":
+        return "🔩";
+      case "ammo":
+        return "🧨";
+      case "blueprint":
+        return "📜";
+      case "tool":
+        return "⛺";
+      default:
+        return "📦";
+    }
+  };
+  var ITEM_SYMBOL_KLASSEN = {
+    klein: "w-5 h-5",
+    // enge Listen (Lager, Zerlegen)
+    mittel: "w-6 h-6",
+    // Shop- und Inventarzeilen
+    gross: "w-8 h-8"
+    // Inventargitter
+  };
+  window.UI.itemSymbol = function(id, type, groesse) {
+    const emoji = this.itemTypEmoji(type);
+    const klasse = ITEM_SYMBOL_KLASSEN[groesse] || ITEM_SYMBOL_KLASSEN.mittel;
+    const pfad = typeof Game !== "undefined" && typeof Game.itemBildPfad === "function" ? Game.itemBildPfad(id) : null;
+    if (!pfad) return `<span class="${klasse} inline-flex items-center justify-center">${emoji}</span>`;
+    return `<img src="${pfad}" alt="" class="${klasse} object-contain inline-block align-middle"
+                 onerror="this.replaceWith(document.createTextNode(${JSON.stringify(emoji)}))">`;
+  };
+  window.UI.itemReihe = function(item, def, farbe, groesse) {
+    const d = def || Game.items && Game.items[item.id] || {};
+    const name = item.props && item.props.name ? item.props.name : d.name || item.id;
+    const typ = item.props && item.props.type ? item.props.type : d.type;
+    const ton = farbe || "text-green-300";
+    const anzahl = item.count > 1 ? `<span class="text-xs opacity-60 font-normal ml-1">(${item.count}x)</span>` : "";
+    return `
+        <div class="flex items-center gap-2 overflow-hidden">
+            ${this.itemSymbol(item.id, typ, groesse || "mittel")}
+            <span class="font-bold ${ton} truncate">${name}${anzahl}</span>
+        </div>`;
+  };
+
   // src/game/game_core.js
   window.Game = {
     // Globale Konstanten (Auf 50 erhöht für die neuen Flüsse)
@@ -6388,45 +6451,7 @@
             `;
         countDisplay.className = usedSlots >= maxSlots ? "text-red-500 font-bold animate-pulse" : "text-white font-mono";
       }
-      const getIcon = (type) => {
-        switch (type) {
-          case "weapon":
-            return "🔫";
-          case "body":
-            return "🛡️";
-          case "head":
-            return "🪖";
-          case "legs":
-            return "👖";
-          case "feet":
-            return "🥾";
-          case "arms":
-            return "🦾";
-          case "back":
-            return "🎒";
-          case "consumable":
-            return "💉";
-          case "junk":
-            return "⚙️";
-          case "component":
-            return "🔩";
-          case "ammo":
-            return "🧨";
-          case "blueprint":
-            return "📜";
-          case "tool":
-            return "⛺";
-          default:
-            return "📦";
-        }
-      };
-      const itemBild = (id, type) => {
-        if (typeof Game.itemBildPfad !== "function") return getIcon(type);
-        const pfad = Game.itemBildPfad(id);
-        if (!pfad) return getIcon(type);
-        return `<img src="${pfad}" alt="" class="w-8 h-8 object-contain"
-                        onerror="this.replaceWith(document.createTextNode('${getIcon(type)}'))">`;
-      };
+      const itemBild = (id, type) => UI.itemSymbol(id, type, "gross");
       const createBtn = (itemDef, entry, isEquipped, label, onClick) => {
         const btn = document.createElement("div");
         let cssClass = "relative border border-green-500 bg-green-900/30 w-full h-16 flex flex-col items-center justify-center transition-colors group";
@@ -6440,7 +6465,7 @@
         let extraClass = entry.props && entry.props.color ? entry.props.color : "";
         const countDisplay2 = entry.count > 1 || itemDef.type === "ammo" ? `<div class="absolute top-0 right-0 bg-green-900 text-white text-[10px] px-1 font-mono">${entry.count}</div>` : "";
         btn.innerHTML = `
-                <div class="text-2xl flex items-center justify-center">${itemBild(itemDef.id, itemDef.type)}</div>
+                <div class="flex items-center justify-center">${itemBild(itemDef.id, itemDef.type)}</div>
                 <div class="text-[10px] truncate max-w-full px-1 font-bold ${extraClass}">${displayName}</div>
                 ${countDisplay2}
             `;
@@ -6999,7 +7024,10 @@
           div.className = `border ${canCraft ? "border-green-600 bg-green-900/10" : "border-gray-800 bg-black opacity-50"} p-3 flex justify-between items-center transition-all hover:bg-green-900/20`;
           div.innerHTML = `
                     <div>
-                        <div class="font-bold ${canCraft ? "text-green-300" : "text-gray-500"} text-lg">${outItem.name}</div>
+                        <div class="flex items-center gap-2">
+                            ${UI.itemSymbol(recipe.out, outItem.type, "mittel")}
+                            <div class="font-bold ${canCraft ? "text-green-300" : "text-gray-500"} text-lg">${outItem.name}</div>
+                        </div>
                         <div class="grid grid-cols-2 gap-x-4 mt-1 border-l-2 border-green-900 pl-2">${reqHtml}</div>
                     </div>
                     <button class="action-button text-sm px-4 py-2 border-2 ${canCraft ? "border-green-500 text-green-500 hover:bg-green-500 hover:text-black font-bold" : "border-gray-600 text-gray-600 cursor-not-allowed"}" onclick="Game.craftItem('${recipe.id}')" ${canCraft ? "" : "disabled"}>FERTIGEN</button>
@@ -7026,7 +7054,7 @@
             const div = document.createElement("div");
             div.className = "flex justify-between items-center p-3 border border-orange-800 bg-orange-900/10 hover:bg-orange-900/20 transition-colors";
             div.innerHTML = `
-                        <div class="font-bold text-orange-300">${name} <span class="text-xs text-orange-600 font-normal ml-2">(${entry.item.count}x)</span></div>
+                        ${UI.itemReihe(entry.item, entry.def, "text-orange-300", "mittel")}
                         <button class="border border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-black px-3 py-1 text-xs font-bold transition-colors uppercase" onclick="Game.scrapItem(${entry.idx})">ZERLEGEN</button>
                     `;
             listContent.appendChild(div);
@@ -7272,7 +7300,7 @@
       const stock = Game.state.shop.stock || {};
       const myCaps = Game.state.caps;
       const ammoRows = Object.keys(Game.items).filter((id) => Game.items[id] && Game.items[id].type === "ammo").map((id) => ({ id, qty: Game.ammoStockOf ? Game.ammoStockOf(id) : 0, item: Game.items[id] })).filter((entry) => entry.qty > 0).sort((a, b) => (a.item.cost || 1) - (b.item.cost || 1));
-      const createRow = (icon, name, qty, price, key, isAmmo = false) => {
+      const createRow = (symbol, name, qty, price, key, isAmmo = false) => {
         const canBuy = myCaps >= price;
         let colorText = isAmmo ? "text-blue-300" : "text-yellow-200";
         let colorBorder = isAmmo ? "border-blue-500" : "border-yellow-700";
@@ -7296,7 +7324,7 @@
         }
         row.innerHTML = `
                 <div class="flex items-center gap-3 p-2 flex-grow overflow-hidden pointer-events-none">
-                    <div class="text-3xl w-12 h-12 flex items-center justify-center bg-black/40 border border-white/10 rounded">${icon}</div>
+                    <div class="w-12 h-12 flex items-center justify-center bg-black/40 border border-white/10 rounded">${symbol}</div>
                     <div class="flex flex-col truncate">
                         <span class="font-bold text-lg font-vt323 truncate leading-none pt-1 ${colorText}">${name}</span>
                         <span class="text-xs ${colorSub} font-mono uppercase">Vorrat: ${qty} | Preis: ${price} KK</span>
@@ -7313,7 +7341,7 @@
       if (ammoRows.length > 0) {
         ammoRows.forEach((entry) => {
           container.appendChild(createRow(
-            "🧨",
+            UI.itemSymbol(entry.id, "ammo", "gross"),
             "10x " + entry.item.name.toUpperCase(),
             entry.qty,
             (entry.item.cost || 1) * 10,
@@ -7346,11 +7374,14 @@
           header.textContent = cat.title;
           container.appendChild(header);
           cat.items.forEach((data) => {
-            let icon = "📦";
-            if (data.type === "weapon") icon = "🔫";
-            if (data.type === "body") icon = "🛡️";
-            if (data.type === "consumable") icon = "💉";
-            container.appendChild(createRow(icon, data.name, stock[data.key], data.cost, data.key, false));
+            container.appendChild(createRow(
+              UI.itemSymbol(data.key, data.type, "gross"),
+              data.name,
+              stock[data.key],
+              data.cost,
+              data.key,
+              false
+            ));
           });
         }
       }
@@ -7381,7 +7412,10 @@
         }
         div.innerHTML = `
                 <div class="flex items-center gap-3 p-2 flex-grow overflow-hidden pointer-events-none">
-                    <div class="text-green-500 font-bold text-lg font-vt323 truncate">${name} <span class="text-green-800 text-sm font-sans">x${item.count}</span></div>
+                    <div class="flex items-center gap-2 overflow-hidden">
+                        ${UI.itemSymbol(item.id, def.type, "mittel")}
+                        <div class="text-green-500 font-bold text-lg font-vt323 truncate">${name} <span class="text-green-800 text-sm font-sans">x${item.count}</span></div>
+                    </div>
                 </div>
                 <div class="h-full flex flex-col justify-center items-end border-l-2 border-green-800 bg-black/30 min-w-[100px] pointer-events-none">
                     <div class="font-bold text-green-400 text-lg w-full text-center border-b border-green-900 font-vt323">${sellPrice}</div>
@@ -7936,9 +7970,12 @@
           const div = document.createElement("div");
           div.className = "border border-cyan-900 bg-cyan-900/10 p-2 mb-2 flex justify-between items-center";
           div.innerHTML = `
-                    <div class="flex flex-col">
-                        <span class="font-bold text-cyan-300">${eintrag.name || def.name || eintrag.id}</span>
-                        <span class="text-xs text-cyan-600">${eintrag.count}x</span>
+                    <div class="flex items-center gap-2 overflow-hidden">
+                        ${UI.itemSymbol(eintrag.id, def.type, "klein")}
+                        <div class="flex flex-col">
+                            <span class="font-bold text-cyan-300">${eintrag.name || def.name || eintrag.id}</span>
+                            <span class="text-xs text-cyan-600">${eintrag.count}x</span>
+                        </div>
                     </div>
                     <button class="border border-cyan-500 text-cyan-400 px-3 py-1 text-sm font-bold hover:bg-cyan-900/40">ENTNEHMEN</button>
                 `;
@@ -7960,9 +7997,12 @@
         const div = document.createElement("div");
         div.className = "border border-gray-800 bg-black/40 p-2 mb-1 flex justify-between items-center";
         div.innerHTML = `
-                <div class="flex flex-col">
-                    <span class="text-green-300">${item.name || def.name || item.id}</span>
-                    <span class="text-xs text-gray-500">${item.count}x</span>
+                <div class="flex items-center gap-2 overflow-hidden">
+                    ${UI.itemSymbol(item.id, def.type, "klein")}
+                    <div class="flex flex-col">
+                        <span class="text-green-300">${item.name || def.name || item.id}</span>
+                        <span class="text-xs text-gray-500">${item.count}x</span>
+                    </div>
                 </div>
                 <button class="border border-green-700 text-green-500 px-3 py-1 text-sm font-bold hover:bg-green-900/40">EINLAGERN</button>
             `;
@@ -9491,6 +9531,7 @@
       }
       const isUsable = !!item.raw || !["junk", "component", "misc", "rare", "ammo"].includes(item.type);
       box.innerHTML = `
+            <div class="flex justify-center mb-2">${UI.itemSymbol(invItem.id, item.type, "gross")}</div>
             <h2 class="text-xl font-bold text-green-400 mb-2">${displayName}</h2>
             <div class="text-xs text-green-200 mb-4 border-t border-b border-green-900 py-2">Typ: ${item.type.toUpperCase()}<br>Wert: ${item.cost} KK<br><span class="text-yellow-400">${statsText}</span></div>
             <p class="text-green-200 mb-4 text-sm">${isUsable ? "Gegenstand benutzen oder wegwerfen?" : "Dieses Item kann nur verkauft oder zum Craften verwendet werden."}</p>
@@ -9536,11 +9577,13 @@
       if (Game.state) Game.state.inDialog = true;
       const item = Game.state.equip[slot];
       const name = item.props ? item.props.name : item.name;
+      const def = item.props && item.props.type ? item.props : Game.items && Game.items[item.id] || {};
       const box = document.createElement("div");
       box.className = "bg-black border-2 border-yellow-500 p-4 shadow-[0_0_15px_#aa0] max-w-sm text-center mb-4 w-full pointer-events-auto";
       box.onclick = (e) => e.stopPropagation();
       box.innerHTML = `
             <div class="text-xs text-yellow-600 font-bold tracking-widest mb-1">SLOT: ${slot.toUpperCase()}</div>
+            <div class="flex justify-center mb-2">${UI.itemSymbol(item.id, def.type, "gross")}</div>
             <h2 class="text-xl font-bold text-yellow-400 mb-4 border-b border-yellow-500 pb-2">${name}</h2>
             <div class="flex flex-col gap-2 w-full">
                 <button id="btn-unequip" class="action-button w-full border-yellow-500 text-yellow-500 hover:bg-yellow-900 py-3 font-bold">

@@ -101,3 +101,46 @@ test('die Bilder liegen im ausgelieferten Ordner', () => {
   assert.ok(!/ARTIFACTS[^=]*=\s*\[[^\]]*'img/.test(build),
     'der Build loescht img/ - dann waeren die Bilder nach jedem Bauen weg');
 });
+
+test('jede Ansicht benutzt das zentrale Item-Symbol', () => {
+  // Vor v14.0.7 hatte nur das Inventar Bilder, alles andere brachte sein
+  // eigenes Emoji mit - dasselbe Item sah im Regal anders aus als im
+  // Rucksack. Der Helfer steht in src/ui/ui_item_symbol.js; hier wird
+  // geprueft, dass ihn die Ansichten auch wirklich benutzen.
+  const {window} = loadBundle(join(ROOT, 'app.js'));
+
+  assert.equal(typeof window.UI.itemSymbol, 'function', 'UI.itemSymbol fehlt');
+  assert.equal(typeof window.UI.itemReihe, 'function', 'UI.itemReihe fehlt');
+
+  // Bild statt Emoji: das Stimpack hat eine Datei, also muss ein <img> kommen.
+  const html = window.UI.itemSymbol('stimpack', 'consumable', 'gross');
+  assert.match(html, /<img /, 'Symbol liefert kein Bild');
+  assert.match(html, /img\/items\/stimpack\.png/);
+  assert.ok(!html.startsWith('/'), 'Pfad muss relativ bleiben');
+
+  // Unbekanntes Item -> Emoji, kein leerer String.
+  const ersatz = window.UI.itemSymbol('gibt_es_nicht', 'weapon', 'klein');
+  assert.ok(ersatz.length > 0, 'Rueckfall ist leer');
+
+  // Keine Ansicht darf mehr eine eigene Emoji-Tabelle mitbringen.
+  for (const datei of ['src/ui/ui_view_inv.js', 'src/ui/ui_render_overlays.js',
+                       'src/ui/ui_view_town.js', 'src/ui/ui_view_camp.js']) {
+    const quelle = readFileSync(join(ROOT, datei), 'utf8');
+    assert.ok(!/case 'weapon': return '🔫'/.test(quelle),
+      `${datei} bringt eine eigene Emoji-Tabelle mit statt UI.itemTypEmoji`);
+  }
+});
+
+test('Inventar, Shop und Lager zeigen dasselbe Symbol', () => {
+  const {window} = loadBundle(join(ROOT, 'app.js'));
+  // Fuer ein Item mit Bild muessen alle drei Ansichten dasselbe <img> bauen.
+  const erwartet = 'img/items/stimpack.png';
+  const ausInventar = window.UI.itemSymbol('stimpack', 'consumable', 'gross');
+  const ausShop = window.UI.itemSymbol('stimpack', 'consumable', 'mittel');
+  const ausLager = window.UI.itemSymbol('stimpack', 'consumable', 'klein');
+  for (const [name, html] of [['Inventar', ausInventar], ['Shop', ausShop], ['Lager', ausLager]]) {
+    assert.ok(html.includes(erwartet), `${name} zeigt nicht ${erwartet}`);
+  }
+  // Die Groesse unterscheidet sich, das Bild nicht.
+  assert.notEqual(ausInventar, ausLager, 'Groesse wird ignoriert');
+});

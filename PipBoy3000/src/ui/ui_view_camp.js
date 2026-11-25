@@ -198,9 +198,12 @@ Object.assign(UI, {
                 const div = document.createElement('div');
                 div.className = "border border-cyan-900 bg-cyan-900/10 p-2 mb-2 flex justify-between items-center";
                 div.innerHTML = `
-                    <div class="flex flex-col">
-                        <span class="font-bold text-cyan-300">${eintrag.name || def.name || eintrag.id}</span>
-                        <span class="text-xs text-cyan-600">${eintrag.count}x</span>
+                    <div class="flex items-center gap-2 overflow-hidden">
+                        ${UI.itemSymbol(eintrag.id, def.type, 'klein')}
+                        <div class="flex flex-col">
+                            <span class="font-bold text-cyan-300">${eintrag.name || def.name || eintrag.id}</span>
+                            <span class="text-xs text-cyan-600">${eintrag.count}x</span>
+                        </div>
                     </div>
                     <button class="border border-cyan-500 text-cyan-400 px-3 py-1 text-sm font-bold hover:bg-cyan-900/40">ENTNEHMEN</button>
                 `;
@@ -222,9 +225,12 @@ Object.assign(UI, {
             const div = document.createElement('div');
             div.className = "border border-gray-800 bg-black/40 p-2 mb-1 flex justify-between items-center";
             div.innerHTML = `
-                <div class="flex flex-col">
-                    <span class="text-green-300">${item.name || def.name || item.id}</span>
-                    <span class="text-xs text-gray-500">${item.count}x</span>
+                <div class="flex items-center gap-2 overflow-hidden">
+                    ${UI.itemSymbol(item.id, def.type, 'klein')}
+                    <div class="flex flex-col">
+                        <span class="text-green-300">${item.name || def.name || item.id}</span>
+                        <span class="text-xs text-gray-500">${item.count}x</span>
+                    </div>
                 </div>
                 <button class="border border-green-700 text-green-500 px-3 py-1 text-sm font-bold hover:bg-green-900/40">EINLAGERN</button>
             `;

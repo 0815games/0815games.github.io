@@ -249,6 +249,7 @@ Object.assign(UI, {
         const isUsable = !!item.raw || !['junk', 'component', 'misc', 'rare', 'ammo'].includes(item.type);
 
         box.innerHTML = `
+            <div class="flex justify-center mb-2">${UI.itemSymbol(invItem.id, item.type, 'gross')}</div>
             <h2 class="text-xl font-bold text-green-400 mb-2">${displayName}</h2>
             <div class="text-xs text-green-200 mb-4 border-t border-b border-green-900 py-2">Typ: ${item.type.toUpperCase()}<br>Wert: ${item.cost} KK<br><span class="text-yellow-400">${statsText}</span></div>
             <p class="text-green-200 mb-4 text-sm">${isUsable ? "Gegenstand benutzen oder wegwerfen?" : "Dieses Item kann nur verkauft oder zum Craften verwendet werden."}</p>
@@ -296,6 +297,7 @@ Object.assign(UI, {
 
         const item = Game.state.equip[slot];
         const name = item.props ? item.props.name : item.name;
+        const def = (item.props && item.props.type) ? item.props : ((Game.items && Game.items[item.id]) || {});
 
         const box = document.createElement('div');
         box.className = "bg-black border-2 border-yellow-500 p-4 shadow-[0_0_15px_#aa0] max-w-sm text-center mb-4 w-full pointer-events-auto";
@@ -303,6 +305,7 @@ Object.assign(UI, {
 
         box.innerHTML = `
             <div class="text-xs text-yellow-600 font-bold tracking-widest mb-1">SLOT: ${slot.toUpperCase()}</div>
+            <div class="flex justify-center mb-2">${UI.itemSymbol(item.id, def.type, 'gross')}</div>
             <h2 class="text-xl font-bold text-yellow-400 mb-4 border-b border-yellow-500 pb-2">${name}</h2>
             <div class="flex flex-col gap-2 w-full">
                 <button id="btn-unequip" class="action-button w-full border-yellow-500 text-yellow-500 hover:bg-yellow-900 py-3 font-bold">

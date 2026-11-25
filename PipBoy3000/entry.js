@@ -12,6 +12,7 @@ import './src/data/data_monsters.js';
 import './src/data/data_minigames.js';
 import './src/network.js';
 import './src/ui/ui_core.js';
+import './src/ui/ui_item_symbol.js';
 import './src/game/game_core.js';
 import './src/game/game_map.js';
 import './src/game/world_air.js';

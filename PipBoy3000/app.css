@@ -459,6 +459,9 @@
 .flex {
     display: flex
 }
+.inline-flex {
+    display: inline-flex
+}
 .table {
     display: table
 }
@@ -506,6 +509,9 @@
 }
 .h-4 {
     height: 1rem
+}
+.h-5 {
+    height: 1.25rem
 }
 .h-52 {
     height: 13rem
@@ -605,6 +611,9 @@
 }
 .w-48 {
     width: 12rem
+}
+.w-5 {
+    width: 1.25rem
 }
 .w-52 {
     width: 13rem
@@ -1721,6 +1730,9 @@
 .text-right {
     text-align: right
 }
+.align-middle {
+    vertical-align: middle
+}
 .font-mono {
     font-family: VT323, ui-monospace, monospace
 }
@@ -1954,10 +1966,6 @@
 .text-orange-500 {
     --tw-text-opacity: 1;
     color: rgb(249 115 22 / var(--tw-text-opacity, 1))
-}
-.text-orange-600 {
-    --tw-text-opacity: 1;
-    color: rgb(234 88 12 / var(--tw-text-opacity, 1))
 }
 .text-pink-400 {
     --tw-text-opacity: 1;
