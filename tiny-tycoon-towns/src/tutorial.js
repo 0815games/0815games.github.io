@@ -43,6 +43,23 @@ export const TUTORIAL_STEPS = Object.freeze([
     text: 'Alles Wichtige findest du jederzeit im Menü unter Hilfe. Dein Stand wird lokal und in der Cloud gespeichert.',
     target: '#menu-btn',
   },
+  {
+    title: 'Wohnhaus bauen',
+    text: 'Ein Wohnhaus bringt Bewohner. Tippe auf ein freies Feld, wähle Wohnhaus und baue es. Ab Stadtlevel 2 verfügbar. Es kostet Münzen und Holz.',
+    target: '#board',
+    task: 'house',
+  },
+  {
+    title: 'Arbeit und Lohn',
+    text: 'Bewohner arbeiten in Betrieben, höchstens 3 Felder entfernt. Tippe auf einen Betrieb und setze mit + einen Arbeiter aus einem Wohnhaus. Jeder Arbeiter bekommt Lohn, der täglich automatisch abgezogen wird.',
+    target: '#board',
+    task: 'worker',
+  },
+  {
+    title: 'Stufen der Gebäude',
+    text: 'Gebäude und Wohnhäuser haben fünf sichtbare Stufen. Du erkennst sie am Bild. Die Bewohner wachsen langsam nach, bis zur Kapazität des Hauses.',
+    target: null,
+  },
 ]);
 
 // Übersicht unter „Hilfe“. Jeder Abschnitt hat eine Überschrift und Absätze.
@@ -90,6 +107,13 @@ export const HELP_SECTIONS = Object.freeze([
     title: 'Händler Eberhard',
     paragraphs: [
       'Eberhard hat jeden Tag neue Angebote. Dort findest du seltene Ressourcen.',
+    ],
+  },
+  {
+    title: 'Siedlungen',
+    paragraphs: [
+      'Wohnhäuser bringen Bewohner. Die Bewohner arbeiten in Betrieben in der Nähe (höchstens 3 Felder) und bekommen Lohn je Tag.',
+      'Im Betrieb setzt du mit + und − Arbeiter aus Wohnhäusern ein. Ein voll besetzter Betrieb produziert mehr.',
     ],
   },
   {

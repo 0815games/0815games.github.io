@@ -32,7 +32,7 @@ import { createVersionUI } from './version-ui.mjs?v=20261125-bal7';
 import { startAfkWatch, showAfkOverlay } from './afk.js?v=20261125-bal7';
 import { fullResources, fillPercent } from './stock-dock.js?v=20261125-bal7';
 import { nextRequestToShow, requestBadgeLabel, canShowRequestPopup } from './friend-requests.js?v=20261125-bal7';
-import { houseCapacity, staffFactor } from './domain/settlement.js?v=20261125-bal7';
+import { houseCapacity, staffFactor, tutorialTaskDone } from './domain/settlement.js?v=20261125-bal7';
 
 const BUILD = '20261125-bal7';
 console.info(`Tiny Tycoon Towns ${BUILD}`);
@@ -544,6 +544,7 @@ function dispatch(result, okMsg) {
   }
   if (okMsg && !result.events.some((e) => e.type === 'levelUp')) toast(okMsg);
   renderAll();
+  refreshTutorialTask();
 }
 
 // iOS Safari: Pinch-Zoom der Seite unterdrücken, Karte bleibt davon ausgenommen (eigene Pointer-Events).
@@ -779,6 +780,24 @@ function saveTutorialStep(step) {
   dispatch(setTutorialStep(state, Math.min(step, TUTORIAL_STEPS.length)));
 }
 
+/** Hinweis und Knopf im offenen Schritt nachziehen, sobald die Aufgabe erledigt ist. */
+function refreshTutorialTask() {
+  if (tutorialIndex === null) return;
+  const step = TUTORIAL_STEPS[tutorialIndex];
+  if (!step?.task) return;
+  const done = tutorialTaskDone(state, step.task);
+  const hint = $('#tut-hint');
+  const next = $('#tut-next');
+  if (hint) {
+    hint.textContent = done ? 'Gut gemacht, du hast es ausprobiert.' : 'Probier es direkt aus. Oder wähle Später.';
+    hint.classList.toggle('done', done);
+  }
+  if (next) {
+    const last = tutorialIndex === TUTORIAL_STEPS.length - 1;
+    next.textContent = last ? 'Fertig' : done ? 'Weiter' : 'Später';
+  }
+}
+
 function showTutorialStep(index) {
   const step = TUTORIAL_STEPS[index];
   if (!step || !state) return endTutorial();
@@ -792,6 +811,7 @@ function showTutorialStep(index) {
     <p class="small muted">Schritt ${index + 1} von ${TUTORIAL_STEPS.length}</p>
     <h2 id="tut-title">${esc(step.title)}</h2>
     <p>${esc(step.text)}</p>
+    ${step.task ? '<p class="small tut-hint" id="tut-hint"></p>' : ''}
     <p class="row">
       <button type="button" id="tut-skip" class="ghost">Überspringen</button>
       <button type="button" id="tut-next" class="primary">${last ? 'Fertig' : 'Weiter'}</button>
@@ -810,6 +830,7 @@ function showTutorialStep(index) {
     saveTutorialStep(TUTORIAL_STEPS.length);
     endTutorial();
   });
+  refreshTutorialTask();
   $('#tut-next').focus({ preventScroll: true });
 }
 

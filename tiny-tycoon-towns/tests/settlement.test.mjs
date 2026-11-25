@@ -191,3 +191,18 @@ test('staffing shows the assignment the panel uses, without changing the town', 
   assert.equal(built.tiles[near].building.manual, undefined, 'vorher keine manuelle Zuweisung');
   assert.equal(staffing(built, data).byProducer[near], 1, 'der Bewohner arbeitet automatisch im nahen Hof');
 });
+
+import { tutorialTaskDone } from '../src/domain/settlement.js';
+
+test('tutorial tasks: house and worker are only done when the player did them', () => {
+  const empty = { tiles: { '1,1': { terrain: 'meadow' }, '2,2': { terrain: 'meadow', building: { id: 'farm', level: 1 } } } };
+  assert.equal(tutorialTaskDone(empty, 'house'), false);
+  assert.equal(tutorialTaskDone(empty, 'worker'), false);
+  const house = { tiles: { '1,1': { terrain: 'meadow', building: { id: 'house', level: 1, pop: 1 } } } };
+  assert.equal(tutorialTaskDone(house, 'house'), true);
+  assert.equal(tutorialTaskDone(house, 'worker'), false);
+  const worked = { tiles: { '2,2': { terrain: 'meadow', building: { id: 'farm', level: 1, manual: [{ house: '1,1', n: 1 }] } } } };
+  assert.equal(tutorialTaskDone(worked, 'worker'), true);
+  assert.equal(tutorialTaskDone(worked, 'unknown'), false);
+  assert.equal(tutorialTaskDone(null, 'house'), false);
+});

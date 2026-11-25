@@ -1103,3 +1103,22 @@ Ereignis ergänzt.
 - Grenzen / offen:
   - Nicht im Browser angesehen. Ob die Kopie bei Stufe 4 das Gebäude verdeckt oder über die Kachel hinausragt, ist am Gerät zu prüfen.
   - Keine Welle, keine Veröffentlichung, keine Firebase-Regeländerung.
+
+### TTT-0065 – Tutorial: Siedlungen zum Ausprobieren (lokal, nicht veröffentlicht)
+
+- Auftrag des Nutzers: Das Tutorial soll die Siedlungen interaktiv erklären. Man soll es selbst machen, damit man es versteht.
+- Neu:
+  - `src/tutorial.js`: drei Schritte am Ende. „Wohnhaus bauen“ (Aufgabe `house`), „Arbeit und Lohn“ (Aufgabe `worker`),
+    „Stufen der Gebäude“ (ohne Aufgabe). Hilfe-Abschnitt „Siedlungen“.
+  - `src/domain/settlement.js`: `tutorialTaskDone(state, task)`, reine Prüfung des Zustands.
+  - `src/main.js`: Bei einem Aufgaben-Schritt zeigt die Karte einen Hinweis. Nach jeder Aktion (`dispatch`) wird er
+    aktualisiert: „Gut gemacht“ und der Knopf heißt „Weiter“. Vorher heißt er „Später“, damit niemand hängen bleibt
+    (zum Beispiel vor Stadtlevel 2).
+  - `style.css`: Stil für den Hinweis.
+- Tests: `tests/settlement.test.mjs` prüft `tutorialTaskDone` (Haus, Arbeiter, leerer Zustand, unbekannte Aufgabe).
+  `npm test` 173/173 grün. `npm run check` ohne Fehler.
+- Grenzen / offen:
+  - Bestehende Konten mit abgeschlossenem Tutorial (gespeichert als 8 Schritte) sehen die drei neuen Schritte beim
+    nächsten Start, weil `maybeStartTutorial` nur bis zur Länge vergleicht. Das ist gewollt als Hinweis auf das Neue,
+    kann aber auch als lästig empfunden werden. Entscheidung offen.
+  - Nicht im Browser geprüft.
