@@ -91,6 +91,7 @@ export function applyCharterToData(data, charter) {
       yieldMultiplier: 1 + perkEffect(c, 'yield'),
       storageMultiplier: 1 + perkEffect(c, 'storage'),
       priceMultiplier: 1 + perkEffect(c, 'market'),
+      expressLevel: perkLevel(c, 'express'),
       offline: { ...e.offline, baseCapHours: e.offline.baseCapHours + perkEffect(c, 'memory') },
     },
   };

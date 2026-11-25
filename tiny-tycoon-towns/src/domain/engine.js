@@ -8,6 +8,7 @@ import {
   storageCap, throughputPerMin, sellPrice,
 } from './economy.js?v=20261124-zentrieren';
 import { merchantOffers } from './merchant.js?v=20261124-zentrieren';
+import { arriveConvoys } from './convoys.js?v=20261124-zentrieren';
 
 export const SCHEMA_VERSION = 1;
 export const BIOMES = ['riverlands', 'deepwoods', 'highlands', 'coast'];
@@ -100,6 +101,8 @@ export function hydrateTown(raw) {
   s.townXp ??= 0;
   s.lifetimeCoins ??= 0;
   s.tutorialStep ??= 0;
+  s.convoys ??= [];
+  s.convoySeq ??= 0;
   return s;
 }
 
@@ -260,7 +263,9 @@ export function advance(state, nowMs, ctx) {
     sell(s, dt, data, events);
   }
   if (nowMs > s.lastTick) s.lastTick = nowMs;
+  const arr = arriveConvoys(s, nowMs);
+  events.push(...arr.events);
 
-  return { state: s, events, appliedSec: dt, capped: elapsed > dt };
+  return { state: arr.state, events, appliedSec: dt, capped: elapsed > dt };
 }
 
