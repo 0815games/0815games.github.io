@@ -31,7 +31,6 @@ Object.assign(UI, {
         if(!this.els.hp) this.els.hp = document.getElementById('bar-hp');
         if(!this.els.headerCharInfo) this.els.headerCharInfo = document.getElementById('header-char-info');
 
-        const sectorDisplay = document.getElementById('val-sector-display');
         const hasPoints = (Game.state.statPoints > 0) || (Game.state.perkPoints > 0);
 
         const displayName = Game.state.playerName || (typeof Network !== 'undefined' ? Network.myDisplayName : "SURVIVOR");
@@ -45,11 +44,12 @@ Object.assign(UI, {
         const dtName = document.querySelector('.desktop-name-target');
         if(dtName) dtName.textContent = displayName;
 
-        if(sectorDisplay) {
-            const sx = Game.state.sector ? Game.state.sector.x : 0;
-            const sy = Game.state.sector ? Game.state.sector.y : 0;
-            sectorDisplay.innerHTML = `🌍 SEKTOR [${sx},${sy}]`;
-            sectorDisplay.classList.remove('border-yellow-500');
+        // Sektor-Anzeige UND Richtungspfeil zeichnet Navigation.aktualisiere().
+        // Beides gehoert zusammen: die Anzeige nennt das Ziel, der Pfeil zeigt
+        // hin. Zwei Stellen fuer eine Zeile laufen sonst auseinander - hier
+        // blieb beim Aufheben das alte Ziel in der Anzeige stehen.
+        if (typeof Navigation !== 'undefined' && Navigation.aktualisiere) {
+            Navigation.aktualisiere();
         }
 
         if(this.els.lvl) this.els.lvl.textContent = Game.state.lvl;
@@ -200,7 +200,17 @@ Object.assign(UI, {
             this.els.view.innerHTML = `
                 <div id="map-view" class="w-full h-full flex justify-center items-center bg-black relative">
                     <canvas id="game-canvas" class="w-full h-full object-contain" style="image-rendering: pixelated;"></canvas>
-                    <div id="val-sector-display" onclick="UI.switchView('worldmap')" class="absolute top-4 left-1/2 transform -translate-x-1/2 bg-black/80 border border-green-500 text-green-500 px-3 py-1 text-sm font-bold tracking-widest z-20 shadow-[0_0_10px_#39ff14] cursor-pointer hover:text-yellow-400 hover:border-yellow-500 transition-all active:scale-95 group rounded">🌍 SEKTOR [?,?]</div>
+                    <!-- Sektor-Anzeige mit Navigationspfeil. Der Pfeil sitzt
+                         rechts daneben, in derselben Zeile: er gehoert zur
+                         Sektor-Anzeige, nicht zur Karte. Versteckt, solange
+                         kein Ziel gesetzt ist (Navigation.aktualisiere()). -->
+                    <div class="absolute top-4 left-1/2 transform -translate-x-1/2 flex items-center gap-2 z-20">
+                        <div id="val-sector-display" onclick="UI.switchView('worldmap')" class="bg-black/80 border border-green-500 text-green-500 px-3 py-1 text-sm font-bold tracking-widest shadow-[0_0_10px_#39ff14] cursor-pointer hover:text-yellow-400 hover:border-yellow-500 transition-all active:scale-95 group rounded">🌍 SEKTOR [?,?]</div>
+                        <button id="nav-pfeil" onclick="UI.oeffneNavigation()" class="hidden bg-black/85 border border-[#39ff14] rounded px-1.5 py-1 items-center gap-1 shadow-[0_0_10px_rgba(57,255,20,0.5)] cursor-pointer hover:border-yellow-400" title="Navigation" style="display: none;">
+                            <canvas width="26" height="26" class="block"></canvas>
+                            <span data-nav-text class="text-[11px] font-bold text-[#39ff14] tracking-wider leading-none"></span>
+                        </button>
+                    </div>
                     <button id="btn-camp-overlay" class="hidden absolute top-4 left-4 bg-black/80 border-2 border-green-500 text-green-500 p-2 rounded-lg hover:bg-green-900 transition-all z-20 shadow-[0_0_15px_#39ff14] cursor-pointer flex flex-col items-center">
                         <span class="text-2xl">⛺</span>
                         <span class="text-xs font-bold">BAUEN</span>

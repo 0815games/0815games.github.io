@@ -36,84 +36,134 @@ Object.assign(UI, {
 
         cvs.onmousedown = (e) => {
             if(e.button !== 0) return;
-            this.mapState.isDragging = true;
-            this.mapState.lastX = e.clientX;
-            this.mapState.lastY = e.clientY;
+            karte.isDragging = true;
+            karte.lastX = e.clientX;
+            karte.lastY = e.clientY;
+            // Wo und wann die Bewegung begann. Ohne Startpunkt laesst sich
+            // "getippt" nicht von "gezogen" unterscheiden - und die Karte
+            // wird mit genau dieser Bewegung bedient.
+            karte.downX = e.clientX;
+            karte.downY = e.clientY;
+            karte.downZeit = Date.now();
             cvs.style.cursor = "grabbing";
         };
         
         cvs.onmousemove = (e) => {
-            if(this.mapState.isDragging) {
-                const dx = e.clientX - this.mapState.lastX;
-                const dy = e.clientY - this.mapState.lastY;
-                this.mapState.offsetX += dx;
-                this.mapState.offsetY += dy;
-                this.mapState.lastX = e.clientX;
-                this.mapState.lastY = e.clientY;
-                this.mapState.needsRender = true;
+            if(karte.isDragging) {
+                const dx = e.clientX - karte.lastX;
+                const dy = e.clientY - karte.lastY;
+                karte.offsetX += dx;
+                karte.offsetY += dy;
+                karte.lastX = e.clientX;
+                karte.lastY = e.clientY;
+                karte.needsRender = true;
             }
         };
 
-        const stopDrag = () => { this.mapState.isDragging = false; cvs.style.cursor = "move"; };
-        cvs.onmouseup = stopDrag;
-        cvs.onmouseleave = stopDrag;
+        // Ein Klick ist: kurz (unter 500 ms) und kaum bewegt (unter 8 px).
+        // Alles andere war Ziehen und darf keinen Marker setzen. `mouseleave`
+        // zaehlt nie als Klick - dort endet eine Bewegung, kein Tippen.
+        const klickPunkt = (e) => {
+            const dx = Math.abs(e.clientX - (karte.downX ?? -999));
+            const dy = Math.abs(e.clientY - (karte.downY ?? -999));
+            const dauer = Date.now() - (karte.downZeit || 0);
+            return dx < 8 && dy < 8 && dauer < 500;
+        };
+
+        // `this` in den Ereignis-Handlern ist die Leinwand, nicht UI. Deshalb
+        // hier einmal festhalten: sonst landet ein `this.mapState` aus einem
+        // alten Objekt im Nichts, und der zweite Klick tut nichts mehr.
+        const karte = this.mapState;
+
+        cvs.onmouseup = (e) => {
+            const warKlick = karte.isDragging && klickPunkt(e);
+            karte.isDragging = false;
+            cvs.style.cursor = "move";
+            if (!warKlick) return;
+            const rect = cvs.getBoundingClientRect();
+            if (typeof Navigation !== 'undefined' && Navigation.markerSetzen) {
+                Navigation.markerSetzen(e.clientX - rect.left, e.clientY - rect.top, karte);
+            }
+        };
+        cvs.onmouseleave = () => { karte.isDragging = false; cvs.style.cursor = "move"; };
 
         cvs.onwheel = (e) => {
             e.preventDefault();
             const zoomFactor = 1.1;
             const dir = e.deltaY < 0 ? 1 : -1;
-            let newScale = this.mapState.scale * (dir > 0 ? zoomFactor : (1 / zoomFactor));
-            newScale = Math.max(this.mapState.minScale, Math.min(this.mapState.maxScale, newScale));
+            let newScale = karte.scale * (dir > 0 ? zoomFactor : (1 / zoomFactor));
+            newScale = Math.max(karte.minScale, Math.min(karte.maxScale, newScale));
 
             const rect = cvs.getBoundingClientRect();
             const mx = e.clientX - rect.left; 
             const my = e.clientY - rect.top;
-            this.mapState.offsetX = mx - ((mx - this.mapState.offsetX) / this.mapState.scale) * newScale;
-            this.mapState.offsetY = my - ((my - this.mapState.offsetY) / this.mapState.scale) * newScale;
-            this.mapState.scale = newScale;
-            this.mapState.needsRender = true;
+            karte.offsetX = mx - ((mx - karte.offsetX) / karte.scale) * newScale;
+            karte.offsetY = my - ((my - karte.offsetY) / karte.scale) * newScale;
+            karte.scale = newScale;
+            karte.needsRender = true;
         };
 
         cvs.ontouchstart = (e) => {
             if(e.touches.length === 1) {
-                this.mapState.isDragging = true;
-                this.mapState.isPinching = false;
-                this.mapState.lastX = e.touches[0].clientX;
-                this.mapState.lastY = e.touches[0].clientY;
+                karte.isDragging = true;
+                karte.isPinching = false;
+                karte.lastX = e.touches[0].clientX;
+                karte.lastY = e.touches[0].clientY;
+                karte.downX = e.touches[0].clientX;
+                karte.downY = e.touches[0].clientY;
+                karte.downZeit = Date.now();
+                // Ein zweiter Finger macht aus dem Tippen ein Zoomen. Das wird
+                // gemerkt, damit das Ende nicht als Klick durchgeht.
+                karte.pinchBeruehrt = false;
             } else if (e.touches.length === 2) {
-                this.mapState.isDragging = false;
-                this.mapState.isPinching = true;
-                this.mapState.pinchStartDist = this.getTouchDistance(e.touches[0], e.touches[1]);
-                this.mapState.pinchStartScale = this.mapState.scale;
+                karte.pinchBeruehrt = true;
+                karte.isDragging = false;
+                karte.isPinching = true;
+                karte.pinchStartDist = this.getTouchDistance(e.touches[0], e.touches[1]);
+                karte.pinchStartScale = karte.scale;
             }
         };
 
         cvs.ontouchmove = (e) => {
             e.preventDefault();
-            if(this.mapState.isDragging && e.touches.length === 1) {
-                const dx = e.touches[0].clientX - this.mapState.lastX;
-                const dy = e.touches[0].clientY - this.mapState.lastY;
-                this.mapState.offsetX += dx;
-                this.mapState.offsetY += dy;
-                this.mapState.lastX = e.touches[0].clientX;
-                this.mapState.lastY = e.touches[0].clientY;
-                this.mapState.needsRender = true;
-            } else if(this.mapState.isPinching && e.touches.length === 2) {
+            if(karte.isDragging && e.touches.length === 1) {
+                const dx = e.touches[0].clientX - karte.lastX;
+                const dy = e.touches[0].clientY - karte.lastY;
+                karte.offsetX += dx;
+                karte.offsetY += dy;
+                karte.lastX = e.touches[0].clientX;
+                karte.lastY = e.touches[0].clientY;
+                karte.needsRender = true;
+            } else if(karte.isPinching && e.touches.length === 2) {
                 const newDist = this.getTouchDistance(e.touches[0], e.touches[1]);
-                const scaleRatio = newDist / this.mapState.pinchStartDist;
-                let newScale = this.mapState.pinchStartScale * scaleRatio;
-                newScale = Math.max(this.mapState.minScale, Math.min(this.mapState.maxScale, newScale));
+                const scaleRatio = newDist / karte.pinchStartDist;
+                let newScale = karte.pinchStartScale * scaleRatio;
+                newScale = Math.max(karte.minScale, Math.min(karte.maxScale, newScale));
                 const rect = cvs.getBoundingClientRect();
                 const mx = ((e.touches[0].clientX + e.touches[1].clientX) / 2) - rect.left;
                 const my = ((e.touches[0].clientY + e.touches[1].clientY) / 2) - rect.top;
-                this.mapState.offsetX = mx - ((mx - this.mapState.offsetX) / this.mapState.scale) * newScale;
-                this.mapState.offsetY = my - ((my - this.mapState.offsetY) / this.mapState.scale) * newScale;
-                this.mapState.scale = newScale;
-                this.mapState.needsRender = true;
+                karte.offsetX = mx - ((mx - karte.offsetX) / karte.scale) * newScale;
+                karte.offsetY = my - ((my - karte.offsetY) / karte.scale) * newScale;
+                karte.scale = newScale;
+                karte.needsRender = true;
             }
         };
         
-        cvs.ontouchend = (e) => { this.mapState.isDragging = false; if(e.touches.length < 2) this.mapState.isPinching = false; };
+        cvs.ontouchend = (e) => {
+            const beruhrung = e.changedTouches && e.changedTouches[0];
+            const warTipp = karte.isDragging && !karte.pinchBeruehrt
+                && beruhrung
+                && Math.abs(beruhrung.clientX - (karte.downX ?? -999)) < 12
+                && Math.abs(beruhrung.clientY - (karte.downY ?? -999)) < 12
+                && Date.now() - (karte.downZeit || 0) < 600;
+            karte.isDragging = false;
+            if(e.touches.length < 2) karte.isPinching = false;
+            if(!warTipp) return;
+            const rect = cvs.getBoundingClientRect();
+            if (typeof Navigation !== 'undefined' && Navigation.markerSetzen) {
+                Navigation.markerSetzen(beruhrung.clientX - rect.left, beruhrung.clientY - rect.top);
+            }
+        };
     },
 
     updateWorldBuffer: function() {
@@ -257,6 +307,13 @@ Object.assign(UI, {
         ctx.fillStyle = "rgba(0, 255, 0, 0.3)";
         ctx.beginPath(); ctx.arc(pDrawX, pDrawY, Math.max(5, pulse * (s/3)), 0, Math.PI*2); ctx.fill();
         ctx.fillStyle = "#39ff14"; ctx.beginPath(); ctx.arc(pDrawX, pDrawY, Math.max(2, 4 * (s/3)), 0, Math.PI*2); ctx.fill();
+
+        // 4b. Navigation: Ziellinie, gesetztes Ziel und der Marker, der noch
+        //     bestaetigt werden muss. Nach dem Spieler, damit beides ueber der
+        //     Karte liegt und der Marker ueber der Linie.
+        if (typeof Navigation !== 'undefined' && Navigation.zeichnen) {
+            Navigation.zeichnen(ctx, this.mapState, Game.MAP_W || 50);
+        }
 
         // 5. FIX: DYNAMISCHE POIs aus dem Generator lesen anstatt aus der veralteten Liste
         let activePOIs = [];

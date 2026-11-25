@@ -35,6 +35,27 @@ window.GameData.offenePunkte = [
 // nicht mit dem, was geplant war.
 window.GameData.RELEASED_PATCHES = [
   {
+    version: '14.0.15',
+    datum: '2026-11-24',
+    title: 'Navigation · Marker setzen, Richtung sehen',
+    punkte: [
+      'Klick oder Tap auf die Weltkarte setzt einen Marker und fragt nach: Sektor, Himmelsrichtung und Entfernung stehen im Feld, ZIEL SETZEN oder VERWERFEN.',
+      'Der Marker ist nötig, weil die Karte mit einem Finger gezogen und mit zwei Fingern gezoomt wird. Ein Klick ohne Rückfrage hätte jedes Wischen zu einem Ziel gemacht.',
+      'Neben der Sektor-Anzeige sitzt ein kleiner Pfeil. Er dreht sich in die Richtung des Ziels, mit Schwanz, damit man Nord und Süd unterscheiden kann. Der Sektor-Anzeiger nennt das Ziel: "[3,4] ▸ [7,2]".',
+      'Im Ziel zeigt der Pfeil einen Ring und den Text ZIEL statt einer Richtung, die es nicht mehr gibt. Ziel erreicht heißt: gleicher Sektor.',
+      'Auf der Karte: gelbes Fadenkreuz für den Marker, grünes für das gesetzte Ziel, dazwischen eine gestrichelte Linie.',
+      'Navigation im Spielmenü: Sektor eintippen, aufheben, oder von Hand neu prüfen. Für Koordinaten aus einer Quest, ohne den Sektor auf der Karte treffen zu müssen.',
+      'Das Ziel liegt im Spielstand und überlebt ein Neuladen.',
+      'Dabei gefunden und behoben: die Karten-Ereignisse nahmen `this` als UI an, obwohl `this` dort die Leinwand ist. Nach einem Kartenaufbau arbeiteten sie auf einem alten Zustandsobjekt.',
+      'Und: die Sektor-Anzeige wurde an zwei Stellen geschrieben. Beim Aufheben blieb das alte Ziel deshalb stehen. Anzeige und Pfeil kommen jetzt aus einer Funktion.'
+    ],
+    offen: [
+      'Die Nadel zeigt nach Norden oben, nicht nach der Blickrichtung. Die Karte selbst ist auch nicht gedreht - die Nadel ist also stimmig zur Karte, aber ein Pfeil, der sich mit der Blickrichtung mitdreht, waere die naheliegendere Anzeige.',
+      'Ein Weg von Sektor zu Sektor wird nicht berechnet - die Entfernung ist Luftlinie, nicht die Strecke um Hindernisse.',
+      'Die Marke auf der Karte laesst sich nicht verschieben; ein neuer Klick setzt eine neue.'
+    ]
+  },
+  {
     version: '14.0.14',
     datum: '2026-11-24',
     title: 'Patch-Ablauf · Update-Fenster im Spiel',

@@ -1,5 +1,51 @@
 # CHANGELOG
 
+## v14.0.15 (Navigation auf der Weltkarte, 2026-11-24)
+Auftrag: "Navigation integrieren. Klick auf Karte setzt die Navigation (lang
+klicken oder nachfragen? oder Marker setzen und dann Knopf fuer bestaetigen?).
+Kleiner Pfeil in die Richtung des gesetzten Punktes unter oder neben dem
+Sektor-Anzeiger - dynamisch drehend in die Richtung, in die man will."
+
+Die Frage in der Klammer ist mit "Marker setzen, dann bestaetigen" beantwortet.
+Grund: die Karte wird mit einem Finger GEZOGEN und mit zwei Fingern GEZOOMT.
+Ein Klick ohne Rueckfrage haette jedes Ende einer Ziehbewegung zu einem Ziel
+gemacht - und jedes Zoomen, bei dem zuerst ein Finger hochgeht.
+
+- [NEU] **`src/ui/ui_navigation.js`** - Peilung, Himmelsrichtung, Entfernung,
+  Marker, Bestaetigung, Nadel. Reine Rechnung und Darstellung, kein Netzwerk.
+- [NEU] **Marker und Bestaetigung.** Klick/Tap auf die Karte setzt ein gelbes
+  Fadenkreuz und oeffnet ein Feld mit Sektor, Richtung und Entfernung; erst
+  ZIEL SETZEN uebernimmt es. VERWERFEN laesst ein bestehendes Ziel stehen.
+- [NEU] **Der Richtungspfeil** sitzt rechts neben der Sektor-Anzeige (dort, wo
+  er hingehoert: er gehoert zur Anzeige, nicht zur Karte). Er dreht sich in die
+  Richtung des Ziels und traegt einen Schwanz - ohne den ist ein symmetrischer
+  Pfeil bei 0 und 180 Grad nicht zu unterscheiden. Im Ziel wird daraus ein Ring
+  mit dem Text ZIEL.
+- [NEU] **Der Sektor-Anzeiger nennt das Ziel**: `[3,4] ▸ [7,2]`. Ohne das
+  muesste man raten, wohin die Nadel daneben zeigt.
+- [NEU] **Navigation im Spielmenue**: Sektor eintippen, aufheben. Fuer
+  Koordinaten aus einer Quest, ohne auf der Karte pixelgenau zu treffen.
+- [FIX] **Klick oder Ziehen wird unterschieden.** Unter 8 px und unter 500 ms
+  ist ein Klick, alles andere war Ziehen. Beim Touch zusaetzlich: sobald ein
+  zweiter Finger dabei war, ist es kein Klick mehr.
+- [FIX] **Die Karten-Ereignisse nahmen `this` als UI an.** In
+  `ui_view_world.js` ist `this` in den Handlern die Leinwand, nicht UI. Nach
+  einem Kartenaufbau arbeiteten sie deshalb auf einem alten Zustandsobjekt -
+  der zweite Klick tat nichts. Das ist beim Testen aufgefallen, nicht im
+  Betrieb: `markerSetzen` bekommt das Zustandsobjekt jetzt uebergeben.
+- [FIX] **Anzeige und Pfeil aus einer Hand.** Die Sektor-Anzeige wurde an zwei
+  Stellen geschrieben (UI.update und Navigation). Beim Aufheben blieb das alte
+  Ziel deshalb stehen. Beides kommt jetzt aus `Navigation.aktualisiere()`.
+- [TEST] **`tests/navigation.test.mjs` (19 Tests)**: Peilung in allen vier
+  Himmelsrichtungen, deutsche Richtungskuerzel (O, nicht E), Entfernung in
+  Feldern, Klick-Umrechnung, Marker ohne Ziel, Bestaetigung, Verwerfen,
+  Klick ausserhalb der Welt, die Sektor-Anzeige samt Aufheben, und die Drehung
+  der Nadel selbst (der Canvas-Kontext wird abgefangen und der Winkel
+  gemessen). Gegenproben: jeder Waechter wird rot, wenn man den Code absichtlich
+  entwaffnet - geprueft fuer "Klick setzt sofort ein Ziel", "Ziehen setzt einen
+  Marker", "Nadel dreht nicht", "Himmelsrichtung englisch" und "Anzeige
+  vergisst das Ziel beim Aufheben".
+
 ## v14.0.14 (Patch-Ablauf, Update-Fenster im Spiel, 2026-11-24)
 Auftrag: "Schau dir bitte mal als Referenz zum Patch-System IronPath und Tiny
 Tycoon Towns im Repo an. Ich moechte einen gleichen Ablauf zum Patchen und

@@ -40,7 +40,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js" crossorigin="anonymous"
             onerror="window.scriptLoadError='firebase-database.js';"></script>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
-    <meta name="pipboy-build" content="14.0.14">
+    <meta name="pipboy-build" content="14.0.15">
     
     <script>document.write('<link rel="stylesheet" href="style.css?v=' + Date.now() + '">');</script>
     
@@ -332,6 +332,28 @@ ${window.logBuffer.slice(-10).join('\n') || '(leer - Fehler trat vor dem ersten 
     </div>
 
     <div id="manual-overlay" class="hidden z-[1000] bg-black/95" style="display: none;"><div class="border-2 border-yellow-400 w-full max-w-2xl h-[90vh] bg-[#111] flex flex-col p-4 shadow-[0_0_30px_#aa0]"><div class="flex justify-between items-center border-b border-yellow-400 pb-2 mb-2"><h2 class="text-2xl font-bold text-yellow-400">HANDBUCH v1.0</h2><button class="text-red-500 font-bold text-xl px-2 border border-red-500 hover:bg-red-900" onclick="document.getElementById('manual-overlay').classList.add('hidden'); document.getElementById('manual-overlay').style.display='none';">X</button></div><div id="manual-content" class="flex-grow overflow-y-auto text-green-300 font-mono space-y-4 pr-2"></div></div></div>
+    <!-- Navigation von Hand: Sektor eintippen. Fuer Koordinaten aus einer
+         Quest - auf der Karte muss man den Sektor sonst pixelgenau treffen. -->
+    <div id="nav-eingabe" class="hidden z-[1000] bg-black/95" style="display: none;">
+        <div class="border-2 border-green-600 w-full max-w-sm bg-[#020a02] p-4 shadow-[0_0_25px_rgba(57,255,20,0.35)]">
+            <div class="text-[10px] tracking-[0.3em] text-green-700 uppercase border-b border-green-900 pb-2 mb-3">PIP-OS // NAVIGATION</div>
+            <div id="nav-eingabe-stand" class="text-sm text-green-600 mb-3"></div>
+            <div class="flex items-center gap-2 mb-3">
+                <label class="text-green-500 text-sm tracking-wider">SEKTOR</label>
+                <input id="nav-eingabe-x" type="number" inputmode="numeric" value="0" class="login-input w-16 text-center" aria-label="Sektor X">
+                <span class="text-green-700">/</span>
+                <input id="nav-eingabe-y" type="number" inputmode="numeric" value="0" class="login-input w-16 text-center" aria-label="Sektor Y">
+            </div>
+            <div class="flex flex-col gap-2">
+                <button onclick="UI.setzeNavigation()" class="action-button w-full border-[#39ff14] text-[#39ff14] py-2 font-bold">ZIEL SETZEN</button>
+                <div class="flex gap-2">
+                    <button onclick="UI.loescheNavigation()" class="action-button flex-1 border-yellow-600 text-yellow-500 py-2">AUFHEBEN</button>
+                    <button onclick="UI.schliesseNavigation()" class="action-button flex-1 border-green-800 text-green-600 py-2">ABBRUCH</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="patch-notes-overlay" class="hidden z-[1000] bg-black/95" style="display: none;">
         <div class="border-2 border-green-700 w-full max-w-2xl h-[90vh] bg-[#020a02] flex flex-col p-4 shadow-[0_0_30px_#0f0]">
             <div id="patch-notes-content" class="flex-grow overflow-y-auto custom-scrollbar pr-1"></div>
@@ -377,6 +399,7 @@ ${window.logBuffer.slice(-10).join('\n') || '(leer - Fehler trat vor dem ersten 
             <button id="btn-inv" class="action-button w-full text-left">INVENTAR</button>
             <button id="btn-char" class="action-button w-full text-left">CHARAKTER</button>
             <button id="btn-map" class="action-button w-full text-left">WELT</button>
+            <button id="btn-navigation" class="action-button w-full text-left" onclick="UI.oeffneNavigation()">NAVIGATION</button>
             <button id="btn-quests" class="action-button w-full text-left">AUFGABEN</button>
             <button id="btn-highscores-game" class="action-button w-full text-left" onclick="UI.showHighscoreBoard()">VAULT LEGENDS</button>
             <button id="btn-wiki" class="action-button w-full text-left">WIKI</button>

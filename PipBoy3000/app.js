@@ -6640,82 +6640,112 @@
       this.updateWorldBuffer();
       cvs.onmousedown = (e) => {
         if (e.button !== 0) return;
-        this.mapState.isDragging = true;
-        this.mapState.lastX = e.clientX;
-        this.mapState.lastY = e.clientY;
+        karte.isDragging = true;
+        karte.lastX = e.clientX;
+        karte.lastY = e.clientY;
+        karte.downX = e.clientX;
+        karte.downY = e.clientY;
+        karte.downZeit = Date.now();
         cvs.style.cursor = "grabbing";
       };
       cvs.onmousemove = (e) => {
-        if (this.mapState.isDragging) {
-          const dx = e.clientX - this.mapState.lastX;
-          const dy = e.clientY - this.mapState.lastY;
-          this.mapState.offsetX += dx;
-          this.mapState.offsetY += dy;
-          this.mapState.lastX = e.clientX;
-          this.mapState.lastY = e.clientY;
-          this.mapState.needsRender = true;
+        if (karte.isDragging) {
+          const dx = e.clientX - karte.lastX;
+          const dy = e.clientY - karte.lastY;
+          karte.offsetX += dx;
+          karte.offsetY += dy;
+          karte.lastX = e.clientX;
+          karte.lastY = e.clientY;
+          karte.needsRender = true;
         }
       };
-      const stopDrag = () => {
-        this.mapState.isDragging = false;
+      const klickPunkt = (e) => {
+        const dx = Math.abs(e.clientX - (karte.downX ?? -999));
+        const dy = Math.abs(e.clientY - (karte.downY ?? -999));
+        const dauer = Date.now() - (karte.downZeit || 0);
+        return dx < 8 && dy < 8 && dauer < 500;
+      };
+      const karte = this.mapState;
+      cvs.onmouseup = (e) => {
+        const warKlick = karte.isDragging && klickPunkt(e);
+        karte.isDragging = false;
+        cvs.style.cursor = "move";
+        if (!warKlick) return;
+        const rect = cvs.getBoundingClientRect();
+        if (typeof Navigation !== "undefined" && Navigation.markerSetzen) {
+          Navigation.markerSetzen(e.clientX - rect.left, e.clientY - rect.top, karte);
+        }
+      };
+      cvs.onmouseleave = () => {
+        karte.isDragging = false;
         cvs.style.cursor = "move";
       };
-      cvs.onmouseup = stopDrag;
-      cvs.onmouseleave = stopDrag;
       cvs.onwheel = (e) => {
         e.preventDefault();
         const zoomFactor = 1.1;
         const dir = e.deltaY < 0 ? 1 : -1;
-        let newScale = this.mapState.scale * (dir > 0 ? zoomFactor : 1 / zoomFactor);
-        newScale = Math.max(this.mapState.minScale, Math.min(this.mapState.maxScale, newScale));
+        let newScale = karte.scale * (dir > 0 ? zoomFactor : 1 / zoomFactor);
+        newScale = Math.max(karte.minScale, Math.min(karte.maxScale, newScale));
         const rect = cvs.getBoundingClientRect();
         const mx = e.clientX - rect.left;
         const my = e.clientY - rect.top;
-        this.mapState.offsetX = mx - (mx - this.mapState.offsetX) / this.mapState.scale * newScale;
-        this.mapState.offsetY = my - (my - this.mapState.offsetY) / this.mapState.scale * newScale;
-        this.mapState.scale = newScale;
-        this.mapState.needsRender = true;
+        karte.offsetX = mx - (mx - karte.offsetX) / karte.scale * newScale;
+        karte.offsetY = my - (my - karte.offsetY) / karte.scale * newScale;
+        karte.scale = newScale;
+        karte.needsRender = true;
       };
       cvs.ontouchstart = (e) => {
         if (e.touches.length === 1) {
-          this.mapState.isDragging = true;
-          this.mapState.isPinching = false;
-          this.mapState.lastX = e.touches[0].clientX;
-          this.mapState.lastY = e.touches[0].clientY;
+          karte.isDragging = true;
+          karte.isPinching = false;
+          karte.lastX = e.touches[0].clientX;
+          karte.lastY = e.touches[0].clientY;
+          karte.downX = e.touches[0].clientX;
+          karte.downY = e.touches[0].clientY;
+          karte.downZeit = Date.now();
+          karte.pinchBeruehrt = false;
         } else if (e.touches.length === 2) {
-          this.mapState.isDragging = false;
-          this.mapState.isPinching = true;
-          this.mapState.pinchStartDist = this.getTouchDistance(e.touches[0], e.touches[1]);
-          this.mapState.pinchStartScale = this.mapState.scale;
+          karte.pinchBeruehrt = true;
+          karte.isDragging = false;
+          karte.isPinching = true;
+          karte.pinchStartDist = this.getTouchDistance(e.touches[0], e.touches[1]);
+          karte.pinchStartScale = karte.scale;
         }
       };
       cvs.ontouchmove = (e) => {
         e.preventDefault();
-        if (this.mapState.isDragging && e.touches.length === 1) {
-          const dx = e.touches[0].clientX - this.mapState.lastX;
-          const dy = e.touches[0].clientY - this.mapState.lastY;
-          this.mapState.offsetX += dx;
-          this.mapState.offsetY += dy;
-          this.mapState.lastX = e.touches[0].clientX;
-          this.mapState.lastY = e.touches[0].clientY;
-          this.mapState.needsRender = true;
-        } else if (this.mapState.isPinching && e.touches.length === 2) {
+        if (karte.isDragging && e.touches.length === 1) {
+          const dx = e.touches[0].clientX - karte.lastX;
+          const dy = e.touches[0].clientY - karte.lastY;
+          karte.offsetX += dx;
+          karte.offsetY += dy;
+          karte.lastX = e.touches[0].clientX;
+          karte.lastY = e.touches[0].clientY;
+          karte.needsRender = true;
+        } else if (karte.isPinching && e.touches.length === 2) {
           const newDist = this.getTouchDistance(e.touches[0], e.touches[1]);
-          const scaleRatio = newDist / this.mapState.pinchStartDist;
-          let newScale = this.mapState.pinchStartScale * scaleRatio;
-          newScale = Math.max(this.mapState.minScale, Math.min(this.mapState.maxScale, newScale));
+          const scaleRatio = newDist / karte.pinchStartDist;
+          let newScale = karte.pinchStartScale * scaleRatio;
+          newScale = Math.max(karte.minScale, Math.min(karte.maxScale, newScale));
           const rect = cvs.getBoundingClientRect();
           const mx = (e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left;
           const my = (e.touches[0].clientY + e.touches[1].clientY) / 2 - rect.top;
-          this.mapState.offsetX = mx - (mx - this.mapState.offsetX) / this.mapState.scale * newScale;
-          this.mapState.offsetY = my - (my - this.mapState.offsetY) / this.mapState.scale * newScale;
-          this.mapState.scale = newScale;
-          this.mapState.needsRender = true;
+          karte.offsetX = mx - (mx - karte.offsetX) / karte.scale * newScale;
+          karte.offsetY = my - (my - karte.offsetY) / karte.scale * newScale;
+          karte.scale = newScale;
+          karte.needsRender = true;
         }
       };
       cvs.ontouchend = (e) => {
-        this.mapState.isDragging = false;
-        if (e.touches.length < 2) this.mapState.isPinching = false;
+        const beruhrung = e.changedTouches && e.changedTouches[0];
+        const warTipp = karte.isDragging && !karte.pinchBeruehrt && beruhrung && Math.abs(beruhrung.clientX - (karte.downX ?? -999)) < 12 && Math.abs(beruhrung.clientY - (karte.downY ?? -999)) < 12 && Date.now() - (karte.downZeit || 0) < 600;
+        karte.isDragging = false;
+        if (e.touches.length < 2) karte.isPinching = false;
+        if (!warTipp) return;
+        const rect = cvs.getBoundingClientRect();
+        if (typeof Navigation !== "undefined" && Navigation.markerSetzen) {
+          Navigation.markerSetzen(beruhrung.clientX - rect.left, beruhrung.clientY - rect.top);
+        }
       };
     },
     updateWorldBuffer: function() {
@@ -6854,6 +6884,9 @@
       ctx.beginPath();
       ctx.arc(pDrawX, pDrawY, Math.max(2, 4 * (s / 3)), 0, Math.PI * 2);
       ctx.fill();
+      if (typeof Navigation !== "undefined" && Navigation.zeichnen) {
+        Navigation.zeichnen(ctx, this.mapState, Game.MAP_W || 50);
+      }
       let activePOIs = [];
       if (typeof WorldGen !== "undefined" && WorldGen.locations) {
         if (WorldGen.locations.vault) activePOIs.push({ x: WorldGen.locations.vault.x, y: WorldGen.locations.vault.y, type: "V" });
@@ -8139,7 +8172,6 @@
       if (!this.els.caps) this.els.caps = document.getElementById("val-caps");
       if (!this.els.hp) this.els.hp = document.getElementById("bar-hp");
       if (!this.els.headerCharInfo) this.els.headerCharInfo = document.getElementById("header-char-info");
-      const sectorDisplay = document.getElementById("val-sector-display");
       const hasPoints = Game.state.statPoints > 0 || Game.state.perkPoints > 0;
       const displayName = Game.state.playerName || (typeof Network !== "undefined" ? Network.myDisplayName : "SURVIVOR");
       if (this.els.name) this.els.name.textContent = displayName;
@@ -8149,11 +8181,8 @@
       }
       const dtName = document.querySelector(".desktop-name-target");
       if (dtName) dtName.textContent = displayName;
-      if (sectorDisplay) {
-        const sx = Game.state.sector ? Game.state.sector.x : 0;
-        const sy = Game.state.sector ? Game.state.sector.y : 0;
-        sectorDisplay.innerHTML = `🌍 SEKTOR [${sx},${sy}]`;
-        sectorDisplay.classList.remove("border-yellow-500");
+      if (typeof Navigation !== "undefined" && Navigation.aktualisiere) {
+        Navigation.aktualisiere();
       }
       if (this.els.lvl) this.els.lvl.textContent = Game.state.lvl;
       const dtLvl = document.querySelector(".desktop-lvl-target");
@@ -8288,7 +8317,17 @@
         this.els.view.innerHTML = `
                 <div id="map-view" class="w-full h-full flex justify-center items-center bg-black relative">
                     <canvas id="game-canvas" class="w-full h-full object-contain" style="image-rendering: pixelated;"></canvas>
-                    <div id="val-sector-display" onclick="UI.switchView('worldmap')" class="absolute top-4 left-1/2 transform -translate-x-1/2 bg-black/80 border border-green-500 text-green-500 px-3 py-1 text-sm font-bold tracking-widest z-20 shadow-[0_0_10px_#39ff14] cursor-pointer hover:text-yellow-400 hover:border-yellow-500 transition-all active:scale-95 group rounded">🌍 SEKTOR [?,?]</div>
+                    <!-- Sektor-Anzeige mit Navigationspfeil. Der Pfeil sitzt
+                         rechts daneben, in derselben Zeile: er gehoert zur
+                         Sektor-Anzeige, nicht zur Karte. Versteckt, solange
+                         kein Ziel gesetzt ist (Navigation.aktualisiere()). -->
+                    <div class="absolute top-4 left-1/2 transform -translate-x-1/2 flex items-center gap-2 z-20">
+                        <div id="val-sector-display" onclick="UI.switchView('worldmap')" class="bg-black/80 border border-green-500 text-green-500 px-3 py-1 text-sm font-bold tracking-widest shadow-[0_0_10px_#39ff14] cursor-pointer hover:text-yellow-400 hover:border-yellow-500 transition-all active:scale-95 group rounded">🌍 SEKTOR [?,?]</div>
+                        <button id="nav-pfeil" onclick="UI.oeffneNavigation()" class="hidden bg-black/85 border border-[#39ff14] rounded px-1.5 py-1 items-center gap-1 shadow-[0_0_10px_rgba(57,255,20,0.5)] cursor-pointer hover:border-yellow-400" title="Navigation" style="display: none;">
+                            <canvas width="26" height="26" class="block"></canvas>
+                            <span data-nav-text class="text-[11px] font-bold text-[#39ff14] tracking-wider leading-none"></span>
+                        </button>
+                    </div>
                     <button id="btn-camp-overlay" class="hidden absolute top-4 left-4 bg-black/80 border-2 border-green-500 text-green-500 p-2 rounded-lg hover:bg-green-900 transition-all z-20 shadow-[0_0_15px_#39ff14] cursor-pointer flex flex-col items-center">
                         <span class="text-2xl">⛺</span>
                         <span class="text-xs font-bold">BAUEN</span>
@@ -8522,6 +8561,24 @@
                         <div class="text-[10px] text-green-700 tracking-widest uppercase mb-1 border-b border-green-900/50 pb-1">PIP-OS V7.1.0 // GPS MODULE</div>
                         <div id="world-location-text" class="text-green-400 font-mono font-bold text-lg animate-pulse">
                             STANDORT WIRD BERECHNET...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bestaetigung fuer den Navigations-Marker. Versteckt, bis
+                     ein Klick einen Marker setzt (Navigation.bestaetigungZeigen).
+                     Kein Ziel ohne diesen Knopf: die Karte wird mit einem
+                     Finger gezogen, ein Klick allein waere mehrdeutig. -->
+                <div id="nav-bestaetigung" class="hidden absolute bottom-32 left-0 w-full justify-center z-30 px-3" style="display: none;">
+                    <div class="bg-black/95 border-2 border-yellow-500 px-4 py-3 shadow-[0_0_20px_rgba(255,215,0,0.4)] flex flex-col gap-2 w-full max-w-sm">
+                        <div class="text-[10px] tracking-[0.3em] text-yellow-600 uppercase">Ziel markiert</div>
+                        <div class="flex items-baseline justify-between gap-3">
+                            <span class="text-2xl font-bold text-yellow-400" id="nav-bestaetigung-ziel">[0, 0]</span>
+                            <span class="text-sm text-green-600 text-right" id="nav-bestaetigung-weg">N · 0 Felder</span>
+                        </div>
+                        <div class="flex gap-2 mt-1">
+                            <button id="nav-bestaetigung-ok" onclick="Navigation.bestaetigen()" class="action-button flex-1 border-[#39ff14] text-[#39ff14] py-2 font-bold">ZIEL SETZEN</button>
+                            <button onclick="Navigation.verwerfen()" class="action-button px-3 border-green-800 text-green-600 py-2">VERWERFEN</button>
                         </div>
                     </div>
                 </div>
@@ -10314,6 +10371,27 @@
   ];
   window.GameData.RELEASED_PATCHES = [
     {
+      version: "14.0.15",
+      datum: "2026-11-24",
+      title: "Navigation · Marker setzen, Richtung sehen",
+      punkte: [
+        "Klick oder Tap auf die Weltkarte setzt einen Marker und fragt nach: Sektor, Himmelsrichtung und Entfernung stehen im Feld, ZIEL SETZEN oder VERWERFEN.",
+        "Der Marker ist nötig, weil die Karte mit einem Finger gezogen und mit zwei Fingern gezoomt wird. Ein Klick ohne Rückfrage hätte jedes Wischen zu einem Ziel gemacht.",
+        'Neben der Sektor-Anzeige sitzt ein kleiner Pfeil. Er dreht sich in die Richtung des Ziels, mit Schwanz, damit man Nord und Süd unterscheiden kann. Der Sektor-Anzeiger nennt das Ziel: "[3,4] ▸ [7,2]".',
+        "Im Ziel zeigt der Pfeil einen Ring und den Text ZIEL statt einer Richtung, die es nicht mehr gibt. Ziel erreicht heißt: gleicher Sektor.",
+        "Auf der Karte: gelbes Fadenkreuz für den Marker, grünes für das gesetzte Ziel, dazwischen eine gestrichelte Linie.",
+        "Navigation im Spielmenü: Sektor eintippen, aufheben, oder von Hand neu prüfen. Für Koordinaten aus einer Quest, ohne den Sektor auf der Karte treffen zu müssen.",
+        "Das Ziel liegt im Spielstand und überlebt ein Neuladen.",
+        "Dabei gefunden und behoben: die Karten-Ereignisse nahmen `this` als UI an, obwohl `this` dort die Leinwand ist. Nach einem Kartenaufbau arbeiteten sie auf einem alten Zustandsobjekt.",
+        "Und: die Sektor-Anzeige wurde an zwei Stellen geschrieben. Beim Aufheben blieb das alte Ziel deshalb stehen. Anzeige und Pfeil kommen jetzt aus einer Funktion."
+      ],
+      offen: [
+        "Die Nadel zeigt nach Norden oben, nicht nach der Blickrichtung. Die Karte selbst ist auch nicht gedreht - die Nadel ist also stimmig zur Karte, aber ein Pfeil, der sich mit der Blickrichtung mitdreht, waere die naheliegendere Anzeige.",
+        "Ein Weg von Sektor zu Sektor wird nicht berechnet - die Entfernung ist Luftlinie, nicht die Strecke um Hindernisse.",
+        "Die Marke auf der Karte laesst sich nicht verschieben; ein neuer Klick setzt eine neue."
+      ]
+    },
+    {
       version: "14.0.14",
       datum: "2026-11-24",
       title: "Patch-Ablauf · Update-Fenster im Spiel",
@@ -10627,5 +10705,372 @@
       else if (!ui.zustand || ui.zustand.art === "aktuell") this.toast("Du spielst die aktuelle Version", "text-green-400");
       else this.toast("Version nicht erreichbar", "text-red-400");
     });
+  };
+
+  // src/ui/ui_navigation.js
+  window.GameData = window.GameData || {};
+  var FELDER = 50;
+  function peilung(dx, dy) {
+    const grad = Math.atan2(dx, -dy) * 180 / Math.PI;
+    return (grad + 360) % 360;
+  }
+  function himmelsrichtung(grad) {
+    const richtungen = ["N", "NO", "O", "SO", "S", "SW", "W", "NW"];
+    return richtungen[Math.round(grad / 45) % 8];
+  }
+  function entfernung(von, nach) {
+    const dx = (nach.x - von.x) * FELDER;
+    const dy = (nach.y - von.y) * FELDER;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+  function klickZuSektor(px, py, mapState, mapW, mapH) {
+    const s = mapState.scale;
+    const globalX = (px - mapState.offsetX) / s;
+    const globalY = (py - mapState.offsetY) / s;
+    const sektorX = Math.floor(globalX / mapW);
+    const sektorY = Math.floor(globalY / mapH);
+    const feldX = Math.floor(globalX) - sektorX * mapW;
+    const feldY = Math.floor(globalY) - sektorY * mapH;
+    return { sektorX, sektorY, feldX, feldY };
+  }
+  window.Navigation = {
+    FELDER,
+    peilung,
+    himmelsrichtung,
+    entfernung,
+    klickZuSektor,
+    // Der aktuelle Stand. `null`, solange kein Ziel gesetzt ist.
+    stand: function() {
+      return typeof Game !== "undefined" && Game.state && Game.state.nav ? Game.state.nav : null;
+    },
+    // Setzt das Ziel. Das ist die einzige Stelle, die Game.state.nav schreibt -
+    // damit es keinen zweiten Weg gibt, der die Form anders fuellt.
+    setzen: function(sektorX, sektorY) {
+      if (typeof Game === "undefined" || !Game.state) return null;
+      const ziel = { x: sektorX, y: sektorY, gesetzt: Date.now() };
+      Game.state.nav = ziel;
+      if (typeof Game.saveGame === "function") Game.saveGame();
+      return ziel;
+    },
+    loeschen: function() {
+      if (typeof Game === "undefined" || !Game.state) return;
+      Game.state.nav = null;
+      if (typeof Game.saveGame === "function") Game.saveGame();
+      this.aktualisiere();
+    },
+    // Position des Spielers als Sektor-Koordinate. Der Spieler steht in einem
+    // Sektor auf einem Feld; fuer die Peilung zaehlt das Feld mit, sonst
+    // springt die Nadel in 50er-Schritten.
+    _spieler: function() {
+      if (typeof Game === "undefined" || !Game.state || !Game.state.sector) return null;
+      const sx = Game.state.sector.x;
+      const sy = Game.state.sector.y;
+      const px = Game.state.player && Game.state.player.x || 0;
+      const py = Game.state.player && Game.state.player.y || 0;
+      return { x: sx + px / FELDER, y: sy + py / FELDER };
+    },
+    // Peilung, Richtung und Entfernung zum Ziel. `null`, wenn kein Ziel oder
+    // kein Spieler da ist.
+    richtung: function() {
+      const ziel = this.stand();
+      const spieler = this._spieler();
+      if (!ziel || !spieler) return null;
+      const zx = ziel.x + 0.5;
+      const zy = ziel.y + 0.5;
+      const dx = (zx - spieler.x) * FELDER;
+      const dy = (zy - spieler.y) * FELDER;
+      const grad = peilung(dx, dy);
+      return {
+        grad,
+        himmel: himmelsrichtung(grad),
+        felder: Math.round(Math.sqrt(dx * dx + dy * dy)),
+        sektoren: Math.round(Math.sqrt((zx - spieler.x) ** 2 + (zy - spieler.y) ** 2) * 10) / 10,
+        dx,
+        dy,
+        ziel
+      };
+    },
+    // Ist das Ziel erreicht? Ein Sektor ist 50 Felder breit, also gilt der
+    // gleiche Sektor als angekommen.
+    angekommen: function() {
+      const ziel = this.stand();
+      if (!ziel || typeof Game === "undefined" || !Game.state || !Game.state.sector) return false;
+      return Game.state.sector.x === ziel.x && Game.state.sector.y === ziel.y;
+    },
+    // Zeichnet die Nadel in das Element `#nav-pfeil`. Das Ziel ist ein
+    // Canvas mit fester Groesse 44x44; gezeichnet wird bei jedem Aufruf neu.
+    //
+    // Der Aufruf kommt aus UI.update(), also nach jedem Zug - die Nadel dreht
+    // sich damit, sobald sich die Richtung aendert.
+    // Die Sektor-Anzeige traegt das Ziel mit: "[3,4] ▸ [7,2]". Ohne das
+    // muesste man raten, wohin die Nadel daneben zeigt.
+    anzeigeAktualisieren: function() {
+      const el = document.getElementById("val-sector-display");
+      if (!el || typeof Game === "undefined" || !Game.state) return;
+      const sx = Game.state.sector ? Game.state.sector.x : 0;
+      const sy = Game.state.sector ? Game.state.sector.y : 0;
+      const ziel = this.stand();
+      const neu = ziel ? `🌍 [${sx},${sy}] <span class="text-[#39ff14]">▸ [${ziel.x},${ziel.y}]</span>` : `🌍 SEKTOR [${sx},${sy}]`;
+      if (el.dataset.navStand !== neu) {
+        el.dataset.navStand = neu;
+        el.innerHTML = neu;
+      }
+      el.classList.remove("border-yellow-500");
+    },
+    aktualisiere: function() {
+      this.anzeigeAktualisieren();
+      const behaelter = document.getElementById("nav-pfeil");
+      if (!behaelter) return;
+      const info = this.richtung();
+      if (!info) {
+        behaelter.classList.add("hidden");
+        behaelter.style.display = "none";
+        const leer = behaelter.querySelector("[data-nav-text]");
+        if (leer && leer.textContent) leer.textContent = "";
+        return;
+      }
+      behaelter.classList.remove("hidden");
+      behaelter.style.display = "flex";
+      const fertig = this.angekommen();
+      const cvs = behaelter.querySelector("canvas");
+      const ctx = cvs && cvs.getContext ? cvs.getContext("2d") : null;
+      if (ctx) {
+        const w = cvs.width;
+        const h = cvs.height;
+        ctx.clearRect(0, 0, w, h);
+        ctx.save();
+        ctx.translate(w / 2, h / 2);
+        if (fertig) {
+          ctx.strokeStyle = "#39ff14";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(0, 0, 9, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.fillStyle = "#39ff14";
+          ctx.beginPath();
+          ctx.arc(0, 0, 3.5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        } else {
+          ctx.rotate(info.grad * Math.PI / 180);
+          const r = Math.min(w, h) / 2 - 4;
+          ctx.fillStyle = "#39ff14";
+          ctx.strokeStyle = "#39ff14";
+          ctx.shadowColor = "#39ff14";
+          ctx.shadowBlur = 5;
+          ctx.beginPath();
+          ctx.moveTo(0, -r);
+          ctx.lineTo(r * 0.55, r * 0.45);
+          ctx.lineTo(0, r * 0.15);
+          ctx.lineTo(-r * 0.55, r * 0.45);
+          ctx.closePath();
+          ctx.fill();
+          ctx.shadowBlur = 0;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.lineTo(0, r * 0.75);
+          ctx.stroke();
+          ctx.restore();
+        }
+      }
+      const text = behaelter.querySelector("[data-nav-text]");
+      if (text) {
+        text.textContent = fertig ? "ZIEL" : `${info.himmel} ${info.sektoren}`;
+      }
+      behaelter.title = fertig ? "Ziel erreicht" : `Ziel: Sektor [${info.ziel.x}, ${info.ziel.y}] - ${info.himmel}, ${info.felder} Felder`;
+      behaelter.classList.toggle("nav-angekommen", fertig);
+    },
+    // --- Karte: Marker setzen und bestaetigen -----------------------------
+    // Der Marker, der auf der Karte gezeichnet wird (noch nicht bestaetigt).
+    marker: null,
+    // Wird vom Karten-Klick gerufen. Setzt den Marker und oeffnet das
+    // Bestaetigungsfeld - aber nur, wenn der Klick kein Ziehen war.
+    // `mapState` optional von aussen: die Karte haelt ihr eigenes Objekt fest
+    // (Ereignis-Handler duerfen nicht von `UI.mapState` abhaengen, das beim
+    // Neuaufbau ersetzt wird). Ohne Parameter wird UI.mapState genommen.
+    markerSetzen: function(px, py, mapState) {
+      if (typeof UI === "undefined" || typeof Game === "undefined") return null;
+      const zustand = mapState || UI.mapState;
+      if (!zustand) return null;
+      const treffer = klickZuSektor(px, py, zustand, Game.MAP_W || FELDER, Game.MAP_H || FELDER);
+      const { sektorX, sektorY } = treffer;
+      const maxX = (Game.WORLD_W || 1) - 1;
+      const maxY = (Game.WORLD_H || 1) - 1;
+      if (sektorX < 0 || sektorX > maxX || sektorY < 0 || sektorY > maxY) {
+        if (typeof UI.log === "function") UI.log("Ausserhalb der Karte", "text-green-700");
+        return null;
+      }
+      this.marker = { x: sektorX, y: sektorY };
+      if (UI.mapState) UI.mapState.needsRender = true;
+      this.bestaetigungZeigen();
+      return this.marker;
+    },
+    markerLoeschen: function() {
+      this.marker = null;
+      if (typeof UI !== "undefined" && UI.mapState) UI.mapState.needsRender = true;
+    },
+    bestaetigungZeigen: function() {
+      const feld = document.getElementById("nav-bestaetigung");
+      if (!feld || !this.marker) return;
+      const spieler = this._spieler();
+      const dx = (this.marker.x + 0.5 - (spieler ? spieler.x : 0)) * FELDER;
+      const dy = (this.marker.y + 0.5 - (spieler ? spieler.y : 0)) * FELDER;
+      const grad = peilung(dx, dy);
+      const felder = Math.round(Math.sqrt(dx * dx + dy * dy));
+      const himmel = himmelsrichtung(grad);
+      const ziel = document.getElementById("nav-bestaetigung-ziel");
+      const weg = document.getElementById("nav-bestaetigung-weg");
+      if (ziel) ziel.textContent = `[${this.marker.x}, ${this.marker.y}]`;
+      if (weg) weg.textContent = `${himmel} · ${felder} Felder · ${Math.round(grad)}°`;
+      const schonDa = typeof Game !== "undefined" && Game.state && Game.state.sector && Game.state.sector.x === this.marker.x && Game.state.sector.y === this.marker.y;
+      const knopf = document.getElementById("nav-bestaetigung-ok");
+      if (knopf) knopf.textContent = schonDa ? "TROTZDEM SETZEN" : "ZIEL SETZEN";
+      feld.classList.remove("hidden");
+      feld.style.display = "flex";
+    },
+    bestaetigungVerstecken: function() {
+      const feld = document.getElementById("nav-bestaetigung");
+      if (feld) {
+        feld.classList.add("hidden");
+        feld.style.display = "none";
+      }
+    },
+    // Der Knopf im Bestaetigungsfeld.
+    bestaetigen: function() {
+      if (!this.marker) return;
+      const { x, y } = this.marker;
+      this.setzen(x, y);
+      this.bestaetigungVerstecken();
+      this.marker = null;
+      this.aktualisiere();
+      if (typeof UI !== "undefined") {
+        if (UI.mapState) UI.mapState.needsRender = true;
+        if (typeof UI.log === "function") UI.log(`Navigation: Sektor [${x}, ${y}]`, "text-[#39ff14]");
+      }
+    },
+    verwerfen: function() {
+      this.bestaetigungVerstecken();
+      this.markerLoeschen();
+    },
+    // Zeichnet Marker und Ziellinie auf die Karte. Wird aus renderWorldMap
+    // gerufen, direkt nach dem Spieler - damit die Linie unter dem Marker
+    // liegt und der Marker ueber allem.
+    zeichnen: function(ctx, mapState, felder) {
+      if (typeof Game === "undefined" || !Game.state) return;
+      const s = mapState.scale;
+      const ox = mapState.offsetX;
+      const oy = mapState.offsetY;
+      const punkt = (sektorX, sektorY) => ({
+        x: (sektorX * felder + felder / 2) * s + ox,
+        y: (sektorY * felder + felder / 2) * s + oy
+      });
+      const ziel = this.stand();
+      if (ziel) {
+        const sx = Game.state.sector.x;
+        const sy = Game.state.sector.y;
+        const a = punkt(sx, sy);
+        const b = punkt(ziel.x, ziel.y);
+        ctx.save();
+        ctx.strokeStyle = "rgba(57, 255, 20, 0.45)";
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([6, 6]);
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        this._kreuz(ctx, b.x, b.y, 11, "#39ff14", 2);
+        ctx.restore();
+      }
+      if (this.marker) {
+        const m = punkt(this.marker.x, this.marker.y);
+        const puls = 1 + Math.sin(Date.now() / 180) * 0.12;
+        this._kreuz(ctx, m.x, m.y, 13 * puls, "#ffd700", 2);
+        ctx.save();
+        ctx.strokeStyle = "rgba(255, 215, 0, 0.35)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(m.x, m.y, 20 * puls, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
+    },
+    // Fadenkreuz mit Luecke in der Mitte - auf der Karte besser zu sehen als
+    // ein gefuellter Punkt, der wie ein POI aussieht.
+    _kreuz: function(ctx, x, y, r, farbe, dicke) {
+      ctx.save();
+      ctx.strokeStyle = farbe;
+      ctx.lineWidth = dicke;
+      ctx.beginPath();
+      ctx.moveTo(x - r, y);
+      ctx.lineTo(x - r * 0.35, y);
+      ctx.moveTo(x + r * 0.35, y);
+      ctx.lineTo(x + r, y);
+      ctx.moveTo(x, y - r);
+      ctx.lineTo(x, y - r * 0.35);
+      ctx.moveTo(x, y + r * 0.35);
+      ctx.lineTo(x, y + r);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(x, y, 2, 0, Math.PI * 2);
+      ctx.fillStyle = farbe;
+      ctx.fill();
+      ctx.restore();
+    }
+  };
+  window.UI = window.UI || {};
+  window.UI.oeffneNavigation = function() {
+    const feld = document.getElementById("nav-eingabe");
+    if (!feld) return;
+    if (typeof Game !== "undefined" && Game.state) Game.state.inDialog = true;
+    const ziel = Navigation.stand();
+    const text = document.getElementById("nav-eingabe-stand");
+    const sx = document.getElementById("nav-eingabe-x");
+    const sy = document.getElementById("nav-eingabe-y");
+    if (text) {
+      if (ziel) {
+        const info = Navigation.richtung();
+        text.innerHTML = `AKTUELL: <span class="text-[#39ff14]">[${ziel.x}, ${ziel.y}]</span>` + (info ? ` · ${info.himmel} · ${info.felder} Felder` : "");
+      } else {
+        text.innerHTML = "KEIN ZIEL GESETZT";
+      }
+    }
+    if (sx && ziel) sx.value = ziel.x;
+    if (sy && ziel) sy.value = ziel.y;
+    feld.classList.remove("hidden");
+    feld.style.display = "flex";
+    if (sx) sx.focus();
+  };
+  window.UI.schliesseNavigation = function() {
+    const feld = document.getElementById("nav-eingabe");
+    if (feld) {
+      feld.classList.add("hidden");
+      feld.style.display = "none";
+    }
+    if (typeof Game !== "undefined" && Game.state) Game.state.inDialog = false;
+  };
+  window.UI.setzeNavigation = function() {
+    const sx = parseInt((document.getElementById("nav-eingabe-x") || {}).value, 10);
+    const sy = parseInt((document.getElementById("nav-eingabe-y") || {}).value, 10);
+    if (!Number.isFinite(sx) || !Number.isFinite(sy)) {
+      if (typeof UI.log === "function") UI.log("Sektor unvollstaendig", "text-red-400");
+      return;
+    }
+    const maxX = (typeof Game !== "undefined" && Game.WORLD_W ? Game.WORLD_W : 1) - 1;
+    const maxY = (typeof Game !== "undefined" && Game.WORLD_H ? Game.WORLD_H : 1) - 1;
+    if (sx < 0 || sx > maxX || sy < 0 || sy > maxY) {
+      if (typeof UI.log === "function") UI.log(`Sektor [${sx}, ${sy}] liegt ausserhalb (0-${maxX} / 0-${maxY})`, "text-red-400");
+      return;
+    }
+    Navigation.setzen(sx, sy);
+    Navigation.aktualisiere();
+    if (typeof UI.log === "function") UI.log(`Navigation: Sektor [${sx}, ${sy}]`, "text-[#39ff14]");
+    UI.schliesseNavigation();
+  };
+  window.UI.loescheNavigation = function() {
+    Navigation.loeschen();
+    if (typeof UI.log === "function") UI.log("Navigation aufgehoben", "text-green-700");
+    UI.schliesseNavigation();
   };
 })();
