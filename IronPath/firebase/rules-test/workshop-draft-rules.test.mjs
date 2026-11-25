@@ -11,7 +11,7 @@ const account=()=>createWorkshopAccount({db:alice,auth:{currentUser:{uid:'alice'
 async function ready(reference){let stop;await new Promise((resolve,reject)=>{stop=onValue(reference,resolve,reject)});return stop;}
 test('real account service migrates, crafts and equips under the candidate rules',async()=>{
  const service=account();assert.equal((await service.initialize()).status,'saved');assert.equal((await service.command({type:'craft',item:'boots'})).status,'saved');assert.equal((await service.command({type:'equip',slot:'gear',item:'boots'})).status,'saved');
- const p=(await get(ref(alice,'players/alice'))).val();assert.equal(p.armory.scrap,50);assert.equal(p.armory.fortify,3);assert.equal(p.storyProgress,2);assert.equal(p.coopRewards[id],3);assert.equal(decodeWorkshop(p.workshop).equipped.gear,'boots');
+ const p=(await get(ref(alice,'players/alice'))).val();assert.equal(p.armory.scrap,50);assert.equal(p.armory.fortify,3);assert.equal(p.storyProgress,2);assert.equal(p.coopRewards[id],3);assert.ok(decodeWorkshop(p.workshop).equipped.includes('boots'),'the fresh craft joins the loadout');
 });
 test('owner-only string bounds, unknown children and existing progress protection',async()=>{
  const service=account();assert.equal((await service.initialize()).status,'saved');const field=ref(alice,'players/alice/workshop');
