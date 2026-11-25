@@ -27,11 +27,21 @@ import {ADMIN_ORDER, BUNDLES, ORDER, files, unapprovedOverrides, unusedOverrides
 const ROOT = dirname(fileURLToPath(import.meta.url));
 const CHECK = process.argv.includes('--check');
 
+// App-Icon: Quelle liegt in shell/ (erzeugt von tools/app-icon.mjs), wird wie
+// style.css ins Wurzelverzeichnis kopiert. Pages liefert nur diesen Ordner.
+const ICON_NAMEN = [
+  'icon-192.png', 'icon-512.png', 'icon-512-maskable.png',
+  'apple-touch-icon.png', 'favicon.ico', 'icon.svg', 'manifest.webmanifest'];
+const APP_ICONS = ICON_NAMEN.map(n => `shell/${n}`);
+
 // Was der Build erzeugt. Genau diese Pfade werden vor dem Schreiben entfernt.
 // templates/ ist Quelle und darf hier nicht stehen - es wird mit ausgeliefert,
 // aber nicht erzeugt.
 const ARTIFACTS = [
-  'style.css','index.html', 'admin.html', 'app.js', 'admin.js', 'app.css', 'build.json', 'Version'];
+  'style.css','index.html', 'admin.html', 'app.js', 'admin.js', 'app.css', 'build.json', 'Version',
+  // Die Kopien im Wurzelverzeichnis, NICHT shell/ - dort liegen die Quellen.
+  ...ICON_NAMEN];
+
 
 // Die Reihenfolge in entry.js muss ORDER entsprechen. Zwei Listen, die
 // auseinanderlaufen, wären genau der Fehler, den dieser Build verhindern soll.
@@ -86,7 +96,10 @@ async function preflight() {
     );
   }
 
-  for (const file of [...ORDER, ...ADMIN_ORDER, 'shell/index.html', 'shell/admin.html', 'shell/style.css', 'shell/Version']) {
+  // Quelle des App-Icons. Fehlt eine, zeigt der Startbildschirm ein leeres
+  // Feld - und das faellt im Browser niemandem als Fehler auf.
+  for (const file of [...ORDER, ...ADMIN_ORDER, 'shell/index.html', 'shell/admin.html', 'shell/style.css',
+                      'shell/Version', ...APP_ICONS]) {
     try {
       await stat(join(ROOT, file));
     } catch {
@@ -182,6 +195,11 @@ export async function run({check = CHECK} = {}) {
     // shell/style.css bleibt die Quelle, wird aber mit ausgeliefert: die
     // Hüllseite verlinkt style.css, und Pages liefert nur diesen Ordner.
     await writeFile(join(ROOT, 'style.css'), await readFile(join(ROOT, 'shell', 'style.css')));
+    // App-Icon mit ausliefern - shell/ ist Quelle, das Wurzelverzeichnis ist
+    // das, was Pages und Vercel tatsaechlich zeigen.
+    for (const name of ICON_NAMEN) {
+      await writeFile(join(ROOT, name), await readFile(join(ROOT, 'shell', name)));
+    }
     await writeFile(join(ROOT, 'build.json'), JSON.stringify(manifest, null, 2) + '\n');
     await writeFile(join(ROOT, 'Version'), `${version}\n`);
   }

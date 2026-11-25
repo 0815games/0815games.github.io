@@ -5,7 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Pip-Boy 3003</title>
     
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%23000%22/><text x=%2250%25%22 y=%2250%25%22 font-size=%2280%22 font-family=%22monospace%22 font-weight=%22bold%22 fill=%22%231aff1a%22 dy=%22.35em%22 text-anchor=%22middle%22>P</text></svg>">
+    <!-- App-Icon. Alle Groessen entstehen aus einem Rohbild:
+         node tools/app-icon.mjs (docs/muster/app-icon.png).
+
+         Die Pfade sind relativ, damit sie unter GitHub Pages (/PipBoy3000/)
+         genauso stimmen wie unter Vercel. Reihenfolge ist wichtig: Safari
+         nimmt apple-touch-icon, Chrome die Manifest-Angabe, der Rest das SVG
+         (scharf in jeder Groesse) und sonst das ICO. -->
+    <link rel="icon" href="icon.svg" type="image/svg+xml">
+    <link rel="icon" href="favicon.ico" sizes="16x16 32x32 48x48">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="theme-color" content="#39ff14">
+    <meta name="application-name" content="Pip-Boy 3003">
+
+    <!-- iOS: ohne diese Angaben startet die Seite in Safari mit Adressleiste
+         statt als eigenstaendige App, und der Statusbalken bleibt hell. -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Pip-Boy 3003">
+    <meta name="format-detection" content="telephone=no">
     
     <!-- Die drei Firebase-Skripte sind die einzige verbliebene Abhaengigkeit
          im Netz (Tailwind laeuft seit dem Umbau zur Buildzeit). Faellt das CDN
@@ -21,8 +41,8 @@
             onerror="window.scriptLoadError='firebase-database.js';"></script>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="app.css?v=14.0.7">
-    <link rel="stylesheet" href="style.css?v=14.0.7">
+    <link rel="stylesheet" href="app.css?v=14.0.8">
+    <link rel="stylesheet" href="style.css?v=14.0.8">
     
     <style>
         @keyframes spin-reverse { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
@@ -489,6 +509,6 @@ ${window.logBuffer.slice(-10).join('\n')}
     };
 </script>
 
-    <script src="app.js?v=14.0.7"></script>
+    <script src="app.js?v=14.0.8"></script>
 </body>
 </html>

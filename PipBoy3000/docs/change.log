@@ -1,5 +1,35 @@
 # CHANGELOG
 
+## v14.0.8 (App-Icon, 2026-11-24)
+Startbildschirm, Homescreen und Browser-Tab hatten ein Platzhalter-Icon: ein
+weisses "P" im schwarzen Quadrat, als Inline-SVG in der Huelle. Auf einem
+Homescreen war das ein leer wirkendes Feld.
+
+- [FEATURE] **Eigenes App-Icon:** Pip-Boy-Gasmaske im Stil der Item-Bilder -
+  gruene Kontur auf Schwarz, bewusst grob genug fuer 32 px (wenige grosse
+  Formen, keine Haarlinien).
+- [FEATURE] **Alle Groessen aus einem Rohbild** (`tools/app-icon.mjs`):
+  180 (Apple), 192 und 512 (Manifest), 512 maskable mit 20 % Sicherheitsrand,
+  `favicon.ico` mit 16/32/48 sowie `icon.svg` als Vektor.
+- [FEATURE] **`manifest.webmanifest`** mit `display: standalone`, relativem
+  `start_url` und einer maskable-Variante. Damit startet die Seite auf iOS und
+  Android ohne Adressleiste.
+- [FEATURE] **iOS-Angaben im Head:** `apple-mobile-web-app-capable`,
+  `-status-bar-style: black-translucent` und `-title`. Ohne die startet Safari
+  weiter im Browsermodus, auch mit Icon.
+
+### Zwei Fallen beim Einbinden
+
+**Der Build loeschte seine eigenen Quellen.** Die Icons liegen in `shell/` und
+werden wie `style.css` ins Wurzelverzeichnis kopiert. Beim ersten Lauf standen
+sie in `ARTIFACTS` - der Build raeumte also `shell/icon-192.png` weg und
+meldete danach "Fehlende Datei: shell/icon-192.png". In `ARTIFACTS` gehoeren
+die Kopien, nicht die Quellen; ein Test prueft das jetzt.
+
+**`sharp` loescht beim Zuschneiden nicht.** Fuer die maskable-Variante wird das
+Bild auf 80 % skaliert und auf schwarzen Grund gesetzt - ohne diesen Rand
+beschneidet Android je nach Launcher Kreis oder Tropfen mitten ins Motiv.
+
 ## v14.0.7 (Item-Bilder ueberall, 2026-11-24)
 Die Bilder hingen bisher an einer einzigen Stelle: dem Inventargitter. Schmiede,
 Zerlegen, Haendler, Lager, Item-Detail und Ausruest-Dialog zeigten weiterhin
