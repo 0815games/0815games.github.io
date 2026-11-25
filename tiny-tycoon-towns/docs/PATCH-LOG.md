@@ -568,3 +568,12 @@ Ereignis ergänzt.
   - Nutzer: Konvoi-Werte am Gerät testen. Dauer, Distanzsteuer, Eilpost.
   - Offen aus dem Konvoi-Plan: Reziprozitäts-Bonus (+25 %) ist noch nicht entschieden.
   - Scheibe 6: noch nicht geplant.
+
+### Ereignis-Nachtrag zu TTT-0040
+
+- Push: `960ac9b` und `654b595` auf `arena/f8bf0bda-0815games-github-io` gepusht (`15aa42d..654b595`).
+  PR #442 ist offen. Nicht gemergt.
+- Vercel: Projekt für dieses Spiel nicht vorhanden. Die Liste zeigt nur `ironpath-live-session`
+  (IronPath, nicht dieses Spiel) und keine Deployments. Es wurde nichts deployed und kein Projekt
+  angelegt. Die Preview-Prüfung steht aus, bis ein Projekt für dieses Spiel festgelegt ist.
+- Firebase-Regeln: weiterhin nicht veröffentlicht.
