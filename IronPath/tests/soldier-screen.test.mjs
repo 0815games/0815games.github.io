@@ -4,6 +4,7 @@ import {readFileSync} from 'node:fs';
 import {createSoldierScreen} from '../ui/soldier-screen.mjs';
 import {soldierProfile} from '../core/soldier-profile.mjs';
 import {characterProgress} from '../core/progression.mjs';
+import {encodeWorkshop} from '../workshop/workshop-wire.mjs';
 
 function element(tag){
   return {tag,width:0,height:0,clientWidth:220,hidden:false,open:false,type:'',className:'',value:'',textContent:'',
@@ -18,7 +19,7 @@ function element(tag){
   };
 }
 
-function fixture(profile){
+function fixture(profile,{workshopService=null,onProfile=()=>{}}={}){
   const nodes=new Map();
   const document={
     getElementById(id){if(!nodes.has(id))nodes.set(id,element('div'));return nodes.get(id);},
@@ -26,13 +27,16 @@ function fixture(profile){
     querySelector(){return null;},
   };
   const tr=(text,values={})=>String(text).replace(/\{(\w+)\}/g,(match,name)=>Object.hasOwn(values,name)?String(values[name]):match);
+  let current=profile;
   const screen=createSoldierScreen({document,translate:tr,
-    getProfile:()=>profile,getPortrait:()=>'data:image/png;base64,portrait',
-    onArmory:()=>{},onSkills:()=>{}});
-  return {screen,nodes,document};
+    getProfile:()=>current,getPortrait:()=>'data:image/png;base64,portrait',
+    onArmory:()=>{},onSkills:()=>{},workshopService,
+    onProfile:value=>{current=value;onProfile(value);}});
+  return {screen,nodes,document,profile:()=>current};
 }
 
 const PROFILE={name:'Test Soldier',gender:'male',xp:0,armory:null,skills:''};
+const WORKSHOP=extra=>encodeWorkshop({version:1,components:0,owned:['boots'],equipped:{weapon:'standard',gear:'none',gadget:'none'},mods:{},...extra});
 
 test('the dossier renders identity, XP progress and the combat profile',()=>{
   const {screen,nodes}=fixture(PROFILE);
@@ -42,7 +46,12 @@ test('the dossier renders identity, XP progress and the combat profile',()=>{
   assert.equal(nodes.get('soldierLevelDisplay').textContent,'LEVEL 1');
   assert.equal(nodes.get('soldierPortrait').src,'data:image/png;base64,portrait','the layered portrait from the account cache');
   assert.equal(nodes.get('soldierDamage').textContent,String(data.damage));
-  assert.equal(nodes.get('soldierEquipped').textContent,'No equipment');
+  // The paper doll starts on the neutral loadout.
+  assert.equal(nodes.get('soldierSlotWeaponName').textContent,'Standard weapon');
+  assert.equal(nodes.get('soldierSlotGearName').textContent,'Empty slot');
+  assert.equal(nodes.get('soldierSlotGadgetName').textContent,'Empty slot');
+  assert.equal(nodes.get('soldierInventoryCount').textContent,'0 pieces owned');
+  assert.equal(nodes.get('soldierLegacyNote').hidden,true,'no legacy equipment, no note');
   assert.equal(nodes.get('soldierCollectionEmpty').hidden,false,'an empty collection says so');
   assert.equal(nodes.get('soldierCollectionList').children.length,0);
   // The XP rail: level progress towards the next level, like the dossier.
@@ -51,35 +60,70 @@ test('the dossier renders identity, XP progress and the combat profile',()=>{
   assert.match(nodes.get('soldierXpText').textContent,new RegExp(`^${progress.current} / ${progress.required} XP$`));
 });
 
-test('owned equipment fills the collection and marks the equipped piece',()=>{
+test('owned equipment fills the collection and the legacy note names the old piece',()=>{
   const {screen,nodes}=fixture({...PROFILE,armory:{scrap:0,owned:0b11,equipped:1}});
   screen.open();
   const items=soldierProfile({...PROFILE,armory:{scrap:0,owned:0b11,equipped:1}}).inventory.filter(i=>i.owned);
   assert.equal(nodes.get('soldierCollectionList').children.length,items.length,'one row per owned piece');
   assert.equal(nodes.get('soldierCollectionEmpty').hidden,true);
-  const equipped=nodes.get('soldierCollectionList').children.find(row=>row.classList===undefined?false:false)||null;
-  assert.ok(nodes.get('soldierEquipped').textContent!=='No equipment','the equipped piece is named');
+  assert.equal(nodes.get('soldierLegacyNote').hidden,false,'the legacy slot is explained');
+  assert.match(nodes.get('soldierLegacyNote').textContent,/Field Scope/,'the equipped legacy piece is named');
 });
 
-test('the reworked markup: identity rail with portrait and XP, panels on the right',()=>{
+test('the loadout slots equip through the workshop service',async()=>{
+  const profile={...PROFILE,workshop:WORKSHOP()};
+  const calls=[];
+  const {screen,nodes,profile:current}=fixture(profile,{
+    workshopService:{command:async command=>{calls.push(command);
+      return {status:'saved',profile:{...profile,workshop:WORKSHOP({equipped:{weapon:'standard',gear:'boots',gadget:'none'}})}};}},
+    onProfile:()=>{},
+  });
+  screen.open();
+  assert.equal(nodes.get('soldierSlotGearName').textContent,'Empty slot');
+  // Open the gear picker: it lists the owned boots.
+  nodes.get('soldierSlotGear').onclick();
+  assert.equal(nodes.get('soldierSlotPicker').hidden,false,'the slot picker opens');
+  assert.equal(nodes.get('soldierSlotGear').attrs['aria-expanded'],'true','the open slot reports itself');
+  const picker=nodes.get('soldierSlotPicker');
+  assert.match(picker.children[0].textContent,/GEAR/,'the picker names the slot');
+  const row=picker.children[1],equipButton=row.children[1];
+  assert.equal(row.children[0].textContent,'Field Boots','the owned piece is listed by name');
+  assert.match(equipButton.textContent,/^EQUIP$/,'not equipped yet');
+  equipButton.onclick();
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.deepEqual(calls,[{type:'equip',slot:'gear',item:'boots'}],'the change goes through the service, never a local write');
+  screen.refresh();
+  assert.equal(nodes.get('soldierSlotGearName').textContent,'Field Boots','the doll shows what she wears now');
+  assert.equal(nodes.get('soldierInventoryCount').textContent,'1 pieces owned');
+});
+
+test('the reworked markup: slim identity rail, paper doll with three slot cards',()=>{
   const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
-  const rail=html.indexOf('soldier-id-visual'),name=html.indexOf('id="soldierNameDisplay"'),rank=html.indexOf('id="soldierRank"'),bar=html.indexOf('id="soldierXpBar"'),panels=html.indexOf('soldier-main');
-  assert.ok(rail>=0&&name>rail&&bar>rail,'portrait, name and XP bar live in the identity rail');
+  const rail=html.indexOf('class="soldier-id"'),name=html.indexOf('id="soldierNameDisplay"'),rank=html.indexOf('id="soldierRank"'),bar=html.indexOf('id="soldierXpBar"'),panels=html.indexOf('soldier-main');
+  assert.ok(rail>=0&&name>rail&&bar>rail,'name and XP bar live in the identity rail');
   assert.ok(name<rank&&rank<bar,'the rank line sits between name and XP bar');
-  assert.ok(!html.includes('soldierDogTag'),'the dog tag is gone from the rail');
   assert.ok(panels>rail,'the three panels sit beside the rail');
-  assert.ok(html.includes('id="soldierXpText"'),'the XP numbers are labelled');
-  assert.ok(html.includes('id="soldierRankName"'),'the rank name is written out in the rail');
+  const doll=html.indexOf('id="soldierDoll"');
+  assert.ok(doll>panels,'the paper doll sits inside the panels');
+  assert.ok(html.indexOf('id="soldierPortrait"')>doll,'the portrait stands in the doll');
+  for(const slot of ['Gear','Weapon','Gadget']){
+    assert.ok(html.indexOf(`id="soldierSlot${slot}"`)>doll,`the ${slot} slot card exists`);
+    assert.ok(html.includes(`id="soldierSlot${slot}Name"`),`the ${slot} card names its piece`);
+  }
+  assert.ok(html.includes('id="soldierSlotPicker"'),'the inline picker exists');
+  assert.ok(html.includes('id="soldierLegacyNote"'),'the legacy note exists');
   // The contract the browser smoke test pins stays intact.
-  for(const id of ['soldierDialog','soldierScreenTitle','soldierNameDisplay','soldierDamage','soldierEquipped','soldierCollectionEmpty','soldierCollectionList','soldierArmory','soldierClose','soldierLevelDisplay','soldierAbility','soldierRange','soldierMovement','soldierCooldown','soldierEquippedEffect','soldierInventoryCount','soldierSkills','soldierCollectionTitle','soldierPortrait'])
+  for(const id of ['soldierDialog','soldierScreenTitle','soldierNameDisplay','soldierDamage','soldierCollectionEmpty','soldierCollectionList','soldierArmory','soldierClose','soldierLevelDisplay','soldierAbility','soldierRange','soldierMovement','soldierCooldown','soldierInventoryCount','soldierSkills','soldierCollectionTitle','soldierPortrait'])
     assert.ok(html.includes(`id="${id}"`),'kept id: '+id);
+  assert.ok(!html.includes('soldierEquipped'),'the one-slot line is gone with the rework');
 });
 
-test('the reworked dossier styling: rail layout, phone showcase, no hero photo',()=>{
+test('the reworked dossier styling: rail layout, phone doll, no hero photo',()=>{
   const css=readFileSync(new URL('../soldier-screen.css',import.meta.url),'utf8');
   assert.match(css,/\.soldier-body\{[^}]*grid-template-columns:264px/,'a dedicated identity rail');
   assert.doesNotMatch(css,/soldier-workbench\.jpg/,'the hero photo is gone - the soldier is the photo now (reported: complete rework)');
+  assert.match(css,/\.soldier-doll\{[^}]*grid-template-areas/,'the paper doll positions figure and slots');
   const phone=css.slice(css.indexOf('@media(max-width:640px)'));
   assert.match(phone,/\.soldier-body\{[^}]*grid-template-columns:1fr/,'phone: single column');
-  assert.match(phone,/\.soldier-id-visual\{[^}]*display:flex/,'phone: the rail becomes a showcase row');
+  assert.match(phone,/\.soldier-doll\{[^}]*grid-template-areas:"figure"/,'phone: the doll stacks under the figure');
 });

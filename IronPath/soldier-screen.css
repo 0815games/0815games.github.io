@@ -3,8 +3,9 @@
  * heavy workbench photo on top.
  * The rework follows the game's iron-plate language instead:
  *
- *   * one identity rail on the left - layered portrait, name, level and an
- *     XP progress bar to the next level;
+ *   * one identity rail on the left - name, level and an XP progress bar;
+ *     the portrait moved into the loadout, where the soldier stands between
+ *     her three equipment slots (the RPG-style paper doll);
  *   * three numbered panels on the right - equipment, combat profile,
  *     collection - each with its own border, no nested boxes-in-boxes;
  *   * a slim header bar instead of the hero photo: the soldier IS the photo
@@ -22,8 +23,6 @@
 .soldier-body{display:grid;grid-template-columns:264px minmax(0,1fr);gap:14px;padding:16px}
 /* The identity rail: everything that says WHO the soldier is, in one place. */
 .soldier-id{display:grid;gap:9px;align-content:start;background:#20382b;border:1px solid #61775b;padding:14px;min-width:0}
-.soldier-id-visual{display:grid;justify-items:center;gap:12px}
-.soldier-id-visual img{width:100%;max-width:190px;aspect-ratio:1;object-fit:cover;border:1px solid #a7ad80;border-radius:4px;background:#10231c}
 .soldier-id h3{font:700 1.3rem Georgia,serif;margin:2px 0 0;color:#fbf0d5;overflow-wrap:anywhere}
 .soldier-id #soldierLevelDisplay{margin:0;color:#d4c181;font-size:.78rem;letter-spacing:.08em}
 .soldier-xp{display:grid;gap:4px;margin-top:2px}
@@ -44,7 +43,7 @@
 .soldier-equipment strong{display:block;color:#fff1ce;margin:4px 0}
 .soldier-equipment p{font-size:.75rem;line-height:1.45;color:#ccd7c1;margin:0}
 .soldier-inventory{display:flex;justify-content:space-between;gap:8px;font-size:.75rem;line-height:1.45;color:#ccd7c1;margin:10px 0 0}
-.soldier-panel button{min-height:44px;margin:10px 0 0;background:#cdb977;color:#192d20;border-color:#dec988}
+.soldier-panel>button{min-height:44px;margin:10px 0 0;background:#cdb977;color:#192d20;border-color:#dec988}
 .soldier-stat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .soldier-stat-grid div{min-width:0;padding:10px;background:#152b21;border:1px solid #536b55}
 .soldier-stat-grid span{display:block;color:#bdcdb7;font-size:.61rem;letter-spacing:.06em;line-height:1.3}
@@ -58,11 +57,30 @@
 .soldier-collection-item strong{color:#f5e4b1;overflow-wrap:anywhere}
 .soldier-collection-item span{font-size:.6rem;color:#d7c68d;letter-spacing:.04em;text-align:right}
 .soldier-collection-item p{font-size:.75rem;line-height:1.4;color:#ccd7c1;margin:6px 0 0}
+/* Paper doll: the figure stands between her three slot cards. */
+.soldier-doll{position:relative;display:grid;grid-template-columns:minmax(92px,1fr) minmax(130px,180px) minmax(92px,1fr);grid-template-areas:"gear figure weapon" "gadget gadget gadget";gap:10px;align-items:center}
+.soldier-doll>img{grid-area:figure;justify-self:center;width:100%;max-width:180px;aspect-ratio:1;object-fit:cover;border:1px solid #a7ad80;border-radius:4px;background:#10231c}
+.soldier-slot{display:grid;gap:4px;align-content:start;min-height:96px;margin:0;padding:10px;background:#152b21;border:1px solid #536b55;color:#f3edda;text-align:left;cursor:pointer}
+.soldier-slot:hover,.soldier-slot:focus-visible{border-color:#d0b971;background:#1e3529}
+.soldier-slot[aria-expanded=true]{border-color:#d0b971;background:#2e4636}
+.soldier-slot[data-slot=gear]{grid-area:gear}
+.soldier-slot[data-slot=weapon]{grid-area:weapon}
+.soldier-slot[data-slot=gadget]{grid-area:gadget;justify-self:center;min-width:min(260px,100%)}
+.soldier-slot-label{font-size:.6rem;letter-spacing:.14em;color:#e1c683}
+.soldier-slot strong{color:#f5e4b1;overflow-wrap:anywhere}
+.soldier-slot-effect{font-size:.68rem;line-height:1.4;color:#aebfa6}
+.soldier-slot-picker{display:grid;gap:8px;margin-top:10px;padding:12px;background:#152b21;border:1px solid #61775b}
+.soldier-slot-picker h4{margin:0;font:700 .95rem Georgia,serif;color:#f0e8cf}
+.soldier-slot-picker p{margin:0;font-size:.75rem;line-height:1.45;color:#ccd7c1}
+.soldier-slot-picker button{min-height:40px;margin:0;background:#cdb977;color:#192d20;border-color:#dec988}
+.soldier-slot-picker button.is-secondary{background:#1d3229;color:#d5e0cd;border-color:#61775b}
+.soldier-slot-picker [role=status]{font-size:.72rem;color:#e1c683}
+.soldier-legacy-note{margin:10px 0 0;font-size:.72rem;line-height:1.45;color:#cbb987}
 @media(max-width:640px){
  .soldier-hero{padding:14px 16px}
  .soldier-body{grid-template-columns:1fr;padding:12px}
- /* The rail becomes a showcase row on the phone - one screen of dossier. */
- .soldier-id-visual{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap}
- .soldier-id-visual img{width:clamp(110px,38vw,150px)}
+ /* The doll stacks on the phone: figure first, then the three slots. */
+ .soldier-doll{grid-template-columns:1fr;grid-template-areas:"figure" "gear" "weapon" "gadget"}
+ .soldier-doll>img{max-width:clamp(110px,38vw,150px)}
  .soldier-collection-list{grid-template-columns:1fr}
 }

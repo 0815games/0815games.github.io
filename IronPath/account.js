@@ -309,7 +309,7 @@ const workshopService={
   isBusy:()=>workshopAccount.isBusy(),
 };
 armoryView=createWorkshopView({document,root:$('armoryWorkshop'),getProfile:viewProfile,service:workshopService,confirm:options=>confirmation.ask(options),translate:translateText,onProfile:value=>{profile=value;commandCenter?.render();soldierUI?.refresh();if(gameControl?.canEditSkills())gameControl.resetSkills();}});
-soldierUI=createSoldierScreen({document,getProfile:viewProfile,translate:translateText,getPortrait:recruitPortraitUrl,onArmory:()=>$('armoryOpen').onclick(),onSkills:()=>$('skillOpen').onclick()});$('menuSoldier').onclick=()=>soldierUI.open();
+soldierUI=createSoldierScreen({document,getProfile:viewProfile,translate:translateText,getPortrait:recruitPortraitUrl,onArmory:()=>$('armoryOpen').onclick(),onSkills:()=>$('skillOpen').onclick(),workshopService,onProfile:value=>{profile=value;commandCenter?.render();soldierUI?.refresh();if(gameControl?.canEditSkills())gameControl.resetSkills();}});$('menuSoldier').onclick=()=>soldierUI.open();
 const leaderboardUI=setupLeaderboard({document,db,auth,sdk:{ref,get,onValue,runTransaction,query,orderByChild,limitToLast}});
 const friendsUI=setupFriends({document,db,auth,sdk:{ref,get,set,remove,runTransaction,onValue,onDisconnect,query,orderByKey,startAfter,limitToFirst,serverTimestamp},getProfile:()=>profile,getHostInvite:()=>fourPanel?.hostInvite(),joinInvite:async invite=>{if(!fourPanel||fourPanel.isActive()||partyPanel.isActive())return false;const joined=await fourPanel.joinInvite(invite);if(joined){commandCenter?.showLobby();fourPanel.show();$('partyToggle').setAttribute('aria-expanded','true');}return !!joined;},promptCenter});
 let nameReserved=false;
