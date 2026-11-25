@@ -46,7 +46,7 @@ const IDS = [
   'soundEnabledToggle', 'musicEnabledToggle', 'voiceOverToggle', 'graphicsQuality',
   'screenShakeToggle', 'weatherEffectsToggle', 'combatTracersToggle',
   'autoPauseToggle', 'defaultMapZoom', 'settingsTutorialReset', 'settingsRestoreDefaults',
-  'fullscreenToggle',
+  'fullscreenToggle', 'menuPatchNotes', 'menuTutorial',
 ];
 
 test('an unreadable or partial settings blob falls back cleanly to defaults', () => {

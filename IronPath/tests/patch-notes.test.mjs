@@ -184,10 +184,12 @@ test('the dialog and its menu entry exist in the real page and are wired',()=>{
   const html=read('index.html'),account=read('account.js');
   for(const id of ['patchNotes','patchNotesClose','patchNotesBuild','patchNotesTabLive','patchNotesTabNext','patchNotesReleased','patchNotesPlanned','menuPatchNotes'])
     assert.ok(html.includes(`id="${id}"`),'page carries #'+id);
-  const utilities=html.indexOf('class="command-utilities"');
-  const button=html.indexOf('id="menuPatchNotes"');
-  const settings=html.indexOf('id="menuSettings"');
-  assert.ok(utilities>0&&button>utilities&&button<settings,'the FIELD NOTES entry sits in the utility row before SETTINGS');
+  const generalStart=html.indexOf('id="settingsPanelGeneral"');
+  const generalEnd=html.indexOf('id="settingsPanelAccount"');
+  const general=html.slice(generalStart,generalEnd);
+  const button=general.indexOf('id="menuPatchNotes"');
+  const tutorial=general.indexOf('id="menuTutorial"');
+  assert.ok(generalStart>0&&button>=0&&tutorial>=0&&button<tutorial,'the FIELD NOTES entry sits in Settings, before FIELD TUTORIAL');
   assert.match(account,new RegExp(`patch-notes\\.mjs\\?v=${CURRENT_BUILD}`),'the account imports the notes on the current cache wave');
   assert.match(account,/\$\('menuPatchNotes'\)\.onclick=[^\n]*patchNotes\.open/,'the menu button opens the notes');
   assert.match(account,/onLanguageChange\(\(\)=>patchNotes\.render\(\)\)/,'a language switch repaints the list');

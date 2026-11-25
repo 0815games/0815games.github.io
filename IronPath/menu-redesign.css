@@ -547,6 +547,9 @@ body:has(#commandCenter:not([hidden])) #guideRecall.coach-recall {
 @media (min-width: 860px) {
   #commandCenter {
     gap: 14px;
+    width: 100%;
+    max-width: 1240px;
+    margin-inline: auto;
   }
 
   #commandCenter .command-hero {
@@ -623,7 +626,7 @@ body:has(#commandCenter:not([hidden])) #guideRecall.coach-recall {
   #commandCenter .command-nav-head {
     grid-column: 2;
     grid-row: 1;
-    align-self: end;
+    align-self: start;
     margin-bottom: 12px;
   }
 

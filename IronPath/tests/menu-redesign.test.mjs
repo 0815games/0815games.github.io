@@ -49,13 +49,20 @@ test('every artwork asset referenced by menu-redesign.css exists cleanly', () =>
   }
 });
 
-test('Settings owns Account password-change and Danger Zone; Command utilities hold 4 actions', () => {
+test('Settings owns Account password-change and Danger Zone; Command utilities hold 2 actions', () => {
   const html = read('index.html');
   const utilitiesStart = html.indexOf('class="command-utilities"');
   const utilitiesEnd = html.indexOf('</div>', utilitiesStart);
   const utilities = html.slice(utilitiesStart, utilitiesEnd);
   const utilityButtons = [...utilities.matchAll(/id="([^"]+)"/g)].map(m => m[1]);
-  assert.deepEqual(utilityButtons, ['menuPatchNotes', 'menuSettings', 'menuTutorial', 'menuLogout']);
+  assert.deepEqual(utilityButtons, ['menuSettings', 'menuLogout'], 'Field Notes and Field Tutorial moved into Settings');
+  // The moved entries keep their IDs in the General panel, so every handler,
+  // tour inspect, and feature gate keeps working from its new home.
+  const generalStart = html.indexOf('id="settingsPanelGeneral"');
+  const generalEnd = html.indexOf('id="settingsPanelAccount"');
+  const general = html.slice(generalStart, generalEnd);
+  assert.ok(general.includes('id="menuPatchNotes"'), 'FIELD NOTES sits in Settings');
+  assert.ok(general.includes('id="menuTutorial"'), 'FIELD TUTORIAL sits in Settings');
 
   const accountPanelStart = html.indexOf('id="settingsPanelAccount"');
   const accountPanelEnd = html.indexOf('</dialog>', accountPanelStart);

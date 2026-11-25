@@ -6,6 +6,9 @@
 export const germanSettings = Object.freeze({
   // Dialog chrome, sections, and controls.
   'SETTINGS': 'EINSTELLUNGEN',
+  'FIELD & HELP': 'FELD & HILFE',
+  'Field Notes': 'Feldnotizen',
+  'Field Tutorial': 'Feld-Tutorial',
   'Settings': 'Einstellungen',
   'Close settings': 'Einstellungen schließen',
   'Settings sections': 'Bereiche der Einstellungen',
