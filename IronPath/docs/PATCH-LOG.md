@@ -57,22 +57,6 @@ jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderl
 
 
 
-## IPL-0116 – Sicherheit: Zuwachs-Deckel pro Schreibung in den Fortschritts-Regeln (Publish-Datei, Betreiber veröffentlicht)
-- **Zeit / Quelle:** 2026-11-23 UTC; Betreiber: „Dann nimm den mündlichen Teil raus aus deiner Prüfung und danach weiter." Der menschliche Balance-Eindruck ist damit aus der offenen Liste gestrichen (Block E gilt als abgeschlossen); danach Punkt 2 der Reihenfolge in `docs/AUSBAU-PLAN.md`.
-- **Block / Ziel:** Sicherheit. Die Live-Regeln begrenzten Fortschritt nur über Monotonie und Obergrenze: Ein manipulierter Client konnte XP (→10.000.000), Bestenlisten-Welle (→10.000), Endlos-Zähler und Scrap in einer einzigen Schreibung ans Limit setzen.
-- **Branch / Basis:** `arena/e1cf6356-0815games-github-io` ab `23225689dd9077fb9332248530bf739d5a8e8f43` (`main`, Merge PR `#377`).
-- **Änderungen / Dateien:**
-  - `IronPath/docs/AUSBAU-PLAN.md` / `PATCH-BLOECKE.md`: Menschlicher Balance-Teil aus den offenen Punkten entfernt (Betreiber-Entscheid; bleibt sein Eindruck im Spiel, kein Prüfposten). Block E damit abgeschlossen bis auf Emulator-Transportfälle.
-  - `IronPath/firebase/progression-delta-candidate.mjs` (neu): `applyProgressionDeltaCaps` verschärft exakt sieben `.validate`-Zeilen und bricht bei jeder Abweichung vom geprüften Ausgangstext ab (Drift-Schutz). Deckel: XP +5.000 (ehrlich max. 1.020/Welle), `storyProgress` +1, `endlessRuns` +1, `endlessWaves` +1.000, `endlessBosses` +200, Scrap-Zuwachs +1.000 (Ausgeben frei), Bestenlisten-Welle +500 (Erstwert ≤ 500).
-  - `IronPath/firebase/PROGRESSION-DELTA-CAPS-TO-PUBLISH.json` (neu): aus dem aktuellen Live-Stand (`ENDLESS-LAST-RUN-TO-PUBLISH.json`) generiert; Python-Diff beweist exakt 7 geänderte Blätter, keine neuen/entfernten Schlüssel. `WORKSHOP-RULES-TO-PUBLISH.json` unberührt.
-  - `IronPath/firebase/PROGRESSION-DELTA-ROLLOUT.md` (neu): Publish-Anleitung mit Deckel-Tabelle und Rückfallweg.
-  - `IronPath/tests/progression-delta-rules.test.mjs` (neu, 3 Tests): Publish-Datei = Basis + Kandidat (reproduzierbar), Deckel über ehrlichem Spiel und unter dem Ein-Schreibungs-Sprung, Drift-Abbruch.
-  - `IronPath/firebase/rules-test/progression-delta-rules.test.mjs` (neu) + `firebase-delta.emulator.json` + npm-Skript `test:delta-caps` + CI-Schritt in `.github/workflows/ironpath-firebase-rules.yml`: Emulator-Beweis gegen die exakte Publish-Datei (ehrliche Schreibungen durch, Sprünge abgelehnt, Scrap-Ausgeben frei).
-  - Log-Rotation `IPL-0096` ins Archiv (Haupt `IPL-0097…IPL-0116`, Archiv bis `IPL-0096`).
-- **Prüfungen:** Pin-Test 3/3; `rules-publish-dry-run.mjs` gegen den Live-Stand mit Kandidat: 0 Blocker, exakt 7 Prüfpunkte (die sieben beabsichtigten Zeilen). Emulator-Beweis läuft in der CI (`database-rules`), lokal kein Java/Emulator. `patch.mjs check --fast`: 0 Fehler. Gesamtsuite 1310 Tests, 1309 bestanden + 1 bekannter Flachklon-Skip (`release-pages-site` nach Unshallow gezielt 6/6) – effektiv 1310/1310.
-- **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet`. Commit, Push, PR, CI und Merge werden nach tatsächlichem Ereignis nachgetragen. **Die Regeln selbst veröffentlicht der Betreiber** (Datei + Anleitung oben); erst seine Meldung macht den Schutz live.
-- **Offen / nächster Schritt:** Betreiber-Publish der Delta-Datei. Danach Punkt 3: Sektor-Modifikatoren für Endlos-Identität.
-
 ## IPL-0117 – Sektor-Modifikatoren: Panzerkolonne, Luftherrschaft, Eisensturm (Welle `20261123-sector1`, PR `#379`)
 - **Zeit / Quelle:** 2026-11-23 UTC; Betreiber: „Regeln published, weiter geht's" – die Zuwachs-Deckel aus `IPL-0116` sind damit live (in `AUSBAU-PLAN.md` abgehakt), danach Punkt 3 der Reihenfolge.
 - **Block / Ziel:** Endlos-Identität. Rückzugs-Sektoren unterschieden sich bisher nur über Kartengröße und Zahlen-Skalierung (+12 % Leben/+5 % Tempo je Stufe); jetzt hat jede Stufe einen erkennbaren Gegner-Schwerpunkt, auf den man sich beim Wiederaufbau einstellt.
@@ -328,4 +312,20 @@ Nur Darstellung, kein Sim-State, kein Wire-Format, statisch im Terrain-Cache (Re
 **Prüfungen:** Suite **1364 pass / 1365, 0 fail**; `schnelltor` ohne Fehler; Smoke-Fix nach zwei CI-Läufen grün (die Utility-Count- und Sichtbarkeits-Verträge mussten der beauftragten Bewegung folgen).
 
 **Git / PR / Release:** Commits auf dem genannten Branch (index.html, menu-redesign.css, command-center.mjs, localization-settings-de, Tests, Browser-Smoke), Push, PR `#469`; zweiter Commit: Doku (dieser Eintrag, Archiv-Schiebung `IPL-0115`, AUSBAU-Zeile 20, Feldnotizen `aim13` mit `pr: 469`) und Cache-Welle `20261125-aim13` (`bump ... --from 20261125-aim12 --apply`). CI, Merge und Pages werden als Ereignis nachgetragen.
+
+## IPL-0136 – Character Hub: Paper-Doll mit drei Slot-Karten im Dossier (Welle `20261125-aim14`, PR `#479`)
+
+**Auftrag (Betreiber-Entscheidungen per Rückfrage):** Dossier ausbauen (nicht neuer Screen) · Darstellung „Figur + Slot-Karten drumherum" · Reihenfolge **Hub → Fund → Optik** · Fund-System als Wellen-Belohnung mit Item-Chance (kommt in Welle B).
+
+**Änderungen:**
+- **Panel01 „Current equipment (ONE SLOT)" → „FIELD LOADOUT (3 SLOTS)":** das Porträt steht als Figur in der Mitte der Paper-Doll, GEAR links, WEAPON rechts, GADGET unten – jede Slot-Karte nennt das getragene Stück und seinen Effekt (Workshop-Catalog/Preistrophy/Legacy-ITEMS). Identitäts-Rail behält Name/Rang/XP/Skill, nur das Porträt wandert in die Doll.
+- **Inline-Picker:** Klick/Enter auf eine Karte öffnet die owned-Liste des Slots mit EQUIP/UNEQUIP; jede Änderung läuft über den bestehenden Workshop-Service (`workshopService.command({type:'equip'})` → `onProfile`), Statuszeile wie im Armory (Saving…/Saved/locked). Ohne vorbereitetes Workshop zeigt der Picker den Armory-Hinweis.
+- **Legacy-Note:** das alte One-Slot-Stück wird benannt („still counts in your combat profile"); Collection-Panel03 unverändert.
+- **`slotOf`** exportiert aus `workshop/workshop-model.mjs`; neue DE-Strings für alle Oberflächenliterale (translation-coverage grün).
+
+**Verträge:** `soldier-screen.test` neu (5 Tests inkl. Equip-Flow mit Fake-Service und Wire-String-Fixture `encodeWorkshop`); Browser-Smoke `command-center.cjs` liest `#soldierSlotWeaponName`/`#soldierSlotGearName` statt `#soldierEquipped`; ID-Liste im Markup-Test um Doll-/Slot-/Picker-IDs aktualisiert; CSS-Test pinnt den Doll-Stack im Phone-Layout.
+
+**Prüfungen:** Suite **1365 pass / 1366, 0 fail**; `schnelltor` ohne Fehler; alle 11 IronPath-Checks grün (der externe `Vercel – pipboy3003`-Check failt unabhängig).
+
+**Git / PR / Release:** Commits auf dem genannten Branch (index.html, soldier-screen.css, soldier-screen.mjs, account.js, workshop-model, localization-de, Tests, Smoke), Push, PR `#479`; zweiter Commit: Doku (dieser Eintrag, Archiv-Schiebung `IPL-0116`, AUSBAU-Zeile 21, Feldnotizen `aim14` mit `pr: 479`) und Cache-Welle `20261125-aim14` (`bump ... --from 20261125-aim13 --apply`). CI, Merge und Pages werden als Ereignis nachgetragen.
 

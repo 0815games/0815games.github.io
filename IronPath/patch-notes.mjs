@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see docs/PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261125-aim13';
+import {getLanguage} from './language.mjs?v=20261125-aim14';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,18 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'aim14',build:'20261125-aim14',pr:479,
+    title:{en:'Between the Slots · The Soldier Stands in Her Own Loadout',de:'Zwischen den Slots · Der Soldat steht in seiner eigenen Ausrüstung'},
+    shipped:[
+      {en:'The dossier is a character hub now: your soldier stands between three equipment cards - gear on the left, weapon on the right, gadget below - and every card names what she wears. Tap a card to change the piece right there; the workshop service saves it like the armory does.',de:'Das Dossier ist jetzt ein Charakter-Hub: Dein Soldat steht zwischen drei Ausrüstungskarten - Ausrüstung links, Waffe rechts, Gerät darunter - und jede Karte nennt, was sie trägt. Tippe auf eine Karte, um das Stück direkt zu wechseln; der Werkstatt-Service speichert es wie in der Waffenkammer.'},
+      {en:'The old one-slot line became a small note: existing equipment still counts in your combat profile, and the collection keeps every piece you own.',de:'Die alte Ein-Slot-Zeile wurde zu einem kleinen Hinweis: Bestehende Ausrüstung zählt weiter im Kampfprofil, und die Sammlung behält jedes Stück, das du besitzt.'},
+      {en:'Raised the cache wave to 20261125-aim14, because the dossier changed shape: no device should fight with yesterdays eyes.',de:'Die Cache-Welle auf 20261125-aim14 erhöht, weil sich das Dossier geformt hat: Kein Gerät soll mit den Augen von gestern kämpfen.'},
+    ],
+    open:[
+      {en:'Wave B is the find system - an item chance at the end of each wave, reported as FOUND - and wave C reworks the armory optics. The skill menu optics come after that.',de:'Welle B ist das Fundsystem - eine Item-Chance am Wellenende, gemeldet als FOUND - und Welle C ordnet die Waffenkammer optisch neu. Die Optik des Fähigkeitenmenüs kommt danach.'},
+    ]
+  },
   {
     id:'aim13',build:'20261125-aim13',pr:469,
     title:{en:'A Tighter Desk · The Headquarters Stops Stretching',de:'Ein engerer Tisch · Das Hauptquartier zieht sich nicht mehr auseinander'},
