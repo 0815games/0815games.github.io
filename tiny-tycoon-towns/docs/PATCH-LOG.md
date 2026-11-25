@@ -1030,3 +1030,24 @@ Ereignis ergänzt.
   - Gestalten der fünf Stufen (Schritt 3) fehlen.
   - Die Frage „Betrieb ohne Arbeiter: normal oder null?“ ist offen. Aktuell gilt normal + Bonus bei voller Besetzung.
   - Keine Welle, keine Veröffentlichung, keine Firebase-Regeländerung.
+
+### TTT-0061 – Siedlungen: fünf sichtbare Stufen (lokal, nicht veröffentlicht)
+
+- Auftrag des Nutzers: „jedes Mal einen sichtbaren Unterschied“ bei Upgrades, fünf Stufen.
+- Vorher: Das Wohnhaus hatte keine Zeichnung. `drawBuilding` kehrte dann sofort zurück, Häuser blieben unsichtbar.
+  Upgrades wuchsen nur um etwa 1,2 % je Stufe.
+- Neu:
+  - `src/world/art.js`: Zeichnung für das Wohnhaus (`house`). Stufenteile über `stageDecor`:
+    2 Fahne · 3 Zaun mit Büschen · 4 Schornstein und Laternen · 5 goldene Kante und Funkeln.
+  - `src/world/scene.js`: berechnet die Stufe aus `economy.settlements.stages` und übergibt sie an `drawBuilding`.
+    Die Schwellen (Stadtlevel 1, 6, 12, 20, 28) stammen aus den Daten, nicht aus dem Zeichencode.
+  - `tests/world-stages.test.mjs`: 4 Tests mit einem Protokoll-Kontext. Jede Stufe erzeugt mehr Zeichenbefehle als die
+    vorige, und Stufe 5 unterscheidet sich von Stufe 1. Probe: Stufe 5 wirkungslos gemacht, Test wird rot.
+- Tests: `npm test` 170/170 grün. `npm run check` ohne Fehler.
+- Grenzen / offen:
+  - Nicht im Browser angesehen. Die Testumgebung mit Browser ist in der Sandbox nicht mehr vorhanden. Die Stufen sind
+    durch Befehlszählung belegt, nicht durch Blick auf das Bild. Bitte am Gerät prüfen, ob Fahne und Zaun
+    bei jedem Gebäude passen. Bei hohen Gebäuden (Mine, Turm) kann etwas verdeckt sein.
+  - Die Stufenteile sind bei allen Gebäuden gleich (Fahne, Zaun, Schornstein, Gold). Gebäudespezifische Gestalten
+    pro Stufe sind nicht umgesetzt.
+  - Keine Welle, keine Veröffentlichung, keine Firebase-Regeländerung.

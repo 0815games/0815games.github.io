@@ -636,9 +636,78 @@ function pearlHut(ctx, c, t, env) {
   ctx.fill();
 }
 
+/** Wohnhaus: kleines Haus mit Walmdach, zwei Fenster, Tür. */
+function house(ctx, c, t, env) {
+  box(ctx, c, -0.3, 0.3, -0.26, 0.26, 0, 26, '#f4e1c1', '#dcc096', '#ead2a8');
+  hipRoof(ctx, c, -0.3, 0.3, -0.26, 0.26, 26, 13, '#9b5a3c', '#7a4330');
+  winRight(ctx, c, 0.3, -0.16, -0.06, 8, 18, env.night);
+  winLeft(ctx, c, 0.26, -0.16, -0.04, 8, 18, env.night);
+  fillPoly(ctx, [P(c, 0.3, 0.06, 0), P(c, 0.3, 0.14, 0), P(c, 0.3, 0.14, 12), P(c, 0.3, 0.06, 12)], '#6b4a2b');
+  void t;
+}
+
 const DRAW = {
-  townHall, farm, sawmill, quarry, warehouse, apiary, fishery, marketSquare, saltworks, mine, pearlHut,
+  townHall, house, farm, sawmill, quarry, warehouse, apiary, fishery, marketSquare, saltworks, mine, pearlHut,
 };
+
+/**
+ * Sichtbare Stufen (1 bis 5). Jede Stufe fügt Teile hinzu, damit jedes Upgrade sichtbar ist:
+ * 2 Fahne · 3 Zaun und Büsche · 4 Schornstein und Laternen · 5 goldene Kante und Funkeln.
+ */
+function stageDecor(ctx, c, stage, t, env) {
+  if (stage >= 2) {
+    const top = P(c, -0.36, -0.36, 44);
+    fillPoly(ctx, [P(c, -0.36, -0.36, 0), P(c, -0.34, -0.36, 0), P(c, -0.34, -0.36, 46), P(c, -0.36, -0.36, 46)], '#5b4636');
+    fillPoly(ctx, [top, P(c, -0.12, -0.36, 40), P(c, -0.36, -0.36, 36)], '#d9534f');
+  }
+  if (stage >= 3) {
+    for (let u = -0.36; u <= 0.36; u += 0.12) {
+      fillPoly(ctx, [P(c, u, 0.42, 0), P(c, u + 0.025, 0.42, 0), P(c, u + 0.025, 0.42, 9), P(c, u, 0.42, 9)], '#f5f1e6');
+    }
+    ctx.strokeStyle = '#f5f1e6';
+    ctx.lineWidth = 1.6;
+    const a = P(c, -0.38, 0.42, 6);
+    const b = P(c, 0.38, 0.42, 6);
+    ctx.beginPath();
+    ctx.moveTo(a.x, a.y);
+    ctx.lineTo(b.x, b.y);
+    ctx.stroke();
+    for (const u of [-0.44, 0.44]) {
+      const g = P(c, u, 0.32, 5);
+      ctx.fillStyle = '#5f9e4d';
+      ctx.beginPath();
+      ctx.arc(g.x, g.y, 4.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  if (stage >= 4) {
+    box(ctx, c, 0.16, 0.24, -0.1, -0.02, 28, 50, '#8a5a44', '#6d4632', '#7c4f3b');
+    const glow = env.night > 0.3 ? '#ffe08a' : '#ffd76a';
+    for (const v of [-0.3, 0.3]) {
+      const l = P(c, 0.36, v, 10);
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.arc(l.x, l.y, 2.6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  if (stage >= 5) {
+    ctx.strokeStyle = '#e8b530';
+    ctx.lineWidth = 2;
+    const pts = [P(c, -0.4, -0.4, 1), P(c, 0.4, -0.4, 1), P(c, 0.4, 0.4, 1), P(c, -0.4, 0.4, 1)];
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, pts[0].y);
+    for (const q of pts.slice(1)) ctx.lineTo(q.x, q.y);
+    ctx.closePath();
+    ctx.stroke();
+    const sp = P(c, 0, 0, 60);
+    const r = 3 + 1.5 * Math.sin(t * 3);
+    ctx.fillStyle = '#ffd23a';
+    ctx.beginPath();
+    ctx.arc(sp.x, sp.y, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
 
 /** Gebäude auf seiner Kachel, mit Stufe (wächst leicht) und Nachtlicht. env: { night, day }. */
 export function drawBuilding(ctx, id, x, y, level, t, env) {
@@ -654,6 +723,7 @@ export function drawBuilding(ctx, id, x, y, level, t, env) {
   }
   glow(ctx, c, env.night, 70);
   draw(ctx, c, t, env);
+  stageDecor(ctx, c, env.stage ?? 1, t, env);
   ctx.restore();
   // Stufenpunkte am vorderen Kachelrand
   if (id !== 'townHall') {
