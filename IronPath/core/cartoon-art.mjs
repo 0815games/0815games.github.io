@@ -1,11 +1,11 @@
-import {translateText as tr,getLanguage} from '../language.mjs?v=20261124-aim9';
+import {translateText as tr,getLanguage} from '../language.mjs?v=20261124-aim10';
 import {towerDisplay} from './progression.mjs?v=20261105-prestige1';
-import {specializationRank} from './tower-specialization.mjs?v=20261124-aim9';
-import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261124-aim9';
-import {ENEMY_INTEL,SOLDIER_MAX_HP} from './combat.mjs?v=20261124-aim9';
+import {specializationRank} from './tower-specialization.mjs?v=20261124-aim10';
+import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261124-aim10';
+import {ENEMY_INTEL,SOLDIER_MAX_HP} from './combat.mjs?v=20261124-aim10';
 import {bossPhase} from './boss-mechanics.mjs?v=20261031-finale1';
 import {shotTrace,shotsToDraw} from './shot-tracers.mjs?v=20261117-shots1';
-import {buildRoadPath} from './road-geometry.mjs?v=20261124-aim9';
+import {buildRoadPath} from './road-geometry.mjs?v=20261124-aim10';
 // Drawing only: the simulation, coordinates and hit areas stay unchanged.
 const ink='#1d3028',paper='#f1e7c4';
 function line(ctx,points,color=ink,width=3){ctx.beginPath();points.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();}
@@ -420,7 +420,7 @@ function sprite(ctx,name,notify){
     // V3 art ships under the same file names as V2: without a version query a
     // returning player's browser serves the old sprite from its HTTP cache and
     // the new emblems never land. Bump this with every art re-issue.
-    image.src=`assets/${name}-sprite.png?v=20261121-towerdeco1`;
+    image.src=`assets/${name}-sprite.png?v=20261124-aim10`;
   }
   const entry=spriteImages.get(name);return entry.ready?entry.image:null;
 }
@@ -1392,6 +1392,39 @@ function paintTileMosaic(target,img,width,height,rng,doc){
     }
   }
 }
+// IPL-0132 Weg-Fahnen: checkpoint flags lining the route the enemies march.
+// Pairs of poles stand on the shoulder of every road and rail bed - the
+// bunker pennant's language (wood pole, red/cream cloth, ink outline),
+// placed by arclength: 36 px off the centreline, a pair every ~125 px,
+// inset from spawn and outset clear of the bunker. That keeps every pole
+// outside the 30 px driving surface and the +/-14.1 px unit corridor, and
+// outside the deco clearance ring (>=40), so nothing collides by rule.
+// Painted into the cached terrain layer: deterministic via roadHash, fully
+// static - reduced motion and the weather switch keep their contract
+// without reading a single piece of state.
+export function drawPathFlags(ctx,path,seed=0){
+  if(!Array.isArray(path)||path.length<2)return;
+  const road=buildRoadPath(path);
+  if(!road.length)return;
+  marksAlong(road,125,70,90,(x,y,px,py,angle,k)=>{
+    for(const side of [-1,1]){
+      const rnd=roadHash(k*3.7+side*1.7+seed*.011);
+      const h=40+rnd*7;
+      const fx=x+px*36*side,fy=y+py*36*side;
+      const L=16+rnd*5,top=-h+3;
+      const cloth=(k+(side>0?0:1))%2?'#c9553f':paper;
+      const d1=2+rnd*3,d2=1+rnd*2;
+      ctx.save();
+      ctx.translate(fx,fy);
+      oval(ctx,0,1.6,4.6,2.2,'rgba(8,12,8,.45)',null);
+      line(ctx,[[0,1],[0,-h-2]],ink,4.6);
+      line(ctx,[[0,1],[0,-h-2]],'#5c4a33',2.6);
+      oval(ctx,0,-h-3.4,2.6,2.6,'#6b563c',ink,1.1);
+      shape(ctx,[[0,top],[L,top+3+d1],[L*.72,top+10+d2],[0,top+12]],cloth,ink,1.5);
+      ctx.restore();
+    }
+  });
+}
 function drawTerrain(ctx,path,theme,{paths=[path],width=960,height=540,storyMission=null,pads=[],storyArt=null,renderScale=1,artVersion=0,deco=[],zones=[],notify=null,groundSeed=0}={}){
   const doc=ctx.canvas?.ownerDocument,img=doc?getGroundImage(doc,theme,detailRng((groundSeed^0xc2b2ae35)>>>0)()<.5?1:0):null,roadImg=doc?getRoadImage(doc,theme,notify):null;
   function paint(target){
@@ -1418,6 +1451,8 @@ function drawTerrain(ctx,path,theme,{paths=[path],width=960,height=540,storyMiss
       drawGroundDetails(target,theme,width,height,groundSeed);
     }
     for(const road of paths)drawRoad(target,road,theme,img,roadImg);thinIce(target,path,theme);bog(target,path,theme);for(const zone of zones)drawZone(target,zone);
+    // Above zones, below deco: the flags belong to the route, not the tiles.
+    paths.forEach((road,i)=>drawPathFlags(target,road,groundSeed+i*97));
     // Field dressing grows with the map (capped: it must not swallow the road
     // it was placed clear of).
     drawDeco(target,deco,theme,notify,Math.max(1,Math.min(1.45,width/1100)));
