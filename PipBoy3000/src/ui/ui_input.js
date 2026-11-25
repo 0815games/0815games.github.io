@@ -201,6 +201,10 @@ Object.assign(UI, {
 
         // Klick-Logik für Maps & Container-Exits
         document.addEventListener('click', (e) => {
+            // Ein Knopf, dessen onclick den eigenen Bereich neu gezeichnet hat
+            // (z.B. Reiterwechsel in Patch-Notizen oder Wiki), haengt beim
+            // Aufsteigen des Klicks nicht mehr im Dokument - kein "Klick daneben".
+            if (!e.target || !document.contains(e.target)) return;
             // Fenster und Blasen liegen absichtlich ausserhalb der Ansicht.
             // Ohne diese Ausnahme gilt jeder Klick darauf als "daneben" und
             // wirft den Spieler aus dem Inventar zurueck auf die Karte:
@@ -217,8 +221,11 @@ Object.assign(UI, {
             if (Game.state && !['map', 'combat', 'city', 'hacking', 'lockpicking'].includes(Game.state.view) && 
                 !Game.state.view.includes('shop') && !Game.state.view.includes('crafting') && 
                 !Game.state.view.includes('clinic') && !Game.state.view.includes('vault')) {
+                 const inUnterfenster = e.target && e.target.closest && e.target.closest(
+                     '#game-header, #main-nav, .unter-header-fenster, #ui-dialog-overlay, #manual-overlay, #patch-notes-overlay, #nav-eingabe, #bug-report-overlay, #player-list-overlay'
+                 );
                  const viewContainer = document.getElementById('view-container');
-                 if (viewContainer && !viewContainer.contains(e.target)) this.switchView('map');
+                 if (!inUnterfenster && viewContainer && !viewContainer.contains(e.target)) this.switchView('map');
             }
         });
         

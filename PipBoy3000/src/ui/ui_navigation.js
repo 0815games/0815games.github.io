@@ -432,6 +432,11 @@ window.UI = window.UI || {};
 window.UI.oeffneNavigation = function() {
     const feld = document.getElementById('nav-eingabe');
     if (!feld) return;
+    if (typeof this.schliesseMenueUndUnterfenster === 'function') {
+        this.schliesseMenueUndUnterfenster('nav-eingabe');
+    }
+    if (typeof this.haengeFensterEin === 'function') this.haengeFensterEin(feld);
+    if (typeof this._trapEigeneOverlays === 'function') this._trapEigeneOverlays();
     if (typeof Game !== 'undefined' && Game.state) Game.state.inDialog = true;
 
     const ziel = Navigation.stand();

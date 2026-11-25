@@ -164,27 +164,121 @@ const UI = {
         if(this.els.btnMenu) this.els.btnMenu.classList.remove('alert-glow-yellow');
     },
 
+    // Prueft, ob der Spielschirm aktiv ist. Nur dann gibt es oben den Header
+    // mit TP/KK/MUN, unter dem sich jedes Burger-Fenster oeffnen muss.
+    imSpielSichtbar: function() {
+        const gs = document.getElementById('game-screen');
+        const mc = document.getElementById('main-content');
+        if (!gs || !mc) return false;
+        if (gs.classList.contains('hidden')) return false;
+        if (gs.style && gs.style.display === 'none') return false;
+        return true;
+    },
+
+    // Zielcontainer fuer Fenster: im Spiel immer #main-content (unter dem
+    // Header, quasi im Kartenbereich), auf dem Login-Schirm #pipboy-case.
+    spielFensterZiel: function() {
+        if (this.imSpielSichtbar()) return document.getElementById('main-content');
+        return document.getElementById('pipboy-case') || document.body;
+    },
+
+    haengeFensterEin: function(el) {
+        if (!el) return;
+        const ziel = this.spielFensterZiel();
+        if (ziel && el.parentElement !== ziel) ziel.appendChild(el);
+    },
+
+    schliesseMenue: function() {
+        const nav = (this.els && this.els.navMenu) || document.getElementById('main-nav');
+        if (nav) {
+            nav.classList.add('hidden');
+            nav.style.display = 'none';
+        }
+    },
+
+    schliesseHandbuch: function() {
+        const manual = document.getElementById('manual-overlay');
+        if (manual) {
+            manual.classList.add('hidden');
+            manual.style.display = 'none';
+        }
+        if (typeof Game !== 'undefined' && Game.state) Game.state.inDialog = false;
+    },
+
+    schliesseBugModal: function() {
+        const bug = document.getElementById('bug-report-overlay');
+        if (bug) bug.remove();
+        if (typeof Game !== 'undefined' && Game.state) Game.state.inDialog = false;
+    },
+
+    // Schliesst offene Burger-Unterfenster, damit beim Wechsel ueber den
+    // sichtbar bleibenden Header nie zwei Fenster uebereinander stehen.
+    schliesseUnterfenster: function(ausnahmeId) {
+        if (ausnahmeId !== 'manual-overlay') {
+            const manual = document.getElementById('manual-overlay');
+            if (manual && !manual.classList.contains('hidden')) this.schliesseHandbuch();
+        }
+        if (ausnahmeId !== 'patch-notes-overlay') {
+            const patch = document.getElementById('patch-notes-overlay');
+            if (patch && !patch.classList.contains('hidden')) {
+                if (typeof this.hidePatchNotes === 'function') this.hidePatchNotes();
+                else { patch.classList.add('hidden'); patch.style.display = 'none'; }
+            }
+        }
+        if (ausnahmeId !== 'nav-eingabe') {
+            const nav = document.getElementById('nav-eingabe');
+            if (nav && (!nav.classList.contains('hidden') || nav.style.display === 'flex')) {
+                if (typeof this.schliesseNavigation === 'function') this.schliesseNavigation();
+                else { nav.classList.add('hidden'); nav.style.display = 'none'; }
+            }
+        }
+        if (ausnahmeId !== 'player-list-overlay') {
+            const pl = document.getElementById('player-list-overlay');
+            if (pl) { pl.classList.add('hidden'); pl.style.display = 'none'; }
+        }
+        if (ausnahmeId !== 'bug-report-overlay') {
+            const bug = document.getElementById('bug-report-overlay');
+            if (bug) this.schliesseBugModal();
+        }
+        if (ausnahmeId !== 'ui-dialog-overlay') {
+            const dlg = document.getElementById('ui-dialog-overlay');
+            if (dlg && dlg.style.display && dlg.style.display !== 'none') {
+                dlg.style.display = 'none';
+                dlg.innerHTML = '';
+                if (typeof Game !== 'undefined' && Game.state) Game.state.inDialog = false;
+            }
+        }
+    },
+
+    schliesseMenueUndUnterfenster: function(ausnahmeId) {
+        this.schliesseMenue();
+        this.schliesseUnterfenster(ausnahmeId);
+    },
+
     openBugModal: function(autoErrorMsg = null) {
         if(document.getElementById('bug-report-overlay')) return;
-        if(this.els.navMenu) this.els.navMenu.classList.add('hidden');
-        const title = autoErrorMsg ? "⚠️ SYSTEMFEHLER ERKANNT" : "🐞 BUG MELDEN";
+        this.schliesseMenueUndUnterfenster('bug-report-overlay');
+        if (typeof Game !== 'undefined' && Game.state) Game.state.inDialog = true;
+        if (typeof this._trapEigeneOverlays === 'function') this._trapEigeneOverlays();
+        const title = autoErrorMsg ? "SYSTEMFEHLER ERKANNT" : "BUG MELDEN";
         const subText = autoErrorMsg ? `CODE: "${autoErrorMsg}"` : "Fehler gefunden? Beschreibe ihn kurz:";
         const overlay = document.createElement('div');
         overlay.id = 'bug-report-overlay';
-        overlay.className = "fixed inset-0 z-[9999] bg-black/90 flex flex-col items-center justify-center p-4";
+        overlay.className = "unter-header-fenster";
+        overlay.onclick = (e) => { if (e.target === overlay) this.schliesseBugModal(); };
         overlay.innerHTML = `
-            <div class="bg-[#051105] border-2 border-red-600 p-6 rounded shadow-[0_0_30px_red] max-w-md w-full relative">
+            <div class="bg-[#051105] border-2 border-red-600 p-6 rounded shadow-[0_0_30px_red] max-w-md w-full max-h-full overflow-y-auto relative">
                 <h2 class="text-2xl text-red-500 font-bold mb-2 font-vt323 tracking-widest">${title}</h2>
                 <div class="text-red-300 text-sm font-mono mb-4 border-b border-red-900 pb-2">${subText}</div>
                 <label class="block text-green-500 text-sm mb-1 uppercase tracking-wider">Beschreibung</label>
                 <textarea id="bug-desc" class="w-full bg-black border border-green-700 text-green-400 p-2 font-mono text-sm h-24 focus:border-green-400 outline-none mb-4" placeholder="Was ist passiert?"></textarea>
                 <div class="flex gap-2">
-                    <button id="btn-bug-send" class="flex-1 bg-red-900/30 border border-red-500 text-red-400 py-2 font-bold hover:bg-red-500 hover:text-black transition-all uppercase">REPORT SENDEN</button>
-                    <button id="btn-bug-close" class="px-4 border border-gray-600 text-gray-500 hover:text-black transition-all uppercase">ABBRECHEN</button>
+                    <button id="btn-bug-send" class="action-button flex-1 border-red-500 text-red-400 py-2 font-bold">REPORT SENDEN</button>
+                    <button id="btn-bug-close" class="action-button px-4 border-green-800 text-green-600">ABBRECHEN</button>
                 </div>
             </div>
         `;
-        document.body.appendChild(overlay);
+        this.spielFensterZiel().appendChild(overlay);
         const textArea = document.getElementById('bug-desc');
         if(textArea) {
             textArea.focus();
@@ -193,12 +287,12 @@ const UI = {
             textArea.addEventListener('keyup', stopPropagation);
             textArea.addEventListener('keypress', stopPropagation);
         }
-        document.getElementById('btn-bug-close').onclick = () => overlay.remove();
+        document.getElementById('btn-bug-close').onclick = () => this.schliesseBugModal();
         document.getElementById('btn-bug-send').onclick = () => {
             const desc = document.getElementById('bug-desc').value;
             const errorType = autoErrorMsg || "Manuelle Meldung";
             this.saveBugReport(errorType, desc);
-            overlay.remove();
+            this.schliesseBugModal();
         };
     },
 
@@ -398,8 +492,11 @@ const UI = {
         this.els.loginStatus.className = "mt-4 text-yellow-400";
         this.els.inputPass.value = "";
         
-        if(this.els.navMenu) { this.els.navMenu.classList.add('hidden'); this.els.navMenu.style.display = 'none'; }
-        if(this.els.playerList) this.els.playerList.style.display = 'none';
+        this.schliesseMenueUndUnterfenster();
+        const tutFeld = document.getElementById('tutorial-feld');
+        if (tutFeld) tutFeld.hidden = true;
+        const tutZeiger = document.getElementById('tutorial-zeiger');
+        if (tutZeiger) tutZeiger.remove();
     },
 
     // Startet das Spiel ohne Firebase.

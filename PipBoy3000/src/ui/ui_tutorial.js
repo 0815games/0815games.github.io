@@ -328,7 +328,15 @@ if (typeof window !== 'undefined' && !window.__tutZeigerHorcher) {
 
 window.UI = window.UI || {};
 window.Tutorial = TUTORIAL;
-window.UI.starteTutorial = function () { return TUTORIAL.start(); };
+window.UI.starteTutorial = function () {
+    if (typeof UI !== 'undefined' && typeof UI.schliesseMenueUndUnterfenster === 'function') {
+        UI.schliesseMenueUndUnterfenster();
+    } else if (typeof UI !== 'undefined' && UI.els && UI.els.navMenu) {
+        UI.els.navMenu.classList.add('hidden');
+        UI.els.navMenu.style.display = 'none';
+    }
+    return TUTORIAL.start();
+};
 window.UI.tutorialVielleicht = function () { return TUTORIAL.vielleichtStarten(); };
 
 // Gerufen aus leaveDialog() (ui_render_overlays.js) - also genau dann, wenn
