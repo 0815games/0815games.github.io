@@ -261,31 +261,34 @@ window.UI = window.UI || {};
 window.UI.updateUI = null;
 
 window.UI.starteUpdatePruefung = function() {
-    if (this.updateUI) return this.updateUI;
+    if (UI.updateUI) return UI.updateUI;
     try {
-        this.updateUI = createUpdateUI({document, window});
-        if (this.updateUI) this.updateUI.start();
+        UI.updateUI = createUpdateUI({document, window});
+        if (UI.updateUI) UI.updateUI.start();
     } catch (e) {
         // Eine gescheiterte Versionspruefung darf das Spiel nicht aufhalten.
         console.warn('Update-Pruefung nicht gestartet:', e && e.message);
     }
-    return this.updateUI;
+    return UI.updateUI;
 };
 
-// Der Menuepunkt "NACH UPDATE SUCHEN". Ohne Argument startet er die Pruefung
-// von Hand; mit true meldet er auch dann etwas, wenn alles aktuell ist.
+// Manuelle Pruefung (ohne Argument: still, mit true: mit Rueckmeldung).
+// Der Menuepunkt "NACH UPDATE SUCHEN" ist entfernt - die Pruefung laeuft
+// automatisch (Start, alle 60 s, bei Rueckkehr des Tabs). Diese Funktion
+// bleibt als programmatischer Einstieg bestehen. UI. statt this., damit
+// auch ungebundene Aufrufe funktionieren.
 window.UI.pruefeVersion = function(vonHand) {
-    if (vonHand && typeof this.schliesseMenue === 'function') this.schliesseMenue();
-    const ui = this.starteUpdatePruefung();
+    if (vonHand && typeof UI.schliesseMenue === 'function') UI.schliesseMenue();
+    const ui = UI.starteUpdatePruefung();
     if (!ui) {
-        if (typeof this.toast === 'function') this.toast('Update-Prüfung nicht verfügbar', 'text-red-400');
+        if (typeof UI.toast === 'function') UI.toast('Update-Prüfung nicht verfügbar', 'text-red-400');
         return;
     }
-    if (vonHand && typeof this.toast === 'function') this.toast('Prüfe Version...', 'text-green-400');
+    if (vonHand && typeof UI.toast === 'function') UI.toast('Prüfe Version...', 'text-green-400');
     void ui.pruefen().then(veraltet => {
-        if (!vonHand || typeof this.toast !== 'function') return;
-        if (veraltet) this.toast('Neue Version gefunden - siehe Hinweis unten', 'text-yellow-400');
-        else if (!ui.zustand || ui.zustand.art === 'aktuell') this.toast('Du spielst die aktuelle Version', 'text-green-400');
-        else this.toast('Version nicht erreichbar', 'text-red-400');
+        if (!vonHand || typeof UI.toast !== 'function') return;
+        if (veraltet) UI.toast('Neue Version gefunden - siehe Hinweis unten', 'text-yellow-400');
+        else if (!ui.zustand || ui.zustand.art === 'aktuell') UI.toast('Du spielst die aktuelle Version', 'text-green-400');
+        else UI.toast('Version nicht erreichbar', 'text-red-400');
     });
 };

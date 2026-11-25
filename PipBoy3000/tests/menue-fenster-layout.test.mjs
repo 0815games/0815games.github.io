@@ -262,8 +262,8 @@ test('jedes Burger-Menue-Fenster oeffnet unter dem Header in #main-content und s
       assert.equal(istSichtbar(window, header), true, `${name}: Header ist nicht sichtbar`);
     }
 
-    // 3. TUTORIAL und NACH UPDATE SUCHEN schliessen ebenfalls das Burger-Menue
-    //    und lassen kein offenes Unterfenster darunter stehen.
+    // 3. TUTORIAL schliesst ebenfalls das Burger-Menue und laesst kein
+    //    offenes Unterfenster darunter stehen.
     window.UI.toggleMenu();
     document.getElementById('btn-tutorial-start').click();
     await pause(40);
@@ -274,11 +274,17 @@ test('jedes Burger-Menue-Fenster oeffnet unter dem Header in #main-content und s
     }
     window.Tutorial.beenden();
 
-    window.UI.toggleMenu();
-    document.getElementById('btn-update-check').click();
-    await pause(40);
-    assert.equal(istSichtbar(window, nav), false,
-      'NACH UPDATE SUCHEN: Burger-Menue blieb offen und verdeckte die Rueckmeldung');
+    // Der Menuepunkt "NACH UPDATE SUCHEN" ist entfernt (v14.0.24): die
+    // Versionspruefung laeuft automatisch (Start, 60-s-Intervall,
+    // visibilitychange/pageshow in ui_update.js) und zeigt das
+    // #update-banner-Popup von selbst.
+    assert.equal(document.getElementById('btn-update-check'), null,
+      '#btn-update-check muss entfernt sein - die Update-Pruefung laeuft automatisch');
+    assert.ok(document.getElementById('update-banner'),
+      '#update-banner (Auto-Update-Popup) fehlt im HTML');
+    assert.equal(typeof window.UI.starteUpdatePruefung, 'function',
+      'UI.starteUpdatePruefung (Auto-Pruefung) fehlt');
+    assert.ok(window.UI.updateUI, 'Die Auto-Update-Pruefung wurde nicht gestartet');
   } finally {
     await schliesse();
   }
@@ -352,6 +358,83 @@ test('auf dem Login-Schirm funktionieren Anleitung und Patch-Notizen weiterhin s
       'Auf dem Login-Schirm darf #patch-notes-overlay nicht im versteckten #game-screen haengen');
     assert.equal(istSichtbar(window, patch), true);
     assert.equal(istSichtbar(window, manual), false, 'Handbuch schloss sich beim Wechsel nicht');
+  } finally {
+    await schliesse();
+  }
+});
+
+test('ungebundener Aufruf von showPatchNotes/showManualOverlay haengt das Fenster unter den Header', async () => {
+  // Regression: showPatchNotes nutzte this.haengeFensterEin. Als
+  // ungebundene Callback-Referenz (z. B. onClick: UI.showPatchNotes) ist
+  // `this` undefined/window - das Fenster bliebe dann in #pipboy-case
+  // haengen und deckte mit z-index 1000 den Header zu.
+  const {window, document, schliesse} = await starteEchteOberflaeche({imSpiel: true});
+  try {
+    const mainContent = document.getElementById('main-content');
+    const header = document.getElementById('game-header');
+    const pause = ms => new Promise(r => setTimeout(r, ms));
+
+    const patchFn = window.UI.showPatchNotes;
+    patchFn(); // absichtlich ungebunden
+    await pause(40);
+    const patch = document.getElementById('patch-notes-overlay');
+    assert.equal(istSichtbar(window, patch), true, 'Patch-Notizen wurden nicht sichtbar');
+    assert.equal(patch.parentElement, mainContent,
+      'Ungebundener Aufruf: #patch-notes-overlay liegt nicht in #main-content (ueberdeckt den Header!)');
+    assert.equal(window.getComputedStyle(patch).zIndex, '80',
+      'Ungebundener Aufruf: #patch-notes-overlay hat z-index 1000 statt 80 - es deckt den Header zu');
+    assert.equal(istSichtbar(window, header), true, 'Header ist nicht sichtbar');
+
+    const manualFn = window.UI.showManualOverlay;
+    await manualFn(); // absichtlich ungebunden
+    await pause(60);
+    const manual = document.getElementById('manual-overlay');
+    assert.equal(istSichtbar(window, manual), true, 'Handbuch wurde nicht sichtbar');
+    assert.equal(manual.parentElement, mainContent,
+      'Ungebundener Aufruf: #manual-overlay liegt nicht in #main-content (ueberdeckt den Header!)');
+    assert.equal(window.getComputedStyle(manual).zIndex, '80',
+      'Ungebundener Aufruf: #manual-overlay hat z-index 1000 statt 80 - es deckt den Header zu');
+  } finally {
+    await schliesse();
+  }
+});
+
+test('Login -> Spiel: beim Spielstart wandern offene Fenster aus #pipboy-case zurueck unter den Header', async () => {
+  // Regression: Wer die Patch-Notizen auf dem Login-Schirm oeffnet (dort
+  // haengen sie in #pipboy-case) und dann einsteigt, sah sie nach dem
+  // Start weiter UEBER dem Header. startGame() muss sie nach #main-content
+  // zurueckholen.
+  const {window, document, schliesse} = await starteEchteOberflaeche({imSpiel: false});
+  try {
+    const pipboyCase = document.getElementById('pipboy-case');
+    const mainContent = document.getElementById('main-content');
+    const header = document.getElementById('game-header');
+    const pause = ms => new Promise(r => setTimeout(r, ms));
+
+    // Auf dem Login-Schirm Patch-Notizen oeffnen -> #pipboy-case.
+    window.UI.showPatchNotes();
+    await pause(40);
+    const patch = document.getElementById('patch-notes-overlay');
+    assert.equal(patch.parentElement, pipboyCase,
+      'Vor Login muss #patch-notes-overlay in #pipboy-case haengen');
+    assert.equal(istSichtbar(window, patch), true);
+
+    // Spielstart nachstellen (schwere Teile stubben, nur die Fenster-Logik
+    // von startGame soll laufen).
+    window.UI.showLoadingSequence = async () => {};
+    window.Game.init = () => {};
+    if (window.Network) window.Network.startPresence = () => {};
+    await window.UI.startGame(null, 0, 'TESTSPIELER');
+    await pause(40);
+
+    const gs = document.getElementById('game-screen');
+    assert.equal(gs.classList.contains('hidden'), false, '#game-screen ist nach startGame nicht sichtbar');
+    assert.equal(patch.parentElement, mainContent,
+      'Nach startGame liegt #patch-notes-overlay nicht in #main-content - es deckt den Header zu');
+    assert.equal(window.getComputedStyle(patch).zIndex, '80',
+      'Nach startGame hat #patch-notes-overlay z-index 1000 statt 80');
+    assert.equal(istSichtbar(window, header), true, 'Header ist nach startGame nicht sichtbar');
+    assert.equal(istSichtbar(window, patch), true, 'Patch-Notizen sind nach startGame nicht mehr sichtbar');
   } finally {
     await schliesse();
   }

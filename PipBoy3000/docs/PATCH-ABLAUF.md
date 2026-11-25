@@ -93,7 +93,9 @@ dokumentiert hat. Der Spieler sieht diese Einträge im Fenster
 | Balken unten | „NEUE VERSION X VERFÜGBAR" + JETZT LADEN | wenn der Server eine andere Version hat |
 | Balken unten | „NEUE VERSION BEREIT — Dialog offen" | wenn gerade etwas offen ist |
 | Balken unten | „NEUE VERSION X GELADEN" | nach dem Neuladen |
-| Spielmenü → **NACH UPDATE SUCHEN** | prüft sofort von Hand | jederzeit |
+
+Die Prüfung läuft automatisch (Start, alle 60 s, bei Rückkehr des Tabs) -
+der frühere Menüpunkt „NACH UPDATE SUCHEN" ist entfernt (v14.0.24).
 
 Das Neuladen passiert **nicht**, solange ein Dialog offen ist, ein Kampf läuft
 oder eine Speicherung aussteht (`src/ui/ui_update.js`, `updateBlockers()`).

@@ -464,6 +464,20 @@ const UI = {
 
         this.els.gameScreen.classList.remove('hidden');
         this.els.gameScreen.classList.remove('opacity-0');
+
+        // Fenster, die auf dem Login-Schirm nach #pipboy-case gehaengt
+        // wurden (dort gibt es keinen Header), gehoeren im Spiel zurueck
+        // unter den Header in #main-content. Sonst bliebe ein offenes
+        // Fenster mit z-index 1000 ueber #game-header stehen.
+        const mainContent = document.getElementById('main-content');
+        if (mainContent) {
+            for (const id of ['manual-overlay', 'patch-notes-overlay']) {
+                const fenster = document.getElementById(id);
+                if (fenster && fenster.parentElement !== mainContent) {
+                    mainContent.appendChild(fenster);
+                }
+            }
+        }
         
         const isNewGame = !saveData;
         Game.init(saveData, null, slotIndex, newName);
