@@ -188,5 +188,6 @@ test('staffing shows the assignment the panel uses, without changing the town', 
   assert.equal(s.tiles[near].building.manual[0].n, 1, 'die Zuweisung liegt im Spielstand');
   const over = setWorkerAssignment(s, { producer: near, house, n: 2 }, ctx);
   assert.equal(over.error, 'noRoom', 'mehr Bewohner als vorhanden wird abgelehnt');
-  assert.equal(staffing(built, data).byProducer[near], 0, 'vorher kein Arbeiter');
+  assert.equal(built.tiles[near].building.manual, undefined, 'vorher keine manuelle Zuweisung');
+  assert.equal(staffing(built, data).byProducer[near], 1, 'der Bewohner arbeitet automatisch im nahen Hof');
 });
