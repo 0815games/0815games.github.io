@@ -108,12 +108,38 @@ Median). Die Datei war einwandfrei.
 **Diese Klasse fängt keine Pixelmetrik.** Sie fiel nur beim Ansehen des
 Kontrollblatts auf. Deshalb ist Schritt 4 oben nicht optional.
 
+## App-Icon (eigene Quelle)
+
+Nicht zu verwechseln mit den Item-Bildern: das App-Icon fuer Startbildschirm,
+Homescreen und Browser-Tab hat ein eigenes Rohbild und ein eigenes Skript.
+
+| | |
+|---|---|
+| Rohbild | `docs/muster/app-icon.png` |
+| Aufbereitung | `node tools/app-icon.mjs` (`npm run icons:app`) |
+| Quelle | `shell/icon-192.png`, `icon-512.png`, `icon-512-maskable.png`, `apple-touch-icon.png`, `favicon.ico`, `icon.svg`, `manifest.webmanifest` |
+| Ausgeliefert | dieselben Namen im Wurzelverzeichnis (Build kopiert) |
+
+Alle Groessen entstehen aus dem einen Rohbild. Wer eine nachpflegt, hat nach
+der naechsten Aenderung zwei verschiedene Icons im Umlauf.
+
+Besonderheiten gegenueber den Item-Bildern:
+
+- **kein Rand** bei den normalen Groessen: iOS rundet selbst, ein eigener Rand
+  stuende als schwarzer Rahmen um das gerundete Icon
+- **maskable** skaliert auf 80 % und setzt auf schwarzen Grund - Android
+  beschneidet je nach Launcher Kreis oder Tropfen
+- **`favicon.ico`** schreibt das Skript selbst (PNG-Eintraege, drei Groessen);
+  `sharp` kann kein ICO
+
 ## Werkzeuge
 
 ```sh
-npm run icons:check    # nur prüfen
-npm run icons          # prüfen + aufbereiten + Tabelle schreiben
-npm test               # u. a. tests/item-bilder.test.mjs
+npm run icons:check    # Item-Rohbilder nur prüfen
+npm run icons          # Item-Bilder prüfen + aufbereiten + Tabelle schreiben
+npm run icons:app      # App-Icon in allen Groessen
+npm run assets         # alles zusammen
+npm test               # u. a. tests/item-bilder.test.mjs, tests/app-icon.test.mjs
 ```
 
 `tools/icons.mjs` schneidet auf den Inhalt zu (`trim`, Schwelle 40), legt 8 %
