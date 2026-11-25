@@ -985,3 +985,29 @@ Ereignis ergänzt.
   - Der Besetzungsfaktor (50 bis 100 %) ist eine Annahme. Sie soll mit den Spielern geprüft werden.
   - Noch nicht umgesetzt: Anbindung an Spielstand und Gebäude-Upgrades, Anzeige, Gestalten der fünf Stufen.
   - Keine Firebase-Regeländerung. Kein Vercel.
+
+### TTT-0059 – Siedlungen: Anbindung an den Spielstand (lokal, nicht veröffentlicht)
+
+- Auftrag des Nutzers: Siedlungen im Spiel. Automatische Zuweisung, manuelle Zuweisung möglich, Lohn je Arbeiter
+  und Tag, Wachstum bis zur Kapazität.
+- Neu im Spiel (lokal):
+  - Gebäude `house` (Wohnhaus) in `data/buildings.json`, ab Stadtlevel 2, auf Land, Kosten 120 Münzen und 8 Holz.
+  - Werte in `data/economy.json` unter `settlements` (Kapazität je Stufe, Wachstum 0,05 je Minute, Lohn 6 je Tag,
+    drei Arbeitsplätze, Pendelbereich 3, Besetzungsbonus +25 %).
+  - `src/domain/engine.js`: Bewohner wachsen bei jedem Zeitschritt. Die Zuweisung wird neu berechnet. Der Lohn
+    wird von den Münzen abgezogen (nicht unter 0). Produktion mit Besetzungsfaktor. Neue Aktion
+    `setWorkerAssignment` (manuelle Zuweisung, wird abgelehnt bei Entfernung oder fehlendem Platz).
+  - `src/main.js`: Detailansicht zeigt für Wohnhäuser die Bewohnerzahl (noch ohne Zuweisungs-Auswahl).
+  - Speicherung: Bewohner und manuelle Zuweisung liegen innerhalb des Kachel-Eintrags (`pop`, `progress`, `manual`).
+    Die Firebase-Regeln erlauben das ohne Änderung. `firebase/database.rules.json` ist unverändert.
+- Entscheidung, die von der vorherigen Notiz abweicht: Ein Betrieb ohne Arbeiter produziert weiter (Faktor 1). Voll
+  besetzt bringt er +25 %. Die Vorfassung (ohne Arbeiter 0) hätte alle bestehenden Städte auf null gesetzt. Ob der
+  Betrieb ohne Arbeiter wirklich nichts bringen soll, ist eine Balance-Entscheidung. Schalter: `unstaffedFactor`.
+- Tests: `tests/settlement.test.mjs` 13 Tests (Regeln und Engine). Probe: ohne Pendelbereich-Prüfung wird ein Test rot.
+  `npm test` 165/165 grün. `npm run check` ohne Fehler.
+- Keine Welle und keine Veröffentlichung in diesem Schritt. Die Bewohner-Anzeige in der Detailansicht ist nur ein Text.
+- Grenzen / offen:
+  - Keine Zuweisungs-Auswahl im Spiel (Schritt 2). Keine fünf Gestalten (Schritt 3).
+  - Lohn: Bei zu wenig Münzen bleibt die Arbeiterzahl gleich. Gehen Arbeiter bei fehlendem Lohn? Nicht umgesetzt.
+  - Die Balance-Simulation kennt Siedlungen noch nicht. Ohne sie sind Lohn, Wachstum und Bonus Schätzungen.
+  - Die Produktionsrate in der Anzeige (`ratePerMin`) berücksichtigt den Besetzungsfaktor noch nicht.

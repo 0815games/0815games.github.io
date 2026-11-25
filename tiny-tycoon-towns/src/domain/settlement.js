@@ -31,10 +31,14 @@ export function growHouse(house, dtMin, cfg) {
   return { ...house, pop, progress };
 }
 
-/** Ertragsfaktor eines Produktionsgebäudes bei n Arbeitern. Ohne Arbeiter 0, voll besetzt 1, dazwischen 50 bis 100 %. */
-export function staffFactor(n, slots) {
-  if (!(n > 0)) return 0;
-  return 0.5 + 0.5 * Math.min(n, slots) / slots;
+/**
+ * Ertragsfaktor eines Produktionsgebäudes bei n Arbeitern. Ohne Arbeiter gilt `unstaffedFactor` (Startwert 1,
+ * damit bestehende Städte unverändert produzieren). Voll besetzt kommt `staffBonus` dazu (Startwert +25 %).
+ * Die Regel ist eine Nutzerentscheidung offen: Setzt man unstaffedFactor auf 0, braucht jedes Gebäude Arbeiter.
+ */
+export function staffFactor(n, slots, cfg) {
+  const filled = Math.min(Math.max(n, 0), slots) / slots;
+  return cfg.unstaffedFactor + cfg.staffBonus * filled;
 }
 
 /** Lohn, der in `dtMin` Minuten für `workers` Arbeiter fällig wird. */

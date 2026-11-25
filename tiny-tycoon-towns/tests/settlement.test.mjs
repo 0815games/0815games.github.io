@@ -4,8 +4,10 @@ import { readFileSync } from 'node:fs';
 import {
   stageFor, houseCapacity, growHouse, staffFactor, wageDue, assignWorkers,
 } from '../src/domain/settlement.js';
+import { createTown, placeBuilding, advance, setWorkerAssignment } from '../src/domain/engine.js';
+import { isUnlocked } from '../src/domain/grid.js';
 
-const cfg = JSON.parse(readFileSync(new URL('../data/settlements.json', import.meta.url), 'utf8'));
+const cfg = JSON.parse(readFileSync(new URL('../data/economy.json', import.meta.url), 'utf8')).settlements;
 
 test('five visible stages, switched at the configured levels', () => {
   assert.equal(stageFor(1, cfg).index, 1);
@@ -40,11 +42,12 @@ test('a house above its capacity drops to the capacity', () => {
   assert.equal(growHouse({ level: 1, pop: 9 }, 5, cfg).pop, houseCapacity(1, cfg));
 });
 
-test('staffing: none 0, full 1, partly in between', () => {
-  assert.equal(staffFactor(0, 3), 0);
-  assert.equal(staffFactor(3, 3), 1);
-  assert.equal(staffFactor(5, 3), 1, 'mehr Arbeiter als Plätze bringen nichts extra');
-  assert.ok(staffFactor(1, 3) > 0.5 && staffFactor(1, 3) < 1);
+test('staffing: without workers the building runs as before, full staffing adds the bonus', () => {
+  assert.equal(staffFactor(0, 3, cfg), cfg.unstaffedFactor, 'ohne Arbeiter kein Abzug');
+  assert.equal(staffFactor(3, 3, cfg), cfg.unstaffedFactor + cfg.staffBonus, 'voll besetzt');
+  assert.equal(staffFactor(5, 3, cfg), staffFactor(3, 3, cfg), 'mehr Arbeiter als Plätze bringen nichts extra');
+  const one = staffFactor(1, 3, cfg);
+  assert.ok(one > staffFactor(0, 3, cfg) && one < staffFactor(3, 3, cfg));
 });
 
 test('wage is per worker per day, pro rata in minutes', () => {
@@ -89,4 +92,81 @@ test('manual assignment overrides the automatic one and is checked', () => {
   const far = assignWorkers(houses, [{ key: 'z', x: 9, y: 9, rate: 1 }], [{ house: 'h', producer: 'z', n: 1 }], cfg);
   assert.equal(far.byProducer.z, 0);
   assert.equal(far.rejected[0].reason, 'distance');
+});
+
+// ---- Anbindung an den Spielstand (Engine) ----
+const data = {
+  resources: JSON.parse(readFileSync(new URL('../data/resources.json', import.meta.url), 'utf8')),
+  biomes: JSON.parse(readFileSync(new URL('../data/biomes.json', import.meta.url), 'utf8')),
+  buildings: JSON.parse(readFileSync(new URL('../data/buildings.json', import.meta.url), 'utf8')),
+  economy: JSON.parse(readFileSync(new URL('../data/economy.json', import.meta.url), 'utf8')),
+  merchant: JSON.parse(readFileSync(new URL('../data/merchant.json', import.meta.url), 'utf8')),
+};
+const ctx = { data };
+const inStart = (k) => { const [x, y] = k.split(',').map(Number); return isUnlocked(x, y, 2, data); };
+const NOW = Date.UTC(2026, 10, 24, 8, 0, 0);
+
+function townWithHouse() {
+  let t = createTown({ name: 'T', biome: 'coast', seed: 7, now: NOW, data });
+  t = { ...t, townLevel: 2, coins: 100_000 };
+  // Freie Wiese für das Haus suchen, am Rand der Startfläche.
+  const spot = Object.keys(t.tiles).find((k) => inStart(k) && t.tiles[k].terrain === 'meadow' && !t.tiles[k].building && k !== '4,4');
+  const [hx, hy] = spot.split(',').map(Number);
+  const r = placeBuilding(t, { x: hx, y: hy, buildingId: 'house' }, ctx);
+  assert.equal(r.error, undefined, 'Haus lässt sich auf Stadtlevel 2 bauen');
+  return { t: r.state, house: `${hx},${hy}` };
+}
+
+test('a house is buildable from town level 2 and starts with the start population', () => {
+  const { t, house } = townWithHouse();
+  assert.equal(t.tiles[house].building.id, 'house');
+  assert.equal(t.tiles[house].building.pop, cfg.startPop);
+  const early = placeBuilding({ ...t, townLevel: 1 }, { x: 2, y: 2, buildingId: 'house' }, ctx);
+  assert.ok(early.error, 'auf Stadtlevel 1 gesperrt');
+});
+
+test('an advance grows the house population over time, capped at its capacity', () => {
+  const { t, house } = townWithHouse();
+  const a = advance(t, NOW + 60 * 60_000, ctx).state; // 60 Minuten: +3 Bewohner, Kappe 2 (Hütte)
+  assert.equal(a.tiles[house].building.pop, houseCapacity(1, cfg), 'auf Kapazität gewachsen');
+  const b = advance(a, NOW + 120 * 60_000, ctx).state;
+  assert.equal(b.tiles[house].building.pop, houseCapacity(1, cfg), 'bleibt bei der Kapazität');
+});
+
+test('the manual assignment is checked: distance and room', () => {
+  const { t, house } = townWithHouse();
+  const [hx, hy] = house.split(',').map(Number);
+  // Hof direkt am Haus (Nachbarfeld, Wiese), dann weit weg.
+  const near = Object.keys(t.tiles).find((k) => {
+    const [x, y] = k.split(',').map(Number);
+    return inStart(k) && Math.abs(x - hx) + Math.abs(y - hy) === 1 && !t.tiles[k].building && t.tiles[k].terrain === 'meadow';
+  });
+  const [nx, ny] = near.split(',').map(Number);
+  const s = placeBuilding({ ...t, stock: { ...t.stock, lumber: 500 } }, { x: nx, y: ny, buildingId: 'farm' }, ctx).state;
+  const ok = setWorkerAssignment(s, { producer: near, house, n: 1 }, ctx);
+  assert.equal(ok.error, undefined);
+  assert.equal(ok.state.tiles[near].building.manual[0].n, 1);
+  const tooMany = setWorkerAssignment(ok.state, { producer: near, house, n: 9 }, ctx);
+  assert.equal(tooMany.error, 'badAmount');
+  const hasNoHouse = setWorkerAssignment(s, { producer: near, house: '0,0', n: 1 }, ctx);
+  assert.equal(hasNoHouse.error, 'notHouse');
+});
+
+test('wages come out of the coins only for workers who are employed', () => {
+  // Ohne Verkauf (sellEnabled leer) ändern nur Löhne das Konto.
+  const { t, house } = townWithHouse();
+  const idle = advance(t, NOW + 1440 * 60_000, ctx).state;
+  assert.equal(idle.coins, t.coins, 'ohne Betrieb kein Lohn');
+
+  const [hx, hy] = house.split(',').map(Number);
+  const near = Object.keys(t.tiles).find((k) => {
+    const [x, y] = k.split(',').map(Number);
+    return inStart(k) && Math.abs(x - hx) + Math.abs(y - hy) === 1 && !t.tiles[k].building && t.tiles[k].terrain === 'meadow';
+  });
+  const [nx, ny] = near.split(',').map(Number);
+  const built = placeBuilding({ ...t, stock: { ...t.stock, lumber: 500 } }, { x: nx, y: ny, buildingId: 'farm' }, ctx).state;
+  const staffed = setWorkerAssignment(built, { producer: near, house, n: 1 }, ctx).state;
+  const before = staffed.coins;
+  const after = advance(staffed, staffed.lastTick + 1440 * 60_000, ctx).state;
+  assert.equal(Math.round(after.coins), Math.round(before - cfg.wagePerWorkerPerDay), 'ein Arbeiter kostet einen Tageslohn');
 });

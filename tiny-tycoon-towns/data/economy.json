@@ -84,5 +84,57 @@
   },
   "save": {
     "debounceSeconds": 60
+  },
+  "settlements": {
+    "unlockTownLevel": 2,
+    "startPop": 1,
+    "growthPerMin": 0.05,
+    "commuteDistance": 3,
+    "wagePerWorkerPerDay": 6,
+    "workSlots": 3,
+    "unstaffedFactor": 1,
+    "staffBonus": 0.25,
+    "stages": [
+      {
+        "name": {
+          "de": "Hütte",
+          "en": "Hut"
+        },
+        "fromLevel": 1,
+        "capacity": 2
+      },
+      {
+        "name": {
+          "de": "Haus",
+          "en": "House"
+        },
+        "fromLevel": 6,
+        "capacity": 4
+      },
+      {
+        "name": {
+          "de": "Villa",
+          "en": "Villa"
+        },
+        "fromLevel": 12,
+        "capacity": 6
+      },
+      {
+        "name": {
+          "de": "Stadthaus",
+          "en": "Townhouse"
+        },
+        "fromLevel": 20,
+        "capacity": 8
+      },
+      {
+        "name": {
+          "de": "Turm",
+          "en": "Tower"
+        },
+        "fromLevel": 28,
+        "capacity": 10
+      }
+    ]
   }
 }

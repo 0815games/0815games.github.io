@@ -32,6 +32,7 @@ import { createVersionUI } from './version-ui.mjs?v=20261125-bal7';
 import { startAfkWatch, showAfkOverlay } from './afk.js?v=20261125-bal7';
 import { fullResources, fillPercent } from './stock-dock.js?v=20261125-bal7';
 import { nextRequestToShow, requestBadgeLabel, canShowRequestPopup } from './friend-requests.js?v=20261125-bal7';
+import { houseCapacity } from './domain/settlement.js?v=20261125-bal7';
 
 const BUILD = '20261125-bal7';
 console.info(`Tiny Tycoon Towns ${BUILD}`);
@@ -1033,7 +1034,10 @@ function buildingDetails(b, x, y) {
     const f = g ? Math.round(fishStock(state, g[0], g[1])) : 0;
     html += `<p class="small">Fischbestand am Fangplatz: <strong>${f} %</strong>${f < 40 ? ' · Der Bestand sinkt. Er erholt sich langsam.' : ''}</p>`;
   }
-  if (def.resource) {
+  if (b.id === 'house') {
+    html += `<p>Bewohner: <strong>${b.pop ?? 0} / ${houseCapacity(b.level, data.economy.settlements)}</strong></p>`;
+    html += '<p class="small">Bewohner arbeiten automatisch in Gebäuden in der Nähe. Die Zuweisung folgt in einer späteren Version.</p>';
+  } else if (def.resource) {
     const rate = ratePerMin(state, x, y, data);
     html += `<p>Produktion: <strong>${fmtRate(rate)} ${esc(data.resources[def.resource].name.de)} / min</strong></p>`;
     html += `<p class="small">Faktor ${multiplierText(m)} (Biom, Stadtlevel, Gelände, Nachbarn)</p>`;

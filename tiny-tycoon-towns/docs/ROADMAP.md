@@ -51,7 +51,7 @@ Zuständig: **N** = Nutzer (Geräte, Konsole, Entscheidungen), **A** = Agent (Co
 - **[A]** Zuweisung der Bewohner zu Produktionsgebäuden: automatisch, dort wo es sinnvoll ist (nicht einfach das nächste Gebäude). Manuelle Zuweisung ist möglich.
 - **[A]** Fünf sichtbare Stufen je Gebäude-Upgrade mit eigener Gestalt. Heute wächst ein Gebäude nur um etwa 1,2 % je Stufe.
 - **[A]** Erste Version nur mit Arbeitszuweisung. Keine Bedürfnisse, keine Zufriedenheit. Das kommt später.
-- **[A]** Regeln und Tests zuerst (`src/domain`): erledigt lokal in TTT-0058 (`src/domain/settlement.js`, 9 Tests). Noch nicht im Spiel. Als Nächstes: Anbindung an den Spielstand, dann Anzeige, dann Gestalten. Danach neue Balance-Simulation.
+- **[A]** Regeln und Tests zuerst (`src/domain`): erledigt lokal in TTT-0058 (`src/domain/settlement.js`, 9 Tests). Noch nicht im Spiel. Anbindung an den Spielstand lokal in TTT-0059 (Gebäude `house`, Zuweisung, Lohn, Wachstum). Als Nächstes: Zuweisungs-Auswahl im Spiel, dann Gestalten, dann Balance-Simulation.
 
 ### Phase 3: Multiplayer (teilweise gebaut)
 
