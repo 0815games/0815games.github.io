@@ -606,3 +606,63 @@ Ereignis ergänzt.
 - Git / PR / Veröffentlichung: Commit folgt im Schritt danach. Nicht veröffentlicht.
 - Offen / nächster Schritt: Auf zwei Geräten prüfen (Nutzer). Prüfen, ob der Hinweis auf dem
   alten Gerät gewünscht ist oder ganz wegfallen soll.
+
+### TTT-0043 – „Cloud Safe fehlgeschlagen“: Regeln für Konvoi-Felder fehlten
+
+- Zeit / Quelle: Sitzung 2026-11-25 (UTC). Nutzermeldung: „Cloud Safe fehlgeschlagen, prüfe die Regeln“
+  nach der Veröffentlichung der Regeln.
+- Ursache: `saves/{uid}/town` hat `$other: false`. Die Engine schreibt seit den Konvois die Felder
+  `convoySeq` und `convoys` in den Stadtstand. Beide standen nicht in der Regel. Die Datenbank hat
+  deshalb jedes Speichern des Stadtstands abgelehnt.
+- Änderungen / Dateien:
+  - `firebase/database.rules.json`: `convoySeq` (Zahl ab 0) und `convoys/$convoyIndex` (Index
+    1 bis 6 Ziffern, `id`, `status`, `departAt`, `arriveAt`; `status` nur `travelling`, `arrived`
+    oder `settled`).
+  - `tests/rules-town-keys.test.mjs` (neu, 3 Tests): Wächter. Jedes Feld, das die Engine in den
+    Stadtstand schreibt, muss in der Regel stehen. Probe: ohne die zwei Felder schlägt der Test
+    mit „Felder ohne Regel: convoySeq, convoys“ fehl, danach wieder grün.
+- Prüfungen (lokal, Node 22.22.3):
+  - `npm test`: 124 Tests, 124 pass, 0 fail, Exit 0 (Unit).
+  - `npm run check`: Exit 0, kein Fehler.
+  - Nicht geprüft: Firebase-Emulator (nicht eingerichtet), Live-Regeln.
+- Git / PR / Veröffentlichung: Die Regeln sind in diesem Branch geändert, **nicht in Firebase
+  veröffentlicht**. Der Betreiber muss `firebase/database.rules.json` erneut veröffentlichen
+  (`docs/FIREBASE.md`, Schritte 1 bis 4). Bis dahin scheitert das Speichern weiter.
+- Offen / nächster Schritt: Betreiber veröffentlicht die Regeln. Danach Test: Stadt speichern,
+  Konvoi starten, abrechnen, Seite neu laden.
+
+### Ereignis-Nachtrag zu TTT-0043
+
+- Veröffentlichung: Die Regeln aus `firebase/database.rules.json` (Stand Commit `7f087c6`) sind
+  laut Betreiber in Firebase veröffentlicht. Bestätigung durch den Betreiber, nicht durch einen
+  Test des Agenten.
+- Offen: Test auf Live-Daten (Stadt speichern, Konvoi starten und abrechnen, neu laden). Ergebnis
+  ins Log eintragen, sobald vorhanden.
+
+### TTT-0044 – Lager-Leiste, Handel-Schalter, Freundesanfragen-Regel (Welle `20261125-lager1`)
+
+- Zeit / Quelle: Sitzung 2026-11-25 (UTC). Nutzermeldung mit Konsolenausgabe: Freundesanfrage
+  `permission_denied`, „Cloud Save fehlgeschlagen“, und Wünsche zu Handel und Lager.
+- Ursache Freundesanfragen: In `friendRequests/$to/$from` stand ein `$other` mit `.validate: false`.
+  `name` und `at` hatten keine eigene Regel und wurden deshalb abgelehnt. Behoben durch eigene
+  Regeln für `name` und `at`.
+- Änderungen / Dateien:
+  - `firebase/database.rules.json`: `name` (Text, höchstens 24 Zeichen), `at` (Zahl) unter
+    `friendRequests`.
+  - `tests/rules-town-keys.test.mjs`: Wächter für Freundesanfragen (Probe: ohne `name` schlägt er fehl).
+  - `src/stock-dock.js` (neu) und `tests/stock-dock.test.mjs` (neu, 2 Tests).
+  - `index.html`: Lager-Leiste unten links statt des einzelnen Knopfs.
+  - `src/main.js`: `renderDock`, Ausklappen (Mobile eingeklappt, Desktop offen), Tipp öffnet die Gesamtansicht.
+  - `style.css`: Leiste, roter Zustand mit „!“, Handel-Schalter.
+  - `src/patch-notes.mjs`: Stadtchronik `20261125-lager1` (DE/EN), offene Punkte.
+  - Cache-Welle `20261125-lager1` (`scripts/patch.mjs bump --apply`, nur `?v=`).
+- Prüfungen (lokal, Node 22.22.3):
+  - `npm test`: 127 Tests, 127 pass, 0 fail, Exit 0 (Unit). Der Regel-Wächter war vorher rot.
+  - `npm run check`: Exit 0, kein Fehler. Hinweis: Werkzeug liest nur `##`-Überschriften, der Eintrag ist `###`.
+  - Nicht geprüft: Browser-Darstellung (kein Browser im Agenten), Firebase-Emulator (nicht verfügbar).
+- Git / PR / Veröffentlichung: Commit folgt. Regeln **nicht** in Firebase veröffentlicht, Betreiber
+  muss `firebase/database.rules.json` erneut einspielen (Raw-Link wie gehabt).
+- Offen / nächster Schritt:
+  - Cloud-Speichern: Die Ursache ist nicht bestätigt. Benötigt wird die Fehlermeldung aus der Konsole
+    (Zeile mit „Cloud“ oder „permission_denied“, mit Pfad).
+  - Test der Leiste und des Handels auf Mobile und Desktop (Nutzer).

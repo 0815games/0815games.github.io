@@ -3,7 +3,7 @@
 // Reine Funktionen: Eingabezustand wird nicht verändert.
 import {
   convoyDurationMin, importCost, exportPayout, isValidQuantity, MAX_ACTIVE_CONVOYS,
-} from './trade.js?v=20261124-konvoi1';
+} from './trade.js?v=20261125-lager1';
 
 const clone = (o) => structuredClone(o);
 const fail = (state, error) => ({ state, events: [], error });

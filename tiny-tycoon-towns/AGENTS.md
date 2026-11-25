@@ -22,3 +22,11 @@ in [`docs/PATCH-ABLAUF.md`](docs/PATCH-ABLAUF.md).
    was geändert wurde, welche Schritte er testen soll, welches Ergebnis erwartet
    wird, offene Punkte und der tatsächliche Live-Status. Die Stadtchronik
    (`src/patch-notes.mjs`) fortschreiben. Jede Zeile braucht DE und EN.
+
+## Regel-Änderungen melden (Pflicht)
+
+Ändert ein Schritt `firebase/database.rules.json`, endet die Antwort mit einem deutlichen
+**!** und dem Raw-Link zur Datei auf dem aktuellen Arbeitszweig, zum Kopieren und Einfügen in
+die Firebase-Konsole. Form des Links:
+`https://raw.githubusercontent.com/0815games/0815games.github.io/<Zweig>/tiny-tycoon-towns/firebase/database.rules.json`
+Der Link zeigt nur auf den Stand, der auf GitHub liegt. Vorher pushen.

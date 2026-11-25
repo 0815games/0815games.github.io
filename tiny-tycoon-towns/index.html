@@ -4,16 +4,17 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#FFF6E5">
-  <meta name="ttt-build" content="20261124-konvoi1">
+  <meta name="ttt-build" content="20261125-lager1">
   <title>Tiny Tycoon Towns</title>
   <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Tiny Towns">
-  <link rel="stylesheet" href="style.css?v=20261124-konvoi1">
+  <link rel="stylesheet" href="style.css?v=20261125-lager1">
 </head>
 <body>
   <a class="skip" href="#board">Zum Spielfeld springen</a>
@@ -44,7 +45,7 @@
       <p class="auth-intro-tag">Baue deine kleine Insel-Stadt</p>
     </div>
     <div class="auth-card" id="auth-card"></div>
-    <p class="auth-foot small">Tiny Tycoon Towns · BUILD 20261124-konvoi1</p>
+    <p class="auth-foot small">Tiny Tycoon Towns · BUILD 20261125-lager1</p>
   </section>
 
   <div id="loading" class="app-shell" hidden>
@@ -76,7 +77,19 @@
     </div>
   </div>
 
-  <button type="button" id="stock-btn" class="stock-btn">🪙 Lager und Geld</button>
+  <aside id="stock-dock" class="stock-dock" aria-label="Lager und Geld">
+    <div class="dock-head">
+      <button type="button" id="stock-btn" class="dock-open" aria-label="Lager und Geld vollständig öffnen">
+        <span aria-hidden="true">🪙</span> <strong id="dock-coins">0</strong>
+        <span class="dock-title">Lager und Geld</span>
+        <span id="dock-alert" class="dock-alert" hidden aria-hidden="true">!</span>
+      </button>
+      <button type="button" id="dock-toggle" class="dock-toggle" aria-expanded="false" aria-controls="dock-body" aria-label="Lagerliste ein- oder ausklappen">▴</button>
+    </div>
+    <div id="dock-body" class="dock-body" hidden>
+      <ul id="dock-list" class="dock-list"></ul>
+    </div>
+  </aside>
 
   <main class="layout">
     <section class="board-wrap" aria-label="Spielfeld">
@@ -104,7 +117,7 @@
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <p class="build-stamp" aria-hidden="true">BUILD 20261124-konvoi1</p>
+  <p class="build-stamp" aria-hidden="true">BUILD 20261125-lager1</p>
 
   <div id="tutorial" class="tutorial" hidden></div>
 
@@ -123,6 +136,6 @@
     <p class="visit-foot small">Du siehst die Stadt nur an. Hier lässt sich nichts ändern.</p>
   </section>
 
-  <script type="module" src="src/main.js?v=20261124-konvoi1"></script>
+  <script type="module" src="src/main.js?v=20261125-lager1"></script>
 </body>
 </html>

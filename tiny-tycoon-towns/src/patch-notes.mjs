@@ -4,6 +4,28 @@
 
 export const RELEASED_PATCHES = [
   {
+    build: '20261125-lager1',
+    date: '2026-11-25',
+    items: [
+      {
+        de: 'Lager und Geld liegt unten links als Leiste. Auf dem Handy ist sie eingeklappt, der Pfeil klappt die Liste aus. Am Desktop ist sie offen und zeigt alle Ressourcen mit Bestand, Obergrenze und Zuwachs.',
+        en: 'Storage and coins sit in a bar at the bottom left. On a phone it is collapsed, the arrow expands the list. On desktop it is open and shows every resource with stock, cap and income.',
+      },
+      {
+        de: 'Ist ein Lager voll, wird die Leiste rot und zeigt ein kleines Ausrufezeichen. Ein Tipp auf die Leiste öffnet die Gesamtansicht.',
+        en: 'When a storage is full, the bar turns red and shows a small exclamation mark. Tapping the bar opens the full view.',
+      },
+      {
+        de: 'Handel: Verkaufen und Kaufen sind jetzt kleine Schalter statt großer Felder.',
+        en: 'Trade: selling and buying are now small toggles instead of large fields.',
+      },
+      {
+        de: 'Freundesanfragen: Fehler in den Datenbankregeln behoben. Dafür müssen die Regeln neu veröffentlicht werden.',
+        en: 'Friend requests: fixed an error in the database rules. The rules must be published again for this.',
+      },
+    ],
+  },
+  {
     build: '20261124-konvoi1',
     date: '2026-11-24',
     items: [
@@ -363,6 +385,10 @@ export const RELEASED_PATCHES = [
 
 // Noch nicht erledigt oder nicht belegt. Getrennt von dem, was veröffentlicht ist.
 export const OPEN_ITEMS = [
+  {
+    de: 'Cloud-Speichern schlägt noch fehl. Ursache ist nicht abschließend geklärt, die Fehlermeldung aus der Konsole fehlt noch.',
+    en: 'Cloud saving still fails. The cause is not yet confirmed, the console error is still missing.',
+  },
   {
     de: 'Die Regeln für Freibriefe mit dem neuen Kronen-Feld müssen noch im Betreiber-Bereich veröffentlicht werden. Bis dahin kann die Gutschrift nicht gespeichert werden.',
     en: 'The charter rules with the new crowns field still have to be published by the operator. Until then the credit cannot be saved.',

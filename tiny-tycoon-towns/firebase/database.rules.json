@@ -76,6 +76,14 @@
               ".validate": false
             }
           },
+          "convoySeq": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          },
+          "convoys": {
+            "$convoyIndex": {
+              ".validate": "$convoyIndex.matches(/^[0-9]{1,6}$/) && newData.hasChildren(['id','status','departAt','arriveAt']) && newData.child('id').isString() && newData.child('id').val().length <= 128 && newData.child('status').isString() && (newData.child('status').val() == 'travelling' || newData.child('status').val() == 'arrived' || newData.child('status').val() == 'settled')"
+            }
+          },
           "adminEditedAt": {
             ".validate": "newData.isNumber() && newData.val() >= 0"
           },
@@ -147,6 +155,12 @@
           ".read": "auth != null && (auth.uid === $to || auth.uid === $from)",
           ".write": "auth != null && (auth.uid === $from || (auth.uid === $to && !newData.exists()))",
           ".validate": "$from != $to && (!newData.exists() || (newData.hasChildren(['name','at']) && newData.child('name').isString() && newData.child('name').val().length <= 24 && newData.child('at').isNumber()))",
+          "name": {
+            ".validate": "newData.isString() && newData.val().length <= 24"
+          },
+          "at": {
+            ".validate": "newData.isNumber()"
+          },
           "$other": {
             ".validate": false
           }
