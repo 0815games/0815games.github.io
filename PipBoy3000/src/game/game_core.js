@@ -491,7 +491,15 @@ window.Game = {
             if(typeof UI !== 'undefined') {
                 UI.switchView('map').then(() => { 
                     if(UI.els.gameOver) UI.els.gameOver.classList.add('hidden'); 
+                    // Neuer Charakter: erst die Permadeath-Warnung. Das Tutorial
+                    // startet danach - leaveDialog() in ui_render_overlays.js
+                    // gibt es frei. Gleichzeitig waeren es zwei Fenster, und
+                    // die Warnung ist die wichtigere Information.
                     if(isNewGame) setTimeout(() => UI.showPermadeathWarning(), 500);
+                    else if (Game.state && Game.state.tutorial === 'laeuft') {
+                        // Mitten im Tutorial abgebrochen: dort weitermachen.
+                        setTimeout(() => { if (UI.tutorialVielleicht) UI.tutorialVielleicht(); }, 700);
+                    }
                 });
             }
         } catch(e) { console.error(e); }

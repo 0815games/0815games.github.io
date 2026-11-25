@@ -2538,6 +2538,11 @@
           UI.switchView("map").then(() => {
             if (UI.els.gameOver) UI.els.gameOver.classList.add("hidden");
             if (isNewGame) setTimeout(() => UI.showPermadeathWarning(), 500);
+            else if (Game.state && Game.state.tutorial === "laeuft") {
+              setTimeout(() => {
+                if (UI.tutorialVielleicht) UI.tutorialVielleicht();
+              }, 700);
+            }
           });
         }
       } catch (e) {
@@ -9487,6 +9492,7 @@
       if (document.getElementById("inventory-list")) {
         if (typeof UI.renderInventory === "function") UI.renderInventory();
       }
+      if (typeof UI !== "undefined" && UI.tutorialNachWarnung) UI.tutorialNachWarnung();
     },
     _trapEscKey: function() {
       if (this._activeEscHandler) document.removeEventListener("keydown", this._activeEscHandler);
@@ -10358,6 +10364,26 @@
   ];
   window.GameData.RELEASED_PATCHES = [
     {
+      version: "14.0.21",
+      datum: "2026-11-24",
+      title: "Tutorial: die ersten Schritte, interaktiv",
+      punkte: [
+        "Neuer Charakter, neue Frage: wie ging das noch? Nach der Permadeath-Warnung steht jetzt unten rechts eine Sprechblase und zeigt auf das, was gerade dran ist.",
+        "Sieben Schritte: Karte, Bewegung, Menü, Inventar, Aufgaben, Kampf, Schluss. Jeder Schritt will die Handlung sehen, nicht nur ein Weiter.",
+        "Solange nichts passiert ist, steht dort WARTE AUF DICH und es gibt keinen Weiter-Knopf. Sonst klickt man sich durch und hat nichts gelernt.",
+        "Bei Menü, Inventar und Aufgaben öffnet der Knopf selbst das Ziel. Wer schon im Inventar steht, springt direkt weiter - und das Menü schließt sich dabei.",
+        "Der Kampf-Schritt ist weich: dort steht TROTZDEM WEITER. Wer im Tutorial keinem Gegner begegnet, soll nicht festsitzen.",
+        "Kein Fenster mit Sperre. Die Blase lässt alles bedienbar, worauf sie zeigt - man soll ja genau das anklicken.",
+        "Der Stand liegt im Spielstand. Abgebrochen und neu geladen? Es geht dort weiter, wo du warst, nicht bei Schritt 1.",
+        "Nochmal sehen: Menü - TUTORIAL. Oder das X in der Blase, dann ist es für diesen Charakter erledigt.",
+        "Das Tutorial hängt am Schließen der Permadeath-Warnung, nicht an einer Uhr. Wer die Warnung lange liest, verliert nichts."
+      ],
+      offen: [
+        "Getestet ist der Ablauf im Browser-Ersatz (jsdom) mit echtem Server für die Templates. Auf einem echten Gerät mit Finger statt Maus steht die Prüfung aus.",
+        "Die Sprechblase steht auf schmalen Bildschirmen unten - dort, wo bei manchen Handys die Daumenleiste ist. Wenn sie im Weg ist: das X schließt sie dauerhaft."
+      ]
+    },
+    {
       version: "14.0.20",
       datum: "2026-11-24",
       title: "Zwei Loecher im AFK-Schutz gestopft",
@@ -10947,6 +10973,287 @@
   if (typeof module !== "undefined" && module.exports) {
     module.exports = { UI_AFK, AFK_GRENZE, AFK_NACHLauf };
   }
+
+  // src/ui/ui_tutorial.js
+  function sichtbar(id) {
+    const el = document.getElementById(id);
+    if (!el || el.hidden) return false;
+    return el.style.display !== "none" && !el.classList.contains("hidden");
+  }
+  var SCHRITTE = [
+    {
+      id: "willkommen",
+      titel: "VAULT-TEC ORIENTIERUNG",
+      text: "Willkommen im Ödland. Ich zeige dir die ersten Griffe - das dauert zwei Minuten.",
+      ziel: null,
+      weiter: "LOS GEHT'S",
+      pruefung: null
+    },
+    {
+      id: "karte",
+      titel: "DIE KARTE",
+      text: "Das hier ist deine Umgebung. Tippe auf ein Feld, um dich zu bewegen. Der Sektor-Anzeiger oben nennt deine Position.",
+      ziel: "#game-canvas",
+      weiter: "VERSTANDEN",
+      // Wirklich bewegt: die Position hat sich seit dem Start geaendert.
+      pruefung: () => {
+        if (typeof Game === "undefined" || !Game.state || !Game.state.player) return false;
+        const start = Game.state.tutorialStartPlayer;
+        if (!start) return true;
+        return Math.abs(Game.state.player.x - start.x) + Math.abs(Game.state.player.y - start.y) >= 1;
+      }
+    },
+    {
+      id: "menue",
+      titel: "DAS MENÜ",
+      text: "Oben rechts das Menü (drei Striche). Dahinter liegen Inventar, Charakter, Aufgaben und das Handbuch.",
+      ziel: "#btn-menu-toggle",
+      weiter: "MENÜ ÖFFNEN",
+      oeffnet: "toggleMenu",
+      pruefung: () => sichtbar("main-nav")
+    },
+    {
+      id: "inventar",
+      titel: "DEIN ZEUG",
+      text: "Im Inventar liegen Stimpacks und Munition. Ein Stimpack heilt - heb eines für einen schlechten Moment auf.",
+      ziel: "#btn-inv",
+      weiter: "INVENTAR ÖFFNEN",
+      // 'inventory', nicht 'inv': das Template heisst templates/inventory.html.
+      oeffnet: "switchView",
+      oeffnetArg: "inventory",
+      menueZu: true,
+      pruefung: () => typeof Game !== "undefined" && Game.state && Game.state.view === "inventory"
+    },
+    {
+      id: "aufgaben",
+      titel: "AUFGABEN",
+      text: "Hier stehen deine Missionen. Der Vault-Tec-Auftrag ist dein erster - er zählt, was du im Ödland findest.",
+      ziel: "#btn-quests",
+      weiter: "AUFGABEN ÖFFNEN",
+      oeffnet: "switchView",
+      oeffnetArg: "quests",
+      menueZu: true,
+      pruefung: () => typeof Game !== "undefined" && Game.state && Game.state.view === "quests"
+    },
+    {
+      id: "kampf",
+      titel: "GEFAHR",
+      text: "Im Ödland begegnen dir Gegner. Klick auf sie, um anzugreifen - sonst greifen sie dich an.",
+      ziel: "#game-canvas",
+      weiter: "ALLES KLAR",
+      // Kein Muss: wer im Tutorial keinem Gegner begegnet, soll nicht festsitzen.
+      weich: true,
+      pruefung: () => typeof Game !== "undefined" && Game.state && (Game.state.kills > 0 || Game.state.view === "combat")
+    },
+    {
+      id: "fertig",
+      titel: "RAUS INS ÖDLAND",
+      text: "Das war es. Sammle, kämpfe, komm zurück. Im Handbuch steht der Rest.",
+      ziel: null,
+      weiter: "FERTIG",
+      pruefung: null
+    }
+  ];
+  var TUTORIAL = {
+    index: 0,
+    offen: false,
+    beobachter: null,
+    zeigerHorcher: null,
+    // Startet das Tutorial, wenn der Spielstand es verlangt.
+    vielleichtStarten: function() {
+      if (typeof Game === "undefined" || !Game.state) return false;
+      if (Game.state.tutorial === "fertig") return false;
+      if (Game.state.tutorial === "laeuft") return this.zeigen(this.index || 0);
+      return false;
+    },
+    start: function() {
+      if (typeof Game === "undefined" || !Game.state) return false;
+      this.index = 0;
+      this.offen = true;
+      Game.state.tutorial = "laeuft";
+      Game.state.tutorialStartPlayer = Game.state.player ? { x: Game.state.player.x, y: Game.state.player.y } : null;
+      this.zeigen(0);
+      if (typeof Game.saveGame === "function") Game.saveGame();
+      return true;
+    },
+    beenden: function() {
+      this.offen = false;
+      this.beobachterAbstellen();
+      const feld = this.feld();
+      if (feld) feld.hidden = true;
+      const zeiger = document.getElementById("tutorial-zeiger");
+      if (zeiger) zeiger.remove();
+      if (typeof Game !== "undefined" && Game.state) {
+        Game.state.tutorial = "fertig";
+        if (typeof Game.saveGame === "function") Game.saveGame();
+      }
+    },
+    // Das Feld entsteht beim ersten Bedarf und bleibt. Kein innerHTML pro Tick:
+    // das wuerde Fokus und Animation jede Sekunde zerreissen.
+    feld: function() {
+      let el = document.getElementById("tutorial-feld");
+      if (el || typeof document === "undefined" || !document.body) return el;
+      el = document.createElement("div");
+      el.id = "tutorial-feld";
+      el.hidden = true;
+      el.setAttribute("role", "status");
+      el.setAttribute("aria-live", "polite");
+      el.innerHTML = `
+      <div class="tut-kopf">
+        <span class="tut-schritt" data-tut-schritt>1/7</span>
+        <span class="tut-titel" data-tut-titel></span>
+        <button type="button" class="tut-zu" data-tut-ueberspringen title="Tutorial beenden" aria-label="Tutorial beenden">✕</button>
+      </div>
+      <div class="tut-text" data-tut-text></div>
+      <div class="tut-fuss">
+        <span class="tut-warten" data-tut-warten hidden>WARTE AUF DICH...</span>
+        <button type="button" class="action-button tut-weiter" data-tut-weiter></button>
+      </div>`;
+      document.body.appendChild(el);
+      el.querySelector("[data-tut-weiter]").onclick = () => this.weiter();
+      el.querySelector("[data-tut-ueberspringen]").onclick = () => this.beenden();
+      return el;
+    },
+    zeigen: function(index) {
+      const schritt = SCHRITTE[index];
+      if (!schritt) return this.beenden();
+      this.index = index;
+      this.offen = true;
+      const feld = this.feld();
+      if (!feld) return false;
+      feld.hidden = false;
+      feld.querySelector("[data-tut-schritt]").textContent = `${index + 1}/${SCHRITTE.length}`;
+      feld.querySelector("[data-tut-titel]").textContent = schritt.titel;
+      feld.querySelector("[data-tut-text]").textContent = schritt.text;
+      const weiter = feld.querySelector("[data-tut-weiter]");
+      const warten = feld.querySelector("[data-tut-warten]");
+      const erledigt = !schritt.pruefung || schritt.pruefung();
+      weiter.textContent = schritt.weich && !erledigt ? "TROTZDEM WEITER" : schritt.weiter;
+      if (schritt.weich || schritt.oeffnet || !schritt.pruefung || erledigt) {
+        weiter.hidden = false;
+        warten.hidden = true;
+      } else {
+        weiter.hidden = true;
+        warten.hidden = false;
+      }
+      this.zeigerSetzen(schritt.ziel);
+      this.beobachterAbstellen();
+      if (schritt.pruefung) this.beobachter = setInterval(() => this.pruefen(), 400);
+      return true;
+    },
+    // Laeuft im Takt, solange ein Schritt auf eine Handlung wartet.
+    pruefen: function() {
+      const schritt = SCHRITTE[this.index];
+      if (!this.offen || !schritt || !schritt.pruefung) return;
+      if (!schritt.pruefung()) return;
+      this.beobachterAbstellen();
+      const feld = this.feld();
+      if (!feld) return;
+      const weiter = feld.querySelector("[data-tut-weiter]");
+      const warten = feld.querySelector("[data-tut-warten]");
+      if (weiter) weiter.hidden = false;
+      if (warten) warten.hidden = true;
+    },
+    weiter: function() {
+      const schritt = SCHRITTE[this.index];
+      if (!schritt) return this.beenden();
+      if (schritt.oeffnet && typeof UI !== "undefined" && UI[schritt.oeffnet]) {
+        const schonDa = schritt.oeffnet === "toggleMenu" ? sichtbar("main-nav") : schritt.pruefung ? schritt.pruefung() : false;
+        if (!schonDa) {
+          if (schritt.menueZu) {
+            const nav = document.getElementById("main-nav");
+            if (nav && sichtbar("main-nav")) UI.toggleMenu();
+          }
+          setTimeout(() => {
+            const s = SCHRITTE[this.index];
+            if (!s) return;
+            const da = s.oeffnet === "toggleMenu" ? sichtbar("main-nav") : s.pruefung ? s.pruefung() : false;
+            if (!da) {
+              try {
+                UI[s.oeffnet](s.oeffnetArg);
+              } catch (e) {
+                console.error(e);
+              }
+            }
+            this.zeigerSetzen(s.ziel);
+          }, 0);
+          const feld = this.feld();
+          if (feld) {
+            feld.querySelector("[data-tut-weiter]").hidden = true;
+            feld.querySelector("[data-tut-warten]").hidden = false;
+          }
+          this.beobachterAbstellen();
+          this.beobachter = setInterval(() => this.pruefen(), 400);
+          return true;
+        }
+      }
+      if (schritt.menueZu && sichtbar("main-nav") && typeof UI !== "undefined" && UI.toggleMenu) {
+        UI.toggleMenu();
+      }
+      const naechster = this.index + 1;
+      if (naechster >= SCHRITTE.length) return this.beenden();
+      this.beobachterAbstellen();
+      return this.zeigen(naechster);
+    },
+    beobachterAbstellen: function() {
+      if (this.beobachter) clearInterval(this.beobachter);
+      this.beobachter = null;
+    },
+    // Der Zeiger: ein Rahmen um das Ziel-Element. Kein Overlay darueber - der
+    // Spieler muss klicken koennen (pointer-events: none im CSS).
+    //
+    // Drei Faelle, in denen es KEINEN Rahmen gibt - und das ist richtig so:
+    //   Ziel fehlt      (z.B. Canvas in einer Umgebung ohne 2D-Kontext)
+    //   Ziel versteckt  (der Menue-Punkt, solange das Menue zu ist)
+    //   Ziel ohne Masse (Breite oder Hoehe 0)
+    // Ein Rahmen um nichts ist schlimmer als kein Rahmen.
+    zeigerSetzen: function(selektor) {
+      let zeiger = document.getElementById("tutorial-zeiger");
+      const ziel = selektor && document.querySelector(selektor);
+      const r = ziel ? ziel.getBoundingClientRect() : null;
+      const passt = r && r.width > 8 && r.height > 8 && r.bottom > 0 && r.right > 0 && r.top < innerHeight && r.left < innerWidth;
+      if (!passt) {
+        if (zeiger) zeiger.remove();
+        return;
+      }
+      if (!zeiger) {
+        zeiger = document.createElement("div");
+        zeiger.id = "tutorial-zeiger";
+        document.body.appendChild(zeiger);
+      }
+      Object.assign(zeiger.style, {
+        left: `${r.left - 4}px`,
+        top: `${r.top - 4}px`,
+        width: `${r.width + 8}px`,
+        height: `${r.height + 8}px`
+      });
+    }
+  };
+  if (typeof window !== "undefined" && !window.__tutZeigerHorcher) {
+    window.__tutZeigerHorcher = true;
+    const nachfuehren = () => {
+      if (!TUTORIAL.offen) return;
+      const s = SCHRITTE[TUTORIAL.index];
+      if (s) TUTORIAL.zeigerSetzen(s.ziel);
+    };
+    window.addEventListener("resize", nachfuehren);
+    window.addEventListener("scroll", nachfuehren, true);
+  }
+  window.UI = window.UI || {};
+  window.Tutorial = TUTORIAL;
+  window.UI.starteTutorial = function() {
+    return TUTORIAL.start();
+  };
+  window.UI.tutorialVielleicht = function() {
+    return TUTORIAL.vielleichtStarten();
+  };
+  window.UI.tutorialNachWarnung = function() {
+    if (typeof Game === "undefined" || !Game.state) return false;
+    if (Game.state.tutorial === "fertig") return false;
+    if (Game.state.tutorial === "laeuft") return TUTORIAL.vielleichtStarten();
+    if (!Game.state.kills && !Game.state.visitedCount && TUTORIAL.start()) return true;
+    return false;
+  };
 
   // src/ui/ui_navigation.js
   window.GameData = window.GameData || {};

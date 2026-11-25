@@ -51,6 +51,9 @@ export const ORDER = [
   'src/ui/ui_update.js',
   // AFK-Schutz: Fenster nach fuenf Minuten Stille statt stillem Logout.
   'src/ui/ui_afk.js',
+  // Tutorial: die ersten Schritte. Nach ui_afk.js, weil es Spielstand und
+  // switchView() liest.
+  'src/ui/ui_tutorial.js',
   // Navigation (Marker, Bestaetigung, Richtungspfeil). Vor ui_view_world.js
   // nicht moeglich - das ist eine spaetere Datei und ruft Navigation beim
   // Klick und beim Zeichnen. Deshalb hier, und ui_view_world.js findet es

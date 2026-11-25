@@ -1,5 +1,24 @@
 # CHANGELOG
 
+## v14.0.21 (Tutorial, 2026-11-24)
+Die ersten Schritte, interaktiv. Kein Textkasten zum Durchklicken: jeder
+Schritt wartet darauf, dass die Handlung wirklich passiert ist.
+
+- [NEU] `src/ui/ui_tutorial.js`: sieben Schritte, Sprechblase unten rechts
+  (breite Bildschirme: oben rechts), Zeiger auf das Ziel. Beides ohne
+  Klick-Sperre - man muss klicken koennen, worauf es zeigt.
+- [NEU] Fortschritt im Spielstand (`state.tutorial`): abgebrochen heisst
+  fortsetzen. Menue -> TUTORIAL startet neu.
+- [NEU] Start haengt an `leaveDialog()` (Ende der Permadeath-Warnung), nicht
+  an einem Timer. `UI.tutorialNachWarnung()` entscheidet, ob es losgeht.
+- [NEU] Der Kampf-Schritt ist weich: "TROTZDEM WEITER" statt Sackgasse.
+- [FIX] Menue bleibt nicht mehr offen, wenn ein Schritt schon erfuellt war
+  (Spieler stand bereits im Inventar).
+- [NEU] `tests/tutorial.test.mjs` (14 Tests). Sechs Gegenproben greifen:
+  Weiter-Knopf immer frei, `inv` statt `inventory`, nicht-weicher
+  Kampf-Schritt, fehlende Klick-Ausnahme, fehlender Haken in `leaveDialog`,
+  offenes Menue im Randfall.
+
 ## v14.0.20 (zwei Loecher im AFK-Schutz, 2026-11-24)
 - [FIX] Ein Tipp irgendwo auf den Bildschirm setzte die AFK-Uhr zurueck, aber
   das offene Fenster merkte es nicht und meldete trotzdem ab. Jetzt schliesst

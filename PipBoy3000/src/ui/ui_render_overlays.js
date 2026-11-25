@@ -89,6 +89,11 @@ Object.assign(UI, {
         if(document.getElementById('inventory-list')) {
             if(typeof UI.renderInventory === 'function') UI.renderInventory();
         }
+
+        // Das Tutorial haengt an diesem Punkt, nicht an einer Uhr: nach dem
+        // Schliessen der Permadeath-Warnung ist der Spieler zum ersten Mal
+        // wirklich im Spiel. Alles andere waere geraten.
+        if (typeof UI !== 'undefined' && UI.tutorialNachWarnung) UI.tutorialNachWarnung();
     },
 
     _trapEscKey: function() {

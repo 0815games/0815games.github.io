@@ -35,6 +35,26 @@ window.GameData.offenePunkte = [
 // nicht mit dem, was geplant war.
 window.GameData.RELEASED_PATCHES = [
   {
+    version: '14.0.21',
+    datum: '2026-11-24',
+    title: 'Tutorial: die ersten Schritte, interaktiv',
+    punkte: [
+      'Neuer Charakter, neue Frage: wie ging das noch? Nach der Permadeath-Warnung steht jetzt unten rechts eine Sprechblase und zeigt auf das, was gerade dran ist.',
+      'Sieben Schritte: Karte, Bewegung, Menü, Inventar, Aufgaben, Kampf, Schluss. Jeder Schritt will die Handlung sehen, nicht nur ein Weiter.',
+      'Solange nichts passiert ist, steht dort WARTE AUF DICH und es gibt keinen Weiter-Knopf. Sonst klickt man sich durch und hat nichts gelernt.',
+      'Bei Menü, Inventar und Aufgaben öffnet der Knopf selbst das Ziel. Wer schon im Inventar steht, springt direkt weiter - und das Menü schließt sich dabei.',
+      'Der Kampf-Schritt ist weich: dort steht TROTZDEM WEITER. Wer im Tutorial keinem Gegner begegnet, soll nicht festsitzen.',
+      'Kein Fenster mit Sperre. Die Blase lässt alles bedienbar, worauf sie zeigt - man soll ja genau das anklicken.',
+      'Der Stand liegt im Spielstand. Abgebrochen und neu geladen? Es geht dort weiter, wo du warst, nicht bei Schritt 1.',
+      'Nochmal sehen: Menü - TUTORIAL. Oder das X in der Blase, dann ist es für diesen Charakter erledigt.',
+      'Das Tutorial hängt am Schließen der Permadeath-Warnung, nicht an einer Uhr. Wer die Warnung lange liest, verliert nichts.'
+    ],
+    offen: [
+      'Getestet ist der Ablauf im Browser-Ersatz (jsdom) mit echtem Server für die Templates. Auf einem echten Gerät mit Finger statt Maus steht die Prüfung aus.',
+      'Die Sprechblase steht auf schmalen Bildschirmen unten - dort, wo bei manchen Handys die Daumenleiste ist. Wenn sie im Weg ist: das X schließt sie dauerhaft.'
+    ]
+  },
+  {
     version: '14.0.20',
     datum: '2026-11-24',
     title: 'Zwei Loecher im AFK-Schutz gestopft',

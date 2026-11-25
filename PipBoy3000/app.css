@@ -837,6 +837,9 @@
 .resize-none {
     resize: none
 }
+.resize {
+    resize: both
+}
 .list-none {
     list-style-type: none
 }
