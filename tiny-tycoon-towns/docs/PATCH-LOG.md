@@ -687,7 +687,7 @@ Ereignis ergänzt.
     beim nächsten Tick gezeigt. Jede Anfrage erscheint pro Sitzung einmal, „Später“ schiebt sie in den Menü-Hinweis.
   - Der Menü-Punkt zeigt alle offenen Anfragen. Er hängt an der Datenbank, nicht an der Sitzung, also erscheint er nach dem Anmelden wieder.
 - Prüfungen (lokal, Node 22.22.3):
-  - `npm test`: 128 Tests, 128 pass, 0 fail, Exit 0 (Unit).
+  - `npm test`: 129 Tests, 129 pass, 0 fail, Exit 0 (Unit).
   - `npm run check`: Exit 0, kein Fehler.
   - Nicht geprüft: Browser-Darstellung, zwei echte Konten mit Popup. Die Regeln für Freundesanfragen
     sind laut Nutzer funktionsfähig, daran ändert dieser Schritt nichts.
