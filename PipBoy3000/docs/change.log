@@ -1,5 +1,35 @@
 # CHANGELOG
 
+## v14.0.16 (Neues Logo: Vault-Tuer, 2026-11-24)
+Auftrag: "Das Logo ist haesslich - bau ne vaulttuer als Logo."
+
+Das alte Motiv war eine Zielscheibe: drei gleichmaessige Ringe und ein Punkt in
+der Mitte, dazu sechs kurze Striche. Ein Visier. Mit einem Vault hatte das
+nichts zu tun - es sah aus wie ein Fadenkreuz, das jemand rund gemacht hat.
+
+- [NEU] **`docs/muster/app-icon.svg`** - das Motiv neu: acht Verriegelungsbolzen
+  am Rand, Scheibe, Nut-Ring, drei massive Speichen (90/210/330 Grad), Nabe mit
+  Kernloch. Drei Speichen, keine vier: mit vier waere es ein Kreuz und bei
+  16 px nicht mehr von einem Fenster zu unterscheiden.
+- [NEU] **Dasselbe Motiv an drei Stellen, aus einer Datei.** `tools/app-icon.mjs`
+  rastert Icon, Favicon und `icon.svg`; der Boot-Screen laedt eben dieses
+  `icon.svg` als Bild. Vorher stand dort eine Zielscheibe aus gestapelten
+  Tailwind-Ringen mit einem gelben Kasten darin - ein zweites Motiv, das mit
+  dem Icon nichts zu tun hatte.
+- [FIX] **Die kleinen Fassungen sind kraeftiger als die grosse.** Bei 16 px ist
+  eine Speiche von 10 Einheiten 1.6 Pixel und verschwindet; in der
+  Pixelformel sind es 18, die Bolzen 19 Grad statt 15.6. Die
+  Originalproportionen in 16 px waeren ein gruener Punkt - genau der Fehler,
+  an dem das Masken-Icon vorher gescheitert ist.
+- [FIX] **Luft zum Rand.** Das Motiv wird auf 92 % eingezogen (Bolzen bis
+  r=47). Vorher beruehrte es bei 16 px den Bildrand - im Test aufgefallen, nicht
+  am Auge.
+- [TEST] **Die Icon-Tests pruefen jetzt die Tuer, nicht die Ringe.** Der
+  16-px-Test misst Kernloch, Nabe und Rand; der Geometrie-Test haelt fest, dass
+  es Bolzen und genau drei Speichen gibt und dass die Nabe groesser ist als das
+  Kernloch. Vorher standen dort `ringInnen`/`ringAussen` - die Zahlen der
+  Zielscheibe.
+
 ## v14.0.15 (Navigation auf der Weltkarte, 2026-11-24)
 Auftrag: "Navigation integrieren. Klick auf Karte setzt die Navigation (lang
 klicken oder nachfragen? oder Marker setzen und dann Knopf fuer bestaetigen?).

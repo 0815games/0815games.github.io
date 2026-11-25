@@ -1,59 +1,79 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
   <!--
-    Pip-Boy 3003 - App-Icon (Vault-Tuer)
+    Pip-Boy 3003 - Vault-Tuer
 
-    DIESE DATEI IST DIE QUELLE ALLER ICON-GROESSEN.
-    tools/app-icon.mjs rastert sie und schreibt PNG, ICO und die ausgelieferte
-    SVG-Fassung. Wer hier etwas aendert, muss `npm run icons:app` laufen lassen.
+    DIESE DATEI IST DIE QUELLE DES MOTIVS. Zwei Stellen lesen sie:
 
-    Drei Fassungen, weil ein Motiv allein nicht in jeder Groesse funktioniert:
+      tools/app-icon.mjs   rastert daraus Icon, Favicon und die
+                           ausgelieferte icon.svg
+      src/ui/ui_emblem.js  zeichnet dieselben Formen gross im Boot-Screen
+                           (ui_emblem.js ist erzeugt - nicht von Hand aendern)
 
-      ab 120 px   grosse Fassung  (dieser Zweig, <g id="gross">)
-      64-119 px   mittlere Fassung (<g id="mittel">)
-      unter 64 px keine SVG-Ableitung, sondern die Pixelformel in
-                  tools/app-icon.mjs. Grund: bei 16 px ist ein Strich von
-                  2.4 Einheiten 0.38 px und wird beim Weichzeichnen zu Matsch.
-                  Dort entscheidet pro Pixel eine Formel - keine Graustufen.
+    Nach jeder Aenderung:   npm run bilder
 
-    Damit die Groessen nicht auseinanderlaufen, beschreiben beide Zweige hier
-    und die Formel im Werkzeug dieselben Radien:
-      Scheibe r=45 | Trennring 28..35 | Kernloch r=9 | Schlitze ab r=35
+    Aufbau von aussen nach innen, wie an einer echten Vault-Tuer:
+      1. acht Verriegelungsbolzen am Rand - kurz und breit, damit sie bei
+         16 px nicht zu Staub zerfallen
+      2. die Scheibe
+      3. Nut-Ring knapp innen (nur in der grossen Fassung; bei 16 px wuerde
+         er die Flaeche in zwei duenne Ringe zerlegen)
+      4. drei massive Speichen - sie machen aus dem Zahnrad eine Tuer
+      5. Nabe mit Kernloch
 
-    Das alte Masken-Icon scheiterte an genau diesem Punkt: duenne Striche,
-    ein Strahlensymbol als Fleck in der Mitte, ein Filter, der bei 16 px zu
-    einem Kuchen verschmolz. Hier ist alles massiv - Farbflaeche statt Linie.
+    Das alte Motiv war eine Zielscheibe: gleichmaessige Ringe und ein Punkt in
+    der Mitte. Marcel: "Das Logo ist haesslich." Eine Zielscheibe ist kein
+    Vault. Bolzen, Speichen und Kernloch sind es.
+
+    Geometrie (dieselben Zahlen stehen in tools/app-icon.mjs als MOTIV und in
+    tools/emblem.mjs als QUELLE):
+      Scheibe r=44 | Bolzen r=38..48.5, Breite 9 | Nut-Ring 38..41
+      Speichen 90/210/330 Grad, Breite 10, aussen r=39 | Nabe r=12 | Kernloch r=5
   -->
   <rect width="100" height="100" fill="#000000"/>
 
-  <!-- Ab 120 px: mit Innenring, der die Tuer eine Stufe dreidimensionaler macht -->
+  <!-- Ab 120 px: mit Nut-Ring, der die Tuer eine Stufe dreidimensionaler macht -->
   <g id="gross">
-    <circle cx="50" cy="50" r="45" fill="#39ff14"/>
-    <circle cx="50" cy="50" r="36.5" fill="none" stroke="#000000" stroke-width="1.8"/>
-    <circle cx="50" cy="50" r="31.5" fill="none" stroke="#000000" stroke-width="7"/>
-    <circle cx="50" cy="50" r="9" fill="#000000"/>
-    <g fill="#000000">
-      <rect x="46.5" y="6" width="7" height="16" transform="rotate(0 50 50)"/>
-      <rect x="46.5" y="6" width="7" height="16" transform="rotate(60 50 50)"/>
-      <rect x="46.5" y="6" width="7" height="16" transform="rotate(120 50 50)"/>
-      <rect x="46.5" y="6" width="7" height="16" transform="rotate(180 50 50)"/>
-      <rect x="46.5" y="6" width="7" height="16" transform="rotate(240 50 50)"/>
-      <rect x="46.5" y="6" width="7" height="16" transform="rotate(300 50 50)"/>
+    <g fill="#39ff14">
+      <rect x="45.5" y="3" width="9" height="8" transform="rotate(0 50 50)"/>
+      <rect x="45.5" y="3" width="9" height="8" transform="rotate(45 50 50)"/>
+      <rect x="45.5" y="3" width="9" height="8" transform="rotate(90 50 50)"/>
+      <rect x="45.5" y="3" width="9" height="8" transform="rotate(135 50 50)"/>
+      <rect x="45.5" y="3" width="9" height="8" transform="rotate(180 50 50)"/>
+      <rect x="45.5" y="3" width="9" height="8" transform="rotate(225 50 50)"/>
+      <rect x="45.5" y="3" width="9" height="8" transform="rotate(270 50 50)"/>
+      <rect x="45.5" y="3" width="9" height="8" transform="rotate(315 50 50)"/>
     </g>
+    <circle cx="50" cy="50" r="44" fill="#39ff14"/>
+    <circle cx="50" cy="50" r="39.5" fill="none" stroke="#000000" stroke-width="3"/>
+    <g fill="#000000">
+      <rect x="45" y="11" width="10" height="28" transform="rotate(90 50 50)"/>
+      <rect x="45" y="11" width="10" height="28" transform="rotate(210 50 50)"/>
+      <rect x="45" y="11" width="10" height="28" transform="rotate(330 50 50)"/>
+    </g>
+    <circle cx="50" cy="50" r="12" fill="#39ff14"/>
+    <circle cx="50" cy="50" r="5" fill="#000000"/>
   </g>
 
-  <!-- 64-119 px: ohne Innenring, kraeftigerer Trennring - sonst verschwindet
-       er beim Verkleinern zuerst -->
+  <!-- 64-119 px: ohne Nut-Ring, kraeftigere Speichen und groessere Nabe -
+       sonst verschwinden sie beim Verkleinern zuerst -->
   <g id="mittel">
-    <circle cx="50" cy="50" r="45" fill="#39ff14"/>
-    <circle cx="50" cy="50" r="31.5" fill="none" stroke="#000000" stroke-width="7"/>
-    <circle cx="50" cy="50" r="9" fill="#000000"/>
-    <g fill="#000000">
-      <rect x="46.5" y="6" width="7" height="16" transform="rotate(0 50 50)"/>
-      <rect x="46.5" y="6" width="7" height="16" transform="rotate(60 50 50)"/>
-      <rect x="46.5" y="6" width="7" height="16" transform="rotate(120 50 50)"/>
-      <rect x="46.5" y="6" width="7" height="16" transform="rotate(180 50 50)"/>
-      <rect x="46.5" y="6" width="7" height="16" transform="rotate(240 50 50)"/>
-      <rect x="46.5" y="6" width="7" height="16" transform="rotate(300 50 50)"/>
+    <g fill="#39ff14">
+      <rect x="44" y="1.5" width="12" height="11.5" transform="rotate(0 50 50)"/>
+      <rect x="44" y="1.5" width="12" height="11.5" transform="rotate(45 50 50)"/>
+      <rect x="44" y="1.5" width="12" height="11.5" transform="rotate(90 50 50)"/>
+      <rect x="44" y="1.5" width="12" height="11.5" transform="rotate(135 50 50)"/>
+      <rect x="44" y="1.5" width="12" height="11.5" transform="rotate(180 50 50)"/>
+      <rect x="44" y="1.5" width="12" height="11.5" transform="rotate(225 50 50)"/>
+      <rect x="44" y="1.5" width="12" height="11.5" transform="rotate(270 50 50)"/>
+      <rect x="44" y="1.5" width="12" height="11.5" transform="rotate(315 50 50)"/>
     </g>
+    <circle cx="50" cy="50" r="44" fill="#39ff14"/>
+    <g fill="#000000">
+      <rect x="41" y="18" width="18" height="26" transform="rotate(90 50 50)"/>
+      <rect x="41" y="18" width="18" height="26" transform="rotate(210 50 50)"/>
+      <rect x="41" y="18" width="18" height="26" transform="rotate(330 50 50)"/>
+    </g>
+    <circle cx="50" cy="50" r="14" fill="#39ff14"/>
+    <circle cx="50" cy="50" r="6.5" fill="#000000"/>
   </g>
 </svg>

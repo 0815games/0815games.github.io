@@ -35,6 +35,23 @@ window.GameData.offenePunkte = [
 // nicht mit dem, was geplant war.
 window.GameData.RELEASED_PATCHES = [
   {
+    version: '14.0.16',
+    datum: '2026-11-24',
+    title: 'Neues Logo · Vault-Tuer statt Zielscheibe',
+    punkte: [
+      'Das Logo ist jetzt eine Vault-Tuer: acht Verriegelungsbolzen am Rand, drei massive Speichen, Nabe mit Kernloch.',
+      'Vorher war es eine Zielscheibe - gleichmaessige Ringe und ein Punkt in der Mitte. Das war ein Visier, kein Vault.',
+      'Dasselbe Motiv an drei Stellen, aus einer Datei: App-Icon, Favicon (16/32/48) und das grosse Logo im Boot-Screen. Kein zweites Bild, das auseinanderlaufen kann.',
+      'Am Boot-Screen steht das Logo jetzt als Bild statt als zusammengesteckte Tailwind-Ringe mit einem gelben Kasten darin.',
+      'Bei 16 px im Browser-Tab bleibt es erkennbar: die Speichen sind dort absichtlich dicker als in der grossen Fassung, die Bolzen breiter. Ein Icon in Originalproportionen waere bei 16 px ein gruener Punkt.',
+      'Die Tuer hat Luft zum Rand (Motiv auf 92 % eingezogen, Bolzen bis r=47). Ohne das klebte sie am Bildrand - im Test aufgefallen.'
+    ],
+    offen: [
+      'Die Form ist von Hand gezeichnet, nicht aus einer Vault-Vorlage abgemalt. Die Merkmale stimmen (Bolzenkranz, drei Speichen, Kernloch), die genauen Winkel sind eigene Zahlen.',
+      'Das Logo im Boot-Screen dreht sich nicht selbst - nur der gestrichelte Ring aussen laeuft. Eine sich drehende Tuer waere ein eigenes Verhalten, kein Bild.'
+    ]
+  },
+  {
     version: '14.0.15',
     datum: '2026-11-24',
     title: 'Navigation · Marker setzen, Richtung sehen',
