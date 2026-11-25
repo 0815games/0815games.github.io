@@ -1074,3 +1074,19 @@ Ereignis ergänzt.
   - Die Testsuite prüft die Korridore nicht, nur Invarianten. Deshalb hier die Messung im Eintrag.
   - Balance-Werte in `data/` unverändert.
   - Keine Welle, keine Veröffentlichung, keine Firebase-Regeländerung.
+
+### TTT-0063 – Siedlungen: gebäudespezifische Akzente ab Stufe 3 (lokal, nicht veröffentlicht)
+
+- Auftrag des Nutzers: „Ja weiter“ zu Schritt 3 (Gestalten je Gebäude; Basisstufen aus TTT-0061 bleiben).
+- Neu: `src/world/art.js`. Jedes Gebäude bekommt ab Stufe 3 ein eigenes Requisit vorne links (`ACCENT`):
+  Rathaus Doppelsäule · Wohnhaus Blumen · Hof Säcke · Sägewerk Holzstapel · Steinbruch Steine · Lager Kisten ·
+  Imkerei Bienenstock · Fischerei Netz mit Fischen · Markt Markise · Saline Salzhaufen · Mine Lore · Perlenhütte Muscheln.
+  Die gemeinsamen Stufenteile (Fahne, Zaun, Schornstein, Gold) bleiben unverändert.
+- Tests: `tests/world-stages.test.mjs` 5 Tests. Neu: Stufe 3 ist mehr als Stufe 2, und kein Gebäude zeigt denselben Akzent
+  wie ein anderes (Befehlsnamen mit Zahlen verglichen). Probe: Akzent abgeschaltet, Test wird rot.
+- `npm test` 171/171 grün. `npm run check` ohne Fehler.
+- Grenzen / offen:
+  - Nicht im Browser angesehen. Die Requisiten sind durch Befehlszählung und Eindeutigkeit belegt, nicht durch Blick auf das Bild.
+    Bitte am Gerät prüfen, ob sie bei Zoom 0,75 und darüber lesbar sind und nichts verdecken.
+  - Stufe 4 und 5 haben keine eigenen Akzente, nur die gemeinsamen Teile.
+  - Keine Welle, keine Veröffentlichung, keine Firebase-Regeländerung.
