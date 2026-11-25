@@ -1,5 +1,29 @@
 # CHANGELOG
 
+## v14.0.24 (Patch-Notizen unter dem Header, Update-Knopf entfernt, 2026-11-24)
+Rueckmeldung: "Patch notizen öffnen sich ÜBER der headerleiste?! wtf"
+
+- [FIX] **Patch-Notizen und Handbuch unter dem Header:** `#manual-overlay`
+  und `#patch-notes-overlay` standen im HTML direkt unter `#pipboy-case`
+  (statt wie `#nav-eingabe`/`#player-list-overlay` in `#main-content`).
+  `#pipboy-case > .unter-header-fenster` hat z-index 1000 und deckte damit
+  den gesamten Bildschirm samt `#game-header` zu. Beide Fenster liegen
+  jetzt nativ in `#main-content` und öffnen sich unterhalb der
+  Headerleiste (TP, KK, MUN, Menü-Knopf bleiben frei).
+- [FIX] **Login → Spiel:** Wer die Patch-Notizen auf dem Login-Schirm
+  öffnet (dort hängen sie weiterhin in `#pipboy-case`, weil `#game-screen`
+  versteckt ist) und dann einsteigt, sah sie nach dem Start weiter über
+  dem Header. `UI.startGame()` holt beide Fenster jetzt zurück nach
+  `#main-content`.
+- [FIX] **Ungebundene Aufrufe:** `showPatchNotes`/`showManualOverlay`
+  rufen die Fenster-Logik jetzt direkt über `UI` auf statt über `this`.
+  Als ungebundene Callback-Referenz wäre `this` undefined/window gewesen -
+  das Fenster bliebe dann in `#pipboy-case` hängen und deckte den Header zu.
+- [ENTFERNT] **Menüpunkt „NACH UPDATE SUCHEN":** Die Versionsprüfung läuft
+  automatisch (beim Start, alle 60 s, bei Rückkehr des Tabs) und zeigt das
+  Update-Fenster von selbst, sobald eine neue Version auf dem Server liegt.
+  `UI.pruefeVersion()` bleibt als programmatischer Einstieg bestehen.
+
 ## v14.0.23 (Zielfuehrung repariert, 2026-11-24)
 Rueckmeldung: "Zielfuehrung wieder ohne funktion - setzen geht nicht und auch
 kein pfeil der in die richtung zeigt. hat ja mal funktioniert, wieso jetzt ned?"

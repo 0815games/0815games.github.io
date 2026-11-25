@@ -1837,6 +1837,15 @@
       await this.showLoadingSequence();
       this.els.gameScreen.classList.remove("hidden");
       this.els.gameScreen.classList.remove("opacity-0");
+      const mainContent = document.getElementById("main-content");
+      if (mainContent) {
+        for (const id of ["manual-overlay", "patch-notes-overlay"]) {
+          const fenster = document.getElementById(id);
+          if (fenster && fenster.parentElement !== mainContent) {
+            mainContent.appendChild(fenster);
+          }
+        }
+      }
       const isNewGame = !saveData;
       Game.init(saveData, null, slotIndex, newName);
       if (this.isMobile() && isNewGame) this.showMobileControlsHint();
@@ -10377,15 +10386,15 @@
     showManualOverlay: async function() {
       const overlay = document.getElementById("manual-overlay");
       const content = document.getElementById("manual-content");
-      if (typeof this.schliesseMenueUndUnterfenster === "function") {
-        this.schliesseMenueUndUnterfenster("manual-overlay");
-      } else if (this.els.navMenu) {
-        this.els.navMenu.classList.add("hidden");
-        this.els.navMenu.style.display = "none";
+      if (typeof UI.schliesseMenueUndUnterfenster === "function") {
+        UI.schliesseMenueUndUnterfenster("manual-overlay");
+      } else if (UI.els && UI.els.navMenu) {
+        UI.els.navMenu.classList.add("hidden");
+        UI.els.navMenu.style.display = "none";
       }
       if (overlay) {
-        if (typeof this.haengeFensterEin === "function") this.haengeFensterEin(overlay);
-        this._trapEigeneOverlays();
+        if (typeof UI.haengeFensterEin === "function") UI.haengeFensterEin(overlay);
+        UI._trapEigeneOverlays();
         overlay.onclick = (e) => {
           if (e.target === overlay && typeof UI.schliesseHandbuch === "function") UI.schliesseHandbuch();
         };
@@ -10630,6 +10639,17 @@
   ];
   window.GameData.RELEASED_PATCHES = [
     {
+      version: "14.0.24",
+      datum: "2026-11-24",
+      title: 'Patch-Notizen öffnen unter dem Header · Menüpunkt „Nach Update suchen" entfernt',
+      punkte: [
+        "Patch-Notizen und Handbuch liegen jetzt nativ in #main-content (wie Navigation und Signale) statt direkt unter #pipboy-case: sie öffnen sich unterhalb der Headerleiste, TP/KK/MUN und der Menü-Knopf bleiben frei. Vorher deckte #pipboy-case > .unter-header-fenster (z-index 1000) den gesamten Bildschirm samt Header zu.",
+        "Wer die Patch-Notizen auf dem Login-Schirm öffnet und dann einsteigt, sieht sie beim Spielstart weiterhin unter dem Header: UI.startGame() holt beide Fenster aus #pipboy-case zurück nach #main-content.",
+        "showPatchNotes und showManualOverlay rufen die Fenster-Logik jetzt direkt über UI auf statt über this - auch ungebundene Aufrufe (Callback-Referenzen) hängen das Fenster korrekt ein.",
+        'Der Menüpunkt „NACH UPDATE SUCHEN" ist entfernt. Die Versionsprüfung läuft automatisch: beim Start, alle 60 Sekunden und sofort, wenn der Tab wieder sichtbar wird - das Update-Fenster erscheint von selbst, sobald eine neue Version auf dem Server liegt.'
+      ]
+    },
+    {
       version: "14.0.23",
       datum: "2026-11-24",
       title: "Zielführung repariert: Setzen per Karte, Menü & Aufgaben sowie Richtungspfeil am Spieler",
@@ -10798,14 +10818,14 @@
     const overlay = document.getElementById("patch-notes-overlay");
     const inhalt = document.getElementById("patch-notes-content");
     if (!overlay || !inhalt) return;
-    if (typeof this.schliesseMenueUndUnterfenster === "function") {
-      this.schliesseMenueUndUnterfenster("patch-notes-overlay");
-    } else if (typeof this.els === "object" && this.els && this.els.navMenu) {
-      this.els.navMenu.classList.add("hidden");
-      this.els.navMenu.style.display = "none";
+    if (typeof UI.schliesseMenueUndUnterfenster === "function") {
+      UI.schliesseMenueUndUnterfenster("patch-notes-overlay");
+    } else if (typeof UI.els === "object" && UI.els && UI.els.navMenu) {
+      UI.els.navMenu.classList.add("hidden");
+      UI.els.navMenu.style.display = "none";
     }
-    if (typeof this.haengeFensterEin === "function") this.haengeFensterEin(overlay);
-    if (typeof this._trapEigeneOverlays === "function") this._trapEigeneOverlays();
+    if (typeof UI.haengeFensterEin === "function") UI.haengeFensterEin(overlay);
+    if (typeof UI._trapEigeneOverlays === "function") UI._trapEigeneOverlays();
     overlay.onclick = (e) => {
       if (e.target === overlay && typeof UI.hidePatchNotes === "function") UI.hidePatchNotes();
     };
@@ -11078,28 +11098,28 @@
   window.UI = window.UI || {};
   window.UI.updateUI = null;
   window.UI.starteUpdatePruefung = function() {
-    if (this.updateUI) return this.updateUI;
+    if (UI.updateUI) return UI.updateUI;
     try {
-      this.updateUI = createUpdateUI({ document, window });
-      if (this.updateUI) this.updateUI.start();
+      UI.updateUI = createUpdateUI({ document, window });
+      if (UI.updateUI) UI.updateUI.start();
     } catch (e) {
       console.warn("Update-Pruefung nicht gestartet:", e && e.message);
     }
-    return this.updateUI;
+    return UI.updateUI;
   };
   window.UI.pruefeVersion = function(vonHand) {
-    if (vonHand && typeof this.schliesseMenue === "function") this.schliesseMenue();
-    const ui = this.starteUpdatePruefung();
+    if (vonHand && typeof UI.schliesseMenue === "function") UI.schliesseMenue();
+    const ui = UI.starteUpdatePruefung();
     if (!ui) {
-      if (typeof this.toast === "function") this.toast("Update-Prüfung nicht verfügbar", "text-red-400");
+      if (typeof UI.toast === "function") UI.toast("Update-Prüfung nicht verfügbar", "text-red-400");
       return;
     }
-    if (vonHand && typeof this.toast === "function") this.toast("Prüfe Version...", "text-green-400");
+    if (vonHand && typeof UI.toast === "function") UI.toast("Prüfe Version...", "text-green-400");
     void ui.pruefen().then((veraltet) => {
-      if (!vonHand || typeof this.toast !== "function") return;
-      if (veraltet) this.toast("Neue Version gefunden - siehe Hinweis unten", "text-yellow-400");
-      else if (!ui.zustand || ui.zustand.art === "aktuell") this.toast("Du spielst die aktuelle Version", "text-green-400");
-      else this.toast("Version nicht erreichbar", "text-red-400");
+      if (!vonHand || typeof UI.toast !== "function") return;
+      if (veraltet) UI.toast("Neue Version gefunden - siehe Hinweis unten", "text-yellow-400");
+      else if (!ui.zustand || ui.zustand.art === "aktuell") UI.toast("Du spielst die aktuelle Version", "text-green-400");
+      else UI.toast("Version nicht erreichbar", "text-red-400");
     });
   };
 

@@ -823,15 +823,17 @@ Object.assign(UI, {
     showManualOverlay: async function() {
         const overlay = document.getElementById('manual-overlay');
         const content = document.getElementById('manual-content');
-        if (typeof this.schliesseMenueUndUnterfenster === 'function') {
-            this.schliesseMenueUndUnterfenster('manual-overlay');
-        } else if(this.els.navMenu) {
-            this.els.navMenu.classList.add('hidden');
-            this.els.navMenu.style.display = 'none';
+        // UI. statt this.: auch ungebundene Aufrufe muessen das Fenster
+        // korrekt nach #main-content (unter dem Header) haengen.
+        if (typeof UI.schliesseMenueUndUnterfenster === 'function') {
+            UI.schliesseMenueUndUnterfenster('manual-overlay');
+        } else if(UI.els && UI.els.navMenu) {
+            UI.els.navMenu.classList.add('hidden');
+            UI.els.navMenu.style.display = 'none';
         }
         if (overlay) {
-            if (typeof this.haengeFensterEin === 'function') this.haengeFensterEin(overlay);
-            this._trapEigeneOverlays();
+            if (typeof UI.haengeFensterEin === 'function') UI.haengeFensterEin(overlay);
+            UI._trapEigeneOverlays();
             overlay.onclick = (e) => { if (e.target === overlay && typeof UI.schliesseHandbuch === 'function') UI.schliesseHandbuch(); };
         }
         if (typeof Game !== 'undefined' && Game.state) Game.state.inDialog = true;

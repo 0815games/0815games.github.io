@@ -35,6 +35,17 @@ window.GameData.offenePunkte = [
 // nicht mit dem, was geplant war.
 window.GameData.RELEASED_PATCHES = [
   {
+    version: '14.0.24',
+    datum: '2026-11-24',
+    title: 'Patch-Notizen öffnen unter dem Header · Menüpunkt „Nach Update suchen" entfernt',
+    punkte: [
+      'Patch-Notizen und Handbuch liegen jetzt nativ in #main-content (wie Navigation und Signale) statt direkt unter #pipboy-case: sie öffnen sich unterhalb der Headerleiste, TP/KK/MUN und der Menü-Knopf bleiben frei. Vorher deckte #pipboy-case > .unter-header-fenster (z-index 1000) den gesamten Bildschirm samt Header zu.',
+      'Wer die Patch-Notizen auf dem Login-Schirm öffnet und dann einsteigt, sieht sie beim Spielstart weiterhin unter dem Header: UI.startGame() holt beide Fenster aus #pipboy-case zurück nach #main-content.',
+      'showPatchNotes und showManualOverlay rufen die Fenster-Logik jetzt direkt über UI auf statt über this - auch ungebundene Aufrufe (Callback-Referenzen) hängen das Fenster korrekt ein.',
+      'Der Menüpunkt „NACH UPDATE SUCHEN" ist entfernt. Die Versionsprüfung läuft automatisch: beim Start, alle 60 Sekunden und sofort, wenn der Tab wieder sichtbar wird - das Update-Fenster erscheint von selbst, sobald eine neue Version auf dem Server liegt.'
+    ]
+  },
+  {
     version: '14.0.23',
     datum: '2026-11-24',
     title: 'Zielführung repariert: Setzen per Karte, Menü & Aufgaben sowie Richtungspfeil am Spieler',
@@ -212,14 +223,18 @@ window.UI.showPatchNotes = function(reiter) {
     const overlay = document.getElementById('patch-notes-overlay');
     const inhalt = document.getElementById('patch-notes-content');
     if (!overlay || !inhalt) return;
-    if (typeof this.schliesseMenueUndUnterfenster === 'function') {
-        this.schliesseMenueUndUnterfenster('patch-notes-overlay');
-    } else if (typeof this.els === 'object' && this.els && this.els.navMenu) {
-        this.els.navMenu.classList.add('hidden');
-        this.els.navMenu.style.display = 'none';
+    // Absichtlich UI. statt this.: die Funktion wird auch ungebunden
+    // aufgerufen (z. B. als Callback-Referenz). Ohne Bindung waere `this`
+    // undefined bzw. window - dann bliebe das Fenster in #pipboy-case
+    // haengen und deckte den Header zu.
+    if (typeof UI.schliesseMenueUndUnterfenster === 'function') {
+        UI.schliesseMenueUndUnterfenster('patch-notes-overlay');
+    } else if (typeof UI.els === 'object' && UI.els && UI.els.navMenu) {
+        UI.els.navMenu.classList.add('hidden');
+        UI.els.navMenu.style.display = 'none';
     }
-    if (typeof this.haengeFensterEin === 'function') this.haengeFensterEin(overlay);
-    if (typeof this._trapEigeneOverlays === 'function') this._trapEigeneOverlays();
+    if (typeof UI.haengeFensterEin === 'function') UI.haengeFensterEin(overlay);
+    if (typeof UI._trapEigeneOverlays === 'function') UI._trapEigeneOverlays();
     overlay.onclick = (e) => { if (e.target === overlay && typeof UI.hidePatchNotes === 'function') UI.hidePatchNotes(); };
     if (typeof Game !== 'undefined' && Game.state) Game.state.inDialog = true;
 

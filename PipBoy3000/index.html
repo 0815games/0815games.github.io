@@ -40,10 +40,10 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js" crossorigin="anonymous"
             onerror="window.scriptLoadError='firebase-database.js';"></script>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
-    <meta name="pipboy-build" content="14.0.23">
+    <meta name="pipboy-build" content="14.0.24">
     
-    <link rel="stylesheet" href="app.css?v=14.0.23">
-    <link rel="stylesheet" href="style.css?v=14.0.23">
+    <link rel="stylesheet" href="app.css?v=14.0.24">
+    <link rel="stylesheet" href="style.css?v=14.0.24">
     
     <style>
         @keyframes spin-reverse { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
@@ -332,22 +332,6 @@ ${window.logBuffer.slice(-10).join('\n') || '(leer - Fehler trat vor dem ersten 
         </div>
     </div>
 
-    <div id="manual-overlay" class="unter-header-fenster hidden" style="display: none;">
-        <div class="border-2 border-yellow-400 w-full max-w-2xl h-full max-h-full bg-[#111] flex flex-col p-4 shadow-[0_0_30px_#aa0]">
-            <div class="flex justify-between items-center border-b border-yellow-400 pb-2 mb-2 shrink-0">
-                <h2 class="text-2xl font-bold text-yellow-400">HANDBUCH v1.0</h2>
-                <button class="text-red-500 font-bold text-xl px-2 border border-red-500 hover:bg-red-900" onclick="UI.schliesseHandbuch()">X</button>
-            </div>
-            <div id="manual-content" class="flex-grow overflow-y-auto text-green-300 font-mono space-y-4 pr-2 custom-scrollbar min-h-0"></div>
-        </div>
-    </div>
-
-    <div id="patch-notes-overlay" class="unter-header-fenster hidden" style="display: none;">
-        <div class="border-2 border-green-700 w-full max-w-2xl h-full max-h-full bg-[#020a02] flex flex-col p-4 shadow-[0_0_30px_#0f0]">
-            <div id="patch-notes-content" class="flex-grow overflow-y-auto custom-scrollbar pr-1 min-h-0"></div>
-            <button class="action-button w-full mt-3 shrink-0 border-red-500 text-red-400" onclick="UI.hidePatchNotes()">SCHLIESSEN (ESC)</button>
-        </div>
-    </div>
     <div id="changelog-overlay" class="hidden z-[1000] bg-black/95" style="display: none;"><div class="border-2 border-blue-400 w-full max-w-2xl h-[90vh] bg-[#050510] flex flex-col p-4 shadow-[0_0_30px_#00a]"><div class="flex justify-between items-center border-b border-blue-400 pb-2 mb-2"><h2 class="text-2xl font-bold text-blue-400">PATCH NOTES</h2><button class="text-red-500 font-bold text-xl px-2 border border-red-500 hover:bg-red-900" onclick="document.getElementById('changelog-overlay').classList.add('hidden'); document.getElementById('changelog-overlay').style.display='none';">X</button></div><div id="changelog-content" class="flex-grow overflow-y-auto text-blue-200 font-mono text-sm leading-relaxed whitespace-pre-wrap pr-2"></div></div></div>
     <div id="spawn-screen" style="display: none;"><div class="login-box crt-effect-container"><h1 class="text-3xl md:text-4xl font-bold glow-text mb-4">NEUER CHARAKTER</h1><div id="spawn-msg" class="text-sm mb-4 text-red-400 font-bold"></div><div id="spawn-list" class="flex flex-col gap-2 max-h-[250px] overflow-y-auto mb-4 border border-green-900 p-2 text-left"></div><button id="btn-spawn-random" class="action-button w-full mb-2">ZUFALLS-START</button><button class="action-button w-full border-red-500 text-red-500" onclick="location.reload()">ABBRUCH</button></div></div>
     <div id="reset-overlay" style="display: none;"><div class="login-box crt-effect-container border-red-500" style="box-shadow: 0 0 20px #500;"><h1 class="text-4xl font-bold text-red-500 mb-4 animate-pulse">ACHTUNG!</h1><div class="text-lg mb-8 text-red-400 font-bold">CHARAKTER LÖSCHEN?<br>ALLES GEHT VERLOREN!</div><div class="flex flex-col gap-2 w-full"><button id="btn-confirm-reset" class="action-button w-full border-red-500 text-red-500 font-bold hover:bg-red-900">JA, LÖSCHEN</button><button id="btn-cancel-reset" class="action-button w-full border-green-500 text-green-500">ABBRECHEN</button></div></div></div>
@@ -417,7 +401,6 @@ ${window.logBuffer.slice(-10).join('\n') || '(leer - Fehler trat vor dem ersten 
                 <button id="btn-manual-game" class="action-button w-full text-left text-yellow-400 border-yellow-400" onclick="UI.showManualOverlay()">HANDBUCH</button>
                 <button id="btn-tutorial-start" class="action-button w-full text-left" onclick="UI.starteTutorial()">TUTORIAL</button>
                 <button id="btn-patch-notes" class="action-button w-full text-left" onclick="UI.showPatchNotes()">PATCH-NOTIZEN</button>
-                <button id="btn-update-check" class="action-button w-full text-left" onclick="UI.pruefeVersion(true)">NACH UPDATE SUCHEN</button>
                 <button id="btn-bug-report" class="action-button w-full text-left border-red-500 text-red-400 hover:bg-red-900/20">BUG MELDEN</button>
                 <div class="border-t border-green-900 my-1"></div>
                 <button id="btn-menu-save" class="action-button w-full text-left border-yellow-400 text-yellow-400">SPEICHERN</button>
@@ -464,6 +447,31 @@ ${window.logBuffer.slice(-10).join('\n') || '(leer - Fehler trat vor dem ersten 
                     <div class="font-bold border-b border-green-500 mb-2 pb-1 text-center text-[#39ff14] tracking-widest">SIGNALE</div>
                     <div id="player-list-content" class="text-sm space-y-1 overflow-y-auto custom-scrollbar min-h-0"></div>
                     <button class="action-button w-full mt-3 text-sm shrink-0" onclick="UI.togglePlayerList()">SCHLIESSEN</button>
+                </div>
+            </div>
+
+            <!-- Handbuch und Patch-Notizen liegen nativ in #main-content, wie
+                 #nav-eingabe und #player-list-overlay. Vorher standen sie direkt
+                 unter #pipboy-case: #pipboy-case > .unter-header-fenster hat
+                 z-index 1000 und deckte damit den gesamten Bildschirm samt
+                 #game-header zu - die Patch-Notizen oeffneten sich UEBER der
+                 Headerleiste. Auf dem Login-Schirm (ohne #game-screen) haengt
+                 UI.haengeFensterEin() sie temporaer nach #pipboy-case, und
+                 UI.startGame() holt sie beim Spielstart zurueck hierher. -->
+            <div id="manual-overlay" class="unter-header-fenster hidden" style="display: none;">
+                <div class="border-2 border-yellow-400 w-full max-w-2xl h-full max-h-full bg-[#111] flex flex-col p-4 shadow-[0_0_30px_#aa0]">
+                    <div class="flex justify-between items-center border-b border-yellow-400 pb-2 mb-2 shrink-0">
+                        <h2 class="text-2xl font-bold text-yellow-400">HANDBUCH v1.0</h2>
+                        <button class="text-red-500 font-bold text-xl px-2 border border-red-500 hover:bg-red-900" onclick="UI.schliesseHandbuch()">X</button>
+                    </div>
+                    <div id="manual-content" class="flex-grow overflow-y-auto text-green-300 font-mono space-y-4 pr-2 custom-scrollbar min-h-0"></div>
+                </div>
+            </div>
+
+            <div id="patch-notes-overlay" class="unter-header-fenster hidden" style="display: none;">
+                <div class="border-2 border-green-700 w-full max-w-2xl h-full max-h-full bg-[#020a02] flex flex-col p-4 shadow-[0_0_30px_#0f0]">
+                    <div id="patch-notes-content" class="flex-grow overflow-y-auto custom-scrollbar pr-1 min-h-0"></div>
+                    <button class="action-button w-full mt-3 shrink-0 border-red-500 text-red-400" onclick="UI.hidePatchNotes()">SCHLIESSEN (ESC)</button>
                 </div>
             </div>
         </div>
@@ -637,6 +645,6 @@ ${window.logBuffer.slice(-10).join('\n') || '(leer - Fehler trat vor dem ersten 
     };
 </script>
 
-    <script src="app.js?v=14.0.23"></script>
+    <script src="app.js?v=14.0.24"></script>
 </body>
 </html>
