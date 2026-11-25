@@ -3,13 +3,12 @@
 // Rendered inside the armory dialog so players find everything in one place.
 // Every change goes through the account service, which runs the account
 // transaction; nothing here writes a save directly.
-import {RECIPES,MOD_SCRAP,modsOf,migrateWorkshop,validLegacy} from './workshop-model.mjs?v=20261112-tagless1';
+import {RECIPES,MOD_SCRAP,modsOf,migrateWorkshop,validLegacy} from './workshop-model.mjs?v=20261125-aim15';
 import {PRESTIGE,PRESTIGE_IDS,isPrestige,prestigeEarned} from '../core/prestige.mjs?v=20261112-pressure1';
 import {CAMPAIGN,campaignProgress} from '../core/campaign.mjs?v=20261112-pressure1';
-import {decodeWorkshop} from './workshop-wire.mjs?v=20261112-tagless1';
+import {decodeWorkshop} from './workshop-wire.mjs?v=20261125-aim15';
 import {readArmory,ITEMS} from '../core/armory.mjs?v=20261112-tagless1';
 import {WORKSHOP_CATALOG} from './workshop-catalog.mjs?v=20261108-balance2';
-const slotKeys=['weapon','gear','gadget'];
 // Which legacy item (by index) belongs to which new slot.
 const legacySlots=['gadget','gear','gear','gadget','gadget','gear','gadget','gadget','gadget','gadget'];
 
@@ -64,13 +63,16 @@ export function createWorkshopView({document,root,getProfile,service,confirm,tra
   into.append(wallet);
   if(service.hasPending?.()){const pending=el('section','workshop-intro');pending.append(el('p','',tr('A save needs confirmation. Retry it before making another change.')),button('RETRY SAVE',false,()=>run('retry')));into.append(pending);}
 
-  const slots=el('section','workshop-slots');slots.append(el('h3','',tr('Equipped loadout')));
+  // The taken list (IPL-0137): every worn piece shows at once and leaves with
+  // its own TAKE OFF button — no slot ever replaces another.
+  const slots=el('section','workshop-slots');slots.append(el('h3','',tr('Taken right now')));
   const list=el('div','workshop-slot-grid');
-  for(const slot of slotKeys){
-   const id=workshop.equipped[slot],legacy=id.startsWith('legacy-'),card=el('div','workshop-slot');
-   card.append(el('span','',tr(slot.toUpperCase())),el('strong','',itemName(id)));
-   if(legacy)card.append(el('small','',tr('From your existing equipment. Equip it in the Armory tab to use the old effect.')));
-   if(id!==(slot==='weapon'?'standard':'none'))card.append(button('UNEQUIP',false,()=>run({type:'equip',slot,item:slot==='weapon'?'standard':'none'})));
+  if(!workshop.equipped.length)list.append(el('p','',tr('Nothing taken yet. Every piece you own can be worn at once.')));
+  for(const id of workshop.equipped){
+   const card=el('div','workshop-slot');
+   card.append(el('strong','',itemName(id)));
+   if(id.startsWith('legacy-'))card.append(el('small','',tr('From your existing equipment. It counts the moment it is taken.')));
+   card.append(button('TAKE OFF',false,()=>run({type:'equip',item:id})));
    list.append(card);
   }
   slots.append(list);into.append(slots);
@@ -78,14 +80,14 @@ export function createWorkshopView({document,root,getProfile,service,confirm,tra
   const section=el('section','workshop-items');section.append(el('h3','',tr('Craft and equip')));
   const grid=el('div','workshop-item-grid');
   for(const [id,recipe] of Object.entries(RECIPES)){
-   const data=WORKSHOP_CATALOG[id],owned=workshop.owned.includes(id),equipped=workshop.equipped[recipe.slot]===id,card=el('article','workshop-item');
+   const data=WORKSHOP_CATALOG[id],owned=workshop.owned.includes(id),taken=workshop.equipped.includes(id),card=el('article','workshop-item');
    card.append(el('span','workshop-tag',tr(recipe.slot.toUpperCase())),el('h4','',tr(data.name)),el('p','',tr(data.effect)));
    if(!owned){
     const affordable=armory.scrap>=recipe.scrap&&workshop.components>=recipe.components;
     card.append(el('small','',tr('{scrap} scrap · {components} boss components',{scrap:recipe.scrap,components:recipe.components})),button('CRAFT',!affordable,()=>run({type:'craft',item:id},{title:tr('Craft {name}?',{name:tr(data.name)}),text:tr('Spend {scrap} scrap and {components} boss components?',{scrap:recipe.scrap,components:recipe.components}),accept:tr('CRAFT')})));
     if(!affordable)card.append(el('small','workshop-hint',tr('Not enough materials yet.')));
    }else{
-    card.append(button(equipped?'EQUIPPED':'EQUIP',equipped,()=>run({type:'equip',slot:recipe.slot,item:id})));
+    card.append(button(taken?'TAKEN':'TAKE',false,()=>run({type:'equip',item:id})));
     for(const [mod,info] of Object.entries(data.mods)){
      const chosen=workshop.mods[id]===mod,modRow=el('div','workshop-mod');
      modRow.append(el('strong','',tr(info.name)),el('p','',tr(info.effect)),button(chosen?'INSTALLED':tr('MODIFY · {scrap} SCRAP',{scrap:MOD_SCRAP}),chosen||armory.scrap<MOD_SCRAP,()=>run({type:'modify',item:id,mod},{title:tr('Install {name}?',{name:tr(info.name)}),text:tr('Spend {scrap} scrap? This replaces the current modification.',{scrap:MOD_SCRAP}),accept:tr('MODIFY')})));
@@ -102,7 +104,7 @@ export function createWorkshopView({document,root,getProfile,service,confirm,tra
   trophies.append(el('h3','',tr('Prestige gear')),el('p','workshop-note',tr('Earned by finishing campaign missions. Not sold, not crafted.')));
   const trophyGrid=el('div','workshop-item-grid');
   for(const id of PRESTIGE_IDS){
-   const item=PRESTIGE[id],mission=CAMPAIGN.find(m=>m.id===item.mission),earned=prestigeEarned(id,p),owned=workshop.owned.includes(id),equipped=workshop.equipped[item.slot]===id;
+   const item=PRESTIGE[id],mission=CAMPAIGN.find(m=>m.id===item.mission),earned=prestigeEarned(id,p),owned=workshop.owned.includes(id),taken=workshop.equipped.includes(id);
    const card=el('article',`workshop-item${earned?'':' is-locked'}`);
    card.append(el('span','workshop-tag',`${tr('TIER')} ${item.tier} · ${tr(item.slot.toUpperCase())}`),el('h4','',tr(item.name)),el('p','',tr(item.effect)));
    if(!earned){
@@ -110,7 +112,7 @@ export function createWorkshopView({document,root,getProfile,service,confirm,tra
    }else if(!owned){
     card.append(el('small','workshop-hint',tr('Earned. Reopen the workshop to collect it.')),button('COLLECT',false,()=>run(null)));
    }else{
-    card.append(button(equipped?'EQUIPPED':'EQUIP',equipped,()=>run({type:'equip',slot:item.slot,item:id})));
+    card.append(button(taken?'TAKEN':'TAKE',false,()=>run({type:'equip',item:id})));
     for(const [mod,info] of Object.entries(item.mods)){
      const chosen=workshop.mods[id]===mod,row=el('div','workshop-mod');
      row.append(el('strong','',tr(info.name)),el('p','',tr(info.effect)),button(chosen?'INSTALLED':tr('MODIFY · {scrap} SCRAP',{scrap:MOD_SCRAP}),chosen||armory.scrap<MOD_SCRAP,()=>run({type:'modify',item:id,mod},{title:tr('Install {name}?',{name:tr(info.name)}),text:tr('Spend {scrap} scrap? This replaces the current modification.',{scrap:MOD_SCRAP}),accept:tr('MODIFY')})));
@@ -127,14 +129,14 @@ export function createWorkshopView({document,root,getProfile,service,confirm,tra
   const legacyOwned=workshop.owned.filter(value=>value.startsWith('legacy-'));
   if(!legacyOwned.length)legacy.append(el('p','',tr('No existing equipment yet. It is earned on waves 2, 4, 6, 8, 10, 12, 14, 16, 18 and 20.')));
   for(const id of legacyOwned){
-   const index=Number(id.slice(7))-1,item=ITEMS[index],slot=legacySlots[index],equipped=workshop.equipped[slot]===id;
+   const index=Number(id.slice(7))-1,item=ITEMS[index],taken=workshop.equipped.includes(id);
    const row=el('article','workshop-legacy-item');
    row.append(el('strong','',itemName(id)),el('p','',tr(item.description)));
-   row.append(button(equipped?'IN LOADOUT':'ADD TO LOADOUT',equipped,()=>run({type:'equip',slot,item:id})));
+   row.append(button(taken?'TAKEN':'TAKE',false,()=>run({type:'equip',item:id})));
    legacy.append(row);
   }
   into.append(legacy);
-  into.append(el('p','workshop-note',tr('Crafted gear replaces the old one-slot equipment in endless solo. Bunker upgrades stay in the Bunker tab.')));
+  into.append(el('p','workshop-note',tr('Everything you own counts at once — vest, boots, radio and weapon together. Bunker upgrades stay in the Bunker tab.')));
   into.append(statusLine());
  }
  // The armory dialog owns the container; the view can be pointed at a new one

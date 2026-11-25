@@ -3,8 +3,12 @@
 // Writes require the published workshop rules (see
 // firebase/WORKSHOP-RULES-TO-PUBLISH.json); without them saves are rejected
 // and the legacy path keeps working.
-import {validateWorkshop} from './workshop-model.mjs?v=20261112-tagless1';
-import {initializeWorkshop,applyWorkshopCommand} from './workshop-transactions.mjs?v=20261112-tagless1';
+//
+// IPL-0137: wire v2 stores the taken array — every worn piece at once. The
+// decoder still reads the retired three-slot v1 and migrates it to wearing
+// everything the account owns.
+import {validateWorkshop} from './workshop-model.mjs?v=20261125-aim15';
+import {initializeWorkshop,applyWorkshopCommand} from './workshop-transactions.mjs?v=20261125-aim15';
 import {isPrestige} from '../core/prestige.mjs?v=20261112-pressure1';
 import {completeStory} from '../core/campaign.mjs?v=20261112-pressure1';
 const LIMIT=2048;
@@ -12,21 +16,29 @@ const exactKeys=(value,keys)=>value && typeof value==='object' && !Array.isArray
 
 // Reject unknown fields rather than accidentally discarding a future extension.
 export function encodeWorkshop(value){
- if(!exactKeys(value,['version','components','owned','equipped','mods'])||!exactKeys(value.equipped,['weapon','gear','gadget'])||!validateWorkshop(value))return null;
+ if(!exactKeys(value,['version','components','owned','equipped','mods'])||!Array.isArray(value.equipped)||!validateWorkshop(value))return null;
  const mods=Object.entries(value.mods).sort(([a],[b])=>a<b?-1:a>b?1:0);
- const text=JSON.stringify([1,value.components,[...value.owned],[value.equipped.weapon,value.equipped.gear,value.equipped.gadget],mods]);
+ const text=JSON.stringify([2,value.components,[...value.owned],[...value.equipped],mods]);
  return text.length<=LIMIT?text:null;
 }
 export function decodeWorkshop(text){
  if(typeof text!=='string'||text.length>LIMIT)return null;
  let value;try{value=JSON.parse(text);}catch{return null;}
- if(!Array.isArray(value)||value.length!==5||value[0]!==1||!Array.isArray(value[2])||!Array.isArray(value[3])||value[3].length!==3||!Array.isArray(value[4]))return null;
+ if(!Array.isArray(value)||value.length!==5||typeof value[1]!=='number'||!Array.isArray(value[2])||!Array.isArray(value[4]))return null;
  const mods=Object.create(null);
  for(const pair of value[4]){
   if(!Array.isArray(pair)||pair.length!==2||typeof pair[0]!=='string'||typeof pair[1]!=='string'||Object.hasOwn(mods,pair[0]))return null;
   mods[pair[0]]=pair[1];
  }
- const result={version:1,components:value[1],owned:value[2],equipped:{weapon:value[3][0],gear:value[3][1],gadget:value[3][2]},mods};
+ let result;
+ if(value[0]===1){
+  // Retired three-slot wire: wear every owned piece from the first read.
+  if(!Array.isArray(value[3]))return null;
+  result={version:2,components:value[1],owned:value[2],equipped:[...value[2]],mods};
+ }else if(value[0]===2){
+  if(!Array.isArray(value[3]))return null;
+  result={version:2,components:value[1],owned:value[2],equipped:value[3],mods};
+ }else return null;
  return validateWorkshop(result)?result:null;
 }
 // Reducers accept the current profile from an account transaction. Never write
@@ -44,13 +56,12 @@ export function applyWireWorkshopCommand(profile,command){
 
 // Melt: strip every prestige trophy from a workshop. The trophies were retired
 // into the act relics (see relics.mjs), so an old save keeps its story progress
-// and loses the equipable gear: owned ids are removed, an equipped trophy is
-// replaced by the slot's neutral item and its mod entry is dropped. A workshop
-// that cannot be read is left untouched rather than blocking anything.
+// and loses the equipable gear: owned ids are removed, taken trophies leave the
+// loadout and their mod entry is dropped. A workshop that cannot be read is
+// left untouched rather than blocking anything.
 function meltWorkshop(workshop){
  const owned=workshop.owned.filter(id=>!isPrestige(id));
- const equipped={...workshop.equipped};
- for(const slot of ['weapon','gear','gadget'])if(isPrestige(equipped[slot]))equipped[slot]=slot==='weapon'?'standard':'none';
+ const equipped=workshop.equipped.filter(id=>owned.includes(id));
  const mods={...workshop.mods};
  for(const id of Object.keys(mods))if(isPrestige(id))delete mods[id];
  const next={...workshop,owned,equipped,mods};
@@ -78,4 +89,30 @@ export function meltPrestige(profile){
  if(!melted)return profile;
  const encoded=encodeWorkshop(melted);
  return encoded===null||encoded===profile.workshop?profile:{...profile,workshop:encoded};
+}
+// A prestige trophy goes away for good; the scrap it cost is not refunded.
+export {meltWorkshop};
+export {RECIPES,MOD_SCRAP,slotOf,toggleEquipped} from './workshop-model.mjs?v=20261125-aim15';
+
+// ---- co-op match loadout wire (protocol 2, taken list) ----
+export function encodeMatchLoadout(snapshot){
+ if(!snapshot||snapshot.version!==1||!Array.isArray(snapshot.items)||snapshot.items.length>50)return null;
+ const items=snapshot.items.map(item=>{
+  if(!item||typeof item.id!=='string'||!(item.mod===null||typeof item.mod==='string'))return null;
+  return [item.id,item.mod];
+ });
+ if(items.some(item=>item===null))return null;
+ const text=JSON.stringify([2,snapshot.mode,items]);
+ return text.length<=2000?text:null;
+}
+export function decodeMatchLoadout(text){
+ if(typeof text!=='string'||text.length>2000)return null;let value;
+ try{value=JSON.parse(text);}catch{return null;}
+ if(!Array.isArray(value)||value.length!==3||value[0]!==2||typeof value[1]!=='string'||!Array.isArray(value[2]))return null;
+ const items=value[2].map(pair=>{
+  if(!Array.isArray(pair)||pair.length!==2||typeof pair[0]!=='string'||!(pair[1]===null||typeof pair[1]==='string'))return null;
+  return {id:pair[0],mod:pair[1]};
+ });
+ if(items.some(item=>item===null))return null;
+ return {version:1,mode:value[1],items,relics:null};
 }

@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see docs/PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261125-aim14';
+import {getLanguage} from './language.mjs?v=20261125-aim15';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,18 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'aim15',build:'20261125-aim15',pr:0,
+    title:{en:'Everything at Once · The Soldier Wears Her Whole Locker',de:'Alles auf einmal · Der Soldat trägt den ganzen Schrank'},
+    shipped:[
+      {en:'Equipment no longer competes for slots: every piece you own counts at once - vest, boots, radio and weapon together, with their modifications stacked. Taking one piece on never puts another one down.',de:'Ausrüstung kämpft nicht mehr um Slots: Alles, was du besitzt, zählt gleichzeitig - Weste, Schuhe, Radio und Waffe zusammen, mit ihren Modifikationen gestapelt. Ein Stück anzuziehen legt nie ein anderes ab.'},
+      {en:'Old saves migrate to wearing everything the account owns. The Dossier picker and the Armory workshop became simple take-it-on, take-it-off toggles, and the character cards show every worn piece of their category.',de:'Alte Speicherstände ziehen alles an, was das Konto besitzt. Der Dossier-Picker und die Werkstatt der Waffenkammer sind einfache Anziehen-/Ausziehen-Schalter geworden, und die Figurenkarten zeigen jedes getragene Stück ihrer Kategorie.'},
+      {en:'Raised the cache wave to 20261125-aim15, because the loadout wire changed shape: no device should fight with yesterdays eyes.',de:'Die Cache-Welle auf 20261125-aim15 erhöht, weil sich die Ausrüstungs-Verdrahtung verändert hat: Kein Gerät soll mit den Augen von gestern kämpfen.'},
+    ],
+    open:[
+      {en:'Next up is the find system - an item chance at the end of each wave, reported as FOUND - followed by the armory optics.',de:'Als Nächstes kommt das Fundsystem - eine Item-Chance am Wellenende, gemeldet als FOUND - und danach die Optik der Waffenkammer.'},
+    ]
+  },
   {
     id:'aim14',build:'20261125-aim14',pr:479,
     title:{en:'Between the Slots · The Soldier Stands in Her Own Loadout',de:'Zwischen den Slots · Der Soldat steht in seiner eigenen Ausrüstung'},

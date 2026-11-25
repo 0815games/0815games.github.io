@@ -3,11 +3,11 @@ import {createPlayer,applyCommand} from '../core/match.mjs';import {createMatch,
 const player=item=>createPlayer('p',{name:'Soldier',gender:'male',level:2,skills:'v2;assault;1;0;00000000000000',loadout:`0,0,${item}`},100,130);
 function prepare(state,wave=6){state.wave=wave;state.running=true;state.spawnLeft=2;state.spawnTimer=100;state.enemies.push({hp:1000,maxHp:1000,kind:'infantry',segment:1,x:100,y:130,speed:0,reward:0});return state;}
 test('actual solo engine applies stacked workshop equipment, mods and ability cooldown',()=>{
- const w=migrateWorkshop(null);w.owned=['marksman','mechanic','radio'];w.equipped={weapon:'marksman',gear:'mechanic',gadget:'radio'};w.mods={marksman:'precision',mechanic:'lightweight',radio:'efficient'};
+ const w=migrateWorkshop(null);w.owned=['marksman','mechanic','radio'];w.equipped=['marksman','mechanic','radio'];w.mods={marksman:'precision',mechanic:'lightweight',radio:'efficient'};
  const state=prepare(createWorkshopSoloMatch(player(1),w));assert.equal(state.maxHp,110);assert.equal(state.money,135);assert.equal(state.players.p.loadout.equipped,0,'old slot is not stacked');
  state.players.p.direction={x:1,y:0};const predicted=projectCoopMotion(state,1/30);stepMatch(state);assert.equal(state.enemies[0].hp,984);assert.ok(Math.abs(state.players.p.x-predicted.players.p.x)<1e-9);assert.ok(state.players.p.x>105);
  assert.equal(applyCommand(state,'p',{type:'airstrike'}).ok,true);assert.equal(state.players.p.cooldown,25);
- w.equipped.weapon='standard';state.players.p.shotTimer=0;stepMatch(state);
+ w.equipped=w.equipped.filter(id=>id!=='marksman');state.players.p.shotTimer=0;stepMatch(state);
  // The ability keeps the wave curve at this point: the strike has grown from
  // 35 to 38 by this wave, so the pin moved with it (see match.mjs).
  assert.equal(state.enemies[0].hp,932,'match retains captured marksman after account changes');

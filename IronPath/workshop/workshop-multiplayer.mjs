@@ -2,9 +2,10 @@
 // combat equipment path. Participant declarations and hosts are
 // client-controlled; this does not prove item ownership and is not an
 // anti-cheat boundary.
-import {captureWorkshopLoadout,workshopEffects} from './workshop-effects.mjs?v=20261112-tagless1';
-import {decodeWorkshop} from './workshop-wire.mjs?v=20261112-tagless1';
-const protocol=1,slots=['weapon','gear','gadget'];
+import {captureWorkshopLoadout,workshopEffects} from './workshop-effects.mjs?v=20261125-aim15';
+import {decodeWorkshop} from './workshop-wire.mjs?v=20261125-aim15';
+// IPL-0137: protocol 2 = taken list (arbitrary length, no slots).
+const protocol=2;
 const counts={solo:[1],coop:[2],versus:[2],'four-coop':[3,4],'two-vs-two':[4]};
 const validId=id=>typeof id==='string'&&id.length>0&&id.length<=128&&!/[.#$\[\]/\u0000-\u001f\u007f]/.test(id);
 const validMatchId=id=>typeof id==='string'&&/^[a-f0-9]{32}$/.test(id);
@@ -14,15 +15,15 @@ export function encodeMatchLoadout(snapshot){
  // `relics` is an optional fourth key (solo snapshots carry it); the wire
  // format does not serialize it - co-op relics get their own protocol bump.
  const snapshotKeys=Object.keys(snapshot||{});
- if(!snapshotKeys.every(k=>['version','mode','items','relics'].includes(k))||!snapshotKeys.includes('version')||!snapshotKeys.includes('mode')||!snapshotKeys.includes('items')||Object.hasOwn(snapshot,'relics')&&!Array.isArray(snapshot.relics)||!Array.isArray(snapshot.items)||!snapshot.items.every(item=>exact(item,['slot','id','mod']))||!workshopEffects(snapshot,0))return null;
+ if(!snapshotKeys.every(k=>['version','mode','items','relics'].includes(k))||!snapshotKeys.includes('version')||!snapshotKeys.includes('mode')||!snapshotKeys.includes('items')||Object.hasOwn(snapshot,'relics')&&!Array.isArray(snapshot.relics)||!Array.isArray(snapshot.items)||!snapshot.items.every(item=>exact(item,['id','mod']))||!workshopEffects(snapshot,0))return null;
  return JSON.stringify([protocol,snapshot.mode,snapshot.items.map(i=>[i.id,i.mod])]);
 }
 export function decodeMatchLoadout(encoded,mode){
- if(typeof encoded!=='string'||encoded.length>512)return null;
+ if(typeof encoded!=='string'||encoded.length>2000)return null;
  let value;try{value=JSON.parse(encoded);}catch{return null;}
- if(!Array.isArray(value)||value.length!==3||value[0]!==protocol||value[1]!==mode||!Array.isArray(value[2])||value[2].length!==3||value[2].some(pair=>!Array.isArray(pair)||pair.length!==2))return null;
- const items=value[2].map((pair,i)=>Object.freeze({slot:slots[i],id:pair[0],mod:pair[1]}));
- const snapshot=Object.freeze({version:protocol,mode,items:Object.freeze(items)});
+ if(!Array.isArray(value)||value.length!==3||value[0]!==protocol||value[1]!==mode||!Array.isArray(value[2])||value[2].length>50||value[2].some(pair=>!Array.isArray(pair)||pair.length!==2))return null;
+ const items=value[2].map(pair=>Object.freeze({id:pair[0],mod:pair[1]}));
+ const snapshot=Object.freeze({version:1,mode,items:Object.freeze(items)});
  return workshopEffects(snapshot,0)?snapshot:null;
 }
 export function makeWorkshopOffer(profile,mode){

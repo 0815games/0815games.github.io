@@ -36,7 +36,7 @@ function fixture(profile,{workshopService=null,onProfile=()=>{}}={}){
 }
 
 const PROFILE={name:'Test Soldier',gender:'male',xp:0,armory:null,skills:''};
-const WORKSHOP=extra=>encodeWorkshop({version:1,components:0,owned:['boots'],equipped:{weapon:'standard',gear:'none',gadget:'none'},mods:{},...extra});
+const WORKSHOP=extra=>encodeWorkshop({version:2,components:0,owned:['boots'],equipped:[],mods:{},...extra});
 
 test('the dossier renders identity, XP progress and the combat profile',()=>{
   const {screen,nodes}=fixture(PROFILE);
@@ -47,9 +47,9 @@ test('the dossier renders identity, XP progress and the combat profile',()=>{
   assert.equal(nodes.get('soldierPortrait').src,'data:image/png;base64,portrait','the layered portrait from the account cache');
   assert.equal(nodes.get('soldierDamage').textContent,String(data.damage));
   // The paper doll starts on the neutral loadout.
-  assert.equal(nodes.get('soldierSlotWeaponName').textContent,'Standard weapon');
-  assert.equal(nodes.get('soldierSlotGearName').textContent,'Empty slot');
-  assert.equal(nodes.get('soldierSlotGadgetName').textContent,'Empty slot');
+  assert.equal(nodes.get('soldierSlotWeaponName').textContent,'NOTHING TAKEN');
+  assert.equal(nodes.get('soldierSlotGearName').textContent,'NOTHING TAKEN');
+  assert.equal(nodes.get('soldierSlotGadgetName').textContent,'NOTHING TAKEN');
   assert.equal(nodes.get('soldierInventoryCount').textContent,'0 pieces owned');
   assert.equal(nodes.get('soldierLegacyNote').hidden,true,'no legacy equipment, no note');
   assert.equal(nodes.get('soldierCollectionEmpty').hidden,false,'an empty collection says so');
@@ -75,11 +75,11 @@ test('the loadout slots equip through the workshop service',async()=>{
   const calls=[];
   const {screen,nodes,profile:current}=fixture(profile,{
     workshopService:{command:async command=>{calls.push(command);
-      return {status:'saved',profile:{...profile,workshop:WORKSHOP({equipped:{weapon:'standard',gear:'boots',gadget:'none'}})}};}},
+      return {status:'saved',profile:{...profile,workshop:WORKSHOP({equipped:['boots']})}};}},
     onProfile:()=>{},
   });
   screen.open();
-  assert.equal(nodes.get('soldierSlotGearName').textContent,'Empty slot');
+  assert.equal(nodes.get('soldierSlotGearName').textContent,'NOTHING TAKEN');
   // Open the gear picker: it lists the owned boots.
   nodes.get('soldierSlotGear').onclick();
   assert.equal(nodes.get('soldierSlotPicker').hidden,false,'the slot picker opens');
@@ -88,10 +88,10 @@ test('the loadout slots equip through the workshop service',async()=>{
   assert.match(picker.children[0].textContent,/GEAR/,'the picker names the slot');
   const row=picker.children[1],equipButton=row.children[1];
   assert.equal(row.children[0].textContent,'Field Boots','the owned piece is listed by name');
-  assert.match(equipButton.textContent,/^EQUIP$/,'not equipped yet');
+  assert.match(equipButton.textContent,/^TAKE$/,'not worn yet');
   equipButton.onclick();
   await new Promise(resolve=>setImmediate(resolve));
-  assert.deepEqual(calls,[{type:'equip',slot:'gear',item:'boots'}],'the change goes through the service, never a local write');
+  assert.deepEqual(calls,[{type:'equip',item:'boots'}],'the change goes through the service, never a local write');
   screen.refresh();
   assert.equal(nodes.get('soldierSlotGearName').textContent,'Field Boots','the doll shows what she wears now');
   assert.equal(nodes.get('soldierInventoryCount').textContent,'1 pieces owned');

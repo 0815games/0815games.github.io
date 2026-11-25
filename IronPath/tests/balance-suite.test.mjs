@@ -100,7 +100,7 @@ test('a pair earns the friendly rate: 70% each against 1.5x enemy health',()=>{
 test('crafted workshop gear grows with the wave curve like the armory',async()=>{
   const {workshopEffects,captureWorkshopLoadout}=await import('../workshop/workshop-effects.mjs');
   const {migrateWorkshop}=await import('../workshop/workshop-model.mjs');
-  const w=migrateWorkshop(null);w.owned=['marksman'];w.equipped={weapon:'marksman',gear:'none',gadget:'none'};w.mods={};
+  const w=migrateWorkshop(null);w.owned=['marksman'];w.equipped=['marksman'];w.mods={};
   const solo=captureWorkshopLoadout(w,'solo');
   const early=workshopEffects(solo,6),late=workshopEffects(solo,30);
   assert.ok(late.damage>early.damage,'marksman damage grows after wave 6');

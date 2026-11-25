@@ -1,6 +1,6 @@
 // Transaction reducers for the production workshop account. Call only inside
 // a transaction using its current profile, not a cached copy.
-import {migrateWorkshop,validateWorkshop,craftWorkshop,equipWorkshop,modifyWorkshop,validLegacy} from './workshop-model.mjs?v=20261112-tagless1';
+import {migrateWorkshop,validateWorkshop,craftWorkshop,toggleEquipped,modifyWorkshop,validLegacy} from './workshop-model.mjs?v=20261125-aim15';
 
 function validProfile(profile){
  return profile && typeof profile==='object' && !Array.isArray(profile) && validLegacy(profile.armory);
@@ -25,7 +25,8 @@ export function applyWorkshopCommand(profile,command){
   return result?{...profile,...result}:null;
  }
  if(command.type==='equip'){
-  const workshop=equipWorkshop(profile.workshop,command.slot,command.item);
+  // IPL-0137: a toggle on the taken list; the old slot argument is ignored.
+  const workshop=toggleEquipped(profile.workshop,command.item);
   return workshop?{...profile,workshop}:null;
  }
  return null;
