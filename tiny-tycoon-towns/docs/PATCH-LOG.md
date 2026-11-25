@@ -694,3 +694,27 @@ Ereignis ergänzt.
 - Git / PR / Veröffentlichung: Commit folgt. Nicht veröffentlicht.
 - Offen / nächster Schritt: Zwei-Konten-Test (Nutzer): A schickt eine Anfrage an B. Erwartet: B sieht
   das Popup beim Spielen, B meldet sich ab, A schickt erneut, B meldet sich wieder an, erwartet: roter Punkt am Menü.
+
+### TTT-0046 – Zoom-Performance: Wellen, Außenkacheln, 30 fps (Welle `20261125-zoom1`)
+
+- Zeit / Quelle: Sitzung 2026-11-25 (UTC). Nutzerbericht: Das Spiel hängt und laggt beim Herauszoomen.
+- Branch / Basis: `arena/2f0471fb-0815games-github-io`, Basis `362b091` (`main`).
+- Ursache (Messung, lokal, Node 22 mit `@napi-rs/canvas` als Ersatz für Canvas, nur Näherung):
+  `renderWorld` zeichnet jeden Frame alle sichtbaren Kacheln neu. Beim Herauszoomen steigt die Zahl
+  bis zum vollen Raster mit Rand. Der Profiler zeigt Pfadaufrufe (`stroke`, `fill`) als Hauptkosten,
+  darunter die Wellenlinien auf jeder Wasserkachel. Der Ticker zeichnete außerdem im Stillstand weiter.
+- Änderungen / Dateien:
+  - `src/world/scene.js`: Wellen nur auf Rasterkacheln und ab Zoom 0,75 (`WAVE_MIN_ZOOM`).
+  - `src/world/art.js`: `drawTile` respektiert `env.waves`.
+  - `src/world/board.js`: reine Zeitanimation höchstens 30 mal pro Sekunde; Eingaben (`dirty`) zeichnen sofort.
+  - `src/patch-notes.mjs`: Stadtchronik `20261125-zoom1` (DE/EN).
+  - Cache-Welle `20261125-zoom1`: alle `?v=`, `index.html`, `src/main.js` (BUILD), `release-version.json`.
+- Messung (`/tmp/bench`, 30 Durchläufe, lokal, grob): bei k=0,45 vorher ~25–31 ms pro Frame,
+  nachher ~15–17 ms. Bei k=2,6 vorher ~12–13 ms, nachher ~10 ms. Die Werte schwanken, die Richtung ist klar.
+- Prüfungen (lokal):
+  - `npm test`: 129 Tests, 129 pass, 0 fail.
+  - `npm run check`: kein Fehler, 3 Hinweise.
+  - Nicht geprüft: Browser-Darstellung und Live-Gefühl auf Handy. Nur Vercel-Vorschau kann das zeigen.
+- Git / PR / Veröffentlichung: Commit folgt. Nicht veröffentlicht.
+- Offen / nächster Schritt: Nutzer testet die Vorschau (Herauszoomen auf Handy und Desktop).
+  Weitere Kosten sind möglich: ein Offscreen-Cache für die statischen Kacheln wäre der nächste Schritt.

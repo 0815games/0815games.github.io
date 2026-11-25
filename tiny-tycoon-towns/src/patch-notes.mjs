@@ -4,6 +4,16 @@
 
 export const RELEASED_PATCHES = [
   {
+    build: '20261125-zoom1',
+    date: '2026-11-25',
+    items: [
+      {
+        de: 'Beim Herauszoomen läuft das Spiel flüssiger. Wellen auf dem Wasser erscheinen erst ab einer mittleren Zoomstufe, und das Bild wird nur noch 30 Mal pro Sekunde neu gezeichnet, wenn sich nur die Animation ändert.',
+        en: 'Zooming out runs more smoothly. Waves on the water only appear from a medium zoom level, and the picture is redrawn at most 30 times per second when only the animation changes.',
+      },
+    ],
+  },
+  {
     build: '20261125-anfrage1',
     date: '2026-11-25',
     items: [
