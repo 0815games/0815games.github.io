@@ -226,10 +226,26 @@ async function renderShell(file, version, {game}) {
     if (!marker.test(html)) {
       fail('shell/index.html: die BUILD:LOADER-Marker wurden nicht gefunden.');
     }
+    // UI.init() in try/catch und mit Phasenprotokoll: ein Fehler in der
+    // Oberflaeche liess bisher die Login-Seite unsichtbar (Boot-Sequenz wartet
+    // auf scriptsLoaded) und wurde auf dem iPhone zu "Script error." ohne
+    // jede Spur. Jetzt steht die Phase im Puffer, und der Boot laeuft weiter.
     html = html.replace(
       marker,
-      `                if (typeof UI !== 'undefined') UI.init();\n` +
-        `                scriptsLoaded = true;\n`
+      `                if (window._bootGestartet) {\n` +
+        `                    window.captureLog('WARNUNG', 'onload lief ein zweites Mal - ignoriert');\n` +
+        `                } else {\n` +
+        `                window._bootGestartet = true;\n` +
+        `                window.captureLog('PHASE', 'app.js ausgewertet, UI.init folgt');\n` +
+        `                try {\n` +
+        `                    if (typeof UI !== 'undefined') UI.init();\n` +
+        `                } catch (fehler) {\n` +
+        `                    window.captureLog('FEHLER', 'UI.init: ' + (fehler && fehler.message));\n` +
+        `                    if (fehler && fehler.stack) window.captureLog('STACK', fehler.stack);\n` +
+        `                }\n` +
+        `                window.captureLog('PHASE', 'UI.init fertig, Boot wird freigegeben');\n` +
+        `                scriptsLoaded = true;\n` +
+        `                }\n`
     );
 
     // Das Bündel wird am Ende eingebunden - vorher, damit die Prüfungen unten

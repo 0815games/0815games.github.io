@@ -1,5 +1,33 @@
 # CHANGELOG
 
+## v14.0.9 (Crash-Bericht aussagekraeftig, 2026-11-25)
+Ein Bericht vom iPhone (Safari, iOS 18.7) meldete "Script error." ohne Zeile und
+Stack - und mit LEEREM Log-Puffer. Der Bericht war damit blind: er sagte, dass
+etwas kaputt ist, aber nicht was.
+
+- [FIX] **Der Log-Puffer wird wirklich gefuellt.** `captureLog()` existierte
+  seit jeher, rief aber niemand auf. Jetzt haengen sich `console.log/warn/error`
+  selbst ein; der Puffer behaelt die letzten 50 Zeilen.
+- [FIX] **Der Bericht nennt die letzte Aktion** (`window.letzteAktion`) und die
+  Geraetepixel. Bei einem Fehler aus fremdem Skript gibt es keinen Stack - der
+  letzte Bedienschritt ist dann die einzige Spur.
+- [FIX] **Ein fehlgeschlagenes CDN-Skript landet im Bericht.** Die
+  `onerror`-Attribute setzten `window.scriptLoadError`, gelesen hat es niemand.
+- [FIX] **Ein leerer Puffer wird als solcher benannt** statt als leere Rubrik
+  auszusehen.
+- [FIX] **`UI.init()` laeuft in `try/catch` mit Phasenprotokoll.** Vorher konnte
+  ein Fehler in der Oberflaeche die Login-Seite unsichtbar lassen: der Boot
+  wartet auf `scriptsLoaded`, das erst nach `UI.init()` gesetzt wird. Auf dem
+  iPhone war das ein schwarzer Bildschirm ohne Bericht. `scriptsLoaded` steht
+  jetzt hinter dem `try/catch`, der Boot laeuft also immer weiter.
+- [FIX] **Schutz gegen doppeltes `onload`:** ein zweiter Lauf startet das Spiel
+  nicht erneut, sondern wird als Warnung protokolliert.
+
+Was der Bericht NICHT beweist: die Ursache. Auch mit `crossorigin="anonymous"`
+an den Firebase-Tags kann Safari bei einem Fehler in einem CDN-Skript
+"Script error." liefern. Der naechste Bericht zeigt jetzt den Ablauf bis zum
+Absturz - erst damit laesst sich die Ursache eingrenzen.
+
 ## v14.0.8 (App-Icon, 2026-11-24)
 Startbildschirm, Homescreen und Browser-Tab hatten ein Platzhalter-Icon: ein
 weisses "P" im schwarzen Quadrat, als Inline-SVG in der Huelle. Auf einem
