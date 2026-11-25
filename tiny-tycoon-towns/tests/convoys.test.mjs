@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { createTown, advance, hydrateTown } from '../src/domain/engine.js';
+import { createTown, advance, hydrateTown, settleConvoyAction } from '../src/domain/engine.js';
+import { exportPayout } from '../src/domain/trade.js';
 import { startConvoy, activeConvoys } from '../src/domain/convoys.js';
 import { applyCharterToData, emptyCharter, grantCharters, buyPerk } from '../src/domain/charters.js';
 
@@ -119,4 +120,69 @@ test('towns saved before convoys existed load with an empty convoy list', () => 
   const loaded = hydrateTown(old);
   assert.deepEqual(loaded.convoys, []);
   assert.equal(loaded.convoySeq, 0);
+});
+
+/** Hilfe: Konvoi losschicken und bis zur Ankunft vorspulen. */
+function arrivedConvoy(state, args) {
+  const r = startConvoy(state, args, ctx());
+  assert.equal(r.error, undefined, r.error);
+  const c = r.state.convoys[r.state.convoys.length - 1];
+  return advance(r.state, c.arriveAt, ctx()).state;
+}
+
+test('settling an arrived export pays coins, grants XP and marks the convoy settled', () => {
+  const s = arrivedConvoy(town(), { partner, direction: 'export', resource: 'grain', qty: 20 });
+  const xpBefore = s.townXp;
+  const coinsBefore = s.coins;
+  const r = settleConvoyAction(s, { id: s.convoys[0].id }, ctx());
+  assert.equal(r.error, undefined);
+  assert.equal(r.state.convoys[0].status, 'settled');
+  const expected = exportPayout({ qty: 20, basePrice: data.resources.grain.basePrice, distance: 2 });
+  assert.equal(r.state.coins, coinsBefore + expected.coins);
+  assert.equal(r.payout.crowns, expected.crowns);
+  assert.equal(r.state.townXp, xpBefore + 25);
+});
+
+test('settling is idempotent: a second call changes nothing', () => {
+  const s = arrivedConvoy(town(), { partner, direction: 'export', resource: 'grain', qty: 20 });
+  const once = settleConvoyAction(s, { id: s.convoys[0].id }, ctx());
+  const twice = settleConvoyAction(once.state, { id: s.convoys[0].id }, ctx());
+  assert.equal(twice.error, 'alreadySettled');
+  assert.equal(twice.state.coins, once.state.coins);
+  assert.equal(twice.state.townXp, once.state.townXp);
+});
+
+test('a convoy that has not arrived cannot be settled', () => {
+  const r = startConvoy(town(), { partner, direction: 'export', resource: 'grain', qty: 20 }, ctx());
+  assert.equal(settleConvoyAction(r.state, { id: r.state.convoys[0].id }, ctx()).error, 'notArrived');
+});
+
+test('unknown convoy id is rejected', () => {
+  assert.equal(settleConvoyAction(town(), { id: 'nope' }, ctx()).error, 'noConvoy');
+});
+
+test('settling an import puts the arrived goods into stock (capped by the warehouse)', () => {
+  const s = arrivedConvoy(town({ coins: 10_000 }), { partner, direction: 'import', resource: 'honey', qty: 10 });
+  const before = s.stock.honey ?? 0;
+  const r = settleConvoyAction(s, { id: s.convoys[0].id }, ctx());
+  assert.equal(r.error, undefined);
+  assert.equal(r.state.stock.honey, before + r.payout.goods);
+  assert.equal(r.payout.coins, 0);
+});
+
+test('reciprocity: an export gets +25 % when an import with the same partner has arrived', () => {
+  let s = arrivedConvoy(town({ coins: 10_000 }), { partner, direction: 'import', resource: 'honey', qty: 10 });
+  s = arrivedConvoy(s, { partner, direction: 'export', resource: 'grain', qty: 20 });
+  const exportId = s.convoys[1].id;
+  const r = settleConvoyAction(s, { id: exportId }, ctx());
+  // Der Bonus wird vor dem Abrunden angewendet, wie in exportPayout.
+  const boosted = exportPayout({ qty: 20, basePrice: data.resources.grain.basePrice, distance: 2, reciprocal: true }).coins;
+  assert.equal(r.payout.coins, boosted);
+});
+
+test('without a counterpart there is no reciprocity bonus', () => {
+  const s = arrivedConvoy(town(), { partner, direction: 'export', resource: 'grain', qty: 20 });
+  const r = settleConvoyAction(s, { id: s.convoys[0].id }, ctx());
+  const plain = exportPayout({ qty: 20, basePrice: data.resources.grain.basePrice, distance: 2 }).coins;
+  assert.equal(r.payout.coins, plain);
 });

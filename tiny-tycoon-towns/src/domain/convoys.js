@@ -2,7 +2,7 @@
 // Abfahrt und Ankunft. Die Abrechnung (settled) folgt in Scheibe 3.
 // Reine Funktionen: Eingabezustand wird nicht verändert.
 import {
-  convoyDurationMin, importCost, isValidQuantity, MAX_ACTIVE_CONVOYS,
+  convoyDurationMin, importCost, exportPayout, isValidQuantity, MAX_ACTIVE_CONVOYS,
 } from './trade.js?v=20261124-zentrieren';
 
 const clone = (o) => structuredClone(o);
@@ -68,4 +68,27 @@ export function arriveConvoys(state, nowMs) {
     }
   }
   return { state: s, events };
+}
+
+/**
+ * Gegenkonvoi mit demselben Partner in die andere Richtung, der schon angekommen oder abgerechnet ist.
+ * Offene Frage (siehe KONVOI-PLAN.md): Der Bonus gilt für die Seite, die als Zweite abgerechnet wird.
+ */
+export function hasReciprocal(state, convoy) {
+  return (state.convoys ?? []).some((o) => o.id !== convoy.id
+    && o.partnerId === convoy.partnerId
+    && o.direction !== convoy.direction
+    && (o.status === 'arrived' || o.status === 'settled'));
+}
+
+/** Auszahlung eines angekommenen Konvois. Export: Münzen und Kronen. Import: Ware kommt ins Lager. */
+export function payoutFor(state, convoy, data) {
+  const basePrice = data.resources[convoy.resource].basePrice;
+  const reciprocal = hasReciprocal(state, convoy);
+  if (convoy.direction === 'export') {
+    const p = exportPayout({ qty: convoy.qty, basePrice, distance: convoy.distance, reciprocal });
+    return { coins: p.coins, crowns: p.crowns, goods: 0, xp: data.economy.xp.convoyDelivered };
+  }
+  const arrived = importCost({ qty: convoy.qty, basePrice, distance: convoy.distance }).arrived;
+  return { coins: 0, crowns: 0, goods: arrived, xp: data.economy.xp.convoyDelivered };
 }
