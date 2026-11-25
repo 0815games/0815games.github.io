@@ -19,7 +19,30 @@ export const PERKS = [
 export const TOTAL_PERK_POINTS = PERKS.reduce((sum, p) => sum + p.max, 0);
 
 export function emptyCharter() {
-  return { earned: 0, spent: 0, perks: {}, founded: {} };
+  return { earned: 0, spent: 0, perks: {}, founded: {}, crowns: 0, creditedConvoys: {} };
+}
+
+/**
+ * Schreibt die Kronen aller abgerechneten Konvois dieser Stadt dem Konto gut, die noch nicht gutgeschrieben sind.
+ * Idempotent über die Konvoi-ID. Holt Gutschriften nach, falls das Speichern früher gescheitert ist.
+ * Gibt { charter, changed, credited } zurück.
+ */
+export function reconcileCrowns(charter, town) {
+  const base = charter ?? emptyCharter();
+  const credited = { ...(base.creditedConvoys ?? {}) };
+  let add = 0;
+  for (const c of town?.convoys ?? []) {
+    const k = c.payout?.crowns ?? 0;
+    if (c.status !== 'settled' || k <= 0 || credited[c.id]) continue;
+    credited[c.id] = true;
+    add += k;
+  }
+  if (add === 0) return { charter: base, changed: false, credited: 0 };
+  return {
+    charter: { ...base, crowns: (base.crowns ?? 0) + add, creditedConvoys: credited },
+    changed: true,
+    credited: add,
+  };
 }
 
 /** Freibriefe, die gerade gebraucht werden können (gewonnen minus ausgegeben). */

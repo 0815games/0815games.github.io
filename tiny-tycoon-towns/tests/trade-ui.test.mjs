@@ -70,3 +70,9 @@ test('convoy names are escaped', () => {
     { ...data, npcs: evil }, NOW);
   assert.ok(!html.includes('<img'));
 });
+
+test('the trade dialog shows the crown balance of the account', async () => {
+  const { tradeFormHtml } = await import('../src/trade-ui.js');
+  const html = tradeFormHtml(data, 7);
+  assert.match(html, /Kronen auf dem Konto: <strong data-crowns>7<\/strong>/);
+});

@@ -2,8 +2,8 @@
 // Die Aktionen laufen in main.js über startConvoy und settleConvoyAction.
 import {
   convoyDurationMin, exportPayout, importCost, CONVOY_MIN_QTY, CONVOY_MAX_QTY, MAX_ACTIVE_CONVOYS,
-} from './domain/trade.js?v=20261124-zentrieren';
-import { activeConvoys } from './domain/convoys.js?v=20261124-zentrieren';
+} from './domain/trade.js?v=20261124-konvoi1';
+import { activeConvoys } from './domain/convoys.js?v=20261124-konvoi1';
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -27,7 +27,7 @@ export function previewFor({ partner, direction, resource, qty, data }) {
 }
 
 /** Formular: Partner, Richtung, Ware, Menge. Die Vorschau aktualisiert main.js beim Ändern. */
-export function tradeFormHtml(data) {
+export function tradeFormHtml(data, crowns = 0) {
   const towns = data.npcs?.towns ?? [];
   const partnerOpts = towns.map((t) => {
     const biome = data.biomes[t.biome]?.name.de ?? t.biome;
@@ -37,6 +37,7 @@ export function tradeFormHtml(data) {
     `<option value="${esc(id)}">${esc(r.icon ?? '')} ${esc(r.name.de)}</option>`).join('');
   return `<form id="trade-form" class="auth-form trade-form" novalidate>
     <h2 id="trade-title">Handel</h2>
+    <p class="small">Kronen auf dem Konto: <strong data-crowns>${crowns}</strong></p>
     <p class="small">Schick einen Konvoi zu einer Nachbarstadt. Höchstens ${MAX_ACTIVE_CONVOYS} Konvois gleichzeitig.</p>
     <label>Partnerstadt<select name="partner">${partnerOpts}</select></label>
     <fieldset class="trade-dir"><legend>Richtung</legend>

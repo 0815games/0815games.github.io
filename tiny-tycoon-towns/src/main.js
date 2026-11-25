@@ -3,29 +3,29 @@
 import {
   createTown, newSeed, chooseBiome, placeBuilding, upgradeBuilding,
   toggleSell, buyOffer, advance, hydrateTown, setTutorialStep, settleConvoyAction,
-} from './domain/engine.js?v=20261124-zentrieren';
-import { startConvoy } from './domain/convoys.js?v=20261124-zentrieren';
-import { tradeFormHtml, convoyListHtml, previewFor } from './trade-ui.js?v=20261124-zentrieren';
+} from './domain/engine.js?v=20261124-konvoi1';
+import { startConvoy } from './domain/convoys.js?v=20261124-konvoi1';
+import { tradeFormHtml, convoyListHtml, previewFor } from './trade-ui.js?v=20261124-konvoi1';
 import {
   productionMultiplier, ratePerMin, buildCost, storageCap, classOf,
-} from './domain/economy.js?v=20261124-zentrieren';
-import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261124-zentrieren';
-import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261124-zentrieren';
-import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261124-zentrieren';
+} from './domain/economy.js?v=20261124-konvoi1';
+import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261124-konvoi1';
+import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261124-konvoi1';
+import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261124-konvoi1';
 import {
   PERKS, canFoundCharter, grantCharters, buyPerk, perkEffect, perkLevel, availableCharters, emptyCharter,
-  applyCharterToData,
-} from './domain/charters.js?v=20261124-zentrieren';
+  applyCharterToData, reconcileCrowns,
+} from './domain/charters.js?v=20261124-konvoi1';
 const SEEN_NOTES_KEY = 'ttt:notes-seen';
-import { withTimeout } from './async-util.js?v=20261124-zentrieren';
-import { checkTownName } from './town-names.js?v=20261124-zentrieren';
-import { friendsShell, mountFriends } from './friends-ui.js?v=20261124-zentrieren';
-import { createBoard } from './world/board.js?v=20261124-zentrieren';
-import { createLoginScene } from './world/login-scene.js?v=20261124-zentrieren';
-import { TUTORIAL_STEPS, HELP_SECTIONS } from './tutorial.js?v=20261124-zentrieren';
-import { createVersionUI } from './version-ui.mjs?v=20261124-zentrieren';
+import { withTimeout } from './async-util.js?v=20261124-konvoi1';
+import { checkTownName } from './town-names.js?v=20261124-konvoi1';
+import { friendsShell, mountFriends } from './friends-ui.js?v=20261124-konvoi1';
+import { createBoard } from './world/board.js?v=20261124-konvoi1';
+import { createLoginScene } from './world/login-scene.js?v=20261124-konvoi1';
+import { TUTORIAL_STEPS, HELP_SECTIONS } from './tutorial.js?v=20261124-konvoi1';
+import { createVersionUI } from './version-ui.mjs?v=20261124-konvoi1';
 
-const BUILD = '20261124-zentrieren';
+const BUILD = '20261124-konvoi1';
 console.info(`Tiny Tycoon Towns ${BUILD}`);
 const LAST_BIOME_KEY = 'ttt.lastBiome';
 const LOCAL_KEY = (uid) => `ttt.save.v1.${uid}`;
@@ -105,7 +105,7 @@ const REMOTE_TIMEOUT_MS = 10_000;
 async function loadData() {
   const names = ['resources', 'biomes', 'buildings', 'economy', 'merchant', 'npcs'];
   const parts = await Promise.all(names.map((n) =>
-    fetch(`data/${n}.json?v=20261124-zentrieren`).then((r) => {
+    fetch(`data/${n}.json?v=20261124-konvoi1`).then((r) => {
       if (!r.ok) throw new Error(`data/${n}.json: HTTP ${r.status}`);
       return r.json();
     })));
@@ -151,7 +151,7 @@ async function boot() {
   window.addEventListener('offline', updateSync);
 
   try {
-    cloud = await import('./cloud.js?v=20261124-zentrieren');
+    cloud = await import('./cloud.js?v=20261124-konvoi1');
   } catch {
     showFatal('Das Konto-System konnte nicht geladen werden. Ohne Anmeldung lässt sich nicht spielen. Bitte Verbindung prüfen und neu laden.');
     return;
@@ -1455,7 +1455,8 @@ function openTrade() {
     toast('Die Handelsdaten fehlen. Lade das Spiel neu.', 'error');
     return;
   }
-  const dlg = openDialog(`<div class="dlg-body">${tradeFormHtml(data)}<p class="row"><button type="button" id="trade-close" class="ghost">Schließen</button></p></div>`);
+  void syncCrowns();
+  const dlg = openDialog(`<div class="dlg-body">${tradeFormHtml(data, charter?.crowns ?? 0)}<p class="row"><button type="button" id="trade-close" class="ghost">Schließen</button></p></div>`);
   const form = dlg.querySelector('#trade-form');
   const readForm = () => {
     const fd = new FormData(form);
@@ -1502,6 +1503,7 @@ function openTrade() {
     if (btn) {
       dispatch(settleConvoyAction(state, { id: btn.dataset.settle }, ctx()), 'Konvoi abgerechnet.');
       paintList();
+      void syncCrowns();
     }
     if (e.target.closest('#trade-close')) closeDialog();
   });
@@ -1532,6 +1534,21 @@ function openCharters() {
     });
   };
   paint();
+}
+
+/** Kronen abgerechneter Konvois dem Konto gutschreiben. Speichert nur, wenn sich etwas ändert. */
+async function syncCrowns() {
+  if (!state || !uid || !charterLoaded || !charter) return;
+  const r = reconcileCrowns(charter, state);
+  if (!r.changed) return;
+  try {
+    await cloud.saveCharter(uid, r.charter);
+    charter = r.charter;
+    document.querySelectorAll('[data-crowns]').forEach((el) => { el.textContent = String(charter.crowns); });
+  } catch (err) {
+    // Die Gutschrift bleibt offen und wird beim nächsten Abgleich erneut versucht.
+    toast(cloud.dbErrorDe(err), 'error');
+  }
 }
 
 function charterHtml() {
@@ -1576,7 +1593,9 @@ async function foundCharter() {
   );
   if (!yes || !state || !uid || !charterLoaded) return;
   // Zuerst den Gewinn sichern, dann erst die Stadt neu starten.
-  const next = grantCharters(charter, state);
+  // Ausstehende Kronen vorher sichern, weil die Stadt danach neu startet.
+  const recon = reconcileCrowns(charter, state).charter;
+  const next = grantCharters(recon, state);
   try {
     await cloud.saveCharter(uid, next);
   } catch (err) {
