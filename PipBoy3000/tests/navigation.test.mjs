@@ -9,12 +9,13 @@
 // einen setzt, dass ohne Bestaetigung nichts gilt - und dass die Nadel in die
 // richtige Richtung dreht. Ein Pfeil, der in die falsche Richtung zeigt, ist
 // schlimmer als keiner: er schickt den Spieler in die Irre.
-import {test} from 'node:test';
+import {test, before, after} from 'node:test';
 import assert from 'node:assert/strict';
-import {readFileSync} from 'node:fs';
-import {join, dirname} from 'node:path';
+import {createServer} from 'node:http';
+import {readFileSync, existsSync} from 'node:fs';
+import {join, dirname, extname} from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {JSDOM} from 'jsdom';
+import {JSDOM, VirtualConsole} from 'jsdom';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const read = (...p) => readFileSync(join(ROOT, ...p), 'utf8');
@@ -415,4 +416,337 @@ test('ein Klick auf die Karte setzt ohne Bestaetigung kein Ziel', () => {
   assert.notEqual(w.eval('Navigation.marker ? 1 : null'), null);
   assert.equal(w.eval('Navigation.stand() ? 1 : null'), null,
     'Der Klick allein hat das Ziel gesetzt - die Bestaetigung wird uebersprungen');
+});
+
+test('ruhiges Zielen ueber 500 ms setzt trotzdem einen Marker, Hin-und-zurueck-Ziehen nicht', () => {
+  // Frueher verwarf `dauer < 500` jedes sorgfaeltige Druecken ab einer halben
+  // Sekunde, waehrend ein Ziehen weg und zurueck zum Startpunkt als Klick galt.
+  const {cvs, w, MouseEvent} = mitKarte();
+  const los = (typ, x, y) => cvs.dispatchEvent(new MouseEvent(typ, {bubbles: true, clientX: x, clientY: y, button: 0}));
+
+  // 1) Wegziehen (80 px) und wieder auf den Startpunkt zurueck -> KEIN Klick!
+  los('mousedown', 200, 200);
+  los('mousemove', 280, 200);
+  los('mousemove', 200, 200);
+  los('mouseup', 200, 200);
+  assert.equal(w.eval('Navigation.marker'), null,
+    'Hin-und-zurueck-Ziehen wurde faelschlich als Klick gewertet');
+
+  // 2) Ruhiges Halten (z. B. 900 ms) ohne Bewegung -> MUSS Marker setzen!
+  w.eval('UI.mapState.offsetX = 0; UI.mapState.offsetY = 0;');
+  const echtNow = w.Date.now;
+  let uhr = 10000;
+  w.Date.now = () => uhr;
+  try {
+    los('mousedown', 300, 150);
+    uhr += 950;
+    los('mouseup', 300, 150);
+  } finally {
+    w.Date.now = echtNow;
+  }
+  const marker = w.eval('Navigation.marker ? Navigation.marker.x + "," + Navigation.marker.y : null');
+  assert.equal(marker, '2,1', `Ruhiger Klick >500 ms wurde verworfen: ${marker}`);
+});
+
+test('Touch auf der Weltkarte unterbindet Ghost-Clicks, gibt mapState weiter und setzt den Marker', () => {
+  const css = read('style.css');
+  assert.match(css, /#world-map-canvas\s*\{[^}]*touch-action:\s*none/,
+    '#world-map-canvas braucht touch-action: none gegen Scroll-Abbruch in #view-container');
+
+  const {cvs, w, MouseEvent} = mitKarte();
+  const touchEvt = (typ, touches, changedTouches) => {
+    const ev = new w.Event(typ, {bubbles: true, cancelable: true});
+    ev.touches = touches;
+    ev.changedTouches = changedTouches;
+    cvs.dispatchEvent(ev);
+    return ev;
+  };
+
+  w.eval('UI.mapState.offsetX = -150; UI.mapState.offsetY = 0;');
+  const punkt = {clientX: 150, clientY: 300};
+  const s = touchEvt('touchstart', [punkt], [punkt]);
+  const e = touchEvt('touchend', [], [punkt]);
+  assert.equal(s.defaultPrevented, true, 'touchstart muss preventDefault rufen');
+  assert.equal(e.defaultPrevented, true, 'touchend muss preventDefault gegen Ghost-Click rufen');
+
+  // Mit offsetX=-150 entspricht clientX=150 globalX=300/3=100 -> Sektor 2,2.
+  const nachTouch = w.eval('Navigation.marker ? Navigation.marker.x + "," + Navigation.marker.y : null');
+  assert.equal(nachTouch, '2,2');
+
+  // Unmittelbarer synthetischer Browser-Mausklick an anderer Koordinate wird ignoriert.
+  cvs.dispatchEvent(new MouseEvent('mousedown', {bubbles: true, clientX: 10, clientY: 10, button: 0}));
+  cvs.dispatchEvent(new MouseEvent('mouseup', {bubbles: true, clientX: 10, clientY: 10, button: 0}));
+  const nachGhost = w.eval('Navigation.marker ? Navigation.marker.x + "," + Navigation.marker.y : null');
+  assert.equal(nachGhost, '2,2', 'Synthetischer Ghost-Mausklick nach Touch hat den Marker ueberschrieben');
+});
+
+test('String-Koordinaten aus alten Spielstaenden verfälschen weder Peilung noch Ankunft', () => {
+  const {ergebnis} = mitNavigation(`() => {
+    Game.state.sector = {x: "4", y: "4"};
+    Game.state.player = {x: "25", y: "25"};
+    Game.state.nav = {x: "4", y: "2"};
+    const nord = Navigation.richtung();
+    const da = Navigation.angekommen();
+    Game.state.nav = {x: "4", y: "4"};
+    const jetztDa = Navigation.angekommen();
+    return {grad: Math.round(nord.grad), felder: nord.felder, da, jetztDa};
+  }`);
+  assert.equal(ergebnis.grad, 0, 'Direkt nach Norden muss 0 Grad ergeben (keine String-Verkettung "40.5")');
+  assert.equal(ergebnis.felder, 100);
+  assert.equal(ergebnis.da, false);
+  assert.equal(ergebnis.jetztDa, true);
+});
+
+// ---------------------------------------------------------------------------
+// Echte ausgelieferte Oberflaeche (index.html + app.js + style.css + app.css)
+// ---------------------------------------------------------------------------
+
+const MIME = {
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.svg': 'image/svg+xml'
+};
+
+let server;
+let baseUrl;
+
+before(async () => {
+  server = createServer((req, res) => {
+    const clean = decodeURIComponent((req.url || '/').split('?')[0]);
+    const rel = clean === '/' ? 'index.html' : clean.replace(/^\/+/, '');
+    const file = join(ROOT, rel);
+    if (!existsSync(file)) {
+      res.writeHead(404);
+      res.end('not found');
+      return;
+    }
+    res.writeHead(200, {'Content-Type': MIME[extname(file)] || 'application/octet-stream'});
+    res.end(readFileSync(file));
+  });
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  baseUrl = `http://127.0.0.1:${server.address().port}`;
+});
+
+after(async () => {
+  if (server) await new Promise(resolve => server.close(resolve));
+});
+
+async function starteEchtesSpiel() {
+  let html = readFileSync(join(ROOT, 'index.html'), 'utf8');
+  const appCss = readFileSync(join(ROOT, 'app.css'), 'utf8');
+  const styleCss = readFileSync(join(ROOT, 'style.css'), 'utf8');
+  html = html.replace('runBootSequence(null);', '');
+  html = html.replace('</head>', `<style>${appCss}\n${styleCss}</style></head>`);
+
+  const canvasAufrufe = [];
+  const dom = new JSDOM(html, {
+    url: `${baseUrl}/index.html`,
+    runScripts: 'dangerously',
+    resources: 'usable',
+    pretendToBeVisual: true,
+    virtualConsole: new VirtualConsole(),
+    beforeParse(w) {
+      w.fetch = (u, opts) => fetch(new URL(String(u), `${baseUrl}/`), opts);
+      w.HTMLCanvasElement.prototype.getContext = function () {
+        const zielId = this.id || (this.parentElement && this.parentElement.id) || 'canvas';
+        return {
+          canvas: this,
+          scale() {}, clearRect() {}, fillRect() {}, beginPath() {}, arc() {},
+          fill() { canvasAufrufe.push({zielId, op: 'fill'}); },
+          stroke() { canvasAufrufe.push({zielId, op: 'stroke'}); },
+          save() {}, restore() {}, translate() {},
+          rotate(rad) { canvasAufrufe.push({zielId, op: 'rotate', rad}); },
+          drawImage() {},
+          fillText(txt) { canvasAufrufe.push({zielId, op: 'text', txt: String(txt)}); },
+          strokeText() {},
+          setLineDash() {},
+          measureText() { return {width: 20}; },
+          createLinearGradient() { return {addColorStop() {}}; },
+          createRadialGradient() { return {addColorStop() {}}; },
+          setTransform() {}, moveTo() {}, lineTo() {}, closePath() {},
+          rect() {}, roundRect() {}, clip() {}
+        };
+      };
+    }
+  });
+
+  const {window} = dom;
+  const {document} = window;
+  const frist = Date.now() + 8000;
+  while (Date.now() < frist) {
+    if (window.UI && window.UI.els && window.Game && window.Navigation) break;
+    await new Promise(r => setTimeout(r, 40));
+  }
+  assert.ok(window.UI && window.Navigation, 'app.js wurde nicht vollstaendig initialisiert');
+
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('login-screen').classList.add('hidden');
+  const gs = document.getElementById('game-screen');
+  gs.classList.remove('hidden', 'opacity-0');
+  gs.style.display = 'flex';
+
+  window.Game.saveGame = function () {};
+  window.Game.state = {
+    view: 'map',
+    inDialog: false,
+    tutorial: 'fertig',
+    player: {x: 25, y: 25},
+    sector: {x: 4, y: 4},
+    nav: null,
+    zone: 'Oedland (Stufe 1)',
+    inventory: [{id: 'stimpack', count: 2}],
+    hp: 90, maxHp: 100, lvl: 3, xp: 40, caps: 120, ammo: 15, kills: 4, rads: 0,
+    stats: {STR: 5, PER: 5, END: 5, CHA: 5, INT: 5, AGI: 5, LCK: 5},
+    equip: {weapon: null, body: null, head: null, torso: null, legs: null},
+    explored: {'4,4_25,25': '.'},
+    currentMap: Array.from({length: 50}, () => Array(50).fill('.')),
+    activeQuests: [{id: 'q_explore', type: 'visit', target: '3,3', progress: 0, max: 1}],
+    completedQuests: [], perks: {}, knownRecipes: []
+  };
+  await window.UI.switchView('map');
+
+  const schliesse = async () => {
+    if (window.UI && window.UI.updateUI && typeof window.UI.updateUI.stop === 'function') {
+      window.UI.updateUI.stop();
+    }
+    if (window.UI && typeof window.UI.stoppeAfkSchutz === 'function') {
+      window.UI.stoppeAfkSchutz();
+    }
+    window.Game.state.view = 'closed';
+    await new Promise(r => setTimeout(r, 30));
+    dom.window.close();
+  };
+
+  return {dom, window, document, canvasAufrufe, schliesse};
+}
+
+test('echtes DOM: Burger-Menue -> NAVIGATION setzt per Enter das Ziel und zeigt Pfeil im HUD und auf dem Spielfeld', async () => {
+  const spiel = await starteEchtesSpiel();
+  try {
+    const {window, document, canvasAufrufe} = spiel;
+
+    // Vorher: kein Ziel, #nav-pfeil im echten CSS unsichtbar.
+    const pfeilVorher = document.getElementById('nav-pfeil');
+    assert.equal(window.getComputedStyle(pfeilVorher).display, 'none');
+
+    // Burger-Menue oeffnen -> NAVIGATION anklicken.
+    document.getElementById('btn-menu-toggle').click();
+    document.getElementById('btn-navigation').click();
+
+    const eingabe = document.getElementById('nav-eingabe');
+    assert.equal(window.getComputedStyle(eingabe).display, 'flex', '#nav-eingabe muss sichtbar sein');
+    assert.ok(eingabe.closest('#main-content'), '#nav-eingabe muss unter #game-header in #main-content liegen');
+
+    // Koordinaten [7, 2] eintippen und im Zahlenfeld Enter druecken!
+    // Vorher feuerte handleKeyDown stattdessen triggerFocus() auf einen alten
+    // Hintergrund-Knopf und ueberschrieb oder ignorierte die Eingabe.
+    const feldX = document.getElementById('nav-eingabe-x');
+    const feldY = document.getElementById('nav-eingabe-y');
+    feldX.value = '7';
+    feldY.value = '2';
+    feldY.focus();
+    feldY.dispatchEvent(new window.KeyboardEvent('keydown', {key: 'Enter', bubbles: true, cancelable: true}));
+
+    assert.equal(window.getComputedStyle(eingabe).display, 'none', 'Enter muss #nav-eingabe schliessen');
+    assert.deepEqual({x: window.Game.state.nav.x, y: window.Game.state.nav.y}, {x: 7, y: 2});
+
+    // HUD-Pfeil und Sektor-Anzeige sind im echten CSS sichtbar und gefuellt.
+    const pfeil = document.getElementById('nav-pfeil');
+    assert.equal(window.getComputedStyle(pfeil).display, 'flex', '#nav-pfeil muss sichtbar sein');
+    assert.match(pfeil.querySelector('[data-nav-text]').textContent, /^NO\s+3\.\d$/);
+    assert.match(document.getElementById('val-sector-display').textContent, /\[4,4\].*\[7,2\]/);
+
+    // Und auf der Sektorkarte (#game-canvas) wird der Richtungspfeil am Spieler gezeichnet.
+    const gameCvs = document.getElementById('game-canvas');
+    Object.defineProperty(gameCvs, 'clientWidth', {value: 400, configurable: true});
+    Object.defineProperty(gameCvs, 'clientHeight', {value: 400, configurable: true});
+    window.Game.initCanvas();
+    if (typeof window.Game.renderStaticMap === 'function') window.Game.renderStaticMap();
+    canvasAufrufe.length = 0;
+    window.Game.draw();
+    const drehungenAufSpielfeld = canvasAufrufe.filter(a => a.zielId === 'game-canvas' && a.op === 'rotate');
+    assert.ok(drehungenAufSpielfeld.length > 0,
+      'Game.draw() muss bei aktivem Ziel den gedrehten Richtungspfeil auf #game-canvas zeichnen');
+  } finally {
+    await spiel.schliesse();
+  }
+});
+
+test('echtes DOM: Weltkarte antippen -> ZIEL SETZEN -> Sektorwechsel aktualisiert Richtung und Ankunft sofort', async () => {
+  const spiel = await starteEchtesSpiel();
+  try {
+    const {window, document} = spiel;
+    await window.UI.switchView('worldmap');
+
+    const cvs = document.getElementById('world-map-canvas');
+    assert.ok(cvs, '#world-map-canvas fehlt in der Weltkarten-Ansicht');
+    const parentRect = {left: 0, top: 0, width: 500, height: 500, right: 500, bottom: 500};
+    cvs.parentElement.getBoundingClientRect = () => parentRect;
+    cvs.getBoundingClientRect = () => parentRect;
+    window.UI.renderWorldMap();
+
+    // Karte auf Ursprung stellen und per Touch Sektor [5, 4] antippen (275/3 = Feld 91 -> Sektor 1? Nein: 5*50*3=750; bei scale=1 -> 275 = Sektor 5).
+    window.UI.mapState.scale = 1;
+    window.UI.mapState.offsetX = 0;
+    window.UI.mapState.offsetY = 0;
+    const p = {clientX: 275, clientY: 225}; // Feld (275,225) -> Sektor [5, 4]
+    const ts = new window.Event('touchstart', {bubbles: true, cancelable: true});
+    ts.touches = [p]; ts.changedTouches = [p];
+    cvs.dispatchEvent(ts);
+    const te = new window.Event('touchend', {bubbles: true, cancelable: true});
+    te.touches = []; te.changedTouches = [p];
+    cvs.dispatchEvent(te);
+
+    const best = document.getElementById('nav-bestaetigung');
+    assert.equal(window.getComputedStyle(best).display, 'flex', '#nav-bestaetigung muss nach Tap sichtbar sein');
+    assert.equal(document.getElementById('nav-bestaetigung-ziel').textContent, '[5, 4]');
+
+    document.getElementById('nav-bestaetigung-ok').click();
+    assert.equal(window.getComputedStyle(best).display, 'none');
+    assert.deepEqual({x: window.Game.state.nav.x, y: window.Game.state.nav.y}, {x: 5, y: 4});
+    assert.match(document.getElementById('world-location-text').innerText, /ZIEL \[5, 4\]/,
+      'Die GPS-Zeile auf der Weltkarte soll das gesetzte Ziel sofort anzeigen');
+
+    // Zurueck auf die Sektorkarte: Pfeil zeigt nach Osten ("O").
+    await window.UI.switchView('map');
+    const pfeil = document.getElementById('nav-pfeil');
+    assert.equal(window.getComputedStyle(pfeil).display, 'flex');
+    assert.match(pfeil.querySelector('[data-nav-text]').textContent, /^O\s+/);
+
+    // Jetzt ueber die Ostgrenze in Sektor [5, 4] treten: changeSector muss
+    // Anzeige und Pfeil SOFORT auf Zielankunft ("ZIEL") umstellen!
+    window.Game.loadSector = function () {
+      window.Game.state.currentMap = Array.from({length: 50}, () => Array(50).fill('.'));
+    };
+    window.Game.changeSector(50, 25);
+    assert.deepEqual({...window.Game.state.sector}, {x: 5, y: 4});
+    assert.equal(pfeil.querySelector('[data-nav-text]').textContent, 'ZIEL',
+      'Nach changeSector in den Zielsektor muss #nav-pfeil sofort auf ZIEL wechseln');
+  } finally {
+    await spiel.schliesse();
+  }
+});
+
+test('echtes DOM: Orts-Quest in AUFGABEN anpinnen koppelt automatisch die Zielfuehrung', async () => {
+  const spiel = await starteEchtesSpiel();
+  try {
+    const {window, document} = spiel;
+    window.Game.trackQuest('q_explore');
+    assert.deepEqual({x: window.Game.state.nav.x, y: window.Game.state.nav.y}, {x: 3, y: 3},
+      'Anpinnen von q_explore (target "3,3") muss die Zielfuehrung auf [3, 3] setzen');
+
+    await window.UI.switchView('map');
+    const pfeil = document.getElementById('nav-pfeil');
+    assert.equal(window.getComputedStyle(pfeil).display, 'flex');
+    assert.match(pfeil.querySelector('[data-nav-text]').textContent, /^NW\s+/);
+
+    // Erneuter Klick auf denselben Quest-Pin hebt sowohl Tracking als auch das Quest-Ziel wieder auf.
+    window.Game.trackQuest('q_explore');
+    assert.equal(window.Game.state.nav, null);
+    assert.equal(window.getComputedStyle(pfeil).display, 'none');
+  } finally {
+    await spiel.schliesse();
+  }
 });

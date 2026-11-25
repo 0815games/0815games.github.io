@@ -356,6 +356,49 @@ test('ein kaputter Server-Abruf fuehrt nicht zum Neuladen', async () => {
   assert.equal(document.getElementById('update-banner-now').hidden, true);
 });
 
+test('nach einem erfolgreichen Versionssprung hat das Update-Fenster einen Schliessen-Knopf und gibt die Sperre frei', async () => {
+  // Regression aus v14.0.18/v14.0.19: nach dem Reload (?_pb_auf=...) zeigte
+  // #update-banner "NEUE VERSION ... GELADEN" und setzte body.fenster-offen
+  // (#game-screen pointer-events: none), versteckte aber sowohl JETZT LADEN
+  // als auch SPAETER. Damit blieb das Spiel hinter dem Popup unbedienbar.
+  const dom = new JSDOM(`<!DOCTYPE html><html><head>
+      <meta name="pipboy-build" content="14.0.23">
+    </head><body>
+      <div id="update-banner" hidden>
+        <span id="update-banner-text"></span>
+        <button id="update-banner-now" hidden></button>
+        <button id="update-banner-later"></button>
+      </div>
+    </body></html>`, {
+    url: 'https://example.test/PipBoy3000/?_pb_auf=14.0.23&_pb_von=14.0.22&_pb_nonce=1',
+    pretendToBeVisual: true,
+    runScripts: 'outside-only'
+  });
+  const umg = {
+    dom, window: dom.window, document: dom.window.document,
+    fetcher: async () => ({ok: true, text: async () => JSON.stringify({version: '14.0.23'})})
+  };
+  await ladeUpdateModul(umg);
+  umg.window.eval('var Game = { state: null }; var Combat = {};');
+  umg.window.__fetcher = umg.fetcher;
+  const ui = umg.window.eval("window.__updateApi.createUpdateUI({document: window.document, window: window, fetcher: window.__fetcher})");
+  ui.start();
+  await new Promise(r => setTimeout(r, 30));
+  ui.stop();
+
+  const banner = umg.document.getElementById('update-banner');
+  const spaeter = umg.document.getElementById('update-banner-later');
+  assert.equal(banner.hidden, false, 'Geladen-Meldung sollte zunaechst sichtbar sein');
+  assert.equal(spaeter.hidden, false, 'Schliessen-Knopf darf nach dem Versionssprung nicht versteckt sein');
+  assert.equal(spaeter.textContent, 'OK');
+  assert.equal(umg.document.body.classList.contains('fenster-offen'), true);
+
+  spaeter.click();
+  assert.equal(banner.hidden, true, 'Klick auf OK muss das Update-Fenster schliessen');
+  assert.equal(umg.document.body.classList.contains('fenster-offen'), false,
+    'Nach dem Schliessen darf body.fenster-offen das Spiel nicht weiter sperren');
+});
+
 test('die Seite traegt den Build-Stempel und laedt das Buendel mit Version', () => {
   // Ohne Meta-Tag hat die Update-Pruefung keinen Bezugspunkt, und ein ?v= am
   // Buendel ohne Stempel ist ein Cache-Brecher ohne Gedaechtnis.

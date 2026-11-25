@@ -4,12 +4,24 @@
 if (typeof Game !== 'undefined' && !Game.trackQuest) {
     Game.trackQuest = function(qId) {
         if (!this.state) return;
-        
+        const navDa = typeof Navigation !== 'undefined' && typeof Navigation.zielAusQuest === 'function';
+        const altesQuestZiel = navDa ? Navigation.zielAusQuest(qId) : null;
+
         if (this.state.trackedQuestId === qId) {
             this.state.trackedQuestId = null; 
-            if(typeof UI !== 'undefined' && UI.log) UI.log("Mission nicht mehr verfolgt.", "text-gray-400");
+            if (navDa && altesQuestZiel && Navigation.stand) {
+                const aktuell = Navigation.stand();
+                if (aktuell && aktuell.x === altesQuestZiel.x && aktuell.y === altesQuestZiel.y) {
+                    Navigation.loeschen();
+                }
+            }
+            if(typeof UI !== 'undefined' && UI.log) UI.log("Mission nicht mehr verfolgt.", "text-green-700");
         } else {
             this.state.trackedQuestId = qId; 
+            if (navDa && altesQuestZiel) {
+                Navigation.setzen(altesQuestZiel.x, altesQuestZiel.y);
+                Navigation.aktualisiere();
+            }
             if(typeof UI !== 'undefined' && UI.log) UI.log("Mission fixiert!", "text-yellow-400 font-bold");
         }
         
@@ -18,6 +30,7 @@ if (typeof Game !== 'undefined' && !Game.trackQuest) {
         if(typeof UI !== 'undefined') {
             if (UI.renderQuests) UI.renderQuests(); 
             if (UI.updateQuestTracker) UI.updateQuestTracker(); 
+            if (UI.update) UI.update();
         }
     };
 }

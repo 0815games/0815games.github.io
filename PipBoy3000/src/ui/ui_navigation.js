@@ -79,15 +79,29 @@ window.Navigation = {
     klickZuSektor,
 
     // Der aktuelle Stand. `null`, solange kein Ziel gesetzt ist.
+    // Zahlen werden normiert: alte Spielstaende koennen Sektor-Koordinaten als
+    // String tragen, und `"4" + 0.5` waere `"40.5"` statt `4.5`.
     stand: function() {
-        return (typeof Game !== 'undefined' && Game.state && Game.state.nav) ? Game.state.nav : null;
+        if (typeof Game === 'undefined' || !Game.state || !Game.state.nav) return null;
+        const roh = Game.state.nav;
+        const x = Number(roh.x);
+        const y = Number(roh.y);
+        if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+        if (roh.x !== x || roh.y !== y) {
+            roh.x = x;
+            roh.y = y;
+        }
+        return roh;
     },
 
     // Setzt das Ziel. Das ist die einzige Stelle, die Game.state.nav schreibt -
     // damit es keinen zweiten Weg gibt, der die Form anders fuellt.
     setzen: function(sektorX, sektorY) {
         if (typeof Game === 'undefined' || !Game.state) return null;
-        const ziel = {x: sektorX, y: sektorY, gesetzt: Date.now()};
+        const x = Number(sektorX);
+        const y = Number(sektorY);
+        if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+        const ziel = {x, y, gesetzt: Date.now()};
         Game.state.nav = ziel;
         if (typeof Game.saveGame === 'function') Game.saveGame();
         return ziel;
@@ -100,15 +114,42 @@ window.Navigation = {
         this.aktualisiere();
     },
 
+    // Ermittelt fuer eine Quest (falls sie einen festen Ziel-Sektor hat) die
+    // Sektor-Koordinate `{x, y}`. Orts-Quests tragen `target: "3,3"`; Stadt-,
+    // Vault- oder Geisterstadt-Ziele koennen auch aus `WorldGen.locations`
+    // stammen. Sammel-/Jagd-Quests ohne festen Sektor liefern `null`.
+    zielAusQuest: function(qId) {
+        if (!qId || typeof Game === 'undefined' || !Game.questDefs) return null;
+        const liste = Array.isArray(Game.questDefs) ? Game.questDefs : Object.values(Game.questDefs);
+        const def = liste.find(d => d && d.id === qId);
+        if (!def) return null;
+        if (typeof def.target === 'string' && /^\s*\d+\s*,\s*\d+\s*$/.test(def.target)) {
+            const [sx, sy] = def.target.split(',').map(t => parseInt(t.trim(), 10));
+            if (Number.isFinite(sx) && Number.isFinite(sy)) return {x: sx, y: sy};
+        }
+        if (typeof WorldGen !== 'undefined' && WorldGen.locations) {
+            if (def.target === 'city' && WorldGen.locations.city) {
+                return {x: Number(WorldGen.locations.city.x), y: Number(WorldGen.locations.city.y)};
+            }
+            if (def.target === 'vault' && WorldGen.locations.vault) {
+                return {x: Number(WorldGen.locations.vault.x), y: Number(WorldGen.locations.vault.y)};
+            }
+            if (def.target === 'ghostTown' && WorldGen.locations.ghostTown) {
+                return {x: Number(WorldGen.locations.ghostTown.x), y: Number(WorldGen.locations.ghostTown.y)};
+            }
+        }
+        return null;
+    },
+
     // Position des Spielers als Sektor-Koordinate. Der Spieler steht in einem
     // Sektor auf einem Feld; fuer die Peilung zaehlt das Feld mit, sonst
     // springt die Nadel in 50er-Schritten.
     _spieler: function() {
         if (typeof Game === 'undefined' || !Game.state || !Game.state.sector) return null;
-        const sx = Game.state.sector.x;
-        const sy = Game.state.sector.y;
-        const px = (Game.state.player && Game.state.player.x) || 0;
-        const py = (Game.state.player && Game.state.player.y) || 0;
+        const sx = Number(Game.state.sector.x) || 0;
+        const sy = Number(Game.state.sector.y) || 0;
+        const px = Number(Game.state.player && Game.state.player.x) || 0;
+        const py = Number(Game.state.player && Game.state.player.y) || 0;
         // Globale Feldkoordinate, damit Sektorgrenzen keine Sprünge machen.
         return {x: sx + px / FELDER, y: sy + py / FELDER};
     },
@@ -140,7 +181,7 @@ window.Navigation = {
     angekommen: function() {
         const ziel = this.stand();
         if (!ziel || typeof Game === 'undefined' || !Game.state || !Game.state.sector) return false;
-        return Game.state.sector.x === ziel.x && Game.state.sector.y === ziel.y;
+        return Number(Game.state.sector.x) === ziel.x && Number(Game.state.sector.y) === ziel.y;
     },
 
     // Zeichnet die Nadel in das Element `#nav-pfeil`. Das Ziel ist ein
@@ -314,7 +355,7 @@ window.Navigation = {
         // Ist der Punkt der, an dem der Spieler schon steht? Dann sagt das
         // Feld das, statt ein Ziel anzubieten, das man nicht erreichen kann.
         const schonDa = typeof Game !== 'undefined' && Game.state && Game.state.sector
-            && Game.state.sector.x === this.marker.x && Game.state.sector.y === this.marker.y;
+            && Number(Game.state.sector.x) === this.marker.x && Number(Game.state.sector.y) === this.marker.y;
         const knopf = document.getElementById('nav-bestaetigung-ok');
         if (knopf) knopf.textContent = schonDa ? 'TROTZDEM SETZEN' : 'ZIEL SETZEN';
 
@@ -337,6 +378,10 @@ window.Navigation = {
         this.aktualisiere();
         if (typeof UI !== 'undefined') {
             if (UI.mapState) UI.mapState.needsRender = true;
+            if (typeof UI.updateLocationText === 'function') {
+                UI._lastLocUpdate = 0;
+                UI.updateLocationText();
+            }
             if (typeof UI.log === 'function') UI.log(`Navigation: Sektor [${x}, ${y}]`, 'text-[#39ff14]');
         }
     },
@@ -344,6 +389,42 @@ window.Navigation = {
     verwerfen: function() {
         this.bestaetigungVerstecken();
         this.markerLoeschen();
+    },
+
+    // Zeichnet auf der Sektorkarte (#game-canvas) einen klaren Pip-Boy-
+    // Richtungspfeil um die Spielerfigur, solange ein Ziel ausserhalb des
+    // aktuellen Sektors aktiv ist. So sieht der Spieler die Richtung direkt am
+    // Charakter und nicht nur oben neben der Sektor-Anzeige.
+    zeichneSpielerPfeil: function(ctx, screenPx, screenPy) {
+        if (!ctx) return;
+        const info = this.richtung();
+        if (!info || this.angekommen()) return;
+        const abstand = 28;
+        ctx.save();
+        ctx.translate(screenPx, screenPy);
+        ctx.rotate(info.grad * Math.PI / 180);
+        // Dezenter Peilbogen + leuchtende Pfeilspitze in Zielrichtung (0 Grad = Nord = oben).
+        ctx.strokeStyle = 'rgba(57, 255, 20, 0.35)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(0, 0, abstand - 4, -Math.PI * 0.72, -Math.PI * 0.28);
+        ctx.stroke();
+
+        ctx.fillStyle = '#39ff14';
+        ctx.strokeStyle = '#021a02';
+        ctx.lineWidth = 1.5;
+        ctx.shadowColor = '#39ff14';
+        ctx.shadowBlur = 6;
+        ctx.beginPath();
+        ctx.moveTo(0, -(abstand + 7));
+        ctx.lineTo(6.5, -(abstand - 4));
+        ctx.lineTo(0, -(abstand - 1));
+        ctx.lineTo(-6.5, -(abstand - 4));
+        ctx.closePath();
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.stroke();
+        ctx.restore();
     },
 
     // Zeichnet Marker und Ziellinie auf die Karte. Wird aus renderWorldMap
@@ -363,8 +444,8 @@ window.Navigation = {
         // 1. Bestaetigtes Ziel: duenne Linie vom Spieler, dann das Kreuz.
         const ziel = this.stand();
         if (ziel) {
-            const sx = Game.state.sector.x;
-            const sy = Game.state.sector.y;
+            const sx = Number(Game.state.sector.x) || 0;
+            const sy = Number(Game.state.sector.y) || 0;
             const a = punkt(sx, sy);
             const b = punkt(ziel.x, ziel.y);
             ctx.save();
@@ -453,18 +534,25 @@ window.UI.oeffneNavigation = function() {
             text.innerHTML = 'KEIN ZIEL GESETZT';
         }
     }
-    if (sx && ziel) sx.value = ziel.x;
-    if (sy && ziel) sy.value = ziel.y;
+    const vorlageX = ziel ? ziel.x : (typeof Game !== 'undefined' && Game.state && Game.state.sector ? Game.state.sector.x : 0);
+    const vorlageY = ziel ? ziel.y : (typeof Game !== 'undefined' && Game.state && Game.state.sector ? Game.state.sector.y : 0);
+    if (sx) sx.value = vorlageX;
+    if (sy) sy.value = vorlageY;
 
     feld.classList.remove('hidden');
     feld.style.display = 'flex';
-    if (sx) sx.focus();
+    if (typeof this.refreshFocusables === 'function') this.refreshFocusables();
+    if (sx) {
+        sx.focus();
+        if (typeof sx.select === 'function') sx.select();
+    }
 };
 
 window.UI.schliesseNavigation = function() {
     const feld = document.getElementById('nav-eingabe');
     if (feld) { feld.classList.add('hidden'); feld.style.display = 'none'; }
     if (typeof Game !== 'undefined' && Game.state) Game.state.inDialog = false;
+    if (typeof this.refreshFocusables === 'function') this.refreshFocusables();
 };
 
 // Der OK-Knopf im Eingabefeld.
@@ -485,12 +573,22 @@ window.UI.setzeNavigation = function() {
     }
     Navigation.setzen(sx, sy);
     Navigation.aktualisiere();
+    if (UI.mapState) UI.mapState.needsRender = true;
+    if (typeof UI.updateLocationText === 'function') {
+        UI._lastLocUpdate = 0;
+        UI.updateLocationText();
+    }
     if (typeof UI.log === 'function') UI.log(`Navigation: Sektor [${sx}, ${sy}]`, 'text-[#39ff14]');
     UI.schliesseNavigation();
 };
 
 window.UI.loescheNavigation = function() {
     Navigation.loeschen();
+    if (UI.mapState) UI.mapState.needsRender = true;
+    if (typeof UI.updateLocationText === 'function') {
+        UI._lastLocUpdate = 0;
+        UI.updateLocationText();
+    }
     if (typeof UI.log === 'function') UI.log('Navigation aufgehoben', 'text-green-700');
     UI.schliesseNavigation();
 };

@@ -35,6 +35,18 @@ window.GameData.offenePunkte = [
 // nicht mit dem, was geplant war.
 window.GameData.RELEASED_PATCHES = [
   {
+    version: '14.0.23',
+    datum: '2026-11-24',
+    title: 'Zielführung repariert: Setzen per Karte, Menü & Aufgaben sowie Richtungspfeil am Spieler',
+    punkte: [
+      'Weltkarte (WELT): Touch-Gesten brechen nicht mehr durch das Scrollen von #view-container ab (touch-action: none), Ghost-Clicks nach touchend schließen die Bestätigung nicht mehr sofort, und die 500-ms-Sperre beim ruhigen Zielen entfällt (gemessen wird die maximale Ziehstrecke).',
+      'Burger-Menü -> NAVIGATION: Zahlenfelder fangen Enter jetzt zum Setzen des Ziels ab (statt einen alten Fokus-Knopf im Hintergrund auszulösen), Pfeiltasten im Eingabefeld werden nicht mehr gekapert, und ESC schließt das Fenster sauber.',
+      'Richtungspfeil im Spiel: zusätzlich zum Kompass-Pfeil neben der Sektor-Anzeige zeigt ein leuchtend grüner Pip-Boy-Peilpfeil direkt an der Spielerfigur auf der Sektorkarte die Richtung; auf der Weltkarte dreht der Kompass mit und die GPS-Zeile nennt das aktive Ziel.',
+      'Sektorwechsel & Quest-Pin: Überqueren einer Sektorgrenze (changeSector) aktualisiert Richtung und Ankunft sofort; Anpinnen einer Orts-Quest in AUFGABEN setzt automatisch die Zielführung.',
+      'Update-Fenster nach Versionssprung: die Bestätigung "NEUE VERSION ... GELADEN" hat jetzt einen OK-Knopf und lässt das Spiel nicht mehr mit gesperrten Klicks stehen.'
+    ]
+  },
+  {
     version: '14.0.22',
     datum: '2026-11-24',
     title: 'Burger-Menü: alle Fenster öffnen unter dem Header im Kartenbereich',

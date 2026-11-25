@@ -125,7 +125,13 @@ Object.assign(Game, {
         this.saveGame();
         
         if(typeof this.updateQuestProgress === 'function') this.updateQuestProgress('visit', `${sx},${sy}`, 1);
-        if(typeof UI !== 'undefined') UI.log(`Sektor: ${sx},${sy}`, "text-blue-400"); 
+        if(typeof UI !== 'undefined') {
+            UI.log(`Sektor: ${sx},${sy}`, "text-blue-400");
+            if(typeof UI.update === 'function') UI.update();
+            else if(typeof Navigation !== 'undefined' && Navigation.aktualisiere) Navigation.aktualisiere();
+        } else if (typeof Navigation !== 'undefined' && Navigation.aktualisiere) {
+            Navigation.aktualisiere();
+        }
     },
 
     ensureWalkableSpawn: function() {

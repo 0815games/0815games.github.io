@@ -286,7 +286,8 @@ Object.assign(UI, {
             this.lastInputTime = Date.now();
             this.inputMethod = 'key';
             const preventKeys = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " ", "Space", "PageUp", "PageDown", "Home", "End"];
-            if (!['input', 'textarea'].includes(e.target.tagName.toLowerCase())) {
+            const zielTag = (e.target && typeof e.target.tagName === 'string') ? e.target.tagName.toLowerCase() : '';
+            if (!['input', 'textarea'].includes(zielTag)) {
                 if(preventKeys.includes(e.key)) e.preventDefault();
             }
             this.handleKeyDown(e);
@@ -339,7 +340,17 @@ Object.assign(UI, {
              return;
         }
 
+        const navEingabeEl = typeof document !== 'undefined' ? document.getElementById('nav-eingabe') : null;
+        const navEingabeOffen = Boolean(
+            navEingabeEl && !navEingabeEl.classList.contains('hidden') && navEingabeEl.style.display !== 'none'
+        );
+
         if(e.key === 'Escape') {
+            if (navEingabeOffen && typeof this.schliesseNavigation === 'function') {
+                e.preventDefault();
+                this.schliesseNavigation();
+                return;
+            }
             if (Game.state.inDialog) return;
             if(this.els.playerList?.style.display === 'flex') this.togglePlayerList();
             else if(this.els.navMenu && !this.els.navMenu.classList.contains('hidden')) this.toggleMenu();
@@ -348,6 +359,20 @@ Object.assign(UI, {
             else if(Game.state.view !== 'map') this.switchView('map');
             else this.toggleMenu();
             return;
+        }
+
+        if (navEingabeOffen) {
+            const aktiv = typeof document !== 'undefined' ? document.activeElement : null;
+            const inZahlenfeld = Boolean(aktiv && navEingabeEl.contains(aktiv) && aktiv.tagName === 'INPUT');
+            if (inZahlenfeld) {
+                if (e.key === 'Enter' && typeof this.setzeNavigation === 'function') {
+                    e.preventDefault();
+                    this.setzeNavigation();
+                }
+                // Zahlen, Pfeiltasten und Tab im Eingabefeld gehoeren dem Feld
+                // selbst und duerfen nicht als Fokus-Sprung abgefangen werden.
+                return;
+            }
         }
 
         if (Game.state.inDialog) {
@@ -393,7 +418,7 @@ Object.assign(UI, {
     
     // --- TOUCH JOYSTICK ---
     handleTouchStart: function(e) {
-        if(e.target.tagName === 'BUTTON' || e.target.closest('button') || e.target.closest('.no-joystick')) return;
+        if(e.target.tagName === 'BUTTON' || e.target.closest('button') || e.target.closest('.no-joystick') || e.target.closest('#val-sector-display')) return;
         if(!Game.state || Game.state.view !== 'map' || Game.state.inDialog || this.touchState.active) return;
         const touch = e.changedTouches[0];
         Object.assign(this.touchState, {
@@ -522,13 +547,17 @@ Object.assign(UI, {
 
     refreshFocusables: function() {
         let container = this.els.view;
-        if (Game.state && Game.state.inDialog && this.els.dialog && this.els.dialog.style.display !== 'none') {
+        const navEingabe = typeof document !== 'undefined' ? document.getElementById('nav-eingabe') : null;
+        if (navEingabe && !navEingabe.classList.contains('hidden') && navEingabe.style.display !== 'none') {
+            container = navEingabe;
+        } else if (Game.state && Game.state.inDialog && this.els.dialog && this.els.dialog.style.display !== 'none') {
             container = this.els.dialog;
         } else if (this.els.navMenu && !this.els.navMenu.classList.contains('hidden')) {
             container = this.els.navMenu;
         } else if (this.els.playerList && this.els.playerList.style.display === 'flex') {
             container = this.els.playerList;
         }
+        if (!container) return;
 
         const buttons = Array.from(container.querySelectorAll('button:not([disabled])'));
         this.focusableEls = buttons.filter(b => b.offsetParent !== null && b.style.display !== 'none');

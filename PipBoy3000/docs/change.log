@@ -1,5 +1,41 @@
 # CHANGELOG
 
+## v14.0.23 (Zielfuehrung repariert, 2026-11-24)
+Rueckmeldung: "Zielfuehrung wieder ohne funktion - setzen geht nicht und auch
+kein pfeil der in die richtung zeigt. hat ja mal funktioniert, wieso jetzt ned?"
+
+Mehrere reale Ursachen legten Setzen und Pfeil auf verschiedenen Wegen lahm:
+
+- [FIX] **Weltkarte (`WELT`) auf Touch & langem Tippen:** `#world-map-canvas`
+  lag ohne `touch-action: none` in `#view-container` (`overflow-y: auto`),
+  `ontouchstart`/`ontouchend` riefen kein `preventDefault()` (Ghost-Click traf
+  unmittelbar das eingeblendete `#nav-bestaetigung` oder doppelte `mousedown`),
+  `ontouchend` uebergab `karte` nicht an `Navigation.markerSetzen`, und die
+  feste 500-ms-/600-ms-Sperre verwarf jedes ruhige Zielen. Jetzt entscheidet
+  allein die maximale Ziehstrecke waehrend der Geste.
+- [FIX] **Burger-Menue `NAVIGATION` (`#nav-eingabe`):** `refreshFocusables()`
+  kannte `#nav-eingabe` nicht; `Enter` im Zahlenfeld loeste über `handleKeyDown`
+  einen alten Fokus-Knopf im Hintergrund aus statt `UI.setzeNavigation()`, und
+  Pfeiltasten im `<input>` sprangen im Fokus. Jetzt setzt `Enter` das Ziel,
+  Pfeiltasten gehoeren dem Zahlenfeld, `Escape` schliesst `#nav-eingabe`.
+- [NEU] **Richtungspfeil direkt am Spieler + Weltkarten-Kompass:** neben
+  `#nav-pfeil` an der Sektor-Anzeige zeichnet `Game.render()` einen gruenen
+  Pip-Boy-Peilpfeil direkt um die Spielerfigur auf `#game-canvas`; auf der
+  Weltkarte zeigt der Kompass eine Zielnadel und die GPS-Zeile nennt das Ziel.
+- [FIX] **Sektorwechsel & String-Koordinaten:** `Game.changeSector()` ruft
+  sofort `UI.update()`, damit Richtung und Zielankunft direkt an der Grenze
+  umspringen; `Navigation` normiert String-Koordinaten aus alten Spielstaenden
+  numerisch (kein `"4" + 0.5 === "40.5"` mehr).
+- [NEU] **Quest-Pin koppelt Zielfuehrung:** das Anpinnen (`📌`) einer Orts-Quest
+  in `AUFGABEN` setzt automatisch das Sektor-Ziel in `Navigation`.
+- [FIX] **Sperre nach Auto-Update (`ui_update.js`):** nach einem automatischen
+  Versions-Reload (`?_pb_auf=...`) hatte das seit v14.0.18/19 sperrende Popup
+  (`body.fenster-offen`) bei `art === 'geladen'` keinen sichtbaren Knopf mehr
+  und blockierte Klicks in `#game-screen`. Jetzt schliesst `OK` das Fenster und
+  gibt die Sperre frei.
+- [TEST] 6 neue Integrationstests in `tests/navigation.test.mjs` und 1 neuer
+  Regressionstest in `tests/patch-ablauf.test.mjs` am echten DOM + CSS + Buendel.
+
 ## v14.0.22 (Burger-Menue-Fenster unter dem Header, 2026-11-24)
 Jedes ueber das Burger-Menue geoeffnete Fenster liegt im Spiel unterhalb von
 `#game-header` in `#main-content` (TP, KK, MUN und Burger-Knopf bleiben frei).

@@ -285,6 +285,10 @@ window.Game = {
                     UI.log(`QUEST: "${def.title}" erhalten!`, "text-cyan-400 font-bold animate-pulse");
                     if(this.state.activeQuests.length === 1 && !this.state.trackedQuestId) {
                         this.state.trackedQuestId = newQuest.id;
+                        if (typeof Navigation !== 'undefined' && Navigation.zielAusQuest && !Navigation.stand()) {
+                            const qz = Navigation.zielAusQuest(newQuest.id);
+                            if (qz) { Navigation.setzen(qz.x, qz.y); Navigation.aktualisiere(); }
+                        }
                         if(typeof UI !== 'undefined' && UI.updateQuestTracker) UI.updateQuestTracker();
                     }
                     if(newQuest.progress >= newQuest.max && newQuest.max > 0) {
@@ -331,9 +335,22 @@ window.Game = {
             this.state.completedQuests.push(q.id);
             if(typeof UI !== 'undefined' && UI.showQuestComplete) UI.showQuestComplete(def);
         }
-        if(this.state.trackedQuestId === q.id) this.state.trackedQuestId = null;
+        if(this.state.trackedQuestId === q.id) {
+            this.state.trackedQuestId = null;
+            if (typeof Navigation !== 'undefined' && Navigation.zielAusQuest && Navigation.stand) {
+                const alt = Navigation.zielAusQuest(q.id);
+                const akt = Navigation.stand();
+                if (alt && akt && akt.x === alt.x && akt.y === alt.y) Navigation.loeschen();
+            }
+        }
         this.state.activeQuests.splice(index, 1);
-        if(!this.state.trackedQuestId && this.state.activeQuests.length > 0) this.state.trackedQuestId = this.state.activeQuests[0].id;
+        if(!this.state.trackedQuestId && this.state.activeQuests.length > 0) {
+            this.state.trackedQuestId = this.state.activeQuests[0].id;
+            if (typeof Navigation !== 'undefined' && Navigation.zielAusQuest && !Navigation.stand()) {
+                const neu = Navigation.zielAusQuest(this.state.trackedQuestId);
+                if (neu) { Navigation.setzen(neu.x, neu.y); Navigation.aktualisiere(); }
+            }
+        }
         this.saveGame(true); this.checkNewQuests(); if(typeof UI !== 'undefined' && UI.updateQuestTracker) UI.updateQuestTracker();
     },
     
