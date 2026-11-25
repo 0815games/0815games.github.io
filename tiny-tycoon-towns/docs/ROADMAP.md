@@ -44,6 +44,15 @@ Zuständig: **N** = Nutzer (Geräte, Konsole, Entscheidungen), **A** = Agent (Co
 - **[A]** Ungenutzte Variable `RESOURCE_ORDER` in `src/admin.js` entfernen oder nutzen.
 - **[?]** Im Plan steht „11 Gebäude“, im Spiel sind es 11 (`data/buildings.json`). Plan-Text anpassen oder nicht.
 
+### Neu: Siedlungen (in Planung, 2026-11-25)
+
+- **[N]** Gehalt ja oder nein. Option A: kein Lohn in der ersten Version, die Bewohner arbeiten einfach im Gebäude. Option B: Münzen je Arbeiter und Tag, automatisch abgezogen. Entscheidung offen.
+- **[A]** Wohnhaus (Siedlung), ab Stadtlevel 2. Bevölkerung startet mit 1 bis 2 Bewohnern und wächst bis zur Kapazität. Die Kapazität steigt mit der Stufe.
+- **[A]** Zuweisung der Bewohner zu Produktionsgebäuden: automatisch, dort wo es sinnvoll ist (nicht einfach das nächste Gebäude). Manuelle Zuweisung ist möglich.
+- **[A]** Fünf sichtbare Stufen je Gebäude-Upgrade mit eigener Gestalt. Heute wächst ein Gebäude nur um etwa 1,2 % je Stufe.
+- **[A]** Erste Version nur mit Arbeitszuweisung. Keine Bedürfnisse, keine Zufriedenheit. Das kommt später.
+- **[A]** Regeln und Tests zuerst (`src/domain`), dann Anzeige, dann Gestalten. Danach neue Balance-Simulation.
+
 ### Phase 3: Multiplayer (teilweise gebaut)
 
 - **[N]** Freunde auf Geräten prüfen (siehe Jetzt 2).
@@ -84,6 +93,8 @@ Zuständig: **N** = Nutzer (Geräte, Konsole, Entscheidungen), **A** = Agent (Co
 - Fremde Städte sind für andere nur lesbar. Schreiben nur Besitzer und Admin. (TTT-0017)
 - Admin-Regeln sind live und vom Nutzer bestätigt. Nicht erneut fragen.
 - Der Name im Menü ist „Stadtchronik“ (vorher „Feldnotizen“). (TTT-0025)
+
+- Siedlungen (2026-11-25, Nutzerentscheidung): Zuweisung automatisch, dort wo es sinnvoll ist. Manuell ist möglich. Fünf sichtbare Stufen. Erste Version nur Arbeitszuweisung, ohne Bedürfnisse.
 
 ## Erledigt
 
