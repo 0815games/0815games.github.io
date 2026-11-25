@@ -7,6 +7,30 @@ Quelle fuer alle Ansichten (Inventar, Detail, Ausruesten, Schmiede, Zerlegen,
 Haendler, Lager). Eine Ansicht, die ein eigenes Emoji mitbringt, ist ein Fehler;
 `tests/item-bilder.test.mjs` prueft das.
 
+## Die ID ist der Schluessel, nicht ein Feld
+
+`Game.items` ist ein Objekt, dessen **Schluessel** die Item-ID ist:
+
+```js
+pipe_pistol: { name: "Rohrpistole", type: "weapon", … }   // kein id-Feld
+```
+
+Wer das Bild will, braucht die ID — und die steht im **Inventareintrag**
+(`entry.id`), nicht in der Definition. `itemDef.id` ist trotzdem belegt:
+`src/data/data_items.js` setzt es beim Laden auf den Schluessel. Beides ist
+Absicht, doppelt gesichert.
+
+Der Fehler aus v14.0.9 ist der Grund fuer diese Regel: `renderInventory` reichte
+`itemDef.id` an `itemSymbol`. Zur damaligen Zeit war das `undefined`, also
+`itemBildPfad → null`, also Emoji — an jeder Position, obwohl alle 126 Bilder
+vorhanden waren. Ein Katalogtest konnte das nicht finden, weil er
+`itemSymbol('stimpack', …)` direkt aufrief.
+
+**Pruefen deshalb am gerenderten DOM:** `tests/item-bilder-render.test.mjs`
+rendert Inventar, Charakterseite, Lager und Wiki und zaehlt `<img>` gegen
+Zellen. Wer eine Ansicht umbaut, laesst diesen Test laufen und nicht nur
+`npm run icons:check`.
+
 Diese Datei beschreibt, wie ein Motiv entsteht und woran ein unbrauchbares
 Rohbild erkannt wird. Die Fehlliste, die hier früher stand, ist leer — sie
 wird bei Bedarf wieder aufgenommen.

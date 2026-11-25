@@ -532,11 +532,13 @@ Object.assign(UI, {
             container.innerHTML += `<div class="h-px bg-yellow-900/50 my-4 mx-2"></div>`;
         }
 
+        // Ueberschriften-Symbole kommen aus der zentralen Tabelle, nicht aus
+        // einer zweiten Emoji-Liste hier (docs/ITEMBILDER.md).
         const categories = {
-            'consumable': { title: '💊 MEDIZIN', items: [] },
-            'weapon': { title: '🔫 WAFFEN', items: [] },
-            'body': { title: '🛡️ RÜSTUNG', items: [] },
-            'misc': { title: '📦 SONSTIGES', items: [] } 
+            'consumable': { title: `${UI.itemTypEmoji('consumable')} MEDIZIN`, items: [] },
+            'weapon': { title: `${UI.itemTypEmoji('weapon')} WAFFEN`, items: [] },
+            'body': { title: `${UI.itemTypEmoji('body')} RÜSTUNG`, items: [] },
+            'misc': { title: `${UI.itemTypEmoji('junk')} SONSTIGES`, items: [] }
         };
 
         Object.keys(stock).forEach(key => {

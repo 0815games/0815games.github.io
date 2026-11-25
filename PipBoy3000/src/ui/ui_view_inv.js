@@ -22,17 +22,22 @@ Object.assign(UI, {
         // [UPDATE] Rucksack-Anzeige noch deutlicher
         if(countDisplay) {
             let backpackName = "";
+            let backpackId = null;
             if (Game.state.equip && Game.state.equip.back) {
                 const bp = Game.state.equip.back;
                 backpackName = bp.props && bp.props.name ? bp.props.name : bp.name;
+                backpackId = bp.id || null;
             }
 
-            // Layout Update: Zwei Zeilen, Rucksack grün hervorgehoben
+            // Layout Update: Zwei Zeilen, Rucksack grün hervorgehoben.
+            // Das Symbol ist das Bild des Rucksacks, nicht das Emoji - sonst
+            // waere der angelegte Rucksack die einzige Stelle im Inventar
+            // ohne Bild.
             countDisplay.innerHTML = `
                 <div class="flex flex-col items-end leading-tight">
                     <span class="text-sm">${usedSlots} / ${maxSlots}</span>
-                    ${backpackName 
-                        ? `<span class="text-[10px] text-[#39ff14] font-bold tracking-wider border-t border-green-900 mt-0.5 pt-0.5">🎒 ${backpackName}</span>` 
+                    ${backpackName
+                        ? `<span class="flex items-center gap-1 text-[10px] text-[#39ff14] font-bold tracking-wider border-t border-green-900 mt-0.5 pt-0.5">${UI.itemSymbol(backpackId, 'back', 'klein')} ${backpackName}</span>`
                         : '<span class="text-[9px] text-gray-600 border-t border-gray-800 mt-0.5 pt-0.5">KEIN RUCKSACK</span>'}
                 </div>
             `;
@@ -44,7 +49,14 @@ Object.assign(UI, {
         // Symbol und Emoji-Rueckfall stehen zentral in ui_item_symbol.js,
         // damit dasselbe Item im Inventar, im Shop und im Lager gleich
         // aussieht. Hier bleibt nur der Aufruf.
-        const itemBild = (id, type) => UI.itemSymbol(id, type, 'gross');
+        //
+        // Die ID kommt aus dem Inventareintrag, nicht aus der Katalogdefinition:
+        // Game.items ist nach Schluessel organisiert, die Definitionen selbst
+        // tragen kein id-Feld. Mit itemDef.id kam hier undefined an, itemSymbol
+        // fand kein Bild und zeigte das Typ-Emoji - deshalb stand im Rucksack
+        // trotz 126 vorhandener Bilder nur 💉.
+        const bildId = (itemDef, entry) => (entry && entry.id) || (itemDef && itemDef.id) || null;
+        const itemBild = (itemDef, entry) => UI.itemSymbol(bildId(itemDef, entry), itemDef && itemDef.type, 'gross');
 
         const createBtn = (itemDef, entry, isEquipped, label, onClick) => {
             const btn = document.createElement('div');
@@ -66,7 +78,7 @@ Object.assign(UI, {
                 `<div class="absolute top-0 right-0 bg-green-900 text-white text-[10px] px-1 font-mono">${entry.count}</div>` : '';
 
             btn.innerHTML = `
-                <div class="flex items-center justify-center">${itemBild(itemDef.id, itemDef.type)}</div>
+                <div class="flex items-center justify-center">${itemBild(itemDef, entry)}</div>
                 <div class="text-[10px] truncate max-w-full px-1 font-bold ${extraClass}">${displayName}</div>
                 ${countDisplay}
             `;
@@ -97,9 +109,9 @@ Object.assign(UI, {
         };
 
         const cats = {
-            equip: { label: "🛡️ AUSRÜSTUNG", items: [] },
-            aid:   { label: "💉 HILFSMITTEL", items: [] },
-            misc:  { label: "⚙️ MATERIAL", items: [] }
+            equip: { label: "AUSRÜSTUNG", items: [] },
+            aid:   { label: "HILFSMITTEL", items: [] },
+            misc:  { label: "MATERIAL", items: [] }
         };
 
         const equippedList = [];

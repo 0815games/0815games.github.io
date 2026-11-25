@@ -1,5 +1,43 @@
 # CHANGELOG
 
+## v14.0.10 (Item-Bilder im Inventar, 2026-11-24)
+Der Bericht war eindeutig: das Inventar zeigte an jeder Position ein Emoji,
+obwohl seit 14.0.6 alle 126 Items ein Bild haben. Die Bilder waren in Ordnung,
+der Pfad war in Ordnung, `UI.itemSymbol` war in Ordnung - falsch war die ID,
+die das Inventar ihm gab.
+
+- [FIX] **Das Inventar uebergibt die ID des Eintrags, nicht der Definition.**
+  `Game.items` ist nach Schluessel organisiert; die Definitionen selbst tragen
+  kein `id`-Feld. `UI.itemSymbol(itemDef.id, ...)` bekam deshalb `undefined`,
+  `Game.itemBildPfad` gab `null` zurueck und `itemSymbol` fiel auf das
+  Typ-Emoji zurueck - bei jedem Item, in jedem Fach. Alle anderen Ansichten
+  (Shop, Lager, Dialoge) uebergaben schon die richtige ID, nur das Inventar
+  nicht. Genau deshalb fiel es bei der Katalogpruefung nicht auf.
+- [FIX] **Jede Item-Definition traegt ihre eigene ID.** `data_items.js` setzt
+  `def.id = schluessel` fuer alle 126 Eintraege, damit `itemDef.id` nicht
+  wieder still `undefined` ergibt. Das ist die zweite Absicherung: die
+  Aufrufstelle ist korrigiert, und die Daten geben den Fehler nicht mehr her.
+- [FIX] **Die Charakterseite zeigt Bilder statt Emoji pro Slot.** Dort stand
+  ein festes Emoji je Slot (🧢/👊/👕/💪/👖/🎒/🥾) und das angelegte Item
+  brachte sein eigenes `icon`-Feld mit - dieselbe Rohrpistole sah auf der
+  Charakterseite anders aus als im Rucksack. Jetzt `UI.itemSymbol`; nur der
+  leere Slot behaelt ein Typ-Symbol, weil es dort kein Item gibt.
+- [FIX] **Das Wiki zeigt Item-Bilder.** Die Item-Liste (126 Zeilen) und die
+  Rezeptliste hatten gar kein Symbol; die Kategorie-Ueberschriften brachten
+  eine zweite Emoji-Tabelle mit. Beides laeuft jetzt ueber
+  `ui_item_symbol.js`.
+- [FIX] **Der angelegte Rucksack in der Inventar-Kopfzeile** zeigt sein Bild
+  statt 🎒.
+- [TEST] **`tests/item-bilder-render.test.mjs` prueft das gerenderte DOM.**
+  Der Fehler war mit 151 gruenen Tests im Repo; der Katalogtest aus 14.0.5
+  haette ihn nie finden koennen, weil er `UI.itemSymbol` isoliert aufrief.
+  Der neue Test rendert Inventar, Charakterseite, Lager und Wiki und zaehlt
+  `<img>` gegen Zellen. Gegenprobe gemacht: mit dem alten Code fallen 4 von 5
+  Tests um.
+
+Offen bleibt: die Kategorie-Ueberschriften (AUSRUESTUNG/HILFSMITTEL/MATERIAL)
+tragen kein Emoji mehr, aber auch kein Bild - sie sind eine Rubrik, kein Item.
+
 ## v14.0.9 (Crash-Bericht aussagekraeftig, 2026-11-25)
 Ein Bericht vom iPhone (Safari, iOS 18.7) meldete "Script error." ohne Zeile und
 Stack - und mit LEEREM Log-Puffer. Der Bericht war damit blind: er sagte, dass

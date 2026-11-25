@@ -435,6 +435,10 @@
     titanium: { name: "Titanplatte", type: "rare", cost: 350, icon: "⚙️", desc: "Leicht, hart, begehrt." }
   });
   if (typeof Game !== "undefined") Game.items = window.GameData.items;
+  Object.keys(window.GameData.items).forEach((k) => {
+    const def = window.GameData.items[k];
+    if (def && typeof def === "object" && !def.id) def.id = k;
+  });
 
   // src/network.js
   var Network2 = window.Network = {

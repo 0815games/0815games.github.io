@@ -435,6 +435,10 @@
     titanium: { name: "Titanplatte", type: "rare", cost: 350, icon: "⚙️", desc: "Leicht, hart, begehrt." }
   });
   if (typeof Game !== "undefined") Game.items = window.GameData.items;
+  Object.keys(window.GameData.items).forEach((k) => {
+    const def = window.GameData.items[k];
+    if (def && typeof def === "object" && !def.id) def.id = k;
+  });
 
   // src/data/data_item_icons.js
   if (typeof window.GameData === "undefined") window.GameData = {};
@@ -6439,19 +6443,22 @@
       const maxSlots = Game.getMaxSlots();
       if (countDisplay) {
         let backpackName = "";
+        let backpackId = null;
         if (Game.state.equip && Game.state.equip.back) {
           const bp = Game.state.equip.back;
           backpackName = bp.props && bp.props.name ? bp.props.name : bp.name;
+          backpackId = bp.id || null;
         }
         countDisplay.innerHTML = `
                 <div class="flex flex-col items-end leading-tight">
                     <span class="text-sm">${usedSlots} / ${maxSlots}</span>
-                    ${backpackName ? `<span class="text-[10px] text-[#39ff14] font-bold tracking-wider border-t border-green-900 mt-0.5 pt-0.5">🎒 ${backpackName}</span>` : '<span class="text-[9px] text-gray-600 border-t border-gray-800 mt-0.5 pt-0.5">KEIN RUCKSACK</span>'}
+                    ${backpackName ? `<span class="flex items-center gap-1 text-[10px] text-[#39ff14] font-bold tracking-wider border-t border-green-900 mt-0.5 pt-0.5">${UI.itemSymbol(backpackId, "back", "klein")} ${backpackName}</span>` : '<span class="text-[9px] text-gray-600 border-t border-gray-800 mt-0.5 pt-0.5">KEIN RUCKSACK</span>'}
                 </div>
             `;
         countDisplay.className = usedSlots >= maxSlots ? "text-red-500 font-bold animate-pulse" : "text-white font-mono";
       }
-      const itemBild = (id, type) => UI.itemSymbol(id, type, "gross");
+      const bildId = (itemDef, entry) => entry && entry.id || itemDef && itemDef.id || null;
+      const itemBild = (itemDef, entry) => UI.itemSymbol(bildId(itemDef, entry), itemDef && itemDef.type, "gross");
       const createBtn = (itemDef, entry, isEquipped, label, onClick) => {
         const btn = document.createElement("div");
         let cssClass = "relative border border-green-500 bg-green-900/30 w-full h-16 flex flex-col items-center justify-center transition-colors group";
@@ -6465,7 +6472,7 @@
         let extraClass = entry.props && entry.props.color ? entry.props.color : "";
         const countDisplay2 = entry.count > 1 || itemDef.type === "ammo" ? `<div class="absolute top-0 right-0 bg-green-900 text-white text-[10px] px-1 font-mono">${entry.count}</div>` : "";
         btn.innerHTML = `
-                <div class="flex items-center justify-center">${itemBild(itemDef.id, itemDef.type)}</div>
+                <div class="flex items-center justify-center">${itemBild(itemDef, entry)}</div>
                 <div class="text-[10px] truncate max-w-full px-1 font-bold ${extraClass}">${displayName}</div>
                 ${countDisplay2}
             `;
@@ -6491,9 +6498,9 @@
         return btn;
       };
       const cats = {
-        equip: { label: "🛡️ AUSRÜSTUNG", items: [] },
-        aid: { label: "💉 HILFSMITTEL", items: [] },
-        misc: { label: "⚙️ MATERIAL", items: [] }
+        equip: { label: "AUSRÜSTUNG", items: [] },
+        aid: { label: "HILFSMITTEL", items: [] },
+        misc: { label: "MATERIAL", items: [] }
       };
       const equippedList = [];
       Game.state.inventory.forEach((entry, index) => {
@@ -7352,10 +7359,10 @@
         container.innerHTML += `<div class="h-px bg-yellow-900/50 my-4 mx-2"></div>`;
       }
       const categories = {
-        "consumable": { title: "💊 MEDIZIN", items: [] },
-        "weapon": { title: "🔫 WAFFEN", items: [] },
-        "body": { title: "🛡️ RÜSTUNG", items: [] },
-        "misc": { title: "📦 SONSTIGES", items: [] }
+        "consumable": { title: `${UI.itemTypEmoji("consumable")} MEDIZIN`, items: [] },
+        "weapon": { title: `${UI.itemTypEmoji("weapon")} WAFFEN`, items: [] },
+        "body": { title: `${UI.itemTypEmoji("body")} RÜSTUNG`, items: [] },
+        "misc": { title: `${UI.itemTypEmoji("junk")} SONSTIGES`, items: [] }
       };
       Object.keys(stock).forEach((key) => {
         if (key === "fists" || key === "vault_suit" || key === "mele") return;
@@ -7488,25 +7495,7 @@
       };
       ensureButton("wiki-btn-perks", "PERKS", "perks");
       ensureButton("wiki-btn-quests", "QUESTS", "quests");
-      const getIcon = (type) => {
-        const map = {
-          "weapon": "🔫",
-          "body": "🛡️",
-          "head": "🪖",
-          "legs": "👖",
-          "feet": "🥾",
-          "arms": "🦾",
-          "back": "🎒",
-          "consumable": "💉",
-          "junk": "⚙️",
-          "component": "🔩",
-          "ammo": "🧨",
-          "blueprint": "📜",
-          "tool": "⛺",
-          "misc": "📦"
-        };
-        return map[type] || "❓";
-      };
+      const getIcon = (type) => UI.itemTypEmoji(type);
       const categories = ["monsters", "items", "crafting", "locs", "perks", "quests"];
       categories.forEach((cat) => {
         const btn = document.getElementById(`wiki-btn-${cat}`);
@@ -7576,9 +7565,12 @@
               if (item.bonus) stats.push(`<span class="text-cyan-300">${JSON.stringify(item.bonus).replace(/["{}]/g, "").replace(/:/g, "+")}</span>`);
               html += `
                             <div class="flex flex-col border-b border-green-900/50 py-3 hover:bg-green-900/20 px-2">
-                                <div class="flex justify-between items-center">
-                                    <span class="font-bold text-green-100 text-sm">${item.name}</span>
-                                    <div class="text-xs font-mono flex gap-2 opacity-90">${stats.join(" | ")}</div>
+                                <div class="flex justify-between items-center gap-2">
+                                    <div class="flex items-center gap-2 min-w-0">
+                                        ${UI.itemSymbol(item.id, item.type, "klein")}
+                                        <span class="font-bold text-green-100 text-sm truncate">${item.name}</span>
+                                    </div>
+                                    <div class="text-xs font-mono flex gap-2 opacity-90 shrink-0">${stats.join(" | ")}</div>
                                 </div>
                                 <div class="text-sm text-gray-400 italic pl-2 border-l-2 border-green-700/50 mt-1">${item.desc || "Keine Daten."}</div>
                             </div>`;
@@ -7598,8 +7590,11 @@
             }).join(", ");
             html += `
                         <div class="border border-green-800 p-3 mb-2 bg-black flex justify-between items-center ${isKnown ? "" : "opacity-50 grayscale"}">
-                            <div>
-                                <div class="font-bold text-lg ${isKnown ? "text-yellow-400" : "text-gray-500"}">${outName}</div>
+                            <div class="min-w-0">
+                                <div class="flex items-center gap-2">
+                                    ${r.out === "AMMO" ? UI.itemSymbol("ammo", "ammo", "mittel") : UI.itemSymbol(r.out, item ? item.type : null, "mittel")}
+                                    <div class="font-bold text-lg ${isKnown ? "text-yellow-400" : "text-gray-500"}">${outName}</div>
+                                </div>
                                 <div class="text-xs text-green-400 font-mono italic mt-1">Benötigt: ${reqs}</div>
                             </div>
                             <div class="flex flex-col items-end">
@@ -8546,13 +8541,23 @@
     renderCharacterVisuals: function(container) {
       const p = Game.state;
       const eq = p.equip || {};
-      const renderSlot = (slotName, item, iconFallback) => {
+      const slotBild = (slotName, item) => {
+        if (!item) return `<div class="opacity-30">${UI.itemSymbol(null, slotName, "mittel")}</div>`;
+        let id = item.id;
+        if (!id) {
+          const key = Object.keys(Game.items).find((k) => Game.items[k].name === item.name);
+          id = key || null;
+        }
+        const typ = item.props && item.props.type || item.type || slotName;
+        return UI.itemSymbol(id, typ, "mittel");
+      };
+      const renderSlot = (slotName, item) => {
         const hasItem = !!item;
         const name = hasItem ? item.props?.name || item.name : "LEER";
         return `
                 <div class="flex flex-col items-center justify-center p-2 border-2 ${hasItem ? "border-green-500 bg-green-900/20" : "border-green-900/50"} rounded min-h-[80px] z-10 relative cursor-pointer hover:bg-green-900/40 transition-colors" onclick="UI.openEquipMenu('${slotName}')">
                     <div class="text-[8px] uppercase opacity-50 mb-1 pointer-events-none">${slotName}</div>
-                    <div class="text-2xl mb-1 pointer-events-none">${hasItem && item.icon ? item.icon : iconFallback}</div>
+                    <div class="mb-1 pointer-events-none">${slotBild(slotName, item)}</div>
                     <div class="text-[9px] text-center font-bold truncate w-full pointer-events-none">${name}</div>
                 </div>
             `;
@@ -8573,13 +8578,13 @@
                     </div>
                 </div>
                 <div class="grid grid-cols-3 grid-rows-4 gap-2 w-full relative mt-2 z-10">
-                    <div class="col-start-2 row-start-1">${renderSlot("head", eq.head, "🧢")}</div>
-                    <div class="col-start-1 row-start-2">${renderSlot("weapon", eq.weapon, "👊")}</div>
-                    <div class="col-start-2 row-start-2">${renderSlot("body", eq.body, "👕")}</div>
-                    <div class="col-start-3 row-start-2">${renderSlot("arms", eq.arms, "💪")}</div>
-                    <div class="col-start-2 row-start-3">${renderSlot("legs", eq.legs, "👖")}</div>
-                    <div class="col-start-3 row-start-3">${renderSlot("back", eq.back, "🎒")}</div>
-                    <div class="col-start-2 row-start-4">${renderSlot("feet", eq.feet, "🥾")}</div>
+                    <div class="col-start-2 row-start-1">${renderSlot("head", eq.head)}</div>
+                    <div class="col-start-1 row-start-2">${renderSlot("weapon", eq.weapon)}</div>
+                    <div class="col-start-2 row-start-2">${renderSlot("body", eq.body)}</div>
+                    <div class="col-start-3 row-start-2">${renderSlot("arms", eq.arms)}</div>
+                    <div class="col-start-2 row-start-3">${renderSlot("legs", eq.legs)}</div>
+                    <div class="col-start-3 row-start-3">${renderSlot("back", eq.back)}</div>
+                    <div class="col-start-2 row-start-4">${renderSlot("feet", eq.feet)}</div>
                     <div class="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none z-0">
                         <canvas id="char-silhouette-canvas" width="240" height="300"></canvas>
                     </div>
