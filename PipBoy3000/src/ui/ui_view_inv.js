@@ -43,7 +43,7 @@ Object.assign(UI, {
             `;
             
             // Pulsieren bei Überladung
-            countDisplay.className = usedSlots >= maxSlots ? "text-red-500 font-bold animate-pulse" : "text-white font-mono";
+            countDisplay.className = usedSlots >= maxSlots ? "text-red-500 font-bold animate-pulse" : "text-[#39ff14] font-mono";
         }
         
         // Symbol und Emoji-Rueckfall stehen zentral in ui_item_symbol.js,

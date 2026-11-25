@@ -81,7 +81,7 @@ Object.assign(UI, {
                     
                     if(!isFree) {
                         UI.showInfoDialog("IDENTITÄT ABGELEHNT", `
-                            Der Name <span class="text-white font-bold">'${name}'</span> ist bereits vergeben.<br><br>
+                            Der Name <span class="text-[#39ff14] font-bold">'${name}'</span> ist bereits vergeben.<br><br>
                             <span class="text-xs text-red-400 uppercase tracking-widest">>> Ein lebender Bewohner nutzt diesen Namen bereits.</span>
                         `);
                         // Reset

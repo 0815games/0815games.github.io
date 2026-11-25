@@ -218,7 +218,7 @@ Object.assign(Game, {
         const flicker = Math.sin(time/150)*0.2 + 0.8;
         ctx.fillStyle = `rgba(0, 255, 255, ${flicker})`;
         ctx.shadowBlur = 10; ctx.shadowColor = "#0ff";
-        ctx.font = `bold ${ts*0.25}px monospace`;
+        ctx.font = `bold ${ts*0.25}px VT323, monospace`;
         ctx.textAlign = "center"; ctx.textBaseline = "middle";
         ctx.fillText("RUSTY SPRINGS", 0, -ts*0.75);
         ctx.shadowBlur = 0;
@@ -278,7 +278,7 @@ Object.assign(Game, {
         ctx.fillStyle = "#111";
         ctx.fillRect(-ts*0.7, -ts*0.2, ts*1.4, ts*0.4);
         ctx.fillStyle = "#555";
-        ctx.font = `bold ${ts*0.25}px monospace`;
+        ctx.font = `bold ${ts*0.25}px VT323, monospace`;
         ctx.textAlign = "center"; ctx.textBaseline = "middle";
         ctx.fillText("HOPELESS", 0, 0);
         ctx.restore();
@@ -342,7 +342,7 @@ Object.assign(Game, {
         ctx.shadowBlur = 10 + pulse * 15;
         ctx.shadowColor = "#eab308";
         ctx.fillStyle = "#facc15";
-        ctx.font = `bold ${ts*0.35}px monospace`;
+        ctx.font = `bold ${ts*0.35}px VT323, monospace`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText("101", 0, 0);
@@ -361,7 +361,7 @@ Object.assign(Game, {
         ctx.fillStyle = "#111"; ctx.fillRect(-ts*0.8, -ts*0.6, ts*1.6, ts*0.3);
         const flicker = Math.sin(time/120) > 0 ? "#10b981" : "#064e3b";
         ctx.fillStyle = flicker;
-        ctx.font = `bold ${ts*0.2}px sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.font = `bold ${ts*0.2}px VT323, monospace`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
         ctx.fillText("SUPER DUPER", 0, -ts*0.45);
         ctx.restore();
     },
@@ -658,7 +658,7 @@ Object.assign(Game, {
         const mins = (totalMinutes % 60).toString().padStart(2, '0');
         
         ctx.fillStyle = "#39ff14";
-        ctx.font = "bold 14px monospace";
+        ctx.font = "bold 14px VT323, monospace";
         ctx.textAlign = "right";
         ctx.fillText(`LOKALE ZEIT: ${hours}:${mins}`, viewW - 15, 25);
 
@@ -691,7 +691,7 @@ Object.assign(Game, {
 
                 const txt = `📌 MISSION: ${title.toUpperCase()} ${prog}`;
                 
-                ctx.font = "bold 13px monospace";
+                ctx.font = "bold 13px VT323, monospace";
                 const tw = ctx.measureText(txt).width;
                 
                 const bx = 15; 
@@ -732,5 +732,5 @@ Object.assign(Game, {
     drawOtherPlayers: function(ctx) { if(typeof Network==='undefined'||!Network.otherPlayers)return; for(let pid in Network.otherPlayers){ const p=Network.otherPlayers[pid]; if(p.sector&&(p.sector.x!==this.state.sector.x||p.sector.y!==this.state.sector.y))continue; const ox=p.x*this.TILE+this.TILE/2; const oy=p.y*this.TILE+this.TILE/2; ctx.fillStyle="#00ffff"; ctx.beginPath(); ctx.arc(ox,oy,6,0,Math.PI*2); ctx.fill(); } },
     drawMonster: function(ctx,x,y,time) { const ts=this.TILE; const px=x*ts+ts/2; const py=y*ts+ts/2; const sc=1+Math.sin(time/200)*0.1; ctx.save(); ctx.translate(px,py); ctx.scale(sc,sc); ctx.fillStyle="#d32f2f"; ctx.beginPath(); ctx.arc(0,0,8,0,Math.PI*2); ctx.fill(); ctx.strokeStyle="#ff5252"; ctx.lineWidth=2; for(let i=0;i<8;i++){ ctx.beginPath(); ctx.moveTo(0,0); const a=(i/8)*Math.PI*2; ctx.lineTo(Math.cos(a)*12,Math.sin(a)*12); ctx.stroke(); } ctx.fillStyle="#ffeb3b"; ctx.fillRect(-4,-2,3,3); ctx.fillRect(2,-2,3,3); ctx.restore(); },
     drawWanderer: function(ctx,x,y,time) { const ts=this.TILE; const px=x*ts+ts/2; const py=y*ts+ts/2; const b=Math.abs(Math.sin(time/300))*3; ctx.save(); ctx.translate(px,py-b); ctx.fillStyle="#4fc3f7"; ctx.beginPath(); ctx.arc(0,-6,5,Math.PI,0); ctx.lineTo(6,10); ctx.lineTo(-6,10); ctx.fill(); ctx.fillStyle="#8d6e63"; ctx.fillRect(-4,0,8,6); ctx.restore(); },
-    drawTile: function(ctx,x,y,type) { const ts=this.TILE; const cx=x*ts+ts/2; const cy=y*ts+ts/2; const dI=(c,cl,s=20)=>{ctx.font=`bold ${s}px monospace`;ctx.fillStyle=cl;ctx.textAlign="center";ctx.textBaseline="middle";ctx.shadowColor=cl;ctx.shadowBlur=5;ctx.fillText(c,cx,cy);ctx.shadowBlur=0;}; switch(type){ case 'R':dI("💰","#ff3333",22);break; case 'X':ctx.fillStyle="#8B4513";ctx.fillRect(cx-8,cy-6,16,12);ctx.strokeStyle="#ffd700";ctx.strokeRect(cx-8,cy-6,16,12);break; case 'S':dI("🏪","#00ff00",22);break; case 'H':dI("⛰️","#888",22);break; case 'E':dI("EXIT","#00ffff",10);break; case 'P':dI("✚","#ff0000",18);break; case '?':dI("?","#ff00ff",20);break; } }
+    drawTile: function(ctx,x,y,type) { const ts=this.TILE; const cx=x*ts+ts/2; const cy=y*ts+ts/2; const dI=(c,cl,s=20)=>{ctx.font=`bold ${s}px VT323, monospace`;ctx.fillStyle=cl;ctx.textAlign="center";ctx.textBaseline="middle";ctx.shadowColor=cl;ctx.shadowBlur=5;ctx.fillText(c,cx,cy);ctx.shadowBlur=0;}; switch(type){ case 'R':dI("💰","#ff3333",22);break; case 'X':ctx.fillStyle="#8B4513";ctx.fillRect(cx-8,cy-6,16,12);ctx.strokeStyle="#ffd700";ctx.strokeRect(cx-8,cy-6,16,12);break; case 'S':dI("🏪","#00ff00",22);break; case 'H':dI("⛰️","#888",22);break; case 'E':dI("EXIT","#00ffff",10);break; case 'P':dI("✚","#ff0000",18);break; case '?':dI("?","#ff00ff",20);break; } }
 });

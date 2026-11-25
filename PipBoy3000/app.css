@@ -873,6 +873,9 @@
 .items-center {
     align-items: center
 }
+.items-baseline {
+    align-items: baseline
+}
 .justify-start {
     justify-content: flex-start
 }
@@ -911,6 +914,9 @@
 }
 .gap-x-8 {
     column-gap: 2rem
+}
+.gap-y-1 {
+    row-gap: 0.25rem
 }
 .space-y-1 > :not([hidden]) ~ :not([hidden]) {
     --tw-space-y-reverse: 0;
@@ -1130,6 +1136,10 @@
     --tw-border-opacity: 1;
     border-color: rgb(17 24 39 / var(--tw-border-opacity, 1))
 }
+.border-green-300 {
+    --tw-border-opacity: 1;
+    border-color: rgb(134 239 172 / var(--tw-border-opacity, 1))
+}
 .border-green-400 {
     --tw-border-opacity: 1;
     border-color: rgb(74 222 128 / var(--tw-border-opacity, 1))
@@ -1166,14 +1176,14 @@
     --tw-border-opacity: 1;
     border-color: rgb(20 83 45 / var(--tw-border-opacity, 1))
 }
-.border-green-900\/20 {
-    border-color: rgb(20 83 45 / 0.2)
-}
 .border-green-900\/30 {
     border-color: rgb(20 83 45 / 0.3)
 }
 .border-green-900\/50 {
     border-color: rgb(20 83 45 / 0.5)
+}
+.border-green-900\/60 {
+    border-color: rgb(20 83 45 / 0.6)
 }
 .border-green-900\/80 {
     border-color: rgb(20 83 45 / 0.8)
@@ -1273,6 +1283,9 @@
 .bg-\[\#001100\] {
     --tw-bg-opacity: 1;
     background-color: rgb(0 17 0 / var(--tw-bg-opacity, 1))
+}
+.bg-\[\#001100\]\/60 {
+    background-color: rgb(0 17 0 / 0.6)
 }
 .bg-\[\#002200\] {
     --tw-bg-opacity: 1;
@@ -1736,9 +1749,6 @@
 .font-mono {
     font-family: VT323, ui-monospace, monospace
 }
-.font-sans {
-    font-family: VT323, ui-monospace, monospace
-}
 .text-2xl {
     font-size: 1.5rem;
     line-height: 2rem
@@ -1827,6 +1837,9 @@
 }
 .tracking-\[0\.2em\] {
     letter-spacing: 0.2em
+}
+.tracking-\[0\.3em\] {
+    letter-spacing: 0.3em
 }
 .tracking-\[0\.6em\] {
     letter-spacing: 0.6em
@@ -1981,6 +1994,10 @@
 .text-purple-500 {
     --tw-text-opacity: 1;
     color: rgb(168 85 247 / var(--tw-text-opacity, 1))
+}
+.text-red-100 {
+    --tw-text-opacity: 1;
+    color: rgb(254 226 226 / var(--tw-text-opacity, 1))
 }
 .text-red-300 {
     --tw-text-opacity: 1;

@@ -48,7 +48,7 @@ Object.assign(UI, {
             </div>
 
             <div class="flex-shrink-0 p-3 border-t border-red-900 bg-[#0a0000]">
-                <button class="action-button w-full border-gray-600 text-gray-500 hover:text-white hover:border-white transition-colors" onclick="UI.renderCity()">ZURÜCK ZUM ZENTRUM</button>
+                <button class="action-button w-full border-gray-600 text-gray-500 hover:text-black hover:border-white transition-colors" onclick="UI.renderCity()">ZURÜCK ZUM ZENTRUM</button>
             </div>
         `;
         view.appendChild(wrapper);
@@ -102,7 +102,7 @@ Object.assign(UI, {
         const footer = document.createElement('div');
         footer.className = "absolute bottom-0 left-0 w-full p-4 bg-black border-t-2 border-blue-900 z-50 shadow-[0_-5px_15px_rgba(0,0,0,0.9)]";
         footer.innerHTML = `
-            <button onclick="UI.renderCity()" class="action-button w-full border-gray-600 text-gray-500 hover:text-white hover:border-white transition-colors py-3 font-bold tracking-widest uppercase bg-black">
+            <button onclick="UI.renderCity()" class="action-button w-full border-gray-600 text-gray-500 hover:text-black hover:border-white transition-colors py-3 font-bold tracking-widest uppercase bg-black">
                 ZURÜCK ZUM ZENTRUM
             </button>
         `;
@@ -607,7 +607,7 @@ Object.assign(UI, {
                 <div class="flex items-center gap-3 p-2 flex-grow overflow-hidden pointer-events-none">
                     <div class="flex items-center gap-2 overflow-hidden">
                         ${UI.itemSymbol(item.id, def.type, 'mittel')}
-                        <div class="text-green-500 font-bold text-lg font-vt323 truncate">${name} <span class="text-green-800 text-sm font-sans">x${item.count}</span></div>
+                        <div class="text-green-500 font-bold text-lg font-vt323 truncate">${name} <span class="text-green-800 text-sm">x${item.count}</span></div>
                     </div>
                 </div>
                 <div class="h-full flex flex-col justify-center items-end border-l-2 border-green-800 bg-black/30 min-w-[100px] pointer-events-none">

@@ -83,7 +83,7 @@ Object.assign(UI, {
                             <div class="text-xs font-mono bg-green-900 text-green-100 px-2 rounded">LVL ${m.minLvl}</div>
                         </div>
                         <div class="grid grid-cols-4 gap-2 text-xs font-mono text-center bg-green-900/20 p-2 rounded">
-                            <div class="flex flex-col"><span class="text-gray-400">HP</span><span class="text-white font-bold">${m.hp}</span></div>
+                            <div class="flex flex-col"><span class="text-gray-400">HP</span><span class="text-[#39ff14] font-bold">${m.hp}</span></div>
                             <div class="flex flex-col"><span class="text-gray-400">DMG</span><span class="text-red-400 font-bold">${m.dmg}</span></div>
                             <div class="flex flex-col"><span class="text-gray-400">XP</span><span class="text-cyan-400 font-bold">${xpText}</span></div>
                             <div class="flex flex-col"><span class="text-gray-400">LOOT</span><span class="text-yellow-400 font-bold">~${m.loot}</span></div>
@@ -110,7 +110,7 @@ Object.assign(UI, {
                     return ia - ib;
                 });
                 sortedKeys.forEach(type => {
-                    html += `<h3 class="text-md font-bold bg-green-800 text-white px-2 py-1 mt-4 mb-2 uppercase tracking-widest flex items-center gap-2 border-l-4 border-green-500 shadow-md">${getIcon(type)} ${type}</h3>`;
+                    html += `<h3 class="text-base font-bold bg-green-900 text-[#39ff14] px-2 py-1 mt-4 mb-2 uppercase tracking-widest flex items-center gap-2 border-l-4 border-green-500 shadow-md">${getIcon(type)} ${type}</h3>`;
                     groups[type].sort((a,b) => a.name.localeCompare(b.name)).forEach(item => {
                         let stats = [];
                         if(item.cost) stats.push(`<span class="text-yellow-400">${item.cost} KK</span>`);
@@ -310,7 +310,7 @@ Object.assign(UI, {
                         </div>
                     </div>
                     
-                    ${!isDone && !isLocked ? `<div class="text-sm text-green-100 mt-2 mb-3 leading-relaxed font-sans">${def.desc}</div>` : ''}
+                    ${!isDone && !isLocked ? `<div class="text-sm text-green-100 mt-2 mb-3 leading-relaxed">${def.desc}</div>` : ''}
                     
                     ${activeData ? `
                         <div class="w-full bg-gray-800 border border-gray-600 h-3 mt-1 mb-1 rounded-sm overflow-hidden">

@@ -147,9 +147,9 @@ Object.assign(UI, {
                 <div class="text-green-500 text-[10px] animate-pulse">V.A.T.S. ACTIVE</div>
                 <div class="text-yellow-400 font-bold text-xl uppercase tracking-widest border-b border-green-500/50 mb-1">${currentPart.name}</div>
                 <div class="text-green-300 font-mono text-xs">
-                    <div>CHANCE: <span class="text-white">${currentChance}%</span></div>
-                    <div>DMG MOD: <span class="text-white">${currentPart.dmgMod}x</span></div>
-                    <div>CRIT: <span class="text-white">${Game.state.critChance || 5}%</span></div>
+                    <div>CHANCE: <span class="text-[#39ff14]">${currentChance}%</span></div>
+                    <div>DMG MOD: <span class="text-[#39ff14]">${currentPart.dmgMod}x</span></div>
+                    <div>CRIT: <span class="text-[#39ff14]">${Game.state.critChance || 5}%</span></div>
                 </div>
             `;
             scopeBox.appendChild(stats);
@@ -190,7 +190,7 @@ Object.assign(UI, {
                 <button onclick="Combat.confirmSelection()" class="flex-grow action-button py-4 text-3xl font-bold border-2 border-yellow-500 text-yellow-500 bg-yellow-900/20 hover:bg-yellow-500 hover:text-black shadow-[0_0_15px_rgba(255,200,0,0.2)] tracking-[0.2em] relative overflow-hidden group font-vt323 transition-all">
                     FEUER
                 </button>
-                <button onclick="Combat.flee()" class="w-1/3 action-button py-4 text-gray-500 border-2 border-gray-600 hover:text-white hover:border-white tracking-widest font-bold text-sm">
+                <button onclick="Combat.flee()" class="w-1/3 action-button py-4 text-gray-500 border-2 border-gray-600 hover:text-black hover:border-white tracking-widest font-bold text-sm">
                     FLUCHT
                 </button>
             `;
