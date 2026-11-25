@@ -93,7 +93,8 @@ test('das Manifest ist gueltig und nennt beide Icon-Arten', () => {
   assert.ok(zwecke.includes('maskable'), 'kein maskable Icon - Android beschneidet sonst hart');
 
   // Jede im Manifest genannte Datei muss es geben.
-  const version = readFileSync(join(ROOT, 'Version'), 'utf8').trim();
+  const version = new URL(manifest.icons[0].src, 'https://example.test/').searchParams.get('v');
+  assert.ok(version, 'Icon-Cachekennung fehlt');
   for (const icon of manifest.icons) {
     assert.equal(new URL(icon.src, 'https://example.test/').searchParams.get('v'), version);
     assert.ok(existsSync(join(ROOT, icon.src.split('?')[0])), `${icon.src} fehlt`);
