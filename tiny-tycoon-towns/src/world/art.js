@@ -1,7 +1,7 @@
 // Zeichnung der Weltansicht: Gelände, Wasser, Bäume, Gebäude und Animationen.
 // Reine Canvas-2D-Funktionen ohne DOM-Zugriff. Jede Funktion bekommt den Kontext,
 // den Mittelpunkt einer Kachel auf dem Bildschirm und die Zeit in Sekunden.
-import { HW, HH, toScreen, hash } from './iso.js?v=20261125-zoom1';
+import { HW, HH, toScreen, hash } from './iso.js?v=20261125-eco1';
 
 // ---------- Farbe ----------
 
@@ -71,6 +71,7 @@ export const TERRAIN_COLOR = {
   rock: '#a2a8a4',
   sand: '#ecd8a4',
   water: '#2f8fcf',
+  mountain: '#8b8f96',
 };
 
 function tuft(ctx, c, t, h) {
@@ -129,6 +130,42 @@ function boulder(ctx, base, s, colorBase) {
   ctx.fill();
 }
 
+/** Ackerfurchen eines Feldes der Farm: parallele Linien in der Kachel. */
+function furrows(ctx, c) {
+  ctx.strokeStyle = 'rgba(110,80,40,0.45)';
+  ctx.lineWidth = 1.2;
+  for (let i = -1; i <= 1; i++) {
+    const a = P(c, -0.36, i * 0.26, 0);
+    const b = P(c, 0.36, i * 0.26, 0);
+    ctx.beginPath();
+    ctx.moveTo(a.x, a.y);
+    ctx.lineTo(b.x, b.y);
+    ctx.stroke();
+  }
+}
+
+/** Berggipfel mit Schneekappe. Zwei Spitzen, damit ein Gebirgszug nach Gebirge aussieht. */
+function peaks(ctx, base, s, colorBase) {
+  const peak = (px, h, w) => {
+    ctx.fillStyle = shade(colorBase, 0.72);
+    ctx.beginPath();
+    ctx.moveTo(px - w, base.y);
+    ctx.lineTo(px, base.y - h);
+    ctx.lineTo(px + w, base.y);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#f2f5f7';
+    ctx.beginPath();
+    ctx.moveTo(px - w * 0.35, base.y - h * 0.6);
+    ctx.lineTo(px, base.y - h);
+    ctx.lineTo(px + w * 0.35, base.y - h * 0.6);
+    ctx.closePath();
+    ctx.fill();
+  };
+  peak(base.x + 4 * s, 16 * s, 11 * s);
+  peak(base.x - 6 * s, 11 * s, 8 * s);
+}
+
 /** Wasser mit wandernden Wellen und Glitzern. */
 function waves(ctx, c, x, y, t, day) {
   ctx.strokeStyle = `rgba(255,255,255,${0.18 + 0.12 * day})`;
@@ -177,23 +214,31 @@ export function drawTile(ctx, x, y, terrain, t, env) {
     if (env.waves !== false) waves(ctx, c, x, y, t, env.day);
     return;
   }
+  // Kleine Details (Gras, Blumen, Sandlinien, Zweitbäume und -felsen) nur bei ausreichendem Zoom.
+  const detail = env.detail !== false;
   if (terrain === 'sand') {
-    ctx.strokeStyle = 'rgba(180,140,80,0.25)';
-    ctx.lineWidth = 1;
-    const p = P(c, (hash(x, y, 90) - 0.5) * 0.4, (hash(x, y, 91) - 0.5) * 0.4, 0);
-    ctx.beginPath();
-    ctx.ellipse(p.x, p.y, 8, 3, 0, 0, Math.PI);
-    ctx.stroke();
+    if (detail) {
+      ctx.strokeStyle = 'rgba(180,140,80,0.25)';
+      ctx.lineWidth = 1;
+      const p = P(c, (hash(x, y, 90) - 0.5) * 0.4, (hash(x, y, 91) - 0.5) * 0.4, 0);
+      ctx.beginPath();
+      ctx.ellipse(p.x, p.y, 8, 3, 0, 0, Math.PI);
+      ctx.stroke();
+    }
   } else if (terrain === 'rock') {
     boulder(ctx, P(c, -0.15, 0.1), 1.1, base);
-    if (hash(x, y, 92) > 0.5) boulder(ctx, P(c, 0.22, -0.18), 0.7, base);
+    if (detail && hash(x, y, 92) > 0.5) boulder(ctx, P(c, 0.22, -0.18), 0.7, base);
+  } else if (terrain === 'mountain') {
+    peaks(ctx, P(c, -0.1, 0.12), 1, base);
   } else if (terrain === 'forest') {
     tree(ctx, P(c, -0.18, 0.12), 1, t, hash(x, y, 93) * 6);
-    if (hash(x, y, 94) > 0.45) tree(ctx, P(c, 0.2, -0.16), 0.8, t, hash(x, y, 95) * 6, true);
-  } else {
+    if (detail && hash(x, y, 94) > 0.45) tree(ctx, P(c, 0.2, -0.16), 0.8, t, hash(x, y, 95) * 6, true);
+  } else if (detail) {
     for (let i = 0; i < 3; i++) if (hash(x, y, 100 + i) > 0.35) tuft(ctx, c, t, hash(x, y, 110 + i) * 10);
     if (hash(x, y, 120) > 0.72) flowers(ctx, c, x, y);
   }
+
+  if (env.field) furrows(ctx, c);
 
   if (env.locked) {
     fillPoly(ctx, [P(c, -0.5, -0.5), P(c, 0.5, -0.5), P(c, 0.5, 0.5), P(c, -0.5, 0.5)], 'rgba(226,234,242,0.62)');

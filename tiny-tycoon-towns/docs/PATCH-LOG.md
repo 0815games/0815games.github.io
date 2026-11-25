@@ -718,3 +718,95 @@ Ereignis ergänzt.
 - Git / PR / Veröffentlichung: Commit folgt. Nicht veröffentlicht.
 - Offen / nächster Schritt: Nutzer testet die Vorschau (Herauszoomen auf Handy und Desktop).
   Weitere Kosten sind möglich: ein Offscreen-Cache für die statischen Kacheln wäre der nächste Schritt.
+
+### TTT-0047 – Mindestzoomstufe für kleine Details (Welle `20261125-zoom2`)
+
+- Zeit / Quelle: Sitzung 2026-11-25 (UTC). Folgeschritt zu TTT-0046, Nutzerwunsch: Mindestzoomstufe.
+- Branch / Basis: `arena/84679235-0815games-github-io`, Basis `72cba04` (`main`, enthält TTT-0046).
+- Änderungen / Dateien:
+  - `src/world/scene.js`: `DETAIL_MIN_ZOOM` = 0,75. Unterhalb davon `env.detail = false`. Wellen gelten weiter nur auf dem Raster.
+  - `src/world/art.js`: `drawTile` zeichnet Gras, Blumen, Sandlinien, Zweitbäume und Zweitfelsen nur mit `detail`. Gebäude, Hauptbaum und Hauptfelsen bleiben immer.
+  - `src/patch-notes.mjs`: Stadtchronik `20261125-zoom2` (DE/EN).
+  - Cache-Welle `20261125-zoom2` (`?v=`, `index.html`, `src/main.js`, `release-version.json`).
+- Messung (lokal, `@napi-rs/canvas` als Ersatz für Browser-Canvas, 60 Durchläufe, zwei Läufe, Vergleich mit `HEAD` = TTT-0046):
+  - Zoom 0,41 (k=0,45): 23,2–23,5 ms → 15,3–16,7 ms pro Frame.
+  - Zoom 0,63 (k=0,70): 24,0–24,6 ms → 15,5–15,6 ms.
+  - Zoom 0,90 (k=1,00): unverändert ~25 ms (Details aktiv).
+  - Zoom 2,34 (k=2,60): unverändert ~14 ms.
+- Prüfungen (lokal, Node 22.22.3):
+  - `npm test`: 129 Tests, 129 pass, 0 fail.
+  - `npm run check`: kein Fehler, 3 Hinweise.
+  - Nicht geprüft: Darstellung im Browser und auf dem Handy. Ob die Details bei 0,75 optisch stören, muss der Nutzer sehen.
+- Git / PR / Veröffentlichung: Commit folgt. Nicht veröffentlicht.
+- Offen / nächster Schritt: Bei Standardzoom kostet das Zeichnen weiter ~25 ms in der Messung. Ein Zwischenspeicher für die statischen Kacheln wäre dafür der nächste Schritt, falls das Ruckeln bleibt.
+
+### TTT-0048 – Ökosystem: Platzierungsregeln, Berge, Felder der Farm, Fischerei-Arten (Welle `20261125-zoom3`)
+
+- Zeit / Quelle: Sitzung 2026-11-25 (UTC). Nutzerwunsch: Gebäude sollen zum Ort passen (Mine nur auf Berg,
+  Farm braucht Felder, Fischerei nur auf Wasser). Antworten des Nutzers: Berg als neues Gelände; Felder auf
+  freien Nachbarwiesen, je Stufe der Farm ein Feld mehr, nur direkt daneben; Fischerei beides (Steg auf Wasser
+  mit weniger Ertrag, Boot am Ufer mit mehr Ertrag); Regeln für alle Rohstoffgebäude.
+- Branch / Basis: `arena/84679235-0815games-github-io`, Basis `72cba04` (`main`).
+- Änderungen / Dateien:
+  - `data/buildings.json`: `placement` je Gebäude (Gelände, Nachbarschaft, Hinweistext). Farm: `perField`.
+    Fischerei: `modes` (Steg 0,6, Boot 1,3). Mine: Bergbonus 1,2. Perlenhütte: Wasser, Bonus 1,4. Imkerei: Wald daneben.
+  - `data/economy.json`: `fields` (10 Münzen, 2 Holz je Feld).
+  - `src/domain/placement.js` (neu): `checkPlacement`, Felder-Helfer, Nachbarschaft.
+  - `src/domain/engine.js`: `placeBuilding` prüft Regeln; neu `plantField`, `removeField`; Produktion über `ratePerMin`.
+  - `src/domain/economy.js`: Betriebsart-Faktor; `ratePerMin` für Farm = Felder × Grundrate.
+  - `src/domain/terrain.js`: Berge (Hochland 2–3 Züge, andere Biome höchstens einer, klein); Startfläche garantiert
+    mindestens 4 Wald und 2 Fels (sonst fehlt Holz im Hochland, dort gab es keinen Wald).
+  - `src/world/art.js`, `src/world/scene.js`: Berggipfel, Ackerfurchen.
+  - `src/main.js`: Bauauswahl zeigt Regel und sperrt Bauen; Farm-Panel mit Feldern anlegen/entfernen; Betriebsart.
+  - `firebase/database.rules.json`: Gelände `mountain` erlaubt (**Regeländerung**).
+  - `scripts/simulate-balance.mjs`: Bot hält Platzregeln ein, legt Felder an, baut höchstens 5 Lager.
+  - Tests: `tests/placement.test.mjs` (neu, 17 Tests), `tests/domain.test.mjs` (3 Tests angepasst).
+  - `src/patch-notes.mjs`: Stadtchronik `20261125-zoom3` (DE/EN). Cache-Welle `20261125-zoom3`.
+- Bestehende Gebäude auf anderem Gelände bleiben stehen und produzieren weiter. Nur neue Platzierungen werden geprüft.
+  Bestehende Farmen ohne Felder liefern ab jetzt nichts, bis Felder angelegt sind.
+- Prüfungen (lokal, Node 22.22.3):
+  - `npm test`: 146 Tests, 146 pass, 0 fail.
+  - `npm run check`: kein Fehler, 3 Hinweise.
+  - `npm run simulate` (Bot, 30 Tage, 2 × 15 min aktiv je Tag). Ergebnis nach dieser Änderung:
+    - Stadtlevel 5 nach ca. 2,6 bis 3,6 aktiven Stunden. Korridor 4 bis 8 wird unterschritten (zu früh).
+    - Stadtlevel 10: Deepwoods nach 13,5 h (Korridor 11 bis 13, knapp darüber). Highlands, Coast, Riverlands
+      nicht in 30 Tagen (Level 9, 9, 8).
+    - Vor dieser Änderung (Stand `72cba04`): Deepwoods 11,3 h, Highlands 10,9 h, Riverlands und Coast ohne Level 10.
+    - Die Balance-Kurve ist damit **nicht** eingehalten. Die Korridor-Zahlen sind nicht geändert worden.
+  - Nicht geprüft: Darstellung im Browser (Berge, Felder, Bauauswahl), Vercel-Vorschau, Firebase-Regeln im Emulator.
+- Git / PR / Veröffentlichung: Commit folgt. Regeln **nicht** in Firebase veröffentlicht. Der Betreiber muss
+  `firebase/database.rules.json` erneut einspielen (siehe Hinweis im Antworttext).
+- Offen / nächster Schritt:
+  - Balance: Level 5 zu früh, Level 10 zu spät bzw. nicht erreicht. Entscheidung nötig: Feldplätze, XP oder Kartenform anpassen.
+  - Wald-Regeneration und Fischbestände (Ökosystem im engeren Sinn) sind noch nicht umgesetzt.
+  - Browser-Prüfung der neuen Oberfläche.
+
+### TTT-0049 – Ökosystem wirkt: Wald, Fisch, Boden; Imkerei mit Blüten (Welle `20261125-eco1`)
+
+- Ziel: Ökosystem aus TTT-0048 in der Engine verdrahten (Erschöpfung und Erholung), Felder erneuerbar machen,
+  Imkerei nach Vorgabe „Wald oder Blüten“ (Blüten = Wiese).
+- Dateien:
+  - `src/domain/engine.js`: `depleteFor` (Sägewerk senkt Waldbestand, Fischerei senkt Fischbestand der Fangkachel,
+    Farm senkt Bodenfruchtbarkeit der Felder), `regrow` (Erholung je Minute), neu `renewField`.
+  - `data/economy.json`: `ecology.forest.wearPerUnit` 0,05 → 0,1; `ecology.fish.wearPerUnit` 0,05 → 0,08
+    (bei 0,05 blieb der Bestand bei 100 %, Verbrauch < Erholung).
+  - `data/buildings.json`: Imkerei `near.terrain` = `["forest", "meadow"]`.
+  - `src/domain/placement.js`: `near` akzeptiert eine Liste.
+  - `src/main.js`: Gebäudeansicht zeigt Waldbestand und Fischbestand; Felder zeigen Boden und Button „Erneuern“.
+  - `scripts/simulate-balance.mjs`: Bot erneuert ausgelaugte Felder.
+  - `src/patch-notes.mjs`: Stadtchronik `20261125-eco1` (DE/EN).
+  - `tests/placement.test.mjs`: neuer Test Imkerei Wald/Wiese; Pearl-Test angepasst.
+  - Cache-Welle `20261125-zoom3` → `20261125-eco1` (20 Dateien, 64 Vorkommen).
+- Tests (lokal, Node 22.22.3):
+  - `npm test`: 147 Tests, 147 pass, 0 fail.
+  - `npm run check`: kein Fehler, 3 Hinweise. `patch.mjs check --fast` ohne Fehler.
+  - Ökosystem-Probe: Sägewerk auf einer Waldkachel senkt den Bestand in einer Stunde auf ca. 12 %; danach stabil.
+    (Vor der Verbrauchsanpassung blieb der Bestand bei 100 %.)
+  - `npm run simulate` (30 Tage, Bot): Tiefwald Stadtlevel 10 nach 13,5 h; Hochland Level 10 erreicht (vorher 9);
+    Küste Level 9; Riverlands Level 8.
+- Grenzen / offen:
+  - **Balance nicht im Korridor.** Stadtlevel 5 zu früh (2,6 bis 3,6 h, Ziel 4 bis 8 h). Stadtlevel 10 in
+    Küste und Riverlands nicht erreicht. Korridor unverändert gelassen. Entscheidung nötig.
+  - Browser-/Vercel-Prüfung der neuen Oberfläche noch nicht erfolgt.
+  - Keine Firebase-Regeländerung in diesem Schritt.
+  - Vor dem Merge keine Geräteabnahme; Commit, PR und Merge erfolgen nach diesem Eintrag.

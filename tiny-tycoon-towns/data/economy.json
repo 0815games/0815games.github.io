@@ -10,6 +10,13 @@
     "townHallThroughputPerMin": 20,
     "throughputPerMarketLevel": 40
   },
+  "fields": { "coins": 10, "material": { "resource": "lumber", "amount": 2 } },
+  "ecology": {
+    "_comment": "Bestand je Kachel: 100 = voll. Verbrauch je erzeugter Einheit, Erholung je Minute, Mindestertrag.",
+    "forest": { "wearPerUnit": 0.1, "regenPerMin": 0.2, "floor": 0.3 },
+    "fish": { "wearPerUnit": 0.08, "regenPerMin": 0.15, "floor": 0.25 },
+    "soil": { "wearPerUnit": 0.002, "regenPerMin": 0.01, "floor": 0.4, "renewBelow": 60 }
+  },
   "storage": { "base": 500, "perWarehouseLevel": 250, "maxWarehouseLevel": 20 },
   "townLevelThresholds": [0, 2000, 6000, 16000, 162000, 243092, 411982, 690937, 1155563, 1938000, 3060000, 4896000],
   "gridSizeByTownLevel": { "1": 6, "3": 7, "5": 8, "8": 9, "10": 10 },

@@ -1,5 +1,5 @@
-import { mulberry32 } from './rng.js?v=20261125-zoom1';
-import { GRID, HALL } from './grid.js?v=20261125-zoom1';
+import { mulberry32 } from './rng.js?v=20261125-eco1';
+import { GRID, HALL } from './grid.js?v=20261125-eco1';
 
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 
@@ -52,6 +52,14 @@ export function generateTerrain(biome, seed) {
       throw new Error(`Unknown biome: ${biome}`);
   }
 
+  // Berge: Hochland hat mehrere Gebirgszüge, andere Biome höchstens einen kleinen.
+  const ranges = biome === 'highlands' ? 2 + Math.floor(rnd() * 2) : (rnd() < 0.5 ? 1 : 0);
+  for (let i = 0; i < ranges; i++) grow(g, rnd, 'mountain', biome === 'highlands' ? 6 : 3);
+
+  // Startfläche: mindestens Wald (Holz für fast alles) und ein wenig Fels (Steinbruch).
+  ensureStart(g, rnd, 'forest', 4);
+  ensureStart(g, rnd, 'rock', 2);
+
   g[HALL.y][HALL.x] = 'meadow';
   return g;
 }
@@ -62,5 +70,42 @@ function scatter(g, rnd, prob, terrain) {
       if (x === HALL.x && y === HALL.y) continue;
       if (g[y][x] === 'meadow' && rnd() < prob) g[y][x] = terrain;
     }
+  }
+}
+
+/** Lässt einen zusammenhängenden Gebirgszug aus einem zufälligen Startfeld wachsen (nur auf Wiese und Fels). */
+function grow(g, rnd, terrain, size) {
+  let x = 1 + Math.floor(rnd() * (GRID - 2));
+  let y = 1 + Math.floor(rnd() * (GRID - 2));
+  let placed = 0;
+  for (let tries = 0; tries < 200 && placed < size; tries++) {
+    const ok = !(x === HALL.x && y === HALL.y) && (g[y][x] === 'meadow' || g[y][x] === 'rock');
+    if (ok) {
+      g[y][x] = terrain;
+      placed++;
+    }
+    // Nächster Schritt: vom letzten Berg aus, damit der Zug zusammenhängt.
+    const [dx, dy] = [[1, 0], [-1, 0], [0, 1], [0, -1]][Math.floor(rnd() * 4)];
+    x = clamp(x + dx, 0, GRID - 1);
+    y = clamp(y + dy, 0, GRID - 1);
+  }
+}
+
+/** Die Startfläche (Mitte, sechs mal sechs Kacheln) braucht mindestens `count` Kacheln von `terrain`. */
+function ensureStart(g, rnd, terrain, count) {
+  const cells = [];
+  for (let y = 2; y <= 7; y++) for (let x = 2; x <= 7; x++) {
+    if (x === HALL.x && y === HALL.y) continue;
+    cells.push([x, y]);
+  }
+  const have = cells.filter(([x, y]) => g[y][x] === terrain).length;
+  let need = count - have;
+  // Nur Wiesen umwandeln, Wasser und Berge bleiben, wie sie sind.
+  const meadows = cells.filter(([x, y]) => g[y][x] === 'meadow');
+  while (need > 0 && meadows.length) {
+    const i = Math.floor(rnd() * meadows.length);
+    const [x, y] = meadows.splice(i, 1)[0];
+    g[y][x] = terrain;
+    need--;
   }
 }

@@ -1,14 +1,16 @@
 // Game engine: state creation, player actions and time advance.
 // Every exported action is (state, input, ctx) -> { state, events, error? }.
 // The input state is never mutated.
-import { generateTerrain } from './terrain.js?v=20261125-zoom1';
-import { GRID, HALL, keyOf, parseKey, inBounds, isUnlocked } from './grid.js?v=20261125-zoom1';
+import { generateTerrain } from './terrain.js?v=20261125-eco1';
+import { GRID, HALL, keyOf, parseKey, inBounds, isUnlocked } from './grid.js?v=20261125-eco1';
+import { checkPlacement, fieldsOf, fieldSlots } from './placement.js?v=20261125-eco1';
 import {
   classOf, buildCost, productionMultiplier, townLevelFor,
-  storageCap, throughputPerMin, sellPrice,
-} from './economy.js?v=20261125-zoom1';
-import { merchantOffers } from './merchant.js?v=20261125-zoom1';
-import { arriveConvoys, payoutFor } from './convoys.js?v=20261125-zoom1';
+  storageCap, throughputPerMin, sellPrice, ratePerMin,
+  FULL, fishingGround, soilOf, fishStock, forestHealth,
+} from './economy.js?v=20261125-eco1';
+import { merchantOffers } from './merchant.js?v=20261125-eco1';
+import { arriveConvoys, payoutFor } from './convoys.js?v=20261125-eco1';
 
 export const SCHEMA_VERSION = 1;
 export const BIOMES = ['riverlands', 'deepwoods', 'highlands', 'coast'];
@@ -119,13 +121,16 @@ export function placeBuilding(state, { x, y, buildingId }, ctx) {
   const s = clone(state);
   const tile = s.tiles[keyOf(x, y)];
   if (tile.building) return fail(state, 'occupied');
+  if (tile.field) return fail(state, 'fieldOccupied');
+  const place = checkPlacement(state, x, y, buildingId, data);
+  if (!place.ok) return fail(state, place.reason);
 
   const cost = buildCost(buildingId, 0, data);
   if (s.coins < cost.coins) return fail(state, 'noCoins');
   if ((s.stock[cost.material.resource] ?? 0) < cost.material.amount) return fail(state, 'noMaterial');
 
   pay(s, cost.coins, cost.material);
-  tile.building = { id: buildingId, level: 1 };
+  tile.building = place.mode ? { id: buildingId, level: 1, mode: place.mode } : { id: buildingId, level: 1 };
 
   const events = [{ type: 'built', x, y, buildingId }];
   const lu = addXp(s, data.economy.xp.buildingPlaced, data);
@@ -155,6 +160,54 @@ export function upgradeBuilding(state, { x, y }, ctx) {
   if (lu) events.push(lu);
   return { state: s, events };
 }
+
+/** Legt ein Feld der Farm (fx, fy) auf der angrenzenden Wiese (x, y) an. Kostet Münzen und Holz. */
+export function plantField(state, { fx, fy, x, y }, ctx) {
+  const { data } = ctx;
+  const farm = state.tiles[keyOf(fx, fy)]?.building;
+  if (!farm || farm.id !== 'farm') return fail(state, 'noFarm');
+  if (!inBounds(x, y) || Math.max(Math.abs(x - fx), Math.abs(y - fy)) !== 1) return fail(state, 'notNextToFarm');
+  if (!isUnlocked(x, y, state.townLevel, data)) return fail(state, 'locked');
+  const t = state.tiles[keyOf(x, y)];
+  if (t.building) return fail(state, 'occupied');
+  if (t.field) return fail(state, 'alreadyField');
+  if (t.terrain !== 'meadow') return fail(state, 'terrain');
+  if (fieldsOf(state, fx, fy).length >= fieldSlots(farm.level)) return fail(state, 'noFieldSlot');
+
+  const cost = data.economy.fields;
+  if (state.coins < cost.coins) return fail(state, 'noCoins');
+  if ((state.stock[cost.material.resource] ?? 0) < cost.material.amount) return fail(state, 'noMaterial');
+
+  const s = clone(state);
+  pay(s, cost.coins, cost.material);
+  s.tiles[keyOf(x, y)].field = { owner: keyOf(fx, fy) };
+  return { state: s, events: [{ type: 'fieldPlanted', x, y, fx, fy }] };
+}
+
+/** Erneuert einen ausgelaugten Acker: Fruchtbarkeit zurück auf voll. Kostet wie ein neues Feld. */
+export function renewField(state, { x, y }, ctx) {
+  const { data } = ctx;
+  const t = state.tiles[keyOf(x, y)];
+  if (!t?.field) return fail(state, 'noField');
+  if (soilOf(t) >= FULL) return fail(state, 'soilFine');
+  const cost = data.economy.fields;
+  if (state.coins < cost.coins) return fail(state, 'noCoins');
+  if ((state.stock[cost.material.resource] ?? 0) < cost.material.amount) return fail(state, 'noMaterial');
+  const s = clone(state);
+  pay(s, cost.coins, cost.material);
+  s.tiles[keyOf(x, y)].field.soil = FULL;
+  return { state: s, events: [{ type: 'fieldRenewed', x, y }] };
+}
+
+/** Entfernt ein Feld. Kein Erstattung, damit der Vorgang nicht zum Ausprobieren einlädt. */
+export function removeField(state, { x, y }) {
+  const t = state.tiles[keyOf(x, y)];
+  if (!t?.field) return fail(state, 'noField');
+  const s = clone(state);
+  delete s.tiles[keyOf(x, y)].field;
+  return { state: s, events: [{ type: 'fieldRemoved', x, y }] };
+}
+
 
 /**
  * Rechnet einen angekommenen Konvoi ab. Idempotent: Die Konvoi-ID ist der Schlüssel, ein zweiter Aufruf
@@ -226,6 +279,45 @@ export function buyOffer(state, { index }, ctx) {
 
 // ---------- Time ----------
 
+/** Verbrauch durch Produktion: Wald, Fisch und Boden sinken je erzeugter Einheit. */
+function depleteFor(s, x, y, def, added, data) {
+  const e = data.economy.ecology;
+  const tile = s.tiles[keyOf(x, y)];
+  if (def.perField) {
+    const fields = fieldsOf(s, x, y);
+    if (!fields.length) return;
+    const per = (added / fields.length) * e.soil.wearPerUnit;
+    for (const k of fields) {
+      const f = s.tiles[k].field;
+      f.soil = Math.max(0, soilOf(s.tiles[k]) - per);
+    }
+  } else if (tile.building.id === 'sawmill') {
+    tile.wood = Math.max(0, forestHealth(s, x, y) - added * e.forest.wearPerUnit);
+  } else if (tile.building.id === 'fishery') {
+    const g = fishingGround(s, x, y);
+    if (g) {
+      const gt = s.tiles[keyOf(g[0], g[1])];
+      gt.fish = Math.max(0, fishStock(s, g[0], g[1]) - added * e.fish.wearPerUnit);
+    }
+  }
+}
+
+/** Erholung: Wald, Fischbestand und Boden wachsen langsam von allein nach. */
+function regrow(s, dt, data) {
+  const e = data.economy.ecology;
+  for (const tile of Object.values(s.tiles)) {
+    if (tile.terrain === 'forest' && tile.wood !== undefined && tile.wood < FULL) {
+      tile.wood = Math.min(FULL, tile.wood + e.forest.regenPerMin * dt / 60);
+    }
+    if (tile.terrain === 'water' && tile.fish !== undefined && tile.fish < FULL) {
+      tile.fish = Math.min(FULL, tile.fish + e.fish.regenPerMin * dt / 60);
+    }
+    if (tile.field && soilOf(tile) < FULL) {
+      tile.field.soil = Math.min(FULL, soilOf(tile) + e.soil.regenPerMin * dt / 60);
+    }
+  }
+}
+
 function produce(s, dt, data, events) {
   const cap = storageCap(s, data);
   const produced = {};
@@ -234,13 +326,15 @@ function produce(s, dt, data, events) {
     const def = data.buildings[tile.building.id];
     if (!def.resource) continue;
     const [x, y] = parseKey(k);
-    const perSec = (def.baseRatePerMin * tile.building.level / 60)
-      * productionMultiplier(s, x, y, tile.building.id, data);
+    const perSec = ratePerMin(s, x, y, data) / 60;
     const before = s.stock[def.resource];
     const after = Math.min(cap, before + perSec * dt);
     s.stock[def.resource] = after;
-    produced[def.resource] = (produced[def.resource] ?? 0) + Math.max(0, after - before);
+    const added = Math.max(0, after - before);
+    produced[def.resource] = (produced[def.resource] ?? 0) + added;
+    depleteFor(s, x, y, def, added, data);
   }
+  regrow(s, dt, data);
   events.push({ type: 'produced', amounts: produced });
 }
 
