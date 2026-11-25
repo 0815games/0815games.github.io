@@ -60,7 +60,7 @@ const UI = {
                 <span class="text-lg opacity-80 select-none">${icon}</span>
                 <span class="font-mono text-sm md:text-base font-bold ${item.colorClass} tracking-wide drop-shadow-md whitespace-nowrap md:whitespace-normal">${item.message}</span>
             </div>
-            <button class="text-gray-600 hover:text-white font-bold text-xs self-start mt-0.5 px-1 ml-2">✕</button>
+            <button class="text-gray-600 hover:text-black font-bold text-xs self-start mt-0.5 px-1 ml-2">✕</button>
         `;
 
         const closeToast = () => {
@@ -180,7 +180,7 @@ const UI = {
                 <textarea id="bug-desc" class="w-full bg-black border border-green-700 text-green-400 p-2 font-mono text-sm h-24 focus:border-green-400 outline-none mb-4" placeholder="Was ist passiert?"></textarea>
                 <div class="flex gap-2">
                     <button id="btn-bug-send" class="flex-1 bg-red-900/30 border border-red-500 text-red-400 py-2 font-bold hover:bg-red-500 hover:text-black transition-all uppercase">REPORT SENDEN</button>
-                    <button id="btn-bug-close" class="px-4 border border-gray-600 text-gray-500 hover:text-white transition-all uppercase">ABBRECHEN</button>
+                    <button id="btn-bug-close" class="px-4 border border-gray-600 text-gray-500 hover:text-black transition-all uppercase">ABBRECHEN</button>
                 </div>
             </div>
         `;

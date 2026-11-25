@@ -307,6 +307,16 @@ Object.assign(UI, {
         const name = item.props ? item.props.name : item.name;
         const def = (item.props && item.props.type) ? item.props : ((Game.items && Game.items[item.id]) || {});
 
+        // Die ID kann in alten Spielstaenden fehlen (dort steht die
+        // Katalogdefinition im Slot, und die traegt kein id-Feld). Ohne ID
+        // zeigte itemSymbol nur das Typ-Emoji. Game.heileAusruestung()
+        // repariert den Stand beim Laden; hier wird zusaetzlich ueber den
+        // Namen gesucht, falls der Dialog vorher aufgeht.
+        let bildId = item.id || null;
+        if(!bildId && Game.items) {
+            bildId = Object.keys(Game.items).find(k => Game.items[k].name === item.name) || null;
+        }
+
         const box = document.createElement('div');
         box.className = "bg-black border-2 border-yellow-500 p-4 shadow-[0_0_15px_#aa0] max-w-sm text-center mb-4 w-full pointer-events-auto";
         box.onclick = (e) => e.stopPropagation();
@@ -315,7 +325,7 @@ Object.assign(UI, {
         // .action-button (Schrift und Rahmen kommen aus dem Stylesheet).
         box.innerHTML = `
             <div class="text-xs text-yellow-600 font-bold tracking-widest mb-1">SLOT: ${slot.toUpperCase()}</div>
-            <div class="flex justify-center mb-3">${UI.itemSymbol(item.id, def.type, 'voll')}</div>
+            <div class="flex justify-center mb-3">${UI.itemSymbol(bildId, def.type || item.type, 'voll')}</div>
             <h2 class="text-2xl font-bold text-yellow-400 mb-4 border-b border-yellow-500 pb-2 tracking-wider">${name}</h2>
             <div class="flex flex-col gap-2 w-full">
                 <button id="btn-unequip" class="action-button w-full border-yellow-500 text-yellow-400 py-3 font-bold text-lg">
@@ -353,7 +363,7 @@ Object.assign(UI, {
 
         msg.innerHTML = `
             <div class="text-yellow-500 font-bold tracking-[0.2em] text-[10px] mb-1 animate-pulse">QUEST ERFÜLLT</div>
-            <div class="text-2xl font-bold text-white mb-3 uppercase tracking-tighter shadow-black text-shadow-lg">${questDef.title}</div>
+            <div class="text-2xl font-bold text-[#39ff14] mb-3 uppercase tracking-tighter shadow-black text-shadow-lg">${questDef.title}</div>
             <div class="flex flex-col gap-1 py-2 border-t border-yellow-900/50 bg-yellow-900/10 font-mono text-xs">
                 ${questDef.reward?.xp ? `<div class="text-cyan-400">⚡ +${questDef.reward.xp} XP</div>` : ""}
                 ${questDef.reward?.caps ? `<div class="text-yellow-400">💰 +${questDef.reward.caps} KK</div>` : ""}
@@ -438,10 +448,10 @@ Object.assign(UI, {
                 <h2 class="text-3xl font-bold text-green-400 mb-4 text-center border-b-2 border-green-600 pb-2 tracking-widest shrink-0">VAULT LEGENDS</h2>
                 <div class="flex justify-between mb-2 text-xs text-green-300 uppercase font-bold px-2 shrink-0">
                     <span class="w-8">#</span>
-                    <span class="w-1/3 cursor-pointer hover:text-white" onclick="UI.renderHighscoreList(this.dataset.scores, 'name')">NAME</span>
-                    <span class="w-16 text-right cursor-pointer hover:text-white" onclick="UI.renderHighscoreList(this.dataset.scores, 'lvl')">LVL</span>
-                    <span class="w-16 text-right cursor-pointer hover:text-white" onclick="UI.renderHighscoreList(this.dataset.scores, 'kills')">KILLS</span>
-                    <span class="w-24 text-right cursor-pointer hover:text-white" onclick="UI.renderHighscoreList(this.dataset.scores, 'xp')">EXP</span>
+                    <span class="w-1/3 cursor-pointer hover:text-black" onclick="UI.renderHighscoreList(this.dataset.scores, 'name')">NAME</span>
+                    <span class="w-16 text-right cursor-pointer hover:text-black" onclick="UI.renderHighscoreList(this.dataset.scores, 'lvl')">LVL</span>
+                    <span class="w-16 text-right cursor-pointer hover:text-black" onclick="UI.renderHighscoreList(this.dataset.scores, 'kills')">KILLS</span>
+                    <span class="w-24 text-right cursor-pointer hover:text-black" onclick="UI.renderHighscoreList(this.dataset.scores, 'xp')">EXP</span>
                 </div>
                 <div id="highscore-list" class="flex-1 overflow-y-auto pr-2 custom-scrollbar min-h-0 border-b border-green-900/50 mb-2"></div>
                 <div class="text-[10px] text-center text-green-800 shrink-0">ESC / KLICK NEBEN FENSTER ZUM SCHLIESSEN</div>
@@ -696,7 +706,7 @@ Object.assign(UI, {
                 <div class="text-6xl mb-2">👑⚔️</div>
                 <h2 class="text-4xl font-bold text-yellow-400 mb-2 tracking-widest text-shadow-gold">VICTORY!</h2>
                 <p class="text-yellow-200 mb-4 font-bold text-lg">DUNGEON (LVL ${lvl}) GECLEARED!</p>
-                <div class="text-2xl text-white font-bold border-t border-b border-yellow-500 py-2 mb-4 bg-yellow-900/30">+${caps} KRONKORKEN</div>
+                <div class="text-2xl text-[#39ff14] font-bold border-t border-b border-yellow-500 py-2 mb-4 bg-yellow-900/30">+${caps} KRONKORKEN</div>
                 <p class="text-xs text-yellow-600 mb-4">Komme in 10 Minuten wieder!</p>
                 <button id="btn-victory-close" class="action-button w-full border-yellow-500 text-yellow-500 font-bold hover:bg-yellow-900">ZURÜCK ZUR KARTE</button>
             </div>
@@ -732,7 +742,7 @@ Object.assign(UI, {
         box.innerHTML = `
             <div class="text-6xl text-red-600 mb-4 font-bold">☠️</div>
             <h1 class="text-4xl font-bold text-red-600 mb-4 tracking-widest border-b-2 border-red-600 pb-2">PERMADEATH AKTIV</h1>
-            <p class="text-red-400 font-mono text-lg mb-6 leading-relaxed">WARNUNG, BEWOHNER!<br>Das Ödland kennt keine Gnade.<br>Wenn deine HP auf 0 fallen, wird dieser Charakter<br><span class="font-bold text-white bg-red-900 px-1">DAUERHAFT GELÖSCHT</span>.</p>
+            <p class="text-red-400 font-mono text-lg mb-6 leading-relaxed">WARNUNG, BEWOHNER!<br>Das Ödland kennt keine Gnade.<br>Wenn deine HP auf 0 fallen, wird dieser Charakter<br><span class="font-bold text-[#39ff14] bg-red-900 px-1">DAUERHAFT GELÖSCHT</span>.</p>
             <button class="action-button w-full border-red-600 text-red-500 font-bold py-4 text-xl hover:bg-red-900" onclick="UI.leaveDialog()">ICH HABE VERSTANDEN</button>
         `;
         overlay.appendChild(box);

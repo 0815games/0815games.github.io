@@ -125,7 +125,7 @@ Object.assign(UI, {
                     </div>
                 </div>
 
-                <button onclick="UI.switchView('map')" class="absolute top-4 right-4 z-30 bg-red-900/20 border border-red-500/50 text-red-500 w-10 h-10 flex items-center justify-center hover:bg-red-900 hover:text-white transition-colors text-xl font-bold shadow-lg">✕</button>
+                <button onclick="UI.switchView('map')" class="absolute top-4 right-4 z-30 bg-red-900/20 border border-red-500/50 text-red-500 w-10 h-10 flex items-center justify-center hover:bg-red-900 hover:text-black transition-colors text-xl font-bold shadow-lg">✕</button>
             </div>
         `;
         
@@ -153,13 +153,19 @@ Object.assign(UI, {
         scrollContainer.id = scrollId; 
         scrollContainer.className = "flex-1 w-full overflow-y-auto pb-24 bg-black";
 
-        const getTabClass = (t) => (tab === t) ? "bg-green-500 text-black border-b-4 border-green-700 font-bold" : "bg-[#001100] text-green-600 border-b border-green-900";
+        // Aktiver Reiter: gruen gefuellt, schwarze Schrift. Inaktiv: gedeckt.
+        // Das ist die Reiterleiste des Pip-Boy - sie war schon richtig gedacht,
+        // litt aber unter der fehlenden Terminal-Schrift (font-vt323 war
+        // nirgends definiert) und dadurch uneinheitlicher Groesse.
+        const getTabClass = (t) => (tab === t)
+            ? "bg-[#39ff14] text-black border-b-4 border-green-300 font-bold"
+            : "bg-[#001100] text-green-600 border-b border-green-900 hover:text-green-300";
         const header = document.createElement('div');
-        header.className = "flex w-full border-b-2 border-green-900 bg-black sticky top-0 z-30"; 
+        header.className = "flex w-full border-b-2 border-green-800 bg-black sticky top-0 z-30";
         header.innerHTML = `
-            <button onclick="UI.renderStats('stats', event)" class="flex-1 py-3 uppercase font-vt323 text-xl ${getTabClass('stats')}">STATUS</button>
-            <button onclick="UI.renderStats('special', event)" class="flex-1 py-3 uppercase font-vt323 text-xl ${getTabClass('special')}">S.P.E.C.I.A.L.</button>
-            <button onclick="UI.renderStats('perks', event)" class="flex-1 py-3 uppercase font-vt323 text-xl ${getTabClass('perks')}">PERKS</button>
+            <button onclick="UI.renderStats('stats', event)" class="flex-1 py-3 uppercase font-vt323 text-2xl tracking-widest ${getTabClass('stats')}">STATUS</button>
+            <button onclick="UI.renderStats('special', event)" class="flex-1 py-3 uppercase font-vt323 text-2xl tracking-widest ${getTabClass('special')}">S.P.E.C.I.A.L.</button>
+            <button onclick="UI.renderStats('perks', event)" class="flex-1 py-3 uppercase font-vt323 text-2xl tracking-widest ${getTabClass('perks')}">PERKS</button>
         `;
         scrollContainer.appendChild(header);
 
@@ -221,10 +227,11 @@ Object.assign(UI, {
 
         container.innerHTML = `
             <div class="flex flex-col items-center gap-4 max-w-md mx-auto">
-                <div class="text-center w-full border-b border-green-900 pb-2 cursor-pointer hover:bg-green-900/20 transition-all group rounded p-2 relative z-50 ${highlightClass}" onclick="UI.handleHeaderClick(event)">
-                    <div class="text-4xl font-bold text-green-400 group-hover:text-yellow-400 transition-colors text-shadow-md pointer-events-none">${p.playerName}</div>
-                    <div class="text-xs font-mono text-green-600 group-hover:text-green-300 mt-1 pointer-events-none">
-                        LVL ${p.lvl} | XP: ${p.xp} / ${Game.expToNextLevel(p.lvl)}
+                <div class="text-center w-full border-b-2 border-green-800 pb-2 cursor-pointer hover:bg-green-900/20 transition-all group rounded p-2 relative z-50 bg-[#001100]/60 ${highlightClass}" onclick="UI.handleHeaderClick(event)">
+                    <div class="text-[10px] tracking-[0.3em] text-green-700 uppercase pointer-events-none">VAULT-TEC // BEWOHNERDATEN</div>
+                    <div class="text-5xl font-bold text-[#39ff14] glow-text group-hover:text-yellow-400 transition-colors pointer-events-none leading-none mt-1">${p.playerName}</div>
+                    <div class="text-sm text-green-600 group-hover:text-green-300 mt-2 pointer-events-none tracking-widest">
+                        LVL ${p.lvl} &nbsp;|&nbsp; XP ${p.xp} / ${Game.expToNextLevel(p.lvl)}
                         ${actionText}
                     </div>
                 </div>
@@ -240,11 +247,14 @@ Object.assign(UI, {
                         <canvas id="char-silhouette-canvas" width="240" height="300"></canvas>
                     </div>
                 </div>
-                <div class="grid grid-cols-2 gap-2 w-full text-xs font-mono bg-green-900/10 p-3 rounded border border-green-900/50 mt-2 z-10">
-                    <div class="flex justify-between border-b border-green-900/20 pb-1"><span>TP</span><span class="text-green-400 font-bold">${Math.round(p.hp)}/${p.maxHp}</span></div>
-                    <div class="flex justify-between border-b border-green-900/20 pb-1"><span>DEF</span><span class="text-green-400 font-bold">${(typeof Game.getStat === 'function') ? Game.getStat('DEF') : 0}</span></div>
-                    <div class="flex justify-between border-b border-green-900/20 pb-1"><span>KRIT</span><span class="text-green-400 font-bold">${p.critChance || 5}%</span></div>
-                    <div class="flex justify-between border-b border-green-900/20 pb-1"><span>LOAD</span><span class="text-green-400 font-bold">${p.inventory?.length || 0}/${(typeof Game.getMaxSlots === 'function') ? Game.getMaxSlots() : 20}</span></div>
+                <!-- Datenblock: Beschriftung in Versalien und gedeckt, Wert in
+                     Leuchtgruen. Das ist das Pip-Boy-Muster - Vorher standen
+                     hier gemischte Groessen ohne System. -->
+                <div class="grid grid-cols-2 gap-x-4 gap-y-1 w-full text-base bg-[#001100]/60 p-3 border border-green-800 mt-2 z-10">
+                    <div class="flex justify-between border-b border-green-900/60 py-0.5"><span class="text-green-700 text-sm tracking-wider">TP</span><span class="text-[#39ff14] font-bold">${Math.round(p.hp)}/${p.maxHp}</span></div>
+                    <div class="flex justify-between border-b border-green-900/60 py-0.5"><span class="text-green-700 text-sm tracking-wider">DEF</span><span class="text-[#39ff14] font-bold">${(typeof Game.getStat === 'function') ? Game.getStat('DEF') : 0}</span></div>
+                    <div class="flex justify-between border-b border-green-900/60 py-0.5"><span class="text-green-700 text-sm tracking-wider">KRIT</span><span class="text-[#39ff14] font-bold">${p.critChance || 5}%</span></div>
+                    <div class="flex justify-between border-b border-green-900/60 py-0.5"><span class="text-green-700 text-sm tracking-wider">LOAD</span><span class="text-[#39ff14] font-bold">${p.inventory?.length || 0}/${(typeof Game.getMaxSlots === 'function') ? Game.getMaxSlots() : 20}</span></div>
                 </div>
             </div>
         `;
@@ -254,7 +264,10 @@ Object.assign(UI, {
         const stats = Game.state.stats || { STR:5, PER:5, END:5, INT:5, AGI:5, LUC:5 };
         const points = Game.state.statPoints || 0;
         const labels = window.GameData.statLabels || { STR: "STÄRKE", PER: "WAHRNEHMUNG", END: "AUSDAUER", INT: "INTELLIGENZ", AGI: "BEWEGLICHKEIT", LUC: "GLÜCK" };
-        let html = `<div class="text-center mb-6"><div class="text-xs text-green-600 mb-2">VERFÜGBARE PUNKTE</div><div class="text-5xl font-bold ${points > 0 ? 'text-yellow-400' : 'text-gray-600'}">${points}</div></div><div class="space-y-3">`;
+        let html = `<div class="text-center mb-6 border border-green-800 bg-[#001100]/60 py-3">
+            <div class="text-[10px] tracking-[0.3em] text-green-700 uppercase mb-1">Verfügbare Punkte</div>
+            <div class="text-5xl font-bold leading-none ${points > 0 ? 'text-yellow-400' : 'text-green-900'}">${points}</div>
+        </div><div class="space-y-2">`;
         for (let key in labels) {
             const val = stats[key] || 1;
             const cost = (val >= 10) ? 2 : 1;
@@ -266,9 +279,14 @@ Object.assign(UI, {
             } else if (!isMaxed && !canAfford && points > 0) {
                  btnHtml = `<div class="w-10 h-10 flex items-center justify-center border border-red-900 text-red-700 font-bold bg-black opacity-50 cursor-not-allowed" title="Benötigt ${cost} Punkte">+</div>`;
             }
-            html += `<div class="flex items-center justify-between bg-black/40 p-3 border border-green-900">
-                <div class="flex flex-col"><span class="text-2xl font-bold text-green-400 font-vt323">${key}</span><span class="text-[10px] text-green-700">${labels[key]}</span></div>
-                <div class="flex items-center gap-4"><span class="text-3xl font-bold text-white">${val}</span>${btnHtml}</div>
+            // Wert in Leuchtgruen statt weiss: weiss kommt im Entwurf nicht vor
+            // (Rueckmeldung: "aktuell falsche Schrift und weiss?").
+            html += `<div class="flex items-center justify-between bg-[#001100]/60 px-3 py-2 border border-green-800">
+                <div class="flex items-baseline gap-2 min-w-0">
+                    <span class="text-3xl font-bold text-[#39ff14] leading-none">${key}</span>
+                    <span class="text-sm text-green-700 tracking-widest uppercase truncate">${labels[key]}</span>
+                </div>
+                <div class="flex items-center gap-4"><span class="text-3xl font-bold text-[#39ff14] leading-none">${val}</span>${btnHtml}</div>
             </div>`;
         }
         container.innerHTML = html + '</div>';
@@ -353,7 +371,7 @@ Object.assign(UI, {
                                 <span class="text-xl text-red-500 font-bold">☠️ ${save.playerName}</span>
                                 <span class="text-xs text-red-400 font-mono">VERSTORBEN (Level ${save.lvl})</span>
                             </div>
-                            <button onclick="event.stopPropagation(); UI.deleteSaveSlot(${i})" class="bg-red-900 text-white font-bold px-4 py-2 text-xs rounded hover:bg-red-600 transition-colors shadow-[0_0_10px_red]">
+                            <button onclick="event.stopPropagation(); UI.deleteSaveSlot(${i})" class="action-button bg-red-900 border-red-500 text-red-100 font-bold px-4 py-2 text-xs hover:bg-red-600 hover:text-black transition-colors">
                                 LÖSCHEN 🗑️
                             </button>
                         </div>
@@ -502,7 +520,7 @@ Object.assign(UI, {
                 
                 parent.insertAdjacentHTML('beforeend', `
                     <div class="vats-hp-overlay absolute inset-0 flex justify-center items-center pointer-events-none z-30">
-                        <span class="vats-hp-num font-mono font-bold text-white text-base tracking-widest" style="text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;">
+                        <span class="vats-hp-num font-bold text-[#39ff14] text-base tracking-widest" style="text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;">
                             ${currentHp} / ${enemy.maxHp} TP
                         </span>
                     </div>

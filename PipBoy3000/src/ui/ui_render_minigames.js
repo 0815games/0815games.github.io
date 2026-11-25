@@ -297,7 +297,7 @@ Object.assign(UI, {
                         </div>
                     </div>
                     <div class="text-yellow-200 font-mono text-sm mb-6 bg-black/40 p-2 rounded">
-                        Glück (LUC): <span class="text-white font-bold">${luck}</span> 
+                        Glück (LUC): <span class="text-[#39ff14] font-bold">${luck}</span> 
                         <span class="text-gray-400">|</span> Bonus: <span class="text-[#39ff14] font-bold">+${bonus}</span>
                     </div>
                     ${!game.rolling && finalResult === null ? 

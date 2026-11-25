@@ -277,7 +277,7 @@ Object.assign(UI, {
             const py = (poi.y * mapH + (mapH/2)) * s + oy;
             
             if(px > -50 && px < rect.width+50 && py > -50 && py < rect.height+50) {
-                ctx.font = `bold ${Math.max(12, 16 * (s/3))}px monospace`; 
+                ctx.font = `bold ${Math.max(12, 16 * (s/3))}px VT323, monospace`; 
                 ctx.textAlign = "center"; ctx.textBaseline = "middle";
                 let icon = "❓";
                 if(poi.type === 'V') icon = "⚙️";
@@ -302,7 +302,7 @@ Object.assign(UI, {
         const cx = w - 60; const cy = h - 60; const r = 30;
         ctx.fillStyle = "rgba(0, 20, 0, 0.8)"; ctx.strokeStyle = "#00ff00"; ctx.lineWidth = 2;
         ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.fill(); ctx.stroke();
-        ctx.fillStyle = "#00ff00"; ctx.font = "bold 12px monospace"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.fillStyle = "#00ff00"; ctx.font = "bold 12px VT323, monospace"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
         ctx.fillText("N", cx, cy - r + 10); ctx.fillText("S", cx, cy + r - 10);
         ctx.fillText("W", cx - r + 10, cy); ctx.fillText("O", cx + r - 10, cy);
         ctx.strokeStyle = "rgba(0, 255, 0, 0.3)"; ctx.beginPath(); ctx.moveTo(cx, cy - r + 15); ctx.lineTo(cx, cy + r - 15); ctx.stroke();

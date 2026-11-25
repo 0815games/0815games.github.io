@@ -70,7 +70,7 @@ window.Game = {
         ctx.translate(x, y);
         const scale = 0.25; 
         ctx.scale(scale, scale); 
-        ctx.font = "bold " + (size / scale) + "px monospace";
+        ctx.font = "bold " + (size / scale) + "px VT323, monospace";
         ctx.fillStyle = color;
         ctx.textAlign = align;
         ctx.textBaseline = "middle"; 
@@ -400,6 +400,28 @@ window.Game = {
         };
     },
 
+    // Alte Spielstaende tragen in state.equip die *Definition* aus dem Katalog,
+    // nicht den Inventareintrag: kein id-Feld, dafuer type, cost, desc, bonus.
+    // Seit v14.0.12 zieht der Ausruestungs-Dialog sein Bild aus item.id - bei
+    // einem gespeicherten Stand kam dort undefined an und statt des Bildes
+    // stand ein Typ-Emoji (Rueckmeldung: "beim Anklicken am Charakter ist kein
+    // Bild erkennbar"). Hier wird die ID ueber den Namen nachgetragen.
+    //
+    // Der Fehler ist der aus v14.0.10 in neuer Form: Game.items ist nach
+    // Schluessel organisiert, die Definition traegt kein id. Damals fehlte es
+    // an der Aufrufstelle, jetzt in den gespeicherten Daten.
+    heileAusruestung: function() {
+        if(!this.state || !this.state.equip || !this.items) return 0;
+        let repariert = 0;
+        for(const slot of Object.keys(this.state.equip)) {
+            const teil = this.state.equip[slot];
+            if(!teil || teil.id) continue;
+            const treffer = Object.keys(this.items).find(k => this.items[k].name === teil.name);
+            if(treffer) { teil.id = treffer; repariert++; }
+        }
+        return repariert;
+    },
+
     init: function(saveData, spawnTarget=null, slotIndex=0, newName=null) {
         this.worldData = {}; this.initCache();
         window.addEventListener('beforeunload', () => { if(this.isDirty) this.saveGame(true); });
@@ -426,6 +448,7 @@ window.Game = {
                 if(!this.state.perks) this.state.perks = {}; 
                 if(!this.state.shop) this.state.shop = { nextRestock: 0, stock: {}, merchantCaps: 1000 };
                 if(!this.state.equip) this.state.equip = { weapon: null, body: null };
+                this.heileAusruestung();
                 
                 this.state.saveSlot = slotIndex;
                 this.checkNewQuests();

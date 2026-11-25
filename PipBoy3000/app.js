@@ -1444,7 +1444,7 @@
                 <span class="text-lg opacity-80 select-none">${icon}</span>
                 <span class="font-mono text-sm md:text-base font-bold ${item.colorClass} tracking-wide drop-shadow-md whitespace-nowrap md:whitespace-normal">${item.message}</span>
             </div>
-            <button class="text-gray-600 hover:text-white font-bold text-xs self-start mt-0.5 px-1 ml-2">✕</button>
+            <button class="text-gray-600 hover:text-black font-bold text-xs self-start mt-0.5 px-1 ml-2">✕</button>
         `;
       const closeToast = () => {
         if (el.classList.contains("closing")) return;
@@ -1556,7 +1556,7 @@
                 <textarea id="bug-desc" class="w-full bg-black border border-green-700 text-green-400 p-2 font-mono text-sm h-24 focus:border-green-400 outline-none mb-4" placeholder="Was ist passiert?"></textarea>
                 <div class="flex gap-2">
                     <button id="btn-bug-send" class="flex-1 bg-red-900/30 border border-red-500 text-red-400 py-2 font-bold hover:bg-red-500 hover:text-black transition-all uppercase">REPORT SENDEN</button>
-                    <button id="btn-bug-close" class="px-4 border border-gray-600 text-gray-500 hover:text-white transition-all uppercase">ABBRECHEN</button>
+                    <button id="btn-bug-close" class="px-4 border border-gray-600 text-gray-500 hover:text-black transition-all uppercase">ABBRECHEN</button>
                 </div>
             </div>
         `;
@@ -2075,7 +2075,7 @@
       ctx.translate(x, y);
       const scale = 0.25;
       ctx.scale(scale, scale);
-      ctx.font = "bold " + size / scale + "px monospace";
+      ctx.font = "bold " + size / scale + "px VT323, monospace";
       ctx.fillStyle = color;
       ctx.textAlign = align;
       ctx.textBaseline = "middle";
@@ -2419,6 +2419,30 @@
         }
       };
     },
+    // Alte Spielstaende tragen in state.equip die *Definition* aus dem Katalog,
+    // nicht den Inventareintrag: kein id-Feld, dafuer type, cost, desc, bonus.
+    // Seit v14.0.12 zieht der Ausruestungs-Dialog sein Bild aus item.id - bei
+    // einem gespeicherten Stand kam dort undefined an und statt des Bildes
+    // stand ein Typ-Emoji (Rueckmeldung: "beim Anklicken am Charakter ist kein
+    // Bild erkennbar"). Hier wird die ID ueber den Namen nachgetragen.
+    //
+    // Der Fehler ist der aus v14.0.10 in neuer Form: Game.items ist nach
+    // Schluessel organisiert, die Definition traegt kein id. Damals fehlte es
+    // an der Aufrufstelle, jetzt in den gespeicherten Daten.
+    heileAusruestung: function() {
+      if (!this.state || !this.state.equip || !this.items) return 0;
+      let repariert = 0;
+      for (const slot of Object.keys(this.state.equip)) {
+        const teil = this.state.equip[slot];
+        if (!teil || teil.id) continue;
+        const treffer = Object.keys(this.items).find((k) => this.items[k].name === teil.name);
+        if (treffer) {
+          teil.id = treffer;
+          repariert++;
+        }
+      }
+      return repariert;
+    },
     init: function(saveData, spawnTarget = null, slotIndex = 0, newName = null) {
       this.worldData = {};
       this.initCache();
@@ -2448,6 +2472,7 @@
           if (!this.state.perks) this.state.perks = {};
           if (!this.state.shop) this.state.shop = { nextRestock: 0, stock: {}, merchantCaps: 1e3 };
           if (!this.state.equip) this.state.equip = { weapon: null, body: null };
+          this.heileAusruestung();
           this.state.saveSlot = slotIndex;
           this.checkNewQuests();
           this.syncAmmo();
@@ -3338,7 +3363,7 @@
       ctx.fillStyle = `rgba(0, 255, 255, ${flicker})`;
       ctx.shadowBlur = 10;
       ctx.shadowColor = "#0ff";
-      ctx.font = `bold ${ts * 0.25}px monospace`;
+      ctx.font = `bold ${ts * 0.25}px VT323, monospace`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillText("RUSTY SPRINGS", 0, -ts * 0.75);
@@ -3406,7 +3431,7 @@
       ctx.fillStyle = "#111";
       ctx.fillRect(-ts * 0.7, -ts * 0.2, ts * 1.4, ts * 0.4);
       ctx.fillStyle = "#555";
-      ctx.font = `bold ${ts * 0.25}px monospace`;
+      ctx.font = `bold ${ts * 0.25}px VT323, monospace`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillText("HOPELESS", 0, 0);
@@ -3465,7 +3490,7 @@
       ctx.shadowBlur = 10 + pulse * 15;
       ctx.shadowColor = "#eab308";
       ctx.fillStyle = "#facc15";
-      ctx.font = `bold ${ts * 0.35}px monospace`;
+      ctx.font = `bold ${ts * 0.35}px VT323, monospace`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillText("101", 0, 0);
@@ -3488,7 +3513,7 @@
       ctx.fillRect(-ts * 0.8, -ts * 0.6, ts * 1.6, ts * 0.3);
       const flicker = Math.sin(time / 120) > 0 ? "#10b981" : "#064e3b";
       ctx.fillStyle = flicker;
-      ctx.font = `bold ${ts * 0.2}px sans-serif`;
+      ctx.font = `bold ${ts * 0.2}px VT323, monospace`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillText("SUPER DUPER", 0, -ts * 0.45);
@@ -3801,7 +3826,7 @@
       const hours = Math.floor(totalMinutes / 60).toString().padStart(2, "0");
       const mins = (totalMinutes % 60).toString().padStart(2, "0");
       ctx.fillStyle = "#39ff14";
-      ctx.font = "bold 14px monospace";
+      ctx.font = "bold 14px VT323, monospace";
       ctx.textAlign = "right";
       ctx.fillText(`LOKALE ZEIT: ${hours}:${mins}`, viewW - 15, 25);
       if (this.state && this.state.trackedQuestId && this.state.view === "map" && !this.state.inDialog) {
@@ -3829,7 +3854,7 @@
             prog = `[${qData ? qData.progress || 0 : 0}/${qData ? qData.max || 1 : 1}]`;
           }
           const txt = `📌 MISSION: ${title.toUpperCase()} ${prog}`;
-          ctx.font = "bold 13px monospace";
+          ctx.font = "bold 13px VT323, monospace";
           const tw = ctx.measureText(txt).width;
           const bx = 15;
           const by = 80;
@@ -3925,7 +3950,7 @@
       const cx = x * ts + ts / 2;
       const cy = y * ts + ts / 2;
       const dI = (c, cl, s = 20) => {
-        ctx.font = `bold ${s}px monospace`;
+        ctx.font = `bold ${s}px VT323, monospace`;
         ctx.fillStyle = cl;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
@@ -5902,9 +5927,9 @@
                 <div class="text-green-500 text-[10px] animate-pulse">V.A.T.S. ACTIVE</div>
                 <div class="text-yellow-400 font-bold text-xl uppercase tracking-widest border-b border-green-500/50 mb-1">${currentPart.name}</div>
                 <div class="text-green-300 font-mono text-xs">
-                    <div>CHANCE: <span class="text-white">${currentChance}%</span></div>
-                    <div>DMG MOD: <span class="text-white">${currentPart.dmgMod}x</span></div>
-                    <div>CRIT: <span class="text-white">${Game.state.critChance || 5}%</span></div>
+                    <div>CHANCE: <span class="text-[#39ff14]">${currentChance}%</span></div>
+                    <div>DMG MOD: <span class="text-[#39ff14]">${currentPart.dmgMod}x</span></div>
+                    <div>CRIT: <span class="text-[#39ff14]">${Game.state.critChance || 5}%</span></div>
                 </div>
             `;
         scopeBox.appendChild(stats);
@@ -5936,7 +5961,7 @@
                 <button onclick="Combat.confirmSelection()" class="flex-grow action-button py-4 text-3xl font-bold border-2 border-yellow-500 text-yellow-500 bg-yellow-900/20 hover:bg-yellow-500 hover:text-black shadow-[0_0_15px_rgba(255,200,0,0.2)] tracking-[0.2em] relative overflow-hidden group font-vt323 transition-all">
                     FEUER
                 </button>
-                <button onclick="Combat.flee()" class="w-1/3 action-button py-4 text-gray-500 border-2 border-gray-600 hover:text-white hover:border-white tracking-widest font-bold text-sm">
+                <button onclick="Combat.flee()" class="w-1/3 action-button py-4 text-gray-500 border-2 border-gray-600 hover:text-black hover:border-white tracking-widest font-bold text-sm">
                     FLUCHT
                 </button>
             `;
@@ -6015,7 +6040,7 @@
             }
             if (!isFree) {
               UI.showInfoDialog("IDENTITÄT ABGELEHNT", `
-                            Der Name <span class="text-white font-bold">'${name}'</span> ist bereits vergeben.<br><br>
+                            Der Name <span class="text-[#39ff14] font-bold">'${name}'</span> ist bereits vergeben.<br><br>
                             <span class="text-xs text-red-400 uppercase tracking-widest">>> Ein lebender Bewohner nutzt diesen Namen bereits.</span>
                         `);
               btn.textContent = originalText;
@@ -6459,7 +6484,7 @@
                     ${backpackName ? `<span class="flex items-center gap-1 text-[10px] text-[#39ff14] font-bold tracking-wider border-t border-green-900 mt-0.5 pt-0.5">${UI.itemSymbol(backpackId, "back", "klein")} ${backpackName}</span>` : '<span class="text-[9px] text-gray-600 border-t border-gray-800 mt-0.5 pt-0.5">KEIN RUCKSACK</span>'}
                 </div>
             `;
-        countDisplay.className = usedSlots >= maxSlots ? "text-red-500 font-bold animate-pulse" : "text-white font-mono";
+        countDisplay.className = usedSlots >= maxSlots ? "text-red-500 font-bold animate-pulse" : "text-[#39ff14] font-mono";
       }
       const bildId = (itemDef, entry) => entry && entry.id || itemDef && itemDef.id || null;
       const itemBild = (itemDef, entry) => UI.itemSymbol(bildId(itemDef, entry), itemDef && itemDef.type, "gross");
@@ -6836,7 +6861,7 @@
         const px = (poi.x * mapW + mapW / 2) * s + ox;
         const py = (poi.y * mapH + mapH / 2) * s + oy;
         if (px > -50 && px < rect.width + 50 && py > -50 && py < rect.height + 50) {
-          ctx.font = `bold ${Math.max(12, 16 * (s / 3))}px monospace`;
+          ctx.font = `bold ${Math.max(12, 16 * (s / 3))}px VT323, monospace`;
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
           let icon = "❓";
@@ -6868,7 +6893,7 @@
       ctx.fill();
       ctx.stroke();
       ctx.fillStyle = "#00ff00";
-      ctx.font = "bold 12px monospace";
+      ctx.font = "bold 12px VT323, monospace";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillText("N", cx, cy - r + 10);
@@ -6951,7 +6976,7 @@
             </div>
 
             <div class="flex-shrink-0 p-3 border-t border-red-900 bg-[#0a0000]">
-                <button class="action-button w-full border-gray-600 text-gray-500 hover:text-white hover:border-white transition-colors" onclick="UI.renderCity()">ZURÜCK ZUM ZENTRUM</button>
+                <button class="action-button w-full border-gray-600 text-gray-500 hover:text-black hover:border-white transition-colors" onclick="UI.renderCity()">ZURÜCK ZUM ZENTRUM</button>
             </div>
         `;
       view.appendChild(wrapper);
@@ -6992,7 +7017,7 @@
       const footer = document.createElement("div");
       footer.className = "absolute bottom-0 left-0 w-full p-4 bg-black border-t-2 border-blue-900 z-50 shadow-[0_-5px_15px_rgba(0,0,0,0.9)]";
       footer.innerHTML = `
-            <button onclick="UI.renderCity()" class="action-button w-full border-gray-600 text-gray-500 hover:text-white hover:border-white transition-colors py-3 font-bold tracking-widest uppercase bg-black">
+            <button onclick="UI.renderCity()" class="action-button w-full border-gray-600 text-gray-500 hover:text-black hover:border-white transition-colors py-3 font-bold tracking-widest uppercase bg-black">
                 ZURÜCK ZUM ZENTRUM
             </button>
         `;
@@ -7426,7 +7451,7 @@
                 <div class="flex items-center gap-3 p-2 flex-grow overflow-hidden pointer-events-none">
                     <div class="flex items-center gap-2 overflow-hidden">
                         ${UI.itemSymbol(item.id, def.type, "mittel")}
-                        <div class="text-green-500 font-bold text-lg font-vt323 truncate">${name} <span class="text-green-800 text-sm font-sans">x${item.count}</span></div>
+                        <div class="text-green-500 font-bold text-lg font-vt323 truncate">${name} <span class="text-green-800 text-sm">x${item.count}</span></div>
                     </div>
                 </div>
                 <div class="h-full flex flex-col justify-center items-end border-l-2 border-green-800 bg-black/30 min-w-[100px] pointer-events-none">
@@ -7534,7 +7559,7 @@
                             <div class="text-xs font-mono bg-green-900 text-green-100 px-2 rounded">LVL ${m.minLvl}</div>
                         </div>
                         <div class="grid grid-cols-4 gap-2 text-xs font-mono text-center bg-green-900/20 p-2 rounded">
-                            <div class="flex flex-col"><span class="text-gray-400">HP</span><span class="text-white font-bold">${m.hp}</span></div>
+                            <div class="flex flex-col"><span class="text-gray-400">HP</span><span class="text-[#39ff14] font-bold">${m.hp}</span></div>
                             <div class="flex flex-col"><span class="text-gray-400">DMG</span><span class="text-red-400 font-bold">${m.dmg}</span></div>
                             <div class="flex flex-col"><span class="text-gray-400">XP</span><span class="text-cyan-400 font-bold">${xpText}</span></div>
                             <div class="flex flex-col"><span class="text-gray-400">LOOT</span><span class="text-yellow-400 font-bold">~${m.loot}</span></div>
@@ -7561,7 +7586,7 @@
             return ia - ib;
           });
           sortedKeys.forEach((type) => {
-            html += `<h3 class="text-md font-bold bg-green-800 text-white px-2 py-1 mt-4 mb-2 uppercase tracking-widest flex items-center gap-2 border-l-4 border-green-500 shadow-md">${getIcon(type)} ${type}</h3>`;
+            html += `<h3 class="text-base font-bold bg-green-900 text-[#39ff14] px-2 py-1 mt-4 mb-2 uppercase tracking-widest flex items-center gap-2 border-l-4 border-green-500 shadow-md">${getIcon(type)} ${type}</h3>`;
             groups[type].sort((a, b) => a.name.localeCompare(b.name)).forEach((item) => {
               let stats = [];
               if (item.cost) stats.push(`<span class="text-yellow-400">${item.cost} KK</span>`);
@@ -7745,7 +7770,7 @@
                         </div>
                     </div>
                     
-                    ${!isDone && !isLocked ? `<div class="text-sm text-green-100 mt-2 mb-3 leading-relaxed font-sans">${def.desc}</div>` : ""}
+                    ${!isDone && !isLocked ? `<div class="text-sm text-green-100 mt-2 mb-3 leading-relaxed">${def.desc}</div>` : ""}
                     
                     ${activeData ? `
                         <div class="w-full bg-gray-800 border border-gray-600 h-3 mt-1 mb-1 rounded-sm overflow-hidden">
@@ -8494,7 +8519,7 @@
                     </div>
                 </div>
 
-                <button onclick="UI.switchView('map')" class="absolute top-4 right-4 z-30 bg-red-900/20 border border-red-500/50 text-red-500 w-10 h-10 flex items-center justify-center hover:bg-red-900 hover:text-white transition-colors text-xl font-bold shadow-lg">✕</button>
+                <button onclick="UI.switchView('map')" class="absolute top-4 right-4 z-30 bg-red-900/20 border border-red-500/50 text-red-500 w-10 h-10 flex items-center justify-center hover:bg-red-900 hover:text-black transition-colors text-xl font-bold shadow-lg">✕</button>
             </div>
         `;
       if (UI.mapState) UI.mapState.centeredOnce = false;
@@ -8520,13 +8545,13 @@
       const scrollContainer = document.createElement("div");
       scrollContainer.id = scrollId;
       scrollContainer.className = "flex-1 w-full overflow-y-auto pb-24 bg-black";
-      const getTabClass = (t) => tab === t ? "bg-green-500 text-black border-b-4 border-green-700 font-bold" : "bg-[#001100] text-green-600 border-b border-green-900";
+      const getTabClass = (t) => tab === t ? "bg-[#39ff14] text-black border-b-4 border-green-300 font-bold" : "bg-[#001100] text-green-600 border-b border-green-900 hover:text-green-300";
       const header = document.createElement("div");
-      header.className = "flex w-full border-b-2 border-green-900 bg-black sticky top-0 z-30";
+      header.className = "flex w-full border-b-2 border-green-800 bg-black sticky top-0 z-30";
       header.innerHTML = `
-            <button onclick="UI.renderStats('stats', event)" class="flex-1 py-3 uppercase font-vt323 text-xl ${getTabClass("stats")}">STATUS</button>
-            <button onclick="UI.renderStats('special', event)" class="flex-1 py-3 uppercase font-vt323 text-xl ${getTabClass("special")}">S.P.E.C.I.A.L.</button>
-            <button onclick="UI.renderStats('perks', event)" class="flex-1 py-3 uppercase font-vt323 text-xl ${getTabClass("perks")}">PERKS</button>
+            <button onclick="UI.renderStats('stats', event)" class="flex-1 py-3 uppercase font-vt323 text-2xl tracking-widest ${getTabClass("stats")}">STATUS</button>
+            <button onclick="UI.renderStats('special', event)" class="flex-1 py-3 uppercase font-vt323 text-2xl tracking-widest ${getTabClass("special")}">S.P.E.C.I.A.L.</button>
+            <button onclick="UI.renderStats('perks', event)" class="flex-1 py-3 uppercase font-vt323 text-2xl tracking-widest ${getTabClass("perks")}">PERKS</button>
         `;
       scrollContainer.appendChild(header);
       const content = document.createElement("div");
@@ -8575,10 +8600,11 @@
       }
       container.innerHTML = `
             <div class="flex flex-col items-center gap-4 max-w-md mx-auto">
-                <div class="text-center w-full border-b border-green-900 pb-2 cursor-pointer hover:bg-green-900/20 transition-all group rounded p-2 relative z-50 ${highlightClass}" onclick="UI.handleHeaderClick(event)">
-                    <div class="text-4xl font-bold text-green-400 group-hover:text-yellow-400 transition-colors text-shadow-md pointer-events-none">${p.playerName}</div>
-                    <div class="text-xs font-mono text-green-600 group-hover:text-green-300 mt-1 pointer-events-none">
-                        LVL ${p.lvl} | XP: ${p.xp} / ${Game.expToNextLevel(p.lvl)}
+                <div class="text-center w-full border-b-2 border-green-800 pb-2 cursor-pointer hover:bg-green-900/20 transition-all group rounded p-2 relative z-50 bg-[#001100]/60 ${highlightClass}" onclick="UI.handleHeaderClick(event)">
+                    <div class="text-[10px] tracking-[0.3em] text-green-700 uppercase pointer-events-none">VAULT-TEC // BEWOHNERDATEN</div>
+                    <div class="text-5xl font-bold text-[#39ff14] glow-text group-hover:text-yellow-400 transition-colors pointer-events-none leading-none mt-1">${p.playerName}</div>
+                    <div class="text-sm text-green-600 group-hover:text-green-300 mt-2 pointer-events-none tracking-widest">
+                        LVL ${p.lvl} &nbsp;|&nbsp; XP ${p.xp} / ${Game.expToNextLevel(p.lvl)}
                         ${actionText}
                     </div>
                 </div>
@@ -8594,11 +8620,14 @@
                         <canvas id="char-silhouette-canvas" width="240" height="300"></canvas>
                     </div>
                 </div>
-                <div class="grid grid-cols-2 gap-2 w-full text-xs font-mono bg-green-900/10 p-3 rounded border border-green-900/50 mt-2 z-10">
-                    <div class="flex justify-between border-b border-green-900/20 pb-1"><span>TP</span><span class="text-green-400 font-bold">${Math.round(p.hp)}/${p.maxHp}</span></div>
-                    <div class="flex justify-between border-b border-green-900/20 pb-1"><span>DEF</span><span class="text-green-400 font-bold">${typeof Game.getStat === "function" ? Game.getStat("DEF") : 0}</span></div>
-                    <div class="flex justify-between border-b border-green-900/20 pb-1"><span>KRIT</span><span class="text-green-400 font-bold">${p.critChance || 5}%</span></div>
-                    <div class="flex justify-between border-b border-green-900/20 pb-1"><span>LOAD</span><span class="text-green-400 font-bold">${p.inventory?.length || 0}/${typeof Game.getMaxSlots === "function" ? Game.getMaxSlots() : 20}</span></div>
+                <!-- Datenblock: Beschriftung in Versalien und gedeckt, Wert in
+                     Leuchtgruen. Das ist das Pip-Boy-Muster - Vorher standen
+                     hier gemischte Groessen ohne System. -->
+                <div class="grid grid-cols-2 gap-x-4 gap-y-1 w-full text-base bg-[#001100]/60 p-3 border border-green-800 mt-2 z-10">
+                    <div class="flex justify-between border-b border-green-900/60 py-0.5"><span class="text-green-700 text-sm tracking-wider">TP</span><span class="text-[#39ff14] font-bold">${Math.round(p.hp)}/${p.maxHp}</span></div>
+                    <div class="flex justify-between border-b border-green-900/60 py-0.5"><span class="text-green-700 text-sm tracking-wider">DEF</span><span class="text-[#39ff14] font-bold">${typeof Game.getStat === "function" ? Game.getStat("DEF") : 0}</span></div>
+                    <div class="flex justify-between border-b border-green-900/60 py-0.5"><span class="text-green-700 text-sm tracking-wider">KRIT</span><span class="text-[#39ff14] font-bold">${p.critChance || 5}%</span></div>
+                    <div class="flex justify-between border-b border-green-900/60 py-0.5"><span class="text-green-700 text-sm tracking-wider">LOAD</span><span class="text-[#39ff14] font-bold">${p.inventory?.length || 0}/${typeof Game.getMaxSlots === "function" ? Game.getMaxSlots() : 20}</span></div>
                 </div>
             </div>
         `;
@@ -8607,7 +8636,10 @@
       const stats = Game.state.stats || { STR: 5, PER: 5, END: 5, INT: 5, AGI: 5, LUC: 5 };
       const points = Game.state.statPoints || 0;
       const labels = window.GameData.statLabels || { STR: "STÄRKE", PER: "WAHRNEHMUNG", END: "AUSDAUER", INT: "INTELLIGENZ", AGI: "BEWEGLICHKEIT", LUC: "GLÜCK" };
-      let html = `<div class="text-center mb-6"><div class="text-xs text-green-600 mb-2">VERFÜGBARE PUNKTE</div><div class="text-5xl font-bold ${points > 0 ? "text-yellow-400" : "text-gray-600"}">${points}</div></div><div class="space-y-3">`;
+      let html = `<div class="text-center mb-6 border border-green-800 bg-[#001100]/60 py-3">
+            <div class="text-[10px] tracking-[0.3em] text-green-700 uppercase mb-1">Verfügbare Punkte</div>
+            <div class="text-5xl font-bold leading-none ${points > 0 ? "text-yellow-400" : "text-green-900"}">${points}</div>
+        </div><div class="space-y-2">`;
       for (let key in labels) {
         const val = stats[key] || 1;
         const cost = val >= 10 ? 2 : 1;
@@ -8619,9 +8651,12 @@
         } else if (!isMaxed && !canAfford && points > 0) {
           btnHtml = `<div class="w-10 h-10 flex items-center justify-center border border-red-900 text-red-700 font-bold bg-black opacity-50 cursor-not-allowed" title="Benötigt ${cost} Punkte">+</div>`;
         }
-        html += `<div class="flex items-center justify-between bg-black/40 p-3 border border-green-900">
-                <div class="flex flex-col"><span class="text-2xl font-bold text-green-400 font-vt323">${key}</span><span class="text-[10px] text-green-700">${labels[key]}</span></div>
-                <div class="flex items-center gap-4"><span class="text-3xl font-bold text-white">${val}</span>${btnHtml}</div>
+        html += `<div class="flex items-center justify-between bg-[#001100]/60 px-3 py-2 border border-green-800">
+                <div class="flex items-baseline gap-2 min-w-0">
+                    <span class="text-3xl font-bold text-[#39ff14] leading-none">${key}</span>
+                    <span class="text-sm text-green-700 tracking-widest uppercase truncate">${labels[key]}</span>
+                </div>
+                <div class="flex items-center gap-4"><span class="text-3xl font-bold text-[#39ff14] leading-none">${val}</span>${btnHtml}</div>
             </div>`;
       }
       container.innerHTML = html + "</div>";
@@ -8731,7 +8766,7 @@
                                 <span class="text-xl text-red-500 font-bold">☠️ ${save.playerName}</span>
                                 <span class="text-xs text-red-400 font-mono">VERSTORBEN (Level ${save.lvl})</span>
                             </div>
-                            <button onclick="event.stopPropagation(); UI.deleteSaveSlot(${i})" class="bg-red-900 text-white font-bold px-4 py-2 text-xs rounded hover:bg-red-600 transition-colors shadow-[0_0_10px_red]">
+                            <button onclick="event.stopPropagation(); UI.deleteSaveSlot(${i})" class="action-button bg-red-900 border-red-500 text-red-100 font-bold px-4 py-2 text-xs hover:bg-red-600 hover:text-black transition-colors">
                                 LÖSCHEN 🗑️
                             </button>
                         </div>
@@ -8855,7 +8890,7 @@
           parent.querySelectorAll(".vats-hp-overlay").forEach((e) => e.remove());
           parent.insertAdjacentHTML("beforeend", `
                     <div class="vats-hp-overlay absolute inset-0 flex justify-center items-center pointer-events-none z-30">
-                        <span class="vats-hp-num font-mono font-bold text-white text-base tracking-widest" style="text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;">
+                        <span class="vats-hp-num font-bold text-[#39ff14] text-base tracking-widest" style="text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;">
                             ${currentHp} / ${enemy.maxHp} TP
                         </span>
                     </div>
@@ -9221,7 +9256,7 @@
                         </div>
                     </div>
                     <div class="text-yellow-200 font-mono text-sm mb-6 bg-black/40 p-2 rounded">
-                        Glück (LUC): <span class="text-white font-bold">${luck}</span> 
+                        Glück (LUC): <span class="text-[#39ff14] font-bold">${luck}</span> 
                         <span class="text-gray-400">|</span> Bonus: <span class="text-[#39ff14] font-bold">+${bonus}</span>
                     </div>
                     ${!game.rolling && finalResult === null ? `<button onclick="MiniGames.dice.roll()" class="w-full py-4 text-2xl font-bold bg-yellow-600 text-black hover:bg-yellow-400 transition-all border-2 border-yellow-400 uppercase tracking-widest shadow-lg cursor-pointer">🎲 WÜRFELN</button>` : `<div class="text-yellow-500 text-xl font-bold h-16 flex items-center justify-center">${finalResult !== null ? "Loot wird berechnet..." : "ROLLING..."}</div>`}
@@ -9591,12 +9626,16 @@
       const item = Game.state.equip[slot];
       const name = item.props ? item.props.name : item.name;
       const def = item.props && item.props.type ? item.props : Game.items && Game.items[item.id] || {};
+      let bildId = item.id || null;
+      if (!bildId && Game.items) {
+        bildId = Object.keys(Game.items).find((k) => Game.items[k].name === item.name) || null;
+      }
       const box = document.createElement("div");
       box.className = "bg-black border-2 border-yellow-500 p-4 shadow-[0_0_15px_#aa0] max-w-sm text-center mb-4 w-full pointer-events-auto";
       box.onclick = (e) => e.stopPropagation();
       box.innerHTML = `
             <div class="text-xs text-yellow-600 font-bold tracking-widest mb-1">SLOT: ${slot.toUpperCase()}</div>
-            <div class="flex justify-center mb-3">${UI.itemSymbol(item.id, def.type, "voll")}</div>
+            <div class="flex justify-center mb-3">${UI.itemSymbol(bildId, def.type || item.type, "voll")}</div>
             <h2 class="text-2xl font-bold text-yellow-400 mb-4 border-b border-yellow-500 pb-2 tracking-wider">${name}</h2>
             <div class="flex flex-col gap-2 w-full">
                 <button id="btn-unequip" class="action-button w-full border-yellow-500 text-yellow-400 py-3 font-bold text-lg">
@@ -9634,7 +9673,7 @@
       }
       msg.innerHTML = `
             <div class="text-yellow-500 font-bold tracking-[0.2em] text-[10px] mb-1 animate-pulse">QUEST ERFÜLLT</div>
-            <div class="text-2xl font-bold text-white mb-3 uppercase tracking-tighter shadow-black text-shadow-lg">${questDef.title}</div>
+            <div class="text-2xl font-bold text-[#39ff14] mb-3 uppercase tracking-tighter shadow-black text-shadow-lg">${questDef.title}</div>
             <div class="flex flex-col gap-1 py-2 border-t border-yellow-900/50 bg-yellow-900/10 font-mono text-xs">
                 ${questDef.reward?.xp ? `<div class="text-cyan-400">⚡ +${questDef.reward.xp} XP</div>` : ""}
                 ${questDef.reward?.caps ? `<div class="text-yellow-400">💰 +${questDef.reward.caps} KK</div>` : ""}
@@ -9707,10 +9746,10 @@
                 <h2 class="text-3xl font-bold text-green-400 mb-4 text-center border-b-2 border-green-600 pb-2 tracking-widest shrink-0">VAULT LEGENDS</h2>
                 <div class="flex justify-between mb-2 text-xs text-green-300 uppercase font-bold px-2 shrink-0">
                     <span class="w-8">#</span>
-                    <span class="w-1/3 cursor-pointer hover:text-white" onclick="UI.renderHighscoreList(this.dataset.scores, 'name')">NAME</span>
-                    <span class="w-16 text-right cursor-pointer hover:text-white" onclick="UI.renderHighscoreList(this.dataset.scores, 'lvl')">LVL</span>
-                    <span class="w-16 text-right cursor-pointer hover:text-white" onclick="UI.renderHighscoreList(this.dataset.scores, 'kills')">KILLS</span>
-                    <span class="w-24 text-right cursor-pointer hover:text-white" onclick="UI.renderHighscoreList(this.dataset.scores, 'xp')">EXP</span>
+                    <span class="w-1/3 cursor-pointer hover:text-black" onclick="UI.renderHighscoreList(this.dataset.scores, 'name')">NAME</span>
+                    <span class="w-16 text-right cursor-pointer hover:text-black" onclick="UI.renderHighscoreList(this.dataset.scores, 'lvl')">LVL</span>
+                    <span class="w-16 text-right cursor-pointer hover:text-black" onclick="UI.renderHighscoreList(this.dataset.scores, 'kills')">KILLS</span>
+                    <span class="w-24 text-right cursor-pointer hover:text-black" onclick="UI.renderHighscoreList(this.dataset.scores, 'xp')">EXP</span>
                 </div>
                 <div id="highscore-list" class="flex-1 overflow-y-auto pr-2 custom-scrollbar min-h-0 border-b border-green-900/50 mb-2"></div>
                 <div class="text-[10px] text-center text-green-800 shrink-0">ESC / KLICK NEBEN FENSTER ZUM SCHLIESSEN</div>
@@ -9943,7 +9982,7 @@
                 <div class="text-6xl mb-2">👑⚔️</div>
                 <h2 class="text-4xl font-bold text-yellow-400 mb-2 tracking-widest text-shadow-gold">VICTORY!</h2>
                 <p class="text-yellow-200 mb-4 font-bold text-lg">DUNGEON (LVL ${lvl}) GECLEARED!</p>
-                <div class="text-2xl text-white font-bold border-t border-b border-yellow-500 py-2 mb-4 bg-yellow-900/30">+${caps} KRONKORKEN</div>
+                <div class="text-2xl text-[#39ff14] font-bold border-t border-b border-yellow-500 py-2 mb-4 bg-yellow-900/30">+${caps} KRONKORKEN</div>
                 <p class="text-xs text-yellow-600 mb-4">Komme in 10 Minuten wieder!</p>
                 <button id="btn-victory-close" class="action-button w-full border-yellow-500 text-yellow-500 font-bold hover:bg-yellow-900">ZURÜCK ZUR KARTE</button>
             </div>
@@ -9972,7 +10011,7 @@
       box.innerHTML = `
             <div class="text-6xl text-red-600 mb-4 font-bold">☠️</div>
             <h1 class="text-4xl font-bold text-red-600 mb-4 tracking-widest border-b-2 border-red-600 pb-2">PERMADEATH AKTIV</h1>
-            <p class="text-red-400 font-mono text-lg mb-6 leading-relaxed">WARNUNG, BEWOHNER!<br>Das Ödland kennt keine Gnade.<br>Wenn deine HP auf 0 fallen, wird dieser Charakter<br><span class="font-bold text-white bg-red-900 px-1">DAUERHAFT GELÖSCHT</span>.</p>
+            <p class="text-red-400 font-mono text-lg mb-6 leading-relaxed">WARNUNG, BEWOHNER!<br>Das Ödland kennt keine Gnade.<br>Wenn deine HP auf 0 fallen, wird dieser Charakter<br><span class="font-bold text-[#39ff14] bg-red-900 px-1">DAUERHAFT GELÖSCHT</span>.</p>
             <button class="action-button w-full border-red-600 text-red-500 font-bold py-4 text-xl hover:bg-red-900" onclick="UI.leaveDialog()">ICH HABE VERSTANDEN</button>
         `;
       overlay.appendChild(box);

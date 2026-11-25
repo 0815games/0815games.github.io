@@ -1,5 +1,61 @@
 # CHANGELOG
 
+## v14.0.13 (Eine Schrift im ganzen Spiel, Item-Bild im Charaktermenue, 2026-11-24)
+Zwei Rueckmeldungen: "Beim Anklicken der Gegenstaende am Charakter im
+Charaktermenue Status oeffnet sich die Detailansicht der Items. Hier ist kein
+Bild erkennbar." und "die Schrift ist ueberall im Game mittlerweile
+unterschiedlich. Geh das ganze durch. Alle Menues, alle Untermenues, alles wo
+sinn macht."
+
+Beim Nachmessen waren es nicht zwei Fehler, sondern fuenf - alle unsichtbar,
+solange niemand den ausgelieferten CSS-Stand gegen den Quellcode haelt:
+
+- [FIX] **`font-vt323` gab es nicht.** Die Klasse stand an 22 Stellen im
+  Quellcode (Charaktermenue, Kampf, Stadt, Minigames), war aber in keiner
+  CSS-Datei definiert - Tailwind erzeugt nur Klassen aus seiner Konfiguration.
+  Alle 22 Stellen fielen auf die System-Sans zurueck. Da gerade die drei
+  Reiter oben im Charaktermenue (STATUS / S.P.E.C.I.A.L. / PERKS) diese Klasse
+  trugen, sah der Kopf anders aus als der Rest: genau die Stelle, die aufgefallen war.
+- [FIX] **Die Schrift ist jetzt der Standard, nicht die Ausnahme.** Vorher stand
+  sie nur auf `body`; jede Utility-Klasse stach sie aus. Jetzt gilt sie fuer
+  `html, body, button, input, select, textarea`. Damit kann keine Stelle mehr
+  versehentlich in der Systemschrift landen - auch Formularelemente nicht, die
+  der Browser sonst selbst beschriftet.
+- [FIX] **Sechs Leucht-Klassen existierten nicht.** `.glow-text`,
+  `.text-shadow-glow`, `.text-shadow-md`, `.text-shadow-gold`,
+  `.text-shadow-red`, `.text-shadow-lg` wurden benutzt, hatten aber keine
+  Regel. Jede Ueberschrift, die leuchten sollte, leuchtete nicht - darunter
+  der Spielername, der Stadtname, das Ziel im Kampf und der Sieges-Titel.
+- [FIX] **Auch die Zeichenflaeche benutzt VT323.** Karte und Kampffeld
+  beschriften sich per `ctx.font` und standen dort auf `monospace` bzw.
+  `sans-serif` - also auf der Systemschrift. Das war die letzte Ansicht mit
+  einer anderen Schrift (10 Stellen).
+- [FIX] **Kein Weiss mehr.** 20 Stellen `text-white` (TP-Zahl, Chance-Anzeige,
+  Quest-Titel, Zaehler, Highscore-Kopf) sind jetzt Leuchtgruen `#39ff14`.
+  Zusaetzlich 10-mal `hover:text-white` -> `hover:text-black`, weil ein Knopf,
+  der beim Darueberfahren weiss wird, den Entwurf verlaesst. Weiss kommt im
+  Pip-Boy nicht vor: schwarz -> dunkelgruen -> #39ff14 -> gelb (Warnung) ->
+  rot (Gefahr).
+- [FIX] **Das Item-Bild im Charaktermenue.** Alte Spielstaende tragen in
+  `state.equip` die Katalogdefinition statt des Inventareintrags - ohne
+  `id`-Feld. Seit v14.0.12 zieht der Ausruestungs-Dialog sein Bild aus
+  `item.id`; dort kam `undefined` an, und statt des Bildes stand ein
+  Typ-Emoji. `Game.heileAusruestung()` traegt die ID beim Laden ueber den Namen
+  nach, der Dialog sucht zusaetzlich selbst. Dieselbe Fehlerfamilie wie
+  v14.0.10: `Game.items` ist nach Schluessel organisiert, die Definition
+  traegt kein `id`.
+- [FIX] **Charaktermenue oben neu geordnet.** Name als Leucht-Ueberschrift mit
+  Kopfzeile "VAULT-TEC // BEWOHNERDATEN", Datenzeile darunter, Reiter in
+  Groesse und Laufweite angeglichen. Die Werte TP/DEF/KRIT/LOAD stehen als
+  Datenblock mit Trennlinien, Beschriftung gedeckt, Wert in Leuchtgruen.
+- [TEST] **`tests/gestaltung.test.mjs` (6 Tests)** prueft genau die Fehler,
+  die niemand gesehen hat: jede im Quellcode benutzte Klasse muss eine
+  CSS-Regel haben (547 Klassen, 1 Ausnahme: Sprechmarken fuer JavaScript),
+  die Terminal-Schrift muss der Standard sein, die Leucht-Klassen muessen
+  existieren, die Zeichenflaeche muss VT323 benutzen, kein Weiss in den
+  Ansichten, und der Item-Dialog darf nicht an der gespeicherten ID haengen.
+  Gegenprobe: auf dem Stand v14.0.12 sind 4 der 6 Tests rot.
+
 ## v14.0.12 (Lesbare Bilder, transparente Items, Pip-Boy-Buttons, 2026-11-24)
 Zwei Rueckmeldungen aus dem Spiel: "Bilder sind jetzt im Inventar, aber schlecht
 erkennbar. Ausserdem haben alle schwarzen Hintergrund - sollte durchsichtig

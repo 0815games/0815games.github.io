@@ -86,6 +86,85 @@
 /* --- VARIABLES & BASE --- */
 :root { --pip-green: #1aff1a; --pip-glow: #2bff2b; --pip-dim: #0d330d; --pip-bg: #051105; }
 
+/* --- SCHRIFT ---
+   Bis v14.0.12 stand hier nur eine Regel auf body. Damit wurde die
+   Terminal-Schrift zwar an alle Kinder vererbt, aber jede Tailwind-Klasse,
+   die eine Schrift setzt, stach sie aus. Und die Utility `font-vt323` wurde
+   an 22 Stellen im Quellcode benutzt, existierte aber in keiner CSS-Datei -
+   Tailwind erzeugt sie nicht, weil sie nicht in der Konfiguration steht
+   (gemessen: 0 Treffer in app.css). Diese Stellen fielen also auf die
+   System-Sans zurueck. Genau das war die "ueberall unterschiedliche Schrift".
+
+   Ab hier gilt: die Terminal-Schrift ist der Standard und laesst sich nur
+   noch bewusst verlassen. Die Regel ist bewusst ohne !important - sie soll
+   die Utility-Klassen schlagen, nicht die Vererbung brechen. */
+html, body, button, input, select, textarea, optgroup {
+    font-family: 'VT323', ui-monospace, 'Cascadia Mono', 'DejaVu Sans Mono', monospace;
+}
+
+/* Die gesuchte Utility. Steht hier und nicht in der Tailwind-Konfiguration,
+   weil die Konfiguration im Build steht - eine Klasse im Quellcode und ihre
+   Definition an zwei verschiedenen Orten laufen sonst auseinander. */
+.font-vt323 { font-family: 'VT323', ui-monospace, 'Cascadia Mono', 'DejaVu Sans Mono', monospace; }
+
+/* --- LEUCHTEN ---
+   Drei Klassen werden im Quellcode benutzt, waren aber nirgends definiert
+   (gemessen: 0 Treffer in style.css, app.css und index.html):
+   .glow-text, .text-shadow-glow, .text-shadow-md. Das Leuchten ist das
+   Erkennungsmerkmal eines CRT-Pip-Boy - ohne die Definition fehlte es an
+   jeder Ueberschrift, an der es stand. */
+.glow-text {
+    text-shadow: 0 0 4px rgba(57, 255, 20, 0.8), 0 0 12px rgba(57, 255, 20, 0.45), 0 0 24px rgba(57, 255, 20, 0.2);
+}
+.text-shadow-glow {
+    text-shadow: 0 0 3px rgba(57, 255, 20, 0.7), 0 0 8px rgba(57, 255, 20, 0.35);
+}
+.text-shadow-md {
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.9), 0 0 6px rgba(57, 255, 20, 0.3);
+}
+/* Die Farbvarianten desselben Leuchtens. Auch sie standen im Quellcode, ohne
+   dass es sie gab - das Ziel, der Sieges-Titel und der Quest-Titel hatten
+   deshalb kein Leuchten. */
+.text-shadow-gold {
+    text-shadow: 0 0 4px rgba(255, 215, 0, 0.85), 0 0 14px rgba(255, 215, 0, 0.4);
+}
+.text-shadow-red {
+    text-shadow: 0 0 4px rgba(255, 60, 60, 0.85), 0 0 14px rgba(255, 0, 0, 0.4);
+}
+.text-shadow-lg {
+    text-shadow: 0 2px 0 rgba(0, 0, 0, 0.9), 0 0 10px rgba(57, 255, 20, 0.35);
+}
+
+/* --- KLICK-EFFEKT und SCROLLBEREICH ---
+   Ebenfalls benutzt, nie definiert. Der Klick-Effekt ist reine Gestaltung,
+   aber ohne Regel hatte der Untertitel keinen Abstand und keine Linie. */
+.click-effect-text {
+    font-size: 2rem;
+    line-height: 1;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+.click-effect-sub {
+    font-size: 0.85rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    border-top: 1px solid currentColor;
+    margin-top: 4px;
+    padding-top: 2px;
+    opacity: 0.85;
+}
+.custom-scrollbar { scrollbar-width: thin; scrollbar-color: var(--pip-dim) #001100; }
+.custom-scrollbar::-webkit-scrollbar { width: 8px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: #001100; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: var(--pip-dim); border: 1px solid var(--pip-green); }
+
+/* Sprechmarken fuer das JavaScript (Auswahl per querySelector), keine
+   Gestaltung. Sie stehen hier, damit ein Klassen-Audit nicht bei jedem Lauf
+   dieselben drei Treffer meldet - und damit niemand sie versehentlich
+   umbenennt, weil sie "unbenutzt" aussehen. */
+.vats-hp-num, .vats-hp-overlay { /* Marker */ }
+
 html, body { width: 100%; height: 100%; overflow: hidden; overscroll-behavior: none; position: fixed; margin: 0; padding: 0; }
 body { background-color: #000; color: var(--pip-green); font-family: 'VT323', monospace; display: flex; justify-content: center; align-items: center; user-select: none; -webkit-user-select: none; cursor: crosshair; }
 
