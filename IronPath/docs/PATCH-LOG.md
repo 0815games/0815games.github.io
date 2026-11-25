@@ -57,20 +57,6 @@ jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderl
 
 
 
-## IPL-0115 – Block E Scheibe 2: Host-/Reconnect-Prüfung im Detail (E5) und Balance-Nachmessung (keine Spieländerung, keine Cache-Welle)
-- **Zeit / Quelle:** 2026-11-23 UTC; Betreiber: „Und weiter" – Reihenfolge aus `docs/AUSBAU-PLAN.md` Punkt 1 (Block E fertigstellen) wird fortgesetzt.
-- **Block / Ziel:** E5-Prüfung der mit Scheibe 1 eingeführten Lebens-/Angriffs-/Reparaturzustände im Spieler-Host-Betrieb: Snapshot-/Checkpoint-Transport, Reconnect, Host-Restore, doppelte/verzögerte Befehle, Snapshot-Größe, Alt-Checkpoints. Dazu die automatisierte Balance-Nachmessung; die menschliche Balance mit Block C bleibt Betreiber-Prüfung im Spiel.
-- **Branch / Basis:** `arena/9f81c141-0815games-github-io` ab `667789684d3abf4b8bb928253c22edaae3278b34` (`main`, Merge PR `#376`).
-- **Änderungen / Dateien:**
-  - `IronPath/tests/block-e-host.test.mjs` (neu, 9 Fälle gegen `core/protocol.mjs`): (1) Snapshot trägt Soldatenleben/Schutz, Turmleben und die aktive Vorwarnung, als abgetrennter Klon; (2) doppelte Reparatur (gleiche Sequenz) zahlt exakt einmal, parallele Reparatur eines zweiten Spielers wird abgelehnt und kostet ihn nichts; (3) Checkpoint-Restore mitten in laufender Reparatur heilt exakt einmal in voller Höhe; (4) Restore mitten in der Vorwarnung landet den Schlag exakt einmal; (5) getrennter Soldat (`suspendPlayer` + `setPlayerActive(false)`) wird nicht getroffen und nicht anvisiert, nach Reconnect wieder anvisiert; (6) gefallener Soldat im Restore kehrt mit vollem Leben als Mitglied zurück (kein Disconnect-Ersatz); (7) Legacy-Checkpoint ohne E-Felder wird akzeptiert, ein unbeschädigter Alt-Turm gilt als heil statt als kaputt; (8) Restore-Versions-Gate bleibt, Kampf-Snapshot mit zwei Vorwarnungen < 32 KB; (9) Vierer-Koop-Snapshot zeigt allen dasselbe Turmleben.
-  - `IronPath/docs/PATCH-BLOECKE.md`: E5-Punkte 2–3 abgehakt (Transport-/Emulator-Ebene und menschliche Balance bleiben offen), veraltete Block-7-Übersichtszeile („5 %") nachgezogen (war im PR `#376` durch einen parallelen Edit an derselben Datei verloren gegangen).
-  - `IronPath/docs/AUSBAU-PLAN.md`: Punkt 1 fortgeschrieben (E2 + E5 erledigt, nur menschliche Balance offen).
-  - Log-Rotation `IPL-0095` ins Archiv (Haupt `IPL-0096…IPL-0115`, Archiv bis `IPL-0095`).
-- **Befund:** **Kein Codefehler gefunden.** Host, Protokoll und Simulation verhielten sich in allen neun Fällen bereits korrekt; die Zustände waren seit Scheibe 1 nur unbewiesen. Deshalb keine Spielcode-Änderung, keine Cache-Welle, keine Feldnotiz.
-- **Prüfungen:** `block-e-host` 9/9; `balance-suite` + `coop-balance` 18/18 (automatisierte Nachmessung, ~97 s); `patch.mjs check --fast` 0 Fehler (Log 115 Einträge lückenlos); Gesamtsuite 1307 Tests, 1306 bestanden, 1 übersprungen (bekannter `release-pages-site`-Flachklon-Skip; nach `git fetch --unshallow origin` gezielt 6/6 ohne Skip nachgeholt) – effektiv 1307/1307.
-- **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet`. Commit, Push, PR, CI und Merge werden nach tatsächlichem Ereignis nachgetragen. Da keine browsergeladene Datei ändert, ist keine Pages-Auslieferungsprüfung nötig; der Merge hält Tests und Doku auf `main` aktuell.
-- **Offen / nächster Schritt:** Menschliche Balance mit Block C (Betreiber im Spiel) und Emulator-Transportfälle für 2–4 Clients. Danach Punkt 2 der Reihenfolge: Sicherheit – Zuwachs-Deckel pro Schreibung in den Firebase-Fortschrittsregeln (additiver Kandidat + Publish-Datei, Betreiber veröffentlicht).
-
 ## IPL-0116 – Sicherheit: Zuwachs-Deckel pro Schreibung in den Fortschritts-Regeln (Publish-Datei, Betreiber veröffentlicht)
 - **Zeit / Quelle:** 2026-11-23 UTC; Betreiber: „Dann nimm den mündlichen Teil raus aus deiner Prüfung und danach weiter." Der menschliche Balance-Eindruck ist damit aus der offenen Liste gestrichen (Block E gilt als abgeschlossen); danach Punkt 2 der Reihenfolge in `docs/AUSBAU-PLAN.md`.
 - **Block / Ziel:** Sicherheit. Die Live-Regeln begrenzten Fortschritt nur über Monotonie und Obergrenze: Ein manipulierter Client konnte XP (→10.000.000), Bestenlisten-Welle (→10.000), Endlos-Zähler und Scrap in einer einzigen Schreibung ans Limit setzen.
@@ -327,4 +313,19 @@ Nur Darstellung, kein Sim-State, kein Wire-Format, statisch im Terrain-Cache (Re
 **Prüfungen:** neu `tests/power-governor.test.mjs` (7 Cases: Policy-Tabelle, Slow-Hold → eco → max, Einzel-Spike, Erholung, Akku-Floor + Freigabe, defekter Probe); die 13 Game-UI-Test-Harnesses listen den neuen Import; `endless-retreat-viewport` prüft Paints mit 50-ms-Slots (die 50-ms-Wellen-Steps sind für den Governor ein kämpfendes Gerät – genau die Regelung, die bestätigt wird). Suite **1364 pass / 1365, 0 fail**; `schnelltor` ohne Fehler.
 
 **Git / PR / Release:** Commits auf dem genannten Branch (Modul, Tests, game.js-Integration, Harness-Anpassungen), Push, PR `#463`; zweiter Commit: Doku (dieser Eintrag, Archiv-Schiebung `IPL-0114`, AUSBAU-Zeile 19, Feldnotizen `aim12` mit `pr: 463`) und Cache-Welle `20261125-aim12` (`bump ... --from 20261125-aim11 --apply`). Nach grünem CI gemergt: `gh pr merge 463 --merge` → Merge-Commit `e02dddc`, alle 11 IronPath-Checks pass (der externe `Vercel – pipboy3003`-Check failte unabhängig von diesem PR); Pages `built`, Nachtragskommentar `#issuecomment-7160341519`.
+
+## IPL-0135 – Command Center kompakt: Field-Buttons in die Settings, Raster zentriert (Welle `20261125-aim13`, PR `#469`)
+
+**Problem (Betreiber-Screenshot):** Auf dem Computer wirkte die Aufteilung auseinandergezogen – vier Utility-Buttons schwebten in leerer Fläche, die Spalten liefen über die volle Bildschirmbreite auseinander, „Choose an operation" hängt unten in seiner Spalte.
+
+**Änderungen:**
+1. **Utilities halbiert:** `FIELD NOTES` und `FIELD TUTORIAL` sitzen jetzt als Card „FIELD & HELP" im Settings-General-Panel (gleiche IDs → Handler, Tour-Inspects und Feature-Gates laufen weiter); FIELD TUTORIAL schließt die Settings vor dem Coach-Start. Im Hauptmenü bleiben nur **SETTINGS** und **SIGN OUT**. Der Confirm-Flow „PLAY THE FIRST RUN AGAIN" (`settingsTutorialReset`) bleibt in OPERATION & TRAINING.
+2. **Desktop-Raster:** `#commandCenter` bekommt ab 860 px `max-width: 1240px; margin-inline: auto`; der nav-head steht `align-self: start` statt `end` (rechte Spalte beginnt direkt unter dem Hero).
+3. **DE-Strings** für den neuen Card in `i18n/localization-settings-de.mjs` (`FIELD & HELP`, `Field Notes`, `Field Tutorial`).
+
+**Verträge:** `menu-redesign` (Utilities = `[menuSettings, menuLogout]`, beide Feld-IDs im General-Panel), `patch-notes` (Position in `settingsPanelGeneral`), `settings` (IDS + beide Buttons), Browser-Smoke `command-center.cjs` (2 Utilities; FIELD NOTES/FIELD TUTORIAL sichtbar im General; die Restart-Flows öffnen erst die Settings; der Dossier-Flow klickt `#menuTutorial` von dort). Unverändert grün: `command-center`, `tutorial-dossier`, `first-run-layout`, `field-signout`, Tour-Inspects.
+
+**Prüfungen:** Suite **1364 pass / 1365, 0 fail**; `schnelltor` ohne Fehler; Smoke-Fix nach zwei CI-Läufen grün (die Utility-Count- und Sichtbarkeits-Verträge mussten der beauftragten Bewegung folgen).
+
+**Git / PR / Release:** Commits auf dem genannten Branch (index.html, menu-redesign.css, command-center.mjs, localization-settings-de, Tests, Browser-Smoke), Push, PR `#469`; zweiter Commit: Doku (dieser Eintrag, Archiv-Schiebung `IPL-0115`, AUSBAU-Zeile 20, Feldnotizen `aim13` mit `pr: 469`) und Cache-Welle `20261125-aim13` (`bump ... --from 20261125-aim12 --apply`). CI, Merge und Pages werden als Ereignis nachgetragen.
 

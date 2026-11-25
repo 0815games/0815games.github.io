@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see docs/PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261125-aim12';
+import {getLanguage} from './language.mjs?v=20261125-aim13';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,18 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'aim13',build:'20261125-aim13',pr:469,
+    title:{en:'A Tighter Desk · The Headquarters Stops Stretching',de:'Ein engerer Tisch · Das Hauptquartier zieht sich nicht mehr auseinander'},
+    shipped:[
+      {en:'Field Notes and Field Tutorial moved into Settings, so the Command Center keeps only Settings and Sign Out in its utility row - two buttons where four used to float in empty space.',de:'Feldnotizen und Feld-Tutorial sind jetzt in den Einstellungen, sodass im Hauptquartier nur noch Einstellungen und Abmelden in der Utility-Reihe stehen - zwei Knöpfe statt vier, die in leerer Fläche schwebten.'},
+      {en:'On wide screens the two headquarters columns cap their width and sit centered, and the deployment heading starts at the top of its column instead of hanging halfway down.',de:'Auf breiten Bildschirmen begrenzen die zwei Spalten des Hauptquartiers ihre Breite und sitzen zentriert, und die Einsatz-Überschrift beginnt oben in ihrer Spalte statt halb unten zu hängen.'},
+      {en:'Raised the cache wave to 20261125-aim13, because the menu layout and its dialog entries moved: no device should fight with yesterdays eyes.',de:'Die Cache-Welle auf 20261125-aim13 erhöht, weil sich Menülayout und Dialog-Einträge bewegten: Kein Gerät soll mit den Augen von gestern kämpfen.'},
+    ],
+    open:[
+      {en:'Armory and Bunker, the real inventory and equipment system, and the skills optics are the announced next build - the field menus stay as they are until that conversation.',de:'Waffenkammer und Bunker, das echte Inventar- und Ausrüstungssystem und die Optik der Fähigkeiten sind der angekündigte nächste Bau - die Feldmenüs bleiben, bis dieses Gespräch kommt.'},
+    ]
+  },
   {
     id:'aim12',build:'20261125-aim12',pr:463,
     title:{en:'Cool Head · The Field Paints Itself Down When the Device Works Hard',de:'Kühler Kopf · Das Feld malt sich herunter, wenn das Gerät arbeitet'},
