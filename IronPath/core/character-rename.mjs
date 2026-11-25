@@ -50,9 +50,9 @@
 //   * an interruption between two steps leaves a soldier who is temporarily
 //     not findable - never one who is findable under a name that is not
 //     theirs. The next account load republishes them.
-import {validateCharacterName,characterNameKey} from './character-name.mjs?v=20261125-aim11';
-import {createCharacterNameClaim} from './character-name-claim.mjs?v=20261125-aim11';
-import {createFriendService} from './friends.mjs?v=20261125-aim11';
+import {validateCharacterName,characterNameKey} from './character-name.mjs?v=20261125-aim12';
+import {createCharacterNameClaim} from './character-name-claim.mjs?v=20261125-aim12';
+import {createFriendService} from './friends.mjs?v=20261125-aim12';
 
 const validUid=id=>typeof id==='string'&&id.length>0&&id.length<=128&&!/[.#$\[\]/\u0000-\u001f\u007f]/.test(id);
 const codePattern=/^[a-f0-9]{32}$/;

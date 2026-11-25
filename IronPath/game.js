@@ -1,59 +1,60 @@
-import {createSoloDeployment} from './core/solo-deployment.mjs?v=20261125-aim11';
+import {createSoloDeployment} from './core/solo-deployment.mjs?v=20261125-aim12';
 import {newRunReceiptId} from './workshop/workshop-run-receipt.mjs?v=20261031-finale1';
 import {canvasResolution} from './core/canvas-resolution.mjs?v=20261105-sharp1';
+import {createPowerGovernor} from './core/power-governor.mjs?v=20261125-aim12';
 import {createMapZoom} from './core/map-zoom.mjs?v=20261105-sharp1';
 import {featureEnabled} from './core/features.mjs?v=20261112-endless1';
-import {localizeGameMessage} from './core/game-localization.mjs?v=20261125-aim11';
+import {localizeGameMessage} from './core/game-localization.mjs?v=20261125-aim12';
 import {translateStoryDetail} from './core/story-localization.mjs?v=20261110-storyde1';
-import {translateText as tr,getLanguage} from './language.mjs?v=20261125-aim11';
+import {translateText as tr,getLanguage} from './language.mjs?v=20261125-aim12';
 import {createSoldierMotion} from './core/soldier-motion.mjs?v=20261104-movement1';
-import {createTowerAim} from './core/tower-aim.mjs?v=20261125-aim11';
+import {createTowerAim} from './core/tower-aim.mjs?v=20261125-aim12';
 import {bindDialogBackdrop} from './ui/dialog-dismiss.mjs?v=20261104-dismiss1';
 import {createFocusPause} from './core/focus-pause.mjs?v=20261104-hostpause1';
 import {cinematicFrames,cinematicScene,relicHandover} from './core/story-cinematics.mjs?v=20261031-finale2';
 import {CAMPAIGN,campaignProgress,campaignMission,campaignAvailable,campaignDifficulty,campaignWaveContract,ACTS,actOf,actEndIndex,actComplete} from './core/campaign.mjs?v=20261112-pressure1';
 import {RELICS,earnedRelicIds} from './core/relics.mjs?v=20261112-tagless1';
-import {prestigeTierOf,prestigeScrapBonus,PRESTIGE_MAX_TIER} from './core/campaign-prestige.mjs?v=20261125-aim11';
+import {prestigeTierOf,prestigeScrapBonus,PRESTIGE_MAX_TIER} from './core/campaign-prestige.mjs?v=20261125-aim12';
 import {prestigeScale} from './core/campaign-pressure.mjs?v=20261112-pressure1';
 import {createStoryMission,storyStatus,stepStory,resolveStoryDecision,drainStoryNotifications} from './core/story-mission.mjs?v=20261111-events1';
 import {STAGE_CAPTIONS,EVENT_TEMPLATES} from './core/story-events.mjs?v=20261206-acttwo1';
-import {TRAINING_MISSION_ID,TRAINING_MAP,TRAINING_WAVES,TRAINING_BOSS_EVERY,FIRST_RUN_DEFEAT_XP,trainingContract,trainingStatus,trainingWon,trainingXP,trainingBonusXP,trainingSeen,markTrainingSeen,forgetTrainingSeen,trainingWaveRadioCue} from './core/training-run.mjs?v=20261125-aim11';
-import {projectFourGameView} from './core/four-game-view.mjs?v=20261125-aim11';
-import {createBattleViewportController} from './battle/battle-viewport-controller.mjs?v=20261125-aim11';
-import {drawInBattleViewport} from './battle/battle-viewport.mjs?v=20261125-aim11';
-import {waveRewardSummary,nextSteps} from './core/run-results.mjs?v=20261125-aim11';
+import {TRAINING_MISSION_ID,TRAINING_MAP,TRAINING_WAVES,TRAINING_BOSS_EVERY,FIRST_RUN_DEFEAT_XP,trainingContract,trainingStatus,trainingWon,trainingXP,trainingBonusXP,trainingSeen,markTrainingSeen,forgetTrainingSeen,trainingWaveRadioCue} from './core/training-run.mjs?v=20261125-aim12';
+import {projectFourGameView} from './core/four-game-view.mjs?v=20261125-aim12';
+import {createBattleViewportController} from './battle/battle-viewport-controller.mjs?v=20261125-aim12';
+import {drawInBattleViewport} from './battle/battle-viewport.mjs?v=20261125-aim12';
+import {waveRewardSummary,nextSteps} from './core/run-results.mjs?v=20261125-aim12';
 import {reportRank} from './core/report-promotion.mjs?v=20261117-rank1';
 // The rank mark is painted by the kit that owns ranks; the report only asks which one.
-import {renderRankInsignia} from './core/rank-insignia.mjs?v=20261125-aim11';
-import {createGroundTracks} from './core/ground-tracks.mjs?v=20261125-aim11';
-import {projectCoopMotion} from './core/coop-motion.mjs?v=20261125-aim11';
+import {renderRankInsignia} from './core/rank-insignia.mjs?v=20261125-aim12';
+import {createGroundTracks} from './core/ground-tracks.mjs?v=20261125-aim12';
+import {projectCoopMotion} from './core/coop-motion.mjs?v=20261125-aim12';
 import {bossPhaseLabel,bossTelegraph} from './core/boss-mechanics.mjs?v=20261031-finale1';
-import {createBattleSound} from './battle/battle-sound.mjs?v=20261125-aim11';
+import {createBattleSound} from './battle/battle-sound.mjs?v=20261125-aim12';
 import {RUN_PERKS,perkOffers} from './core/run-perks.mjs?v=20261102-terrain4';
 import {TERRAIN_BRIEFINGS,ZONE_BRIEFINGS,terrainFor} from './core/terrain.mjs?v=20261124-zones1';
-import {getMap,createRandomMapId,sectorOf} from './core/maps.mjs?v=20261125-aim11';
-import {createCombatEffects} from './core/combat-fx.mjs?v=20261125-aim11';
-import {hitFeedbackForEvent,createHitAnnouncer} from './core/hit-feedback.mjs?v=20261125-aim11';
-import {drawCartoonBattle} from './core/cartoon-art.mjs?v=20261125-aim11';
-import {abilityName,SKILL_PATH_MAP} from './core/skills.mjs?v=20261125-aim11';
-import {classUpgradeState,classPathConfig,classPathInvested} from './core/tower-class-paths.mjs?v=20261125-aim11';
-import {towerClassIcon} from './ui/development-ui.mjs?v=20261125-aim11';
+import {getMap,createRandomMapId,sectorOf} from './core/maps.mjs?v=20261125-aim12';
+import {createCombatEffects} from './core/combat-fx.mjs?v=20261125-aim12';
+import {hitFeedbackForEvent,createHitAnnouncer} from './core/hit-feedback.mjs?v=20261125-aim12';
+import {drawCartoonBattle} from './core/cartoon-art.mjs?v=20261125-aim12';
+import {abilityName,SKILL_PATH_MAP} from './core/skills.mjs?v=20261125-aim12';
+import {classUpgradeState,classPathConfig,classPathInvested} from './core/tower-class-paths.mjs?v=20261125-aim12';
+import {towerClassIcon} from './ui/development-ui.mjs?v=20261125-aim12';
 import { COOP_SERVER_URL } from './core/coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './core/coop-client.mjs?v=20261031-coopui1';
-import { createCoopInput } from './core/coop-input.mjs?v=20261125-aim11';
-import { createTutorial } from './core/tutorial.mjs?v=20261125-aim11';
-import { createCoach, coachSeen, markCoachSeen } from './ui/first-run-coach.mjs?v=20261125-aim11';
-import { abilityHud, abilityHudSvg } from './ui/ability-hud.mjs?v=20261125-aim11';
-import { stepMatch, getTowerRange, STEP } from './core/simulation.mjs?v=20261125-aim11';
-import { createPlayer, applyCommand, towerRefund, repairOffer, getSupplies, TOWER_COSTS, trainingBuildLocked } from './core/match.mjs?v=20261125-aim11';
-import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats,sectorModifier } from './core/combat.mjs?v=20261125-aim11';
+import { createCoopInput } from './core/coop-input.mjs?v=20261125-aim12';
+import { createTutorial } from './core/tutorial.mjs?v=20261125-aim12';
+import { createCoach, coachSeen, markCoachSeen } from './ui/first-run-coach.mjs?v=20261125-aim12';
+import { abilityHud, abilityHudSvg } from './ui/ability-hud.mjs?v=20261125-aim12';
+import { stepMatch, getTowerRange, STEP } from './core/simulation.mjs?v=20261125-aim12';
+import { createPlayer, applyCommand, towerRefund, repairOffer, getSupplies, TOWER_COSTS, trainingBuildLocked } from './core/match.mjs?v=20261125-aim12';
+import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats,sectorModifier } from './core/combat.mjs?v=20261125-aim12';
 import { MAX_TOWER_LEVEL, upgradeCost, towerDisplay, characterProgress, towerUpgradeInvestment } from './core/progression.mjs?v=20261105-prestige1';
 import { createBattleXpHud } from './battle/battle-xp-hud.mjs?v=20261117-hudxp1';
-import { towerUpgradeCues } from './core/tower-upgrade-cue.mjs?v=20261125-aim11';
+import { towerUpgradeCues } from './core/tower-upgrade-cue.mjs?v=20261125-aim12';
 import { createFieldNotice } from './ui/field-notice.mjs?v=20261117-fieldnotice1';
 import { createMapIntro } from './ui/map-intro.mjs?v=20261117-mapintro1';
-import { createBossBanner } from './ui/boss-banner.mjs?v=20261125-aim11';
-import { specializationRank, upgradeCostFor, branchUnlockLevel } from './core/tower-specialization.mjs?v=20261125-aim11';
+import { createBossBanner } from './ui/boss-banner.mjs?v=20261125-aim12';
+import { specializationRank, upgradeCostFor, branchUnlockLevel } from './core/tower-specialization.mjs?v=20261125-aim12';
 export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=createCoopClient, confirmAction=async()=>false, leaveParty=null, onForceCloseParty=null, nextMapId=createRandomMapId, experimentalFourViewport=false,experimentalWorkshop=false,deferTutorial=false,reducedGraphics=false,initialSettings=null,onReturnToCommand=()=>{},onResumeBattle=()=>{},onTrainingComplete=null,onRunFinished=()=>{},promptCenter=null,generalRadio=null}={}) {
   // One-way release teardown; the guarded caller still has to replace the
   // whole document, because the rest of this UI is not a reusable SPA.
@@ -62,7 +63,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   const $ = id => document.getElementById(id);
   const logicalWidth=960;let logicalHeight=540;
   function setLogicalHeight(height,versus=false){if(logicalHeight!==height){logicalHeight=height;canvas.height=Math.round(canvas.width*height/logicalWidth);}canvas.dataset.lanes=versus?'versus':'single';}
-  function prepareCanvas(){const size=canvasResolution(logicalWidth,logicalHeight,canvas.getBoundingClientRect(),window.devicePixelRatio);if(canvas.width!==size.width)canvas.width=size.width;if(canvas.height!==size.height)canvas.height=size.height;ctx.setTransform(size.width/logicalWidth,0,0,size.height/logicalHeight,0,0);return size.width/logicalWidth;}
+  function prepareCanvas(){const size=canvasResolution(logicalWidth,logicalHeight,canvas.getBoundingClientRect(),Math.min(window.devicePixelRatio||1,powerGovernor.policy().dprCap));if(canvas.width!==size.width)canvas.width=size.width;if(canvas.height!==size.height)canvas.height=size.height;ctx.setTransform(size.width/logicalWidth,0,0,size.height/logicalHeight,0,0);return size.width/logicalWidth;}
   // Reduced motion is either the operating system's wish or the player's own
   // Graphics setting - the setting only ever makes it MORE reduced, never less, so a
   // soldier who needs it for medical reasons is never overruled by a game default.
@@ -77,6 +78,13 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     autoPause:initialSettings?.autoPause!==false,
     mapZoom:initialSettings?.mapZoom==='large'?'large':'fit',
   };
+  // IPL-0134 Power-Governor: automatic thermal/battery regulation of the
+  // PAINT path only (frame cap, DPR cap, effect flags). The simulation keeps
+  // stepping at every rAF; the player's own graphics/weather/tracer settings
+  // are only ever ANDed down, never overridden upward.
+  const powerGovernor=createPowerGovernor({now:()=>performance.now(),onTierChange:id=>{console.debug(`IronPath: power policy -> ${id}`);}});
+  const batteryProbe=typeof navigator!=='undefined'&&navigator.getBattery?navigator.getBattery():null;
+  if(batteryProbe&&typeof batteryProbe.then==='function')batteryProbe.then(b=>powerGovernor.attachBattery(b)).catch(()=>{});
   function applyGraphics(reduced){graphicsReduced=!!reduced;reducedMotion=systemReducedMotion||graphicsReduced;syncAudioScene();}
   const sound=createBattleSound(window.AudioContext||window.webkitAudioContext);
   if(Number.isFinite(initialSettings?.volume))sound.setVolume(initialSettings.volume);
@@ -1388,7 +1396,7 @@ function renderResults(target){
   // Every map tells its own ground story: the seed drives plate section,
   // flip, tint and scatter, so no two fields look alike (V2 field art).
   const groundSeedOf=id=>[...id].reduce((h,c)=>(Math.imul(h,31)+c.charCodeAt(0))|0,7)>>>0;
-  function draw(){const map=getMap(state.mapId),{path,pads,theme}=map;const renderScale=prepareCanvas();ctx.clearRect(0,0,logicalWidth,logicalHeight);
+  function draw(power=powerGovernor.policy()){const map=getMap(state.mapId),{path,pads,theme}=map;const renderScale=prepareCanvas();ctx.clearRect(0,0,logicalWidth,logicalHeight);
     // V3 impact: a bunker hit shakes the camera - a short decaying wobble over
     // the whole battlefield frame. Never in reduced-motion mode, never a
     // simulation value: the seq only triggers it, the shake paints over the
@@ -1404,7 +1412,7 @@ function renderResults(target){
     // Footprints and tread marks: sampled from the same interpolated state the
     // painter draws, in seconds, and paused together with the field.
     const tracks=groundTracks.sample(visual,performance.now()/1000,{paused,theme});
-    function drawOwn(){drawCartoonBattle(ctx,visual,{path,pads,theme,types,me:me(),getTowerRange,effects:visualPrefs.combatTracers?combatFx.active():[],reducedMotion,weatherEffects:visualPrefs.weatherEffects,combatTracers:visualPrefs.combatTracers,soldierPoses:poses,towerAims,groundTracks:tracks,storyMission:!coop?activeMission:null,storyStage:!coop&&!state.ended?activeMission?.stages[activeStory?.stage]:null,renderScale:renderScale*(battleViewport?.getViewport().scale||1),storyTime:performance.now()/1000,shotAge:coop&&lastSnapshotAt?Math.max(0,(performance.now()-lastSnapshotAt)/1000):0,artVersion,onSpritesReady,deco:map.deco,zones:map.zones,paths:map.paths,width:map.width,height:map.height,bunkerPosition:map.bunker,torches:map.torches,groundSeed:groundSeedOf(state.mapId)});
+    function drawOwn(){drawCartoonBattle(ctx,visual,{path,pads,theme,types,me:me(),getTowerRange,effects:visualPrefs.combatTracers&&power.tracers?combatFx.active():[],reducedMotion,weatherEffects:visualPrefs.weatherEffects&&power.weather,combatTracers:visualPrefs.combatTracers&&power.tracers,soldierPoses:poses,towerAims,groundTracks:tracks,storyMission:!coop?activeMission:null,storyStage:!coop&&!state.ended?activeMission?.stages[activeStory?.stage]:null,renderScale:renderScale*(battleViewport?.getViewport().scale||1),storyTime:performance.now()/1000,shotAge:coop&&lastSnapshotAt?Math.max(0,(performance.now()-lastSnapshotAt)/1000):0,artVersion,onSpritesReady,deco:map.deco,zones:map.zones,paths:map.paths,width:map.width,height:map.height,bunkerPosition:map.bunker,torches:map.torches,groundSeed:groundSeedOf(state.mapId)});
 
     if(activeStory&&!coop&&!state.ended){const objective=storyStatus(activeStory,state),point=objective.marker;if(point){ctx.save();ctx.beginPath();ctx.arc(point.x,point.y,36+(reducedMotion?0:2*Math.sin(performance.now()/400)),0,Math.PI*2);ctx.strokeStyle='#152118';ctx.lineWidth=8;ctx.stroke();ctx.strokeStyle='#b8d6c8';ctx.lineWidth=4;ctx.setLineDash([8,5]);ctx.lineDashOffset=reducedMotion?0:-performance.now()/120;ctx.stroke();ctx.setLineDash([]);
       // The label plate never leaves the canvas: field markers can sit near
@@ -1444,7 +1452,7 @@ function renderResults(target){
         ctx.strokeStyle='#f2d891';ctx.lineWidth=reducedMotion?3.5:3;ctx.shadowColor='#f2d891';
         ctx.shadowBlur=reducedMotion?14:10+4*breath;ctx.globalAlpha=reducedMotion?.82:.58+.2*breath;ctx.stroke();ctx.restore();
       }
-      if(state.mode==='versus'&&state.rival){const width=map.width||960,height=map.height||540;ctx.save();ctx.fillStyle='#344b36';ctx.fillRect(0,height,width,20);ctx.fillStyle='#f1e7c4';ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText(tr('{name} · OPPONENT BATTLEFIELD',{name:state.players[state.rivalId]?.name||tr('OPPONENT')}),width/2,height+15);ctx.translate(0,height+20);const rival=coopReady&&lastSnapshotAt?projectCoopMotion(state.rival,(performance.now()-lastSnapshotAt)/1000*(state.speed===2?2:1)):state.rival;const rivalTracks=rivalGroundTracks.sample(rival,performance.now()/1000,{paused:!coopReady||state.ended,theme});drawCartoonBattle(ctx,rival,{path,pads,theme,types,me:state.rivalId,getTowerRange,effects:[],reducedMotion,soldierPoses:rivalMotion.sample(rival.players,performance.now()/1000,{reducedMotion,paused:!coopReady||state.ended,threats:rival.enemies,shots:rival.shots}),towerAims:rivalTowerAim.sample({towers:rival.towers,pads,enemies:rival.enemies,shots:rival.shots,getRange:getTowerRange},performance.now()/1000,{reducedMotion,paused:!coopReady||state.ended}),groundTracks:rivalTracks,renderScale,storyTime:performance.now()/1000,shotAge:coop&&lastSnapshotAt?Math.max(0,(performance.now()-lastSnapshotAt)/1000):0,deco:map.deco,zones:map.zones,paths:map.paths,width:map.width,height:map.height,bunkerPosition:map.bunker,torches:map.torches,groundSeed:groundSeedOf(state.mapId)});ctx.restore();}
+      if(state.mode==='versus'&&state.rival){const width=map.width||960,height=map.height||540;ctx.save();ctx.fillStyle='#344b36';ctx.fillRect(0,height,width,20);ctx.fillStyle='#f1e7c4';ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText(tr('{name} · OPPONENT BATTLEFIELD',{name:state.players[state.rivalId]?.name||tr('OPPONENT')}),width/2,height+15);ctx.translate(0,height+20);const rival=coopReady&&lastSnapshotAt?projectCoopMotion(state.rival,(performance.now()-lastSnapshotAt)/1000*(state.speed===2?2:1)):state.rival;const rivalTracks=rivalGroundTracks.sample(rival,performance.now()/1000,{paused:!coopReady||state.ended,theme});drawCartoonBattle(ctx,rival,{path,pads,theme,types,me:state.rivalId,getTowerRange,effects:[],reducedMotion,weatherEffects:power.weather,combatTracers:power.tracers,soldierPoses:rivalMotion.sample(rival.players,performance.now()/1000,{reducedMotion,paused:!coopReady||state.ended,threats:rival.enemies,shots:rival.shots}),towerAims:rivalTowerAim.sample({towers:rival.towers,pads,enemies:rival.enemies,shots:rival.shots,getRange:getTowerRange},performance.now()/1000,{reducedMotion,paused:!coopReady||state.ended}),groundTracks:rivalTracks,renderScale,storyTime:performance.now()/1000,shotAge:coop&&lastSnapshotAt?Math.max(0,(performance.now()-lastSnapshotAt)/1000):0,deco:map.deco,zones:map.zones,paths:map.paths,width:map.width,height:map.height,bunkerPosition:map.bunker,torches:map.torches,groundSeed:groundSeedOf(state.mapId)});ctx.restore();}
     };
     if(battleViewport)drawInBattleViewport(ctx,battleViewport.getViewport(),drawBattle);else drawBattle();
   }
@@ -1548,14 +1556,25 @@ function renderResults(target){
   reset();if(!deferTutorial)tutorial.startIfNeeded(account.getUserId());}});
   // The first-run tutorial is started by the account once a soldier exists.
   reset();if(!deferTutorial&&featureEnabled('tutorial'))tutorial.startIfNeeded(account.getUserId());
-  let last=performance.now(),drawErrorReported=false;function frame(now){
+  let last=performance.now(),lastDrawAt=0,drawErrorReported=false;function frame(now){
     if(releaseStopped)return;frameHandle=null;
-    const dt=Math.min((now-last)/1000,.05);last=now;update(dt);
+    const gap=now-last;
+    // IPL-0134: the governor reads the RAW rAF gap - its own draw-skipping
+    // cannot fake a healthy device - and hands out the current power policy.
+    powerGovernor.sample(gap);
+    const dt=Math.min(gap/1000,.05);last=now;update(dt);
     if(releaseStopped)return;
     // A drawing error must not freeze the field: the reverted boss work
     // (#338) threw inside the painter with a real boss and silently killed
     // this rAF chain. Catch, report once, keep the loop alive.
-    try{draw();}catch(error){if(!drawErrorReported){drawErrorReported=true;console.error('IronPath: drawing failed; the field keeps running.',error);}}
+    const policy=powerGovernor.policy();
+    if(policy.drawGapMs&&now-lastDrawAt<policy.drawGapMs){
+      // Throttled frame: the simulation already stepped above; only the paint
+      // waits for its slot and the canvas keeps the last painted field.
+    }else{
+      lastDrawAt=now;
+      try{draw(policy);}catch(error){if(!drawErrorReported){drawErrorReported=true;console.error('IronPath: drawing failed; the field keeps running.',error);}}
+    }
     if(!releaseStopped)frameHandle=requestAnimationFrame(frame);
   }
   frameHandle=requestAnimationFrame(frame);

@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see docs/PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261125-aim11';
+import {getLanguage} from './language.mjs?v=20261125-aim12';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,18 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'aim12',build:'20261125-aim12',pr:463,
+    title:{en:'Cool Head · The Field Paints Itself Down When the Device Works Hard',de:'Kühler Kopf · Das Feld malt sich herunter, wenn das Gerät arbeitet'},
+    shipped:[
+      {en:'A power governor watches how hard the device actually works and turns the paint down in three gears - full, about 30 frames, about 20 frames with lighter resolution and no weather sparks - while the simulation keeps its own steady tick. A struggling phone cools down; a healthy one never notices.',de:'Ein Power-Governor beobachtet, wie hart das Gerät wirklich arbeitet und dreht die Darstellung in drei Gängen herunter - voll, etwa 30 Bilder, etwa 20 Bilder mit leichterer Auflösung und ohne Wetter-Funken -, während die Simulation ihren eigenen ruhigen Takt behält. Ein heißes Handy wird kühler; ein gesundes merkt nichts.'},
+      {en:'On battery the floor rises early: below 30 percent unplugged the field holds at least the middle gear, below 15 it holds the saver - charging releases it again.',de:'Am Akku steigt die Untergrenze früh: unter 30 Prozent ohne Netz hält das Feld mindestens den mittleren Gang, unter 15 den Spargang - am Netz wird er wieder freigegeben.'},
+      {en:'Raised the cache wave to 20261125-aim12, because the frame loop changed how the field is painted: no device should fight with yesterdays eyes.',de:'Die Cache-Welle auf 20261125-aim12 erhöht, weil sich der Frame-Loop änderte, wie das Feld gemalt wird: Kein Gerät soll mit den Augen von gestern kämpfen.'},
+    ],
+    open:[
+      {en:'Whether the gears feel right on the operators device is a live call - the thresholds sit in one table and the hold times in three constants.',de:'Ob die Gänge auf dem Gerät des Betreibers richtig sitzen, ist eine Live-Entscheidung - die Schwellen stehen in einer Tabelle, die Hold-Zeiten in drei Konstanten.'},
+    ]
+  },
   {
     id:'aim11',build:'20261125-aim11',pr:454,
     title:{en:'The Ground Joins the Ink · Toon Plates Along the Roads',de:'Der Boden kommt in die Tusche · Toon-Platten an den Wegen'},

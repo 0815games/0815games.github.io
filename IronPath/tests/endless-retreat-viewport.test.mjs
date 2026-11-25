@@ -245,7 +245,7 @@ test('portrait endless waves 1-10 zoom cleanly and real wave-10 #sectorAdvance r
   assert.equal(canvas.style.height, '', 'stale inline touchZoom height is cleared');
   assert.ok(Math.abs(canvas.width / canvas.height - 390 / 844) < 0.01, `canvas aspect ${canvas.width}x${canvas.height} fills 390x844 portrait`);
 
-  h.stepFrame(16, true);
+  h.stepFrame(50, true);
   const firstScale = h.calls.find(c => c[0] === 'scale')?.[1] || 0;
   const firstRect = h.calls.find(c => c[0] === 'rect');
   assert.ok(firstScale >= 2078 / 720 - 0.05, `portrait Sector 2 opens filling full screen height (scale=${firstScale})`);
@@ -259,14 +259,14 @@ test('portrait endless waves 1-10 zoom cleanly and real wave-10 #sectorAdvance r
   h.el('mapQuickZoom').click();
   assert.equal(h.el('mapZoom').textContent, 'MAP: ZOOM');
   assert.equal(h.el('mapQuickZoom').textContent, 'ZOOM MAP');
-  h.stepFrame(16, true);
+  h.stepFrame(50, true);
   const overviewScale = h.calls.find(c => c[0] === 'scale')?.[1] || 0;
   assert.ok(Math.abs(overviewScale - 960 / 1320) < 0.02, `overview fits full 1320 map horizontally (scale=${overviewScale})`);
 
   h.el('mapQuickZoom').click();
   assert.equal(h.el('mapZoom').textContent, 'MAP: FIT');
   assert.equal(h.el('mapQuickZoom').textContent, 'FIT MAP');
-  h.stepFrame(16, true);
+  h.stepFrame(50, true);
   const rezoomedScale = h.calls.find(c => c[0] === 'scale')?.[1] || 0;
   assert.ok(rezoomedScale >= 2078 / 720 - 0.05, `re-zooming fills full portrait screen again (scale=${rezoomedScale})`);
 
@@ -289,7 +289,7 @@ test('portrait endless waves 1-10 zoom cleanly and real wave-10 #sectorAdvance r
     canvas.dispatch('pointerdown', { pointerId: 2, pointerType: 'touch', clientX: 195, clientY: 422, preventDefault() {} });
     canvas.dispatch('pointermove', { pointerId: 2, pointerType: 'touch', clientX: 195 + panCssX, clientY: 422, preventDefault() {} });
     canvas.dispatch('pointerup', { pointerId: 2, pointerType: 'touch', clientX: 195 + panCssX, clientY: 422, preventDefault() {} });
-    h.stepFrame(16, true);
+    h.stepFrame(50, true);
     ({ viewX, viewY } = readViewOrigin());
     sx = (tap2Pad.x - viewX) * rezoomedScale * (390 / 960);
     sy = (tap2Pad.y - viewY) * rezoomedScale * (844 / 2078);
@@ -308,7 +308,7 @@ test('portrait endless waves 1-10 zoom cleanly and real wave-10 #sectorAdvance r
 
   // 5. Sector 3 retreat (1680x960) rebuilds battleViewport cleanly for the larger world.
   assert.equal(await control.chooseEndless(null), true);
-  h.stepFrame(16, true);
+  h.stepFrame(50, true);
   const s3Rect = h.calls.find(c => c[0] === 'rect');
   assert.equal(canvas.dataset.fullBattle, 'true');
   assert.equal(s3Rect?.[3], 1680);
@@ -359,7 +359,7 @@ test('desktop retreat fills viewport at crisp >=1x scale and hidden/board-open s
   assert.equal(await control.chooseEndless(null), true);
   assert.equal(canvas.dataset.fullBattle, 'true', 'Sector 3 fills 1280x800 desktop viewport');
   assert.ok(Math.abs(canvas.width / canvas.height - 1280 / 800) < 0.01);
-  h.stepFrame(16, true);
+  h.stepFrame(50, true);
   const desktopScale = h.calls.find(c => c[0] === 'scale')?.[1] || 0;
   assert.ok(desktopScale >= 1 - 1e-6, `desktop Sector 3 opens at >=1x reading scale (scale=${desktopScale})`);
   assert.equal(h.el('mapZoom').textContent, 'MAP: FIT');
