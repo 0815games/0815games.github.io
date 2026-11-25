@@ -36,6 +36,17 @@ Herkunft nur ein kleines Detail.
 Regel: bei Fleisch zuerst die FORM nennen (Steak, Rippchen, Klaue,
 Braten), die Herkunft nur als Beigabe.
 
+## Dunkler Schleier statt Schwarz
+
+`wrench` und `camp_kit` hatten im Rohbild einen dunkelgruenen Schleier:
+Hintergrund (5,22,5) statt (0,1,0). Die Weiss-Pruefung sieht das nicht,
+weil 22 im Gruenkanal weit unter der Weiss-Schwelle liegt. Im Inventar
+wirken solche Icons als hellere Kacheln neben 118 sauberen.
+
+`tools/icon-check.mjs` prueft jetzt zusaetzlich: liegt der Anteil der
+Hintergrundpixel mit Gruenwert ueber 8 bei mehr als 30 %, ist der
+Hintergrund nicht schwarz.
+
 ## Befüllte statt gezeichneter Motive
 
 `cooked_lurk` kam als vollflaechig gefuellte Silhouette zurueck statt als
@@ -51,10 +62,10 @@ fill" gehoert bei jedem Motiv in den Prompt, das eine grosse Flaeche hat.
 mit dem Zusatz "on a SOLID PURE BLACK BACKGROUND (no white, no light grey)"
 im Prompt beide im zweiten Anlauf sauber.
 
-`duct_tape` ist aufgegeben: zwei Versuche, beide Male ein weisser
-Streifen ueber die volle Breite am unteren Rand (y 896-1023 und
-y 925-1023). Das Motiv selbst war richtig, der Streifen ist ein Artefakt
-der Erzeugung. Weitere Versuche mit demselben Motiv sind unrentabel.
+`duct_tape` war zweimal Ausschuss (weisser Streifen am unteren Rand,
+y 896-1023 und y 925-1023). Der dritte Versuch mit "top-down, perfectly
+centered, at least 15 percent margin on every side" war sauber — das
+Motiv ist im Set.
 
 ## Regel: Hintergrund pruefen
 
@@ -136,8 +147,8 @@ Baupläne ✓: `bp_ammo` `bp_stimpack`
 
 Munition (fertig): `ammo` (Schrott .38) `ammo_308` `ammo_cell`
 
-Rohstoffe (11/12): `junk_metal` `cloth` `screws` `glue` `springs` `plastic` `leather`
-`gears` `circuit` `adhesive` `oil` · aufgegeben: `duct_tape`
+Rohstoffe ✓: `junk_metal` `cloth` `screws` `glue` `springs` `plastic` `leather`
+`gears` `circuit` `adhesive` `oil` `duct_tape`
 
 Selten (4/8): `nuclear_mat` `legendary_part` `titanium` `bone`
 Offen: `deathclaw_hand` `acid` `poison_gland` `gunpowder`

@@ -36,6 +36,26 @@ function randStreifen(data, info) {
   return null;
 }
 
+// Ein Motiv kann technisch schwarz sein und trotzdem einen dunklen
+// Schleier tragen: der Hintergrund ist dann (5,22,5) statt (0,1,0). Die
+// Weiss-Pruefung sieht das nicht, weil Grau/Gruen kein Weiss ist. Im
+// Inventar wirkt so ein Icon als hellere Kachel neben 120 sauberen.
+function schleier(data, info) {
+  const {width: w, height: h, channels: ch} = info;
+  let dunkel = 0, gesamt = 0;
+  for (let y = 0; y < h; y += 2) {
+    for (let x = 0; x < w; x += 2) {
+      const i = (y * w + x) * ch;
+      const g = data[i + 1];
+      if (g <= 60) {            // alles, was nicht zur Zeichnung gehoert
+        gesamt++;
+        if (g > 8) dunkel++;
+      }
+    }
+  }
+  return gesamt > 0 && dunkel / gesamt > 0.30;
+}
+
 let fehler = 0;
 for (const datei of dateien.sort()) {
   const {data, info} = await sharp(join(QUELLE, datei)).raw().toBuffer({resolveWithObject: true});
@@ -43,6 +63,12 @@ for (const datei of dateien.sort()) {
   for (let i = 0; i < data.length; i += info.channels) {
     if (data[i] > 200 && data[i + 1] > 200 && data[i + 2] > 200) weiss++;
   }
+  if (schleier(data, info)) {
+    fehler++;
+    console.log(`  ${basename(datei, extname(datei)).padEnd(20)} Hintergrund nicht schwarz - dunkler Schleier (neu zeichnen)`);
+    continue;
+  }
+
   const anteil = weiss / (info.width * info.height);
   if (anteil > GRENZE) {
     fehler++;
