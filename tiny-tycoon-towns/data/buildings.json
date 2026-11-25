@@ -74,5 +74,11 @@
     "baseRatePerMin": 1, "maxLevel": 30, "unlockTownLevel": 4,
     "placement": { "on": ["water"], "hint": "Nur auf Wasser (Tauchgebiet)." },
     "terrainBonus": { "terrain": "water", "multiplier": 1.4 }, "adjacencyBonus": null
+  },
+  "house": { "name": { "de": "Wohnhaus", "en": "House" }, "icon": "🏘️", "resource": null,
+    "baseCoins": 120, "baseMaterial": { "resource": "lumber", "amount": 8 },
+    "baseRatePerMin": 0, "maxLevel": 28, "unlockTownLevel": 2,
+    "placement": { "on": ["land"], "hint": "Auf jedem Land, nicht auf Wasser. Bewohner arbeiten in Gebäuden in der Nähe." },
+    "terrainBonus": null, "adjacencyBonus": null
   }
 }

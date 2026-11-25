@@ -3,6 +3,7 @@
 // createScene() verbindet sie mit einem <canvas> im DOM.
 import { HW, HH, toScreen, toTile, hash } from './iso.js?v=20261125-bal7';
 import { drawTile, drawBuilding, fillPoly, shade, mix, P } from './art.js?v=20261125-bal7';
+import { stageFor } from '../domain/settlement.js?v=20261125-bal7';
 
 export const GRID_SIZE = 10;     // spielbares Raster (siehe src/domain/grid.js)
 export const HALL = { x: 4, y: 4 };
@@ -179,7 +180,9 @@ export function renderWorld(ctx, { W, H, view, model, time, day, fx, hover }) {
       });
       const tile = inGrid(x, y) ? model.state?.tiles?.[`${x},${y}`] : null;
       if (tile?.building && !locked) {
-        drawBuilding(ctx, tile.building.id, x, y, tile.building.level, time, { night, day });
+        const cfg = model.data?.economy?.settlements;
+        const stage = cfg ? stageFor(tile.building.level, cfg).index : 1;
+        drawBuilding(ctx, tile.building.id, x, y, tile.building.level, time, { night, day, stage });
       }
       // Auswahl und Hover
       const c = toScreen(x + 0.5, y + 0.5);

@@ -963,3 +963,143 @@ Ereignis ergänzt.
   - Der Zwei-Konten-Test auf zwei Geräten steht aus (Nutzer). Im Sandbox-Browser ist Firebase nicht erreichbar, daher keine Live-Prüfung.
   - Die Regeln für `friendRequests` und `friends` sind unverändert. Sie passen zum Ablauf (Anfrage senden, annehmen, ablehnen).
   - Keine Firebase-Regeländerung.
+
+### TTT-0058 – Siedlungen: Regeln und Tests (lokal, noch nicht im Spiel)
+
+- Auftrag des Nutzers: Wohnhäuser mit Bevölkerung, automatische Zuweisung zu Produktionsgebäuden mit
+  manueller Möglichkeit, Tageslohn, fünf sichtbare Stufen. Erste Version nur Arbeitszuweisung, ohne Bedürfnisse.
+- Entscheidungen (Nutzer, 2026-11-25): Zuweisung automatisch, dort wo es sinnvoll ist. Manuell möglich.
+  Fünf Stufen. Lohn je Arbeiter und Tag, automatisch abgezogen (Option B).
+- Neu:
+  - `src/domain/settlement.js`: Stufe je Gebäude, Kapazität, Wachstum (mit Bruchteil), Besetzungsfaktor,
+    Lohn je Minute, automatische und manuelle Zuweisung (Pendelbereich 3 Felder).
+  - `data/settlements.json`: Startwerte (Kapazität 2 bis 10, Wachstum 0,05 je Minute, Lohn 6 je Tag,
+    drei Arbeitsplätze je Produktionsgebäude, Stufen ab Stadtlevel 1, 6, 12, 20, 28).
+  - `tests/settlement.test.mjs`: 9 Tests.
+- Nicht im Spiel: Das Modul wird von keinem Spielcode importiert. Kein Spielstand, keine Anzeige, keine Welle.
+- Tests: `node --test tests/settlement.test.mjs` 9/9 grün. Probe: ohne Pendelbereich-Prüfung wird ein Test rot.
+  `npm test` 161/161 grün.
+- Grenzen / offen:
+  - Die Zahlen sind Startwerte. Lohn, Wachstum und Ertrag müssen in der Balance-Simulation geprüft werden,
+    bevor sie ins Spiel kommen.
+  - Der Besetzungsfaktor (50 bis 100 %) ist eine Annahme. Sie soll mit den Spielern geprüft werden.
+  - Noch nicht umgesetzt: Anbindung an Spielstand und Gebäude-Upgrades, Anzeige, Gestalten der fünf Stufen.
+  - Keine Firebase-Regeländerung. Kein Vercel.
+
+### TTT-0059 – Siedlungen: Anbindung an den Spielstand (lokal, nicht veröffentlicht)
+
+- Auftrag des Nutzers: Siedlungen im Spiel. Automatische Zuweisung, manuelle Zuweisung möglich, Lohn je Arbeiter
+  und Tag, Wachstum bis zur Kapazität.
+- Neu im Spiel (lokal):
+  - Gebäude `house` (Wohnhaus) in `data/buildings.json`, ab Stadtlevel 2, auf Land, Kosten 120 Münzen und 8 Holz.
+  - Werte in `data/economy.json` unter `settlements` (Kapazität je Stufe, Wachstum 0,05 je Minute, Lohn 6 je Tag,
+    drei Arbeitsplätze, Pendelbereich 3, Besetzungsbonus +25 %).
+  - `src/domain/engine.js`: Bewohner wachsen bei jedem Zeitschritt. Die Zuweisung wird neu berechnet. Der Lohn
+    wird von den Münzen abgezogen (nicht unter 0). Produktion mit Besetzungsfaktor. Neue Aktion
+    `setWorkerAssignment` (manuelle Zuweisung, wird abgelehnt bei Entfernung oder fehlendem Platz).
+  - `src/main.js`: Detailansicht zeigt für Wohnhäuser die Bewohnerzahl (noch ohne Zuweisungs-Auswahl).
+  - Speicherung: Bewohner und manuelle Zuweisung liegen innerhalb des Kachel-Eintrags (`pop`, `progress`, `manual`).
+    Die Firebase-Regeln erlauben das ohne Änderung. `firebase/database.rules.json` ist unverändert.
+- Entscheidung, die von der vorherigen Notiz abweicht: Ein Betrieb ohne Arbeiter produziert weiter (Faktor 1). Voll
+  besetzt bringt er +25 %. Die Vorfassung (ohne Arbeiter 0) hätte alle bestehenden Städte auf null gesetzt. Ob der
+  Betrieb ohne Arbeiter wirklich nichts bringen soll, ist eine Balance-Entscheidung. Schalter: `unstaffedFactor`.
+- Tests: `tests/settlement.test.mjs` 13 Tests (Regeln und Engine). Probe: ohne Pendelbereich-Prüfung wird ein Test rot.
+  `npm test` 165/165 grün. `npm run check` ohne Fehler.
+- Keine Welle und keine Veröffentlichung in diesem Schritt. Die Bewohner-Anzeige in der Detailansicht ist nur ein Text.
+- Grenzen / offen:
+  - Keine Zuweisungs-Auswahl im Spiel (Schritt 2). Keine fünf Gestalten (Schritt 3).
+  - Lohn: Bei zu wenig Münzen bleibt die Arbeiterzahl gleich. Gehen Arbeiter bei fehlendem Lohn? Nicht umgesetzt.
+  - Die Balance-Simulation kennt Siedlungen noch nicht. Ohne sie sind Lohn, Wachstum und Bonus Schätzungen.
+  - Die Produktionsrate in der Anzeige (`ratePerMin`) berücksichtigt den Besetzungsfaktor noch nicht.
+
+### TTT-0060 – Siedlungen: Zuweisung im Spiel (lokal, nicht veröffentlicht)
+
+- Auftrag des Nutzers: „Weiter“, also Schritt 2 (Anzeige und Zuweisung im Spiel).
+- Neu:
+  - Produktionsgebäude: Abschnitt „Arbeiter“ im Feld-Fenster. Zeigt Besetzung (X von 3), Faktor, manuell und
+    automatisch. Darunter die Wohnhäuser im Umkreis von 3 Feldern mit Bewohnern und freien Plätzen, „−“ und „+“.
+  - Wohnhaus: Bewohner p / Kapazität, Zahl der Arbeiter in Betrieben, freie Bewohner.
+  - Produktionsrate im Fenster berücksichtigt jetzt den Besetzungsfaktor.
+  - Fehlertexte für die neuen Fehler (`tooFar`, `noRoom`, `notHouse`, `notProducer`, `badAmount`).
+  - `src/domain/engine.js`: `staffing(state, data)` als Lesezugriff für die Anzeige.
+  - `src/main.js`: Aktion `worker` ruft `setWorkerAssignment` über die übliche `dispatch`-Schiene auf.
+- Tests: `tests/settlement.test.mjs` 14 Tests (eins neu für `staffing`). `npm test` 166/166 grün. `npm run check` ohne Fehler.
+- Grenzen / offen:
+  - Die Anzeige ist nicht im Browser geprüft. Firebase ist in der Sandbox nicht erreichbar, das Spiel startet dort
+    nicht. Die Logik ist mit Tests belegt, das Aussehen nicht.
+  - Gestalten der fünf Stufen (Schritt 3) fehlen.
+  - Die Frage „Betrieb ohne Arbeiter: normal oder null?“ ist offen. Aktuell gilt normal + Bonus bei voller Besetzung.
+  - Keine Welle, keine Veröffentlichung, keine Firebase-Regeländerung.
+
+### TTT-0061 – Siedlungen: fünf sichtbare Stufen (lokal, nicht veröffentlicht)
+
+- Auftrag des Nutzers: „jedes Mal einen sichtbaren Unterschied“ bei Upgrades, fünf Stufen.
+- Vorher: Das Wohnhaus hatte keine Zeichnung. `drawBuilding` kehrte dann sofort zurück, Häuser blieben unsichtbar.
+  Upgrades wuchsen nur um etwa 1,2 % je Stufe.
+- Neu:
+  - `src/world/art.js`: Zeichnung für das Wohnhaus (`house`). Stufenteile über `stageDecor`:
+    2 Fahne · 3 Zaun mit Büschen · 4 Schornstein und Laternen · 5 goldene Kante und Funkeln.
+  - `src/world/scene.js`: berechnet die Stufe aus `economy.settlements.stages` und übergibt sie an `drawBuilding`.
+    Die Schwellen (Stadtlevel 1, 6, 12, 20, 28) stammen aus den Daten, nicht aus dem Zeichencode.
+  - `tests/world-stages.test.mjs`: 4 Tests mit einem Protokoll-Kontext. Jede Stufe erzeugt mehr Zeichenbefehle als die
+    vorige, und Stufe 5 unterscheidet sich von Stufe 1. Probe: Stufe 5 wirkungslos gemacht, Test wird rot.
+- Tests: `npm test` 170/170 grün. `npm run check` ohne Fehler.
+- Grenzen / offen:
+  - Nicht im Browser angesehen. Die Testumgebung mit Browser ist in der Sandbox nicht mehr vorhanden. Die Stufen sind
+    durch Befehlszählung belegt, nicht durch Blick auf das Bild. Bitte am Gerät prüfen, ob Fahne und Zaun
+    bei jedem Gebäude passen. Bei hohen Gebäuden (Mine, Turm) kann etwas verdeckt sein.
+  - Die Stufenteile sind bei allen Gebäuden gleich (Fahne, Zaun, Schornstein, Gold). Gebäudespezifische Gestalten
+    pro Stufe sind nicht umgesetzt.
+  - Keine Welle, keine Veröffentlichung, keine Firebase-Regeländerung.
+
+### TTT-0062 – Balance-Simulation: Bot baut Wohnhäuser (lokal, nicht veröffentlicht)
+
+- Auftrag des Nutzers: Balance-Simulation um Siedlungen erweitern, Korridore einhalten.
+- Befund: Ohne Schwelle verdrängen Wohnhäuser die Produktion. Küste hatte am Ende nur 7 von 49 freigeschalteten Feldern frei
+  und blieb bei Stadtlevel 4. Hauskosten, Wachstum, Lohn und Bedarfsanteil allein bringen keine Lösung für alle Biome.
+- Geändert: nur `scripts/simulate-balance.mjs`. Der Bot baut Wohnhäuser nur
+  - ab Stadtlevel 5 (`HOUSE_MIN_LEVEL`),
+  - ab 8 Produzenten (`HOUSE_MIN_PRODUCERS`),
+  - solange mindestens 10 freie Landfelder übrig bleiben (`HOUSE_LAND_RESERVE`),
+  - und solange die Bewohner unter 60 % der Arbeitsplätze liegen (`HOUSE_NEED`).
+  Volle Häuser werden ausgebaut, wenn Münzen und Holz reichen.
+- Wichtig: Das ist eine Regel des Bots, keine Spielregel. Spielerinnen können Wohnhäuser weiter ab Stadtlevel 2 bauen.
+  Die Schwelle 5 wurde gewählt, weil sie alle Korridore hält. Sie ist nicht aus einer Spielerbeobachtung abgeleitet.
+- Messung (`npm run simulate`, 30 Tage): alle Meilensteine in allen vier Biomen im Korridor.
+  Stadtlevel 5 zwischen 5,8 und 6,0 h, Stadtlevel 10 zwischen 12,0 und 13,0 h aktiver Zeit.
+- Verworfene Versuche (nicht wieder versuchen): Hauskosten 60 oder Wachstum 0,1 allein; Lohn 0; Bedarfsanteil 0,3, 0,15, 0,08;
+  Hausbau nur auf Wiese mit Reserve; Hausbau auf dem Gelände mit den meisten freien Feldern.
+- Tests: `npm test` 170/170 grün. `npm run check` ohne Fehler.
+- Grenzen / offen:
+  - Die Testsuite prüft die Korridore nicht, nur Invarianten. Deshalb hier die Messung im Eintrag.
+  - Balance-Werte in `data/` unverändert.
+  - Keine Welle, keine Veröffentlichung, keine Firebase-Regeländerung.
+
+### TTT-0063 – Siedlungen: gebäudespezifische Akzente ab Stufe 3 (lokal, nicht veröffentlicht)
+
+- Auftrag des Nutzers: „Ja weiter“ zu Schritt 3 (Gestalten je Gebäude; Basisstufen aus TTT-0061 bleiben).
+- Neu: `src/world/art.js`. Jedes Gebäude bekommt ab Stufe 3 ein eigenes Requisit vorne links (`ACCENT`):
+  Rathaus Doppelsäule · Wohnhaus Blumen · Hof Säcke · Sägewerk Holzstapel · Steinbruch Steine · Lager Kisten ·
+  Imkerei Bienenstock · Fischerei Netz mit Fischen · Markt Markise · Saline Salzhaufen · Mine Lore · Perlenhütte Muscheln.
+  Die gemeinsamen Stufenteile (Fahne, Zaun, Schornstein, Gold) bleiben unverändert.
+- Tests: `tests/world-stages.test.mjs` 5 Tests. Neu: Stufe 3 ist mehr als Stufe 2, und kein Gebäude zeigt denselben Akzent
+  wie ein anderes (Befehlsnamen mit Zahlen verglichen). Probe: Akzent abgeschaltet, Test wird rot.
+- `npm test` 171/171 grün. `npm run check` ohne Fehler.
+- Grenzen / offen:
+  - Nicht im Browser angesehen. Die Requisiten sind durch Befehlszählung und Eindeutigkeit belegt, nicht durch Blick auf das Bild.
+    Bitte am Gerät prüfen, ob sie bei Zoom 0,75 und darüber lesbar sind und nichts verdecken.
+  - Stufe 4 und 5 haben keine eigenen Akzente, nur die gemeinsamen Teile.
+  - Keine Welle, keine Veröffentlichung, keine Firebase-Regeländerung.
+
+### TTT-0064 – Siedlungen: Akzente für Stufe 4 und 5 (lokal, nicht veröffentlicht)
+
+- Auftrag des Nutzers: „Stufe 4 und 5 machen Akzente“, also eigene Teile je Stufe bei jedem Gebäude.
+- Neu in `src/world/art.js`:
+  - Stufe 4: das Requisit des Gebäudes (`ACCENT`) wird vorne rechts noch einmal gesetzt, verschoben um 0,6 Feld.
+  - Stufe 5: goldene Umrandung um beide Requisits vorne, zusätzlich zur bisherigen Kante und dem Funkeln.
+- Tests: `tests/world-stages.test.mjs` 6 Tests. Neu: Stufe 4 und 5 fügen je etwas hinzu, die beiden unterscheiden sich,
+  und der Stufe-4-Akzent ist je Gebäude verschieden.
+- `npm test` grün, `npm run check` ohne Fehler.
+- Grenzen / offen:
+  - Nicht im Browser angesehen. Ob die Kopie bei Stufe 4 das Gebäude verdeckt oder über die Kachel hinausragt, ist am Gerät zu prüfen.
+  - Keine Welle, keine Veröffentlichung, keine Firebase-Regeländerung.

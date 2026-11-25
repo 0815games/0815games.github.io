@@ -11,6 +11,7 @@ import {
 } from './economy.js?v=20261125-bal7';
 import { merchantOffers } from './merchant.js?v=20261125-bal7';
 import { arriveConvoys, payoutFor } from './convoys.js?v=20261125-bal7';
+import { growHouse, staffFactor, wageDue, assignWorkers } from './settlement.js?v=20261125-bal7';
 
 export const SCHEMA_VERSION = 1;
 export const BIOMES = ['riverlands', 'deepwoods', 'highlands', 'coast'];
@@ -137,6 +138,7 @@ export function placeBuilding(state, { x, y, buildingId }, ctx) {
 
   pay(s, cost.coins, cost.material);
   tile.building = place.mode ? { id: buildingId, level: 1, mode: place.mode } : { id: buildingId, level: 1 };
+  if (buildingId === 'house') tile.building.pop = data.economy.settlements.startPop;
 
   const events = [{ type: 'built', x, y, buildingId }];
   const lu = addXp(s, data.economy.xp.buildingPlaced, data);
@@ -324,15 +326,56 @@ function regrow(s, dt, data) {
   }
 }
 
-function produce(s, dt, data, events) {
+/**
+ * Siedlungen: Wohnhäuser und Arbeiter. Die automatische Zuweisung läuft bei jedem Zeitschritt neu.
+ * Manuelle Zuweisungen liegen am Produktionsgebäude als `manual: [{ house, n }]`.
+ */
+function workforce(s, data) {
+  const cfg = data.economy.settlements;
+  const houses = [];
+  const producers = [];
+  const manual = [];
+  for (const [k, tile] of Object.entries(s.tiles)) {
+    const b = tile.building;
+    if (!b) continue;
+    const [x, y] = parseKey(k);
+    if (b.id === 'house') {
+      houses.push({ key: k, x, y, level: b.level, pop: b.pop ?? cfg.startPop, progress: b.progress ?? 0 });
+      continue;
+    }
+    const def = data.buildings[b.id];
+    if (def?.resource && def.baseRatePerMin > 0) {
+      producers.push({ key: k, x, y, rate: def.baseRatePerMin * b.level });
+      for (const m of b.manual ?? []) manual.push({ house: m.house, producer: k, n: m.n });
+    }
+  }
+  return { houses, producers, ...assignWorkers(houses, producers, manual, cfg) };
+}
+
+/** Wohnhäuser wachsen, und der Lohn der beschäftigten Arbeiter wird vom Konto abgezogen (nicht unter 0). */
+function settle(s, dt, data, wf) {
+  const cfg = data.economy.settlements;
+  for (const h of wf.houses) {
+    const tile = s.tiles[h.key];
+    const g = growHouse(h, dt / 60, cfg);
+    tile.building.pop = g.pop;
+    tile.building.progress = g.progress;
+  }
+  const employed = Object.values(wf.byHouse).reduce((a, n) => a + n, 0);
+  s.coins = Math.max(0, s.coins - wageDue(employed, dt / 60, cfg));
+}
+
+function produce(s, dt, data, events, wf) {
   const cap = storageCap(s, data);
+  const cfg = data.economy.settlements;
   const produced = {};
   for (const [k, tile] of Object.entries(s.tiles)) {
     if (!tile.building) continue;
     const def = data.buildings[tile.building.id];
     if (!def.resource) continue;
     const [x, y] = parseKey(k);
-    const perSec = ratePerMin(s, x, y, data) / 60;
+    const factor = staffFactor(wf.byProducer[k] ?? 0, cfg.workSlots, cfg);
+    const perSec = (ratePerMin(s, x, y, data) * factor) / 60;
     const before = s.stock[def.resource];
     const after = Math.min(cap, before + perSec * dt);
     s.stock[def.resource] = after;
@@ -382,6 +425,35 @@ function sell(s, dt, data, events) {
  * (offline cap). Time beyond the cap is discarded.
  * ctx: { data, maxElapsedSec, dateKey? }
  */
+/** Lesezugriff für die Anzeige: wer wohnt, wer arbeitet wo (ohne den Spielstand zu ändern). */
+export function staffing(state, data) {
+  return workforce(state, data);
+}
+
+/**
+ * Manuelle Zuweisung: n Arbeiter aus dem Haus in das Produktionsgebäude. n = 0 hebt sie auf.
+ * Abgelehnt wird, was außerhalb des Pendelbereichs liegt oder kein Platz mehr hat.
+ */
+export function setWorkerAssignment(state, { producer, house, n }, ctx) {
+  const { data } = ctx;
+  const cfg = data.economy.settlements;
+  const pt = state.tiles[producer];
+  const ht = state.tiles[house];
+  if (!pt?.building || !data.buildings[pt.building.id]?.resource) return fail(state, 'notProducer');
+  if (!ht?.building || ht.building.id !== 'house') return fail(state, 'notHouse');
+  if (!Number.isInteger(n) || n < 0 || n > cfg.workSlots) return fail(state, 'badAmount');
+
+  const s = clone(state);
+  const b = s.tiles[producer].building;
+  const rest = (b.manual ?? []).filter((m) => m.house !== house);
+  b.manual = n > 0 ? [...rest, { house, n }] : rest;
+
+  const wf = workforce(s, data);
+  const bad = wf.rejected.find((r) => r.producer === producer && r.house === house);
+  if (bad) return fail(state, bad.reason === 'distance' ? 'tooFar' : 'noRoom');
+  return { state: s, events: [{ type: 'assigned', producer, house, n }] };
+}
+
 export function advance(state, nowMs, ctx) {
   const { data } = ctx;
   const s = clone(state);
@@ -391,7 +463,9 @@ export function advance(state, nowMs, ctx) {
 
   if (ctx.dateKey) rollMerchantDay(s, ctx.dateKey);
   if (dt > 0) {
-    produce(s, dt, data, events);
+    const wf = workforce(s, data);
+    settle(s, dt, data, wf);
+    produce(s, dt, data, events, wf);
     sell(s, dt, data, events);
   }
   if (nowMs > s.lastTick) s.lastTick = nowMs;

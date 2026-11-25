@@ -636,9 +636,219 @@ function pearlHut(ctx, c, t, env) {
   ctx.fill();
 }
 
+/** Wohnhaus: kleines Haus mit Walmdach, zwei Fenster, Tür. */
+function house(ctx, c, t, env) {
+  box(ctx, c, -0.3, 0.3, -0.26, 0.26, 0, 26, '#f4e1c1', '#dcc096', '#ead2a8');
+  hipRoof(ctx, c, -0.3, 0.3, -0.26, 0.26, 26, 13, '#9b5a3c', '#7a4330');
+  winRight(ctx, c, 0.3, -0.16, -0.06, 8, 18, env.night);
+  winLeft(ctx, c, 0.26, -0.16, -0.04, 8, 18, env.night);
+  fillPoly(ctx, [P(c, 0.3, 0.06, 0), P(c, 0.3, 0.14, 0), P(c, 0.3, 0.14, 12), P(c, 0.3, 0.06, 12)], '#6b4a2b');
+  void t;
+}
+
 const DRAW = {
-  townHall, farm, sawmill, quarry, warehouse, apiary, fishery, marketSquare, saltworks, mine, pearlHut,
+  townHall, house, farm, sawmill, quarry, warehouse, apiary, fishery, marketSquare, saltworks, mine, pearlHut,
 };
+
+/**
+ * Gebäudespezifischer Akzent vorne links, ab Stufe 3. Jedes Gebäude hat sein eigenes Requisit,
+ * damit man es auch ohne Beschriftung erkennt. Der Akzent wächst nicht mit, er kommt dazu.
+ */
+const ACCENT = {
+  townHall(ctx, c) {
+    box(ctx, c, -0.44, -0.38, 0.2, 0.26, 0, 16, '#f5f1e6', '#d8d2c0', '#e6e0cf');
+    box(ctx, c, -0.44, -0.38, 0.32, 0.38, 0, 16, '#f5f1e6', '#d8d2c0', '#e6e0cf');
+  },
+  house(ctx, c) {
+    box(ctx, c, -0.44, -0.24, 0.24, 0.3, 0, 5, '#7a4f2c', '#5e3b20', '#6a4426');
+    for (const u of [-0.4, -0.34, -0.28]) {
+      const f = P(c, u, 0.27, 7);
+      ctx.fillStyle = u === -0.34 ? '#e8557a' : '#f2c14e';
+      ctx.beginPath();
+      ctx.arc(f.x, f.y, 2.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  },
+  farm(ctx, c) {
+    for (const [u, v, z] of [[-0.4, 0.26, 5], [-0.32, 0.26, 5], [-0.36, 0.3, 14]]) {
+      const q = P(c, u, v, z);
+      ctx.fillStyle = '#c9a25a';
+      ctx.beginPath();
+      ctx.ellipse(q.x, q.y, 4, 5, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  },
+  sawmill(ctx, c) {
+    for (const z of [3, 9, 15]) {
+      const a = P(c, -0.44, 0.28, z);
+      const b = P(c, -0.24, 0.28, z);
+      ctx.strokeStyle = '#8a5a32';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.stroke();
+    }
+  },
+  quarry(ctx, c) {
+    for (const [u, v, z] of [[-0.4, 0.28, 3], [-0.3, 0.26, 3], [-0.35, 0.3, 9]]) {
+      const q = P(c, u, v, z);
+      ctx.fillStyle = '#9aa0a6';
+      ctx.beginPath();
+      ctx.arc(q.x, q.y, 4.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  },
+  warehouse(ctx, c) {
+    box(ctx, c, -0.44, -0.3, 0.24, 0.32, 0, 9, '#c69a5b', '#a57a43', '#b8884f');
+    box(ctx, c, -0.28, -0.2, 0.24, 0.32, 0, 9, '#c69a5b', '#a57a43', '#b8884f');
+  },
+  apiary(ctx, c) {
+    const h = P(c, -0.36, 0.28, 0);
+    ctx.fillStyle = '#f2c14e';
+    ctx.beginPath();
+    ctx.ellipse(h.x, h.y - 6, 7, 8, 0, Math.PI, 0);
+    ctx.fill();
+    ctx.strokeStyle = '#6b4a10';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(h.x - 7, h.y - 6);
+    ctx.lineTo(h.x + 7, h.y - 6);
+    ctx.stroke();
+  },
+  fishery(ctx, c) {
+    const a = P(c, -0.42, 0.28, 16);
+    const b = P(c, -0.42, 0.28, 0);
+    ctx.strokeStyle = '#6b4a2b';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(a.x, a.y);
+    ctx.lineTo(b.x, b.y);
+    ctx.stroke();
+    for (const z of [6, 11]) {
+      const f = P(c, -0.42, 0.28, z);
+      ctx.fillStyle = '#7fb8d9';
+      ctx.beginPath();
+      ctx.ellipse(f.x + 3, f.y, 4, 2.2, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  },
+  marketSquare(ctx, c) {
+    const top = P(c, -0.44, 0.26, 16);
+    const a = P(c, -0.44, 0.26, 10);
+    const b = P(c, -0.2, 0.26, 10);
+    const d = P(c, -0.2, 0.26, 16);
+    fillPoly(ctx, [a, b, d, top], '#e8c35a');
+    fillPoly(ctx, [P(c, -0.44, 0.26, 10), P(c, -0.37, 0.26, 10), P(c, -0.37, 0.26, 16), P(c, -0.44, 0.26, 16)], '#d9534f');
+    fillPoly(ctx, [P(c, -0.29, 0.26, 10), P(c, -0.22, 0.26, 10), P(c, -0.22, 0.26, 16), P(c, -0.29, 0.26, 16)], '#d9534f');
+  },
+  saltworks(ctx, c) {
+    const p = P(c, -0.34, 0.28, 0);
+    ctx.fillStyle = '#f7f7f2';
+    ctx.beginPath();
+    ctx.moveTo(p.x - 8, p.y);
+    ctx.lineTo(p.x, p.y - 9);
+    ctx.lineTo(p.x + 8, p.y);
+    ctx.closePath();
+    ctx.fill();
+  },
+  mine(ctx, c) {
+    box(ctx, c, -0.44, -0.28, 0.24, 0.32, 0, 8, '#6b6f78', '#50535b', '#5f636b');
+    for (const u of [-0.42, -0.3]) {
+      const w = P(c, u, 0.33, 2);
+      ctx.fillStyle = '#2b2b2b';
+      ctx.beginPath();
+      ctx.arc(w.x, w.y, 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  },
+  pearlHut(ctx, c) {
+    for (const u of [-0.4, -0.34, -0.28]) {
+      const q = P(c, u, 0.28, 3);
+      ctx.fillStyle = '#f3e3ea';
+      ctx.beginPath();
+      ctx.arc(q.x, q.y, 3.5, Math.PI, 0);
+      ctx.fill();
+    }
+  },
+};
+
+/**
+ * Sichtbare Stufen (1 bis 5). Jede Stufe fügt Teile hinzu, damit jedes Upgrade sichtbar ist:
+ * 2 Fahne · 3 Zaun und Büsche · 4 Schornstein und Laternen · 5 goldene Kante und Funkeln.
+ */
+function stageDecor(ctx, c, id, stage, t, env) {
+  if (stage >= 2) {
+    const top = P(c, -0.36, -0.36, 44);
+    fillPoly(ctx, [P(c, -0.36, -0.36, 0), P(c, -0.34, -0.36, 0), P(c, -0.34, -0.36, 46), P(c, -0.36, -0.36, 46)], '#5b4636');
+    fillPoly(ctx, [top, P(c, -0.12, -0.36, 40), P(c, -0.36, -0.36, 36)], '#d9534f');
+  }
+  if (stage >= 3) {
+    for (let u = -0.36; u <= 0.36; u += 0.12) {
+      fillPoly(ctx, [P(c, u, 0.42, 0), P(c, u + 0.025, 0.42, 0), P(c, u + 0.025, 0.42, 9), P(c, u, 0.42, 9)], '#f5f1e6');
+    }
+    ctx.strokeStyle = '#f5f1e6';
+    ctx.lineWidth = 1.6;
+    const a = P(c, -0.38, 0.42, 6);
+    const b = P(c, 0.38, 0.42, 6);
+    ctx.beginPath();
+    ctx.moveTo(a.x, a.y);
+    ctx.lineTo(b.x, b.y);
+    ctx.stroke();
+    for (const u of [-0.44, 0.44]) {
+      const g = P(c, u, 0.32, 5);
+      ctx.fillStyle = '#5f9e4d';
+      ctx.beginPath();
+      ctx.arc(g.x, g.y, 4.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ACCENT[id]?.(ctx, c);
+  }
+  if (stage >= 4) {
+    // Stufe 4: der Akzent wird vorne rechts noch einmal gesetzt (verschoben um 0,6 Feld).
+    const shift = P(c, 0.6, 0, 0);
+    ctx.save();
+    ctx.translate(shift.x - c.x, shift.y - c.y);
+    ACCENT[id]?.(ctx, c);
+    ctx.restore();
+    box(ctx, c, 0.16, 0.24, -0.1, -0.02, 28, 50, '#8a5a44', '#6d4632', '#7c4f3b');
+    const glow = env.night > 0.3 ? '#ffe08a' : '#ffd76a';
+    for (const v of [-0.3, 0.3]) {
+      const l = P(c, 0.36, v, 10);
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.arc(l.x, l.y, 2.6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  if (stage >= 5) {
+    // Stufe 5: goldene Umrandung um beide Akzente vorne.
+    ctx.strokeStyle = '#e8b530';
+    ctx.lineWidth = 1.6;
+    for (const sh of [0, 0.6]) {
+      const q = [P(c, -0.47 + sh, 0.19, 22), P(c, -0.17 + sh, 0.19, 22), P(c, -0.17 + sh, 0.35, 22), P(c, -0.47 + sh, 0.35, 22)];
+      ctx.beginPath();
+      ctx.moveTo(q[0].x, q[0].y);
+      for (const r of q.slice(1)) ctx.lineTo(r.x, r.y);
+      ctx.closePath();
+      ctx.stroke();
+    }
+    ctx.strokeStyle = '#e8b530';
+    ctx.lineWidth = 2;
+    const pts = [P(c, -0.4, -0.4, 1), P(c, 0.4, -0.4, 1), P(c, 0.4, 0.4, 1), P(c, -0.4, 0.4, 1)];
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, pts[0].y);
+    for (const q of pts.slice(1)) ctx.lineTo(q.x, q.y);
+    ctx.closePath();
+    ctx.stroke();
+    const sp = P(c, 0, 0, 60);
+    const r = 3 + 1.5 * Math.sin(t * 3);
+    ctx.fillStyle = '#ffd23a';
+    ctx.beginPath();
+    ctx.arc(sp.x, sp.y, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
 
 /** Gebäude auf seiner Kachel, mit Stufe (wächst leicht) und Nachtlicht. env: { night, day }. */
 export function drawBuilding(ctx, id, x, y, level, t, env) {
@@ -654,6 +864,7 @@ export function drawBuilding(ctx, id, x, y, level, t, env) {
   }
   glow(ctx, c, env.night, 70);
   draw(ctx, c, t, env);
+  stageDecor(ctx, c, id, env.stage ?? 1, t, env);
   ctx.restore();
   // Stufenpunkte am vorderen Kachelrand
   if (id !== 'townHall') {
