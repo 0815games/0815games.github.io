@@ -630,3 +630,11 @@ Ereignis ergänzt.
   (`docs/FIREBASE.md`, Schritte 1 bis 4). Bis dahin scheitert das Speichern weiter.
 - Offen / nächster Schritt: Betreiber veröffentlicht die Regeln. Danach Test: Stadt speichern,
   Konvoi starten, abrechnen, Seite neu laden.
+
+### Ereignis-Nachtrag zu TTT-0043
+
+- Veröffentlichung: Die Regeln aus `firebase/database.rules.json` (Stand Commit `7f087c6`) sind
+  laut Betreiber in Firebase veröffentlicht. Bestätigung durch den Betreiber, nicht durch einen
+  Test des Agenten.
+- Offen: Test auf Live-Daten (Stadt speichern, Konvoi starten und abrechnen, neu laden). Ergebnis
+  ins Log eintragen, sobald vorhanden.
