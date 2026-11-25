@@ -3,31 +3,32 @@
 import {
   createTown, newSeed, chooseBiome, placeBuilding, upgradeBuilding,
   toggleSell, buyOffer, advance, hydrateTown, setTutorialStep, settleConvoyAction,
-} from './domain/engine.js?v=20261125-lager1';
-import { startConvoy } from './domain/convoys.js?v=20261125-lager1';
-import { tradeFormHtml, convoyListHtml, previewFor } from './trade-ui.js?v=20261125-lager1';
+} from './domain/engine.js?v=20261125-zoom1';
+import { startConvoy } from './domain/convoys.js?v=20261125-zoom1';
+import { tradeFormHtml, convoyListHtml, previewFor } from './trade-ui.js?v=20261125-zoom1';
 import {
   productionMultiplier, ratePerMin, buildCost, storageCap, classOf,
-} from './domain/economy.js?v=20261125-lager1';
-import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261125-lager1';
-import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261125-lager1';
-import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261125-lager1';
+} from './domain/economy.js?v=20261125-zoom1';
+import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261125-zoom1';
+import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261125-zoom1';
+import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261125-zoom1';
 import {
   PERKS, canFoundCharter, grantCharters, buyPerk, perkEffect, perkLevel, availableCharters, emptyCharter,
   applyCharterToData, reconcileCrowns,
-} from './domain/charters.js?v=20261125-lager1';
+} from './domain/charters.js?v=20261125-zoom1';
 const SEEN_NOTES_KEY = 'ttt:notes-seen';
-import { withTimeout } from './async-util.js?v=20261125-lager1';
-import { checkTownName } from './town-names.js?v=20261125-lager1';
-import { friendsShell, mountFriends } from './friends-ui.js?v=20261125-lager1';
-import { createBoard } from './world/board.js?v=20261125-lager1';
-import { createLoginScene } from './world/login-scene.js?v=20261125-lager1';
-import { TUTORIAL_STEPS, HELP_SECTIONS } from './tutorial.js?v=20261125-lager1';
-import { createVersionUI } from './version-ui.mjs?v=20261125-lager1';
-import { startAfkWatch, showAfkOverlay } from './afk.js?v=20261125-lager1';
-import { fullResources, fillPercent } from './stock-dock.js?v=20261125-lager1';
+import { withTimeout } from './async-util.js?v=20261125-zoom1';
+import { checkTownName } from './town-names.js?v=20261125-zoom1';
+import { friendsShell, mountFriends } from './friends-ui.js?v=20261125-zoom1';
+import { createBoard } from './world/board.js?v=20261125-zoom1';
+import { createLoginScene } from './world/login-scene.js?v=20261125-zoom1';
+import { TUTORIAL_STEPS, HELP_SECTIONS } from './tutorial.js?v=20261125-zoom1';
+import { createVersionUI } from './version-ui.mjs?v=20261125-zoom1';
+import { startAfkWatch, showAfkOverlay } from './afk.js?v=20261125-zoom1';
+import { fullResources, fillPercent } from './stock-dock.js?v=20261125-zoom1';
+import { nextRequestToShow, requestBadgeLabel } from './friend-requests.js?v=20261125-zoom1';
 
-const BUILD = '20261125-lager1';
+const BUILD = '20261125-zoom1';
 console.info(`Tiny Tycoon Towns ${BUILD}`);
 const LAST_BIOME_KEY = 'ttt.lastBiome';
 const LOCAL_KEY = (uid) => `ttt.save.v1.${uid}`;
@@ -107,7 +108,7 @@ const REMOTE_TIMEOUT_MS = 10_000;
 async function loadData() {
   const names = ['resources', 'biomes', 'buildings', 'economy', 'merchant', 'npcs'];
   const parts = await Promise.all(names.map((n) =>
-    fetch(`data/${n}.json?v=20261125-lager1`).then((r) => {
+    fetch(`data/${n}.json?v=20261125-zoom1`).then((r) => {
       if (!r.ok) throw new Error(`data/${n}.json: HTTP ${r.status}`);
       return r.json();
     })));
@@ -153,7 +154,7 @@ async function boot() {
   window.addEventListener('offline', updateSync);
 
   try {
-    cloud = await import('./cloud.js?v=20261125-lager1');
+    cloud = await import('./cloud.js?v=20261125-zoom1');
   } catch {
     showFatal('Das Konto-System konnte nicht geladen werden. Ohne Anmeldung lässt sich nicht spielen. Bitte Verbindung prüfen und neu laden.');
     return;
@@ -201,6 +202,7 @@ async function enterAccount(user) {
     currentUser = null;
     state = null;
     remoteLoaded = false;
+    stopRequestWatch();
     releaseCurrentSession();
     endTutorial();
     renderSignedOut();
@@ -225,6 +227,7 @@ async function enterAccount(user) {
   }
   currentUser = user;
   uid = user.uid;
+  startRequestWatch(uid);
   remoteLoaded = false;
   showLoading('Verbinde mit deinem Spielstand …');
 
@@ -805,6 +808,7 @@ function tick() {
   board?.gain(state.coins - coinsBefore);
   renderHud();
   updateStockNumbers();
+  maybeShowRequestPopup();
 }
 
 // ---------- Rendering ----------
@@ -1481,6 +1485,82 @@ function claimExistingName(forUid, town) {
 }
 
 /** Freunde-Fenster: eigene Stadt, Code, Einladung, Anfragen, klappbare Liste. */
+// ---------- Freundschaftsanfragen: Hinweis im Menü, Popup beim Spielen ----------
+let requestUnwatch = null;
+let requestUid = null;
+let pendingRequests = [];
+const shownRequests = new Set(); // Absender, deren Popup in dieser Sitzung schon kam
+
+function startRequestWatch(forUid) {
+  if (requestUid === forUid) return;
+  stopRequestWatch();
+  requestUid = forUid;
+  requestUnwatch = cloud.watchRequests(forUid, (items) => {
+    pendingRequests = items;
+    renderRequestBadge();
+    maybeShowRequestPopup();
+  });
+}
+
+function stopRequestWatch() {
+  requestUnwatch?.();
+  requestUnwatch = null;
+  requestUid = null;
+  pendingRequests = [];
+  shownRequests.clear();
+  renderRequestBadge();
+}
+
+/** Roter Punkt mit Anzahl am Menü, solange Anfragen offen sind (auch nach dem Anmelden). */
+function renderRequestBadge() {
+  const n = pendingRequests.length;
+  const btn = $('#menu-btn');
+  const badge = $('#menu-badge');
+  badge.hidden = n === 0;
+  badge.textContent = String(n);
+  btn.classList.toggle('has-requests', n > 0);
+  btn.setAttribute('aria-label', requestBadgeLabel(n));
+}
+
+/** Popup nur beim Spielen und nur, wenn gerade kein anderes Fenster offen ist. Sonst später erneut. */
+function maybeShowRequestPopup() {
+  if (!state || !uid || requestUid !== uid) return;
+  if ($('#dlg').open || $('#stock-sheet').open) return;
+  const next = nextRequestToShow(pendingRequests, shownRequests);
+  if (!next) return;
+  shownRequests.add(next.from);
+  showRequestPopup(next);
+}
+
+function showRequestPopup(r) {
+  openDialog(`<div class="dlg-body confirm">
+    <h2 id="dlg-title">Freundschaftsanfrage</h2>
+    <p><strong>${esc(r.name)}</strong> möchte dich als Freund hinzufügen.</p>
+    <div class="confirm-row">
+      <button type="button" id="req-decline">Ablehnen</button>
+      <button type="button" id="req-later">Später</button>
+      <button type="button" id="req-accept" class="primary">Annehmen</button>
+    </div>
+  </div>`);
+  const dlg = $('#dlg');
+  dlg.dataset.persist = '1'; // Entscheidung: nicht per Klick oder Escape schließen
+  dlg.addEventListener('cancel', (e) => e.preventDefault(), { once: true });
+  const act = async (fn, okText) => {
+    closeDialog();
+    if (!fn) return maybeShowRequestPopup();
+    try {
+      await fn();
+      if (okText) toast(okText);
+    } catch (err) {
+      toast(cloud.dbErrorDe(err), 'error');
+    }
+    maybeShowRequestPopup();
+  };
+  $('#req-accept').addEventListener('click', () => act(() => cloud.acceptRequest(uid, r.from), 'Freund hinzugefügt.'));
+  $('#req-decline').addEventListener('click', () => act(() => cloud.declineRequest(uid, r.from), 'Anfrage abgelehnt.'));
+  $('#req-later').addEventListener('click', () => act(null));
+}
+
 // ---------- Freibriefe (Prestige), Regeln in src/domain/charters.js ----------
 // Der Stand liegt unter charters/{uid} und bleibt beim Neubeginn erhalten.
 // Solange er nicht geladen ist, wird nichts geschrieben, damit ein leerer Stand nicht den echten überschreibt.

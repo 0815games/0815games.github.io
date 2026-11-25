@@ -1,7 +1,7 @@
 // DOM-Brücke für die Weltansicht: Canvas, Kamera (Ziehen, Zoom), Tastatur, Animation.
 // Der Spielzustand kommt von außen (main.js). Diese Datei verändert ihn nie.
-import { toScreen } from './iso.js?v=20261125-lager1';
-import { renderWorld, pickTile, makeFx, stepFx, produceIcons, coinGain, dayFactor, GRID_SIZE, HALL } from './scene.js?v=20261125-lager1';
+import { toScreen } from './iso.js?v=20261125-zoom1';
+import { renderWorld, pickTile, makeFx, stepFx, produceIcons, coinGain, dayFactor, GRID_SIZE, HALL } from './scene.js?v=20261125-zoom1';
 
 const DRAG_PX = 6;
 const K_MIN = 0.45;
@@ -208,6 +208,7 @@ export function createBoard(container, opts) {
   }
 
   // ----- Animation -----
+  let lastPaint = -Infinity;
   function frame(now) {
     const dt = Math.min(0.1, (now - last) / 1000);
     last = now;
@@ -218,11 +219,14 @@ export function createBoard(container, opts) {
       produceIcons(fx, dt, m);
       coinGain(fx, dt, 0);
     }
-    if (hasState || dirty || fx.items.length) {
+    // Reine Zeitanimation (Wellen, Wolken) mit 30 fps; Eingaben zeichnen sofort.
+    const due = dirty || now - lastPaint >= 1000 / 30;
+    if ((hasState || dirty || fx.items.length) && due) {
       const time = (now - t0) / 1000;
       const day = dayFactor(new Date());
       renderWorld(ctx, { W, H, view: view(), model: m, time, day, fx, hover });
       dirty = false;
+      lastPaint = now;
     }
     rafId = requestAnimationFrame(frame);
   }

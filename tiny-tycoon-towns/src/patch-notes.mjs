@@ -4,6 +4,30 @@
 
 export const RELEASED_PATCHES = [
   {
+    build: '20261125-zoom1',
+    date: '2026-11-25',
+    items: [
+      {
+        de: 'Beim Herauszoomen läuft das Spiel flüssiger. Wellen auf dem Wasser erscheinen erst ab einer mittleren Zoomstufe, und das Bild wird nur noch 30 Mal pro Sekunde neu gezeichnet, wenn sich nur die Animation ändert.',
+        en: 'Zooming out runs more smoothly. Waves on the water only appear from a medium zoom level, and the picture is redrawn at most 30 times per second when only the animation changes.',
+      },
+    ],
+  },
+  {
+    build: '20261125-anfrage1',
+    date: '2026-11-25',
+    items: [
+      {
+        de: 'Freundschaftsanfragen erscheinen als Popup, solange du spielst. Du kannst annehmen, ablehnen oder später entscheiden.',
+        en: 'Friend requests appear as a pop-up while you are playing. You can accept, decline or decide later.',
+      },
+      {
+        de: 'Offene Anfragen zeigt das Menü oben rechts mit einem roten Punkt und der Anzahl. Der Punkt bleibt, bis du sie beantwortest, auch wenn du dich später anmeldest.',
+        en: 'Open requests show as a red dot with the count on the menu at the top right. The dot stays until you answer, even if you sign in later.',
+      },
+    ],
+  },
+  {
     build: '20261125-lager1',
     date: '2026-11-25',
     items: [

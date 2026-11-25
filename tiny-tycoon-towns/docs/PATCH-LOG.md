@@ -666,3 +666,55 @@ Ereignis ergänzt.
   - Cloud-Speichern: Die Ursache ist nicht bestätigt. Benötigt wird die Fehlermeldung aus der Konsole
     (Zeile mit „Cloud“ oder „permission_denied“, mit Pfad).
   - Test der Leiste und des Handels auf Mobile und Desktop (Nutzer).
+
+### TTT-0045 – Freundschaftsanfragen: Popup beim Spielen, Hinweis am Menü (Welle `20261125-anfrage1`)
+
+- Zeit / Quelle: Sitzung 2026-11-25 (UTC). Nutzerwunsch wörtlich: Der andere Spieler soll aktiv
+  sehen, dass eine Anfrage da ist. Solange er spielt, ein Popup zum Bestätigen oder Ablehnen. Ist er
+  offline, soll er es am Menü rechts oben optisch erkennen.
+- Branch / Basis: `arena/2f0471fb-0815games-github-io`, Basis `362b091` (`main`).
+- Änderungen / Dateien:
+  - `src/friend-requests.js` (neu): Auswahl der nächsten Anfrage, Beschriftung des Menü-Hinweises.
+  - `tests/friend-requests.test.mjs` (neu, 2 Tests).
+  - `src/main.js`: globaler Anfrage-Watch solange angemeldet (`startRequestWatch`, `stopRequestWatch`),
+    roter Punkt am Menü (`renderRequestBadge`), Popup mit Annehmen, Ablehnen, Später
+    (`maybeShowRequestPopup`, `showRequestPopup`). Der Tick prüft erneut, falls ein anderes Fenster offen ist.
+  - `index.html`: Punkt `#menu-badge` im Menü-Knopf. `style.css`: Punkt, Pulsieren (nur ohne reduzierte Bewegung).
+  - `src/patch-notes.mjs`: Stadtchronik `20261125-anfrage1` (DE/EN).
+  - Cache-Welle `20261125-anfrage1`.
+- Verhalten:
+  - Popup nur beim Spielen (Stand geladen) und nur, wenn kein anderes Fenster offen ist. Sonst wird es
+    beim nächsten Tick gezeigt. Jede Anfrage erscheint pro Sitzung einmal, „Später“ schiebt sie in den Menü-Hinweis.
+  - Der Menü-Punkt zeigt alle offenen Anfragen. Er hängt an der Datenbank, nicht an der Sitzung, also erscheint er nach dem Anmelden wieder.
+- Prüfungen (lokal, Node 22.22.3):
+  - `npm test`: 129 Tests, 129 pass, 0 fail, Exit 0 (Unit).
+  - `npm run check`: Exit 0, kein Fehler.
+  - Nicht geprüft: Browser-Darstellung, zwei echte Konten mit Popup. Die Regeln für Freundesanfragen
+    sind laut Nutzer funktionsfähig, daran ändert dieser Schritt nichts.
+- Git / PR / Veröffentlichung: Commit folgt. Nicht veröffentlicht.
+- Offen / nächster Schritt: Zwei-Konten-Test (Nutzer): A schickt eine Anfrage an B. Erwartet: B sieht
+  das Popup beim Spielen, B meldet sich ab, A schickt erneut, B meldet sich wieder an, erwartet: roter Punkt am Menü.
+
+### TTT-0046 – Zoom-Performance: Wellen, Außenkacheln, 30 fps (Welle `20261125-zoom1`)
+
+- Zeit / Quelle: Sitzung 2026-11-25 (UTC). Nutzerbericht: Das Spiel hängt und laggt beim Herauszoomen.
+- Branch / Basis: `arena/2f0471fb-0815games-github-io`, Basis `362b091` (`main`).
+- Ursache (Messung, lokal, Node 22 mit `@napi-rs/canvas` als Ersatz für Canvas, nur Näherung):
+  `renderWorld` zeichnet jeden Frame alle sichtbaren Kacheln neu. Beim Herauszoomen steigt die Zahl
+  bis zum vollen Raster mit Rand. Der Profiler zeigt Pfadaufrufe (`stroke`, `fill`) als Hauptkosten,
+  darunter die Wellenlinien auf jeder Wasserkachel. Der Ticker zeichnete außerdem im Stillstand weiter.
+- Änderungen / Dateien:
+  - `src/world/scene.js`: Wellen nur auf Rasterkacheln und ab Zoom 0,75 (`WAVE_MIN_ZOOM`).
+  - `src/world/art.js`: `drawTile` respektiert `env.waves`.
+  - `src/world/board.js`: reine Zeitanimation höchstens 30 mal pro Sekunde; Eingaben (`dirty`) zeichnen sofort.
+  - `src/patch-notes.mjs`: Stadtchronik `20261125-zoom1` (DE/EN).
+  - Cache-Welle `20261125-zoom1`: alle `?v=`, `index.html`, `src/main.js` (BUILD), `release-version.json`.
+- Messung (`/tmp/bench`, 30 Durchläufe, lokal, grob): bei k=0,45 vorher ~25–31 ms pro Frame,
+  nachher ~15–17 ms. Bei k=2,6 vorher ~12–13 ms, nachher ~10 ms. Die Werte schwanken, die Richtung ist klar.
+- Prüfungen (lokal):
+  - `npm test`: 129 Tests, 129 pass, 0 fail.
+  - `npm run check`: kein Fehler, 3 Hinweise.
+  - Nicht geprüft: Browser-Darstellung und Live-Gefühl auf Handy. Nur Vercel-Vorschau kann das zeigen.
+- Git / PR / Veröffentlichung: Commit folgt. Nicht veröffentlicht.
+- Offen / nächster Schritt: Nutzer testet die Vorschau (Herauszoomen auf Handy und Desktop).
+  Weitere Kosten sind möglich: ein Offscreen-Cache für die statischen Kacheln wäre der nächste Schritt.

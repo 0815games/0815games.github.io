@@ -1,7 +1,7 @@
 // Zeichnung der Weltansicht: Gelände, Wasser, Bäume, Gebäude und Animationen.
 // Reine Canvas-2D-Funktionen ohne DOM-Zugriff. Jede Funktion bekommt den Kontext,
 // den Mittelpunkt einer Kachel auf dem Bildschirm und die Zeit in Sekunden.
-import { HW, HH, toScreen, hash } from './iso.js?v=20261125-lager1';
+import { HW, HH, toScreen, hash } from './iso.js?v=20261125-zoom1';
 
 // ---------- Farbe ----------
 
@@ -173,7 +173,8 @@ export function drawTile(ctx, x, y, terrain, t, env) {
   fillPoly(ctx, [P(c, -0.5, -0.5), P(c, 0.5, -0.5), P(c, 0.5, 0.5), P(c, -0.5, 0.5)], top);
 
   if (terrain === 'water') {
-    waves(ctx, c, x, y, t, env.day);
+    // Wellen nur bei ausreichendem Zoom: weit herausgezoomt sind sie unter 1 px groß.
+    if (env.waves !== false) waves(ctx, c, x, y, t, env.day);
     return;
   }
   if (terrain === 'sand') {

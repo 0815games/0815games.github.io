@@ -711,3 +711,18 @@ button.danger { background: #E4837A; border-color: var(--ink); }
   .dock-list { gap: 10px; }
   .dock-list li { font-size: 14px; }
 }
+
+/* ---------- Freundschaftsanfragen: Hinweis am Menü (rechts oben) ---------- */
+.menu-btn { position: relative; }
+.menu-btn.has-requests { border-color: #b8322c; }
+.menu-badge {
+  position: absolute; top: -9px; right: -9px; min-width: 24px; height: 24px; padding: 0 6px;
+  border-radius: 12px; background: #b8322c; color: #fff; border: 2px solid #fff;
+  font-size: 13px; font-weight: 800; line-height: 20px; text-align: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+.menu-badge[hidden] { display: none; }
+@media (prefers-reduced-motion: no-preference) {
+  .menu-btn.has-requests .menu-badge { animation: req-pulse 1.6s ease-in-out infinite; }
+}
+@keyframes req-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
