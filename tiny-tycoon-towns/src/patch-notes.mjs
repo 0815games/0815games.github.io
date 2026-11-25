@@ -4,6 +4,36 @@
 
 export const RELEASED_PATCHES = [
   {
+    build: '20261125-bal3',
+    date: '2026-11-25',
+    items: [
+      {
+        de: 'Balance je Biom: Jedes Biom erreicht Stadtlevel 5 nach etwa 6 aktiven Stunden und Stadtlevel 10 nach etwa 12 Stunden. Die Biom-Eigenheiten bleiben erhalten, nur der Stadtfortschritt gleicht sich an.',
+        en: 'Balance by biome: every biome reaches town level 5 after about 6 active hours and town level 10 after about 12 hours. The biome traits stay, only town progress evens out.',
+      },
+    ],
+  },
+  {
+    build: '20261125-bal2',
+    date: '2026-11-25',
+    items: [
+      {
+        de: 'Marktplatz: Wird ein Lager zur Hälfte voll, baut die Stadt einen Marktplatz und bringt ihn auf Stufe. Vorräte fließen dann besser ab. Die Stufenschwellen wurden angepasst.',
+        en: 'Market square: when a warehouse is half full, the town builds a market square and upgrades it. Goods then sell better. Town level thresholds were adjusted.',
+      },
+    ],
+  },
+  {
+    build: '20261125-bal1',
+    date: '2026-11-25',
+    items: [
+      {
+        de: 'Balance: Stadtlevel wächst jetzt mit deinem Ertrag, nicht nur mit Bauen. Das Raster bleibt nicht mehr stehen, wenn die Fläche voll ist. Höchststufe ist 10, danach kommen die Freibriefe.',
+        en: 'Balance: town level now grows with your earnings, not only with building. The grid no longer stalls when the land is full. The top level is 10; charters come after that.',
+      },
+    ],
+  },
+  {
     build: '20261125-eco1',
     date: '2026-11-25',
     items: [

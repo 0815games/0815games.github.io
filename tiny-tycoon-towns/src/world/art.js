@@ -1,7 +1,7 @@
 // Zeichnung der Weltansicht: Gelände, Wasser, Bäume, Gebäude und Animationen.
 // Reine Canvas-2D-Funktionen ohne DOM-Zugriff. Jede Funktion bekommt den Kontext,
 // den Mittelpunkt einer Kachel auf dem Bildschirm und die Zeit in Sekunden.
-import { HW, HH, toScreen, hash } from './iso.js?v=20261125-eco1';
+import { HW, HH, toScreen, hash } from './iso.js?v=20261125-bal3';
 
 // ---------- Farbe ----------
 

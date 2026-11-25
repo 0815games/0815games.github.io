@@ -810,3 +810,86 @@ Ereignis ergänzt.
   - Browser-/Vercel-Prüfung der neuen Oberfläche noch nicht erfolgt.
   - Keine Firebase-Regeländerung in diesem Schritt.
   - Vor dem Merge keine Geräteabnahme; Commit, PR und Merge erfolgen nach diesem Eintrag.
+
+### TTT-0050 – Balance: Stadtlevel über Ertrag, Höchststufe 10 (Welle `20261125-bal1`)
+
+- Ziel: Stadtlevel 5 nach ca. 4–8 aktiven Stunden, Stadtlevel 10 nach ca. 11–13 Stunden (Ziel 12), Freibriefe ab
+  Stadtlevel 10. Auftrag des Nutzers: sinnvolles Balancing-System, Höchststufe und Freibriefe frei wählbar.
+- Befund (Simulation, vorher): Die Stadt-XP kamen fast nur aus Upgrades. Upgrade-XP = 5·L² explodierte bei hohen
+  Stufen. Gleichzeitig blieb der Bot nach ca. 3 aktiven Stunden stehen: Das 7×7-Raster war voll, die nächste Stufe
+  brauchte aber XP. Ergebnis: Stadtlevel 4 bis 5, dann keine Entwicklung mehr. Ohne Stufenerweiterung kein Platz.
+- Änderungen:
+  - `src/domain/engine.js`: Upgrade-XP linear (5 × neue Stufe, nicht quadratisch). Neu: Verkaufserlöse und
+    Konvoi-Auszahlungen geben zusätzlich XP je Münze (`xp.perCoin` = 1).
+  - `data/economy.json`: `townLevelThresholds` auf 10 Stufen (Höchststufe 10). Schwellen 765 000 (Stufe 5) bis
+    1 980 000 (Stufe 10), Stufen 1 bis 4 unverändert. `xp.perCoin` neu.
+  - `tests/domain.test.mjs`, `tests/convoys.test.mjs`: Erwartungen an neue XP-Formel und Schwellen angepasst.
+  - `src/patch-notes.mjs`: Stadtchronik `20261125-bal1` (DE/EN).
+  - Cache-Welle `20261125-eco1` → `20261125-bal1`.
+- Tests (lokal, Node 22.22.3):
+  - `npm test`: 147 Tests, 147 pass, 0 fail.
+  - `npm run check`: kein Fehler; `patch.mjs check --fast` ohne Fehler (Hinweis zu diesem Eintrag ist damit erledigt).
+  - `npm run simulate` (30 Tage, Bot), aktive Stunden:
+    - Stadtlevel 5: Riverlands 5,5 · Tiefwald 8,0 · Hochland 5,5 · Küste 5,3 — alle im Korridor 4 bis 8.
+    - Stadtlevel 10: Riverlands 11,3 · Tiefwald 13,9 · Hochland 13,0 · Küste 10,0 — Korridor 11 bis 13.
+      Abweichung: Tiefwald 0,9 h über dem Korridor, Küste 1,0 h darunter.
+    - Zwischen 0,85 und 0,9 Faktor getestet. Keiner passt für alle vier Biome. Die Spanne der Biome ist die Grenze.
+- Grenzen / offen:
+  - Tiefwald und Küste liegen bei Stufe 10 außerhalb des Korridors. Ursache: unterschiedliche Erträge je Biom.
+    Lösung wäre eine biomeabhängige Stufenkurve oder ein Ausgleich bei Biomen mit viel ungenutztem Geld
+    (Tiefwald endet mit ca. 480 000 Münzen ungenutzt, weil dem Bot Platz fehlt). Entscheidung nötig.
+  - Freibrief-Stärke (Perk-Werte, Anzahl Freibriefe) nicht verändert.
+  - Browser-/Vercel-Prüfung nicht erfolgt. Keine Firebase-Regeländerung.
+  - Commit, PR und Merge nach diesem Eintrag.
+
+### TTT-0051 – Balance Tiefwald: Markt, Schwellen 1,1× (Welle `20261125-bal2`)
+
+- Auftrag des Nutzers („2“): Tiefwald ausbauen, Platz- und Materialproblem lösen.
+- Befund: Tiefwald endete mit ca. 480 000 ungenutzten Münzen. Das Raster war voll (81 Gebäude, Felder dazu). Waren
+  stauten sich am Lagerlimit (560 je Ware), weil der Bot nie einen Marktplatz baute. Verkäufe bringen XP, der Bot
+  kam deshalb nicht voran. Eisen fehlt (kein Berg in Tiefwald), Salz kaum vorhanden.
+- Änderungen:
+  - `scripts/simulate-balance.mjs`: Bot-Regel Marktplatz. Ist ein Lager zu mehr als 50 % voll, baut der Bot einen
+    Marktplatz (einmal) und bringt ihn auf Stufe. Spielregel selbst unverändert.
+  - `data/economy.json`: `townLevelThresholds` Stufen 5 bis 10 mit Faktor 1,1 gegenüber TTT-0050
+    (935 000 bis 2 420 000 XP).
+  - `tests/domain.test.mjs`: Schwellen-Erwartungen angepasst.
+  - `src/patch-notes.mjs`: Stadtchronik `20261125-bal2` (DE/EN).
+  - Cache-Welle `20261125-bal1` → `20261125-bal2`.
+- Tests (lokal, Node 22.22.3):
+  - `npm test`: 147 Tests, 147 pass, 0 fail. `npm run check`: kein Fehler.
+  - `npm run simulate` (30 Tage, aktive Stunden):
+    - Stadtlevel 5 (Faktor 1,1): Riverlands 6,5 · Tiefwald 6,3 · Hochland 5,3 · Küste 4,0. Alle im Korridor 4 bis 8.
+    - Stadtlevel 10 (Faktor 1,1): **Tiefwald 12,5 im Korridor** (11 bis 13). Riverlands 13,8 · Hochland 10,5 · Küste 7,8 außerhalb.
+- Grenzen / offen:
+  - Ein einziger Schwellenwert passt nicht für alle Biome. Ursache: XP kommen aus verkauften Waren. Küste verkauft am
+    meisten und ist deshalb zu schnell, Riverlands verkauft wenig und ist zu langsam. Lösung wäre ein biomeabhängiger
+    XP-Faktor für Verkäufe (Entscheidung nötig).
+  - Browser-/Vercel-Prüfung nicht erfolgt. Keine Firebase-Regeländerung.
+
+### TTT-0052 – Biomeabhängige Faktoren: XP-Ausgleich je Biom (Welle `20261125-bal3`)
+
+- Auftrag des Nutzers: alle biomeabhängigen Faktoren angehen. Ziel: jedes Biom Stadtlevel 5 nach ca. 4 bis 8 aktiven
+  Stunden und Stadtlevel 10 nach 11 bis 13 Stunden.
+- Biomeabhängig sind im Spiel: Produktionsfaktor je Ressourcenklasse (abundant 1,5 / neutral 1,0 / scarce 0,25),
+  Verkaufsfreigabe (scarce nicht verkauft), Händler-Gewichtung, Gelände, XP aus Verkäufen und Konvois.
+- Entscheidung: Die Ertragsfaktoren und Verkaufsregeln bleiben, weil sie das Profil der Biome ausmachen (Tiefwald
+  Holz, Küste Salz, Hochland Stein). Ausgeglichen wird der Stadtfortschritt: XP je verdienter Münze mit einem
+  Biom-Faktor. Der Ausgleich ist eine Zahl je Biom in `data/economy.json` (`xp.biomeFactor`).
+- Änderungen:
+  - `src/domain/engine.js`: `coinXp(s, data)` (XP je Münze × Biom-Faktor) für Verkäufe und Konvoi-Auszahlungen.
+  - `data/economy.json`: `xp.biomeFactor` = Riverlands 1,15 · Tiefwald 1,051 · Hochland 0,875 · Küste 0,639.
+  - `tests/convoys.test.mjs`: XP-Erwartung mit Biom-Faktor, Toleranzvergleich.
+  - `src/patch-notes.mjs`: Stadtchronik `20261125-bal3` (DE/EN).
+  - Cache-Welle `20261125-bal2` → `20261125-bal3`.
+- Kalibrierung: vier Schleifen (Faktor × Verhältnis Stufe-10-Zeit / 12 h). Konvergiert nach drei Schleifen.
+- Tests (lokal, Node 22.22.3):
+  - `npm test`: 147 Tests, 147 pass, 0 fail. `npm run check`: kein Fehler.
+  - `npm run simulate` (30 Tage, aktive Stunden):
+    - Stadtlevel 5: Riverlands 5,8 · Tiefwald 6,0 · Hochland 6,0 · Küste 6,0. Alle im Korridor 4 bis 8.
+    - Stadtlevel 10: Riverlands 12,0 · Tiefwald 12,0 · Hochland 12,0 · Küste 12,0. Alle im Korridor 11 bis 13.
+- Grenzen / offen:
+  - Der Bot ist ein Modell. Echte Spieler können anders vorgehen. Der Ausgleich gilt für den Bot-Pfad.
+  - Die Ertragsfaktoren je Biom (0,25 bis 1,5) sind unverändert. Eine Änderung dort würde die Biom-Identität treffen
+    und ist eine Designentscheidung.
+  - Browser-/Vercel-Prüfung nicht erfolgt. Keine Firebase-Regeländerung.

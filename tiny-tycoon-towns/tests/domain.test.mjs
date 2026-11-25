@@ -89,8 +89,10 @@ test('town level thresholds', () => {
   assert.equal(townLevelFor(0, th), 1);
   assert.equal(townLevelFor(1999, th), 1);
   assert.equal(townLevelFor(2000, th), 2);
-  assert.equal(townLevelFor(161999, th), 4);
-  assert.equal(townLevelFor(162000, th), 5);
+  assert.equal(townLevelFor(934999, th), 4);
+  assert.equal(townLevelFor(935000, th), 5);
+  assert.equal(townLevelFor(2420000, th), 10);
+  assert.equal(th.length, 10); // Höchststufe 10 (Freibrief-Schwelle)
 });
 
 test('build and upgrade costs use the growth formulas (ceil)', () => {
@@ -128,7 +130,7 @@ test('upgrade pays the level-based cost and grants XP', () => {
   const r = upgradeBuilding(t, { x: 2, y: 2 }, ctx());
   assert.equal(r.state.tiles['2,2'].building.level, 2);
   assert.equal(r.state.coins, 1000 - 46);
-  assert.equal(r.state.townXp, 20); // 5 * new level² (2 × 2)
+  assert.equal(r.state.townXp, 10); // Upgrade 5 × neue Stufe (2); nicht quadratisch
 });
 
 test('town hall cannot be upgraded', () => {
