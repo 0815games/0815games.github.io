@@ -2,8 +2,10 @@
 // No game rules live here. Firebase is only touched through ./cloud.js.
 import {
   createTown, newSeed, chooseBiome, placeBuilding, upgradeBuilding,
-  toggleSell, buyOffer, advance, hydrateTown, setTutorialStep,
+  toggleSell, buyOffer, advance, hydrateTown, setTutorialStep, settleConvoyAction,
 } from './domain/engine.js?v=20261124-zentrieren';
+import { startConvoy } from './domain/convoys.js?v=20261124-zentrieren';
+import { tradeFormHtml, convoyListHtml, previewFor } from './trade-ui.js?v=20261124-zentrieren';
 import {
   productionMultiplier, ratePerMin, buildCost, storageCap, classOf,
 } from './domain/economy.js?v=20261124-zentrieren';
@@ -39,6 +41,14 @@ const MOOD_DE = {
   chatty: 'Eberhard plaudert: Stell dir vor, was ich unterwegs gesehen habe!',
 };
 const ERR_DE = {
+  noPartner: 'Diese Partnerstadt gibt es nicht.',
+  badDirection: 'Wähle Verkaufen oder Kaufen.',
+  badQuantity: 'Die Menge muss zwischen 10 und 100 liegen.',
+  noStock: 'So viel hast du nicht auf Lager.',
+  convoyLimit: 'Es sind schon zwei Konvois unterwegs. Warte, bis einer ankommt.',
+  noConvoy: 'Diesen Konvoi gibt es nicht.',
+  alreadySettled: 'Dieser Konvoi ist schon abgerechnet.',
+  notArrived: 'Dieser Konvoi ist noch unterwegs.',
   outOfBounds: 'Dieses Feld gibt es nicht.',
   locked: 'Dieses Feld ist noch gesperrt. Mehr Fläche gibt es mit höherem Stadtlevel.',
   occupied: 'Hier steht schon etwas.',
@@ -93,7 +103,7 @@ const REMOTE_TIMEOUT_MS = 10_000;
 // ---------- Boot and account ----------
 
 async function loadData() {
-  const names = ['resources', 'biomes', 'buildings', 'economy', 'merchant'];
+  const names = ['resources', 'biomes', 'buildings', 'economy', 'merchant', 'npcs'];
   const parts = await Promise.all(names.map((n) =>
     fetch(`data/${n}.json?v=20261124-zentrieren`).then((r) => {
       if (!r.ok) throw new Error(`data/${n}.json: HTTP ${r.status}`);
@@ -594,6 +604,7 @@ function bindStatic() {
   $('#help-btn').addEventListener('click', showHelp);
   $('#friends-btn').addEventListener('click', openFriends);
   $('#charter-btn').addEventListener('click', openCharters);
+  $('#trade-btn').addEventListener('click', openTrade);
   $('#visit-exit').addEventListener('click', endVisit);
   window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && visit) endVisit(); });
   // Menü oben rechts: öffnet und schließt die Schaltflächen Hilfe, Stadtchronik, Neu beginnen, Abmelden.
@@ -781,6 +792,7 @@ function tick() {
   const r = advance(state, Date.now(), ctx());
   state = r.state;
   cloudDirty = true;
+  if (r.events.some((e) => e.type === 'convoy_arrive')) toast('Ein Konvoi ist angekommen. Rechne ihn im Handel ab.');
   board?.gain(state.coins - coinsBefore);
   renderHud();
   updateStockNumbers();
@@ -1431,6 +1443,79 @@ async function loadCharterFor(forUid) {
   } catch (err) {
     console.error('Freibriefe nicht geladen:', err);
   }
+}
+
+// ---------- Handel mit Nachbarstädten (Konvois) ----------
+function openTrade() {
+  if (!state || !uid) {
+    toast('Melde dich an und lade deine Stadt, dann öffnet sich der Handel.', 'error');
+    return;
+  }
+  if (!baseData?.npcs) {
+    toast('Die Handelsdaten fehlen. Lade das Spiel neu.', 'error');
+    return;
+  }
+  const dlg = openDialog(`<div class="dlg-body">${tradeFormHtml(data)}<p class="row"><button type="button" id="trade-close" class="ghost">Schließen</button></p></div>`);
+  const form = dlg.querySelector('#trade-form');
+  const readForm = () => {
+    const fd = new FormData(form);
+    const partner = data.npcs.towns.find((t) => t.id === fd.get('partner'));
+    return {
+      partner,
+      direction: fd.get('direction'),
+      resource: fd.get('resource'),
+      qty: Number(fd.get('qty')),
+    };
+  };
+  const paintPreview = () => {
+    const f = readForm();
+    const preview = dlg.querySelector('#trade-preview');
+    if (!f.partner || !Number.isInteger(f.qty) || f.qty < 10 || f.qty > 100) {
+      preview.textContent = 'Menge zwischen 10 und 100 wählen.';
+      return;
+    }
+    const p = previewFor({ ...f, data });
+    preview.textContent = `Dauer: ${fmtTradeDuration(p.durationMin)}. ${p.text}`;
+  };
+  const paintList = () => {
+    const list = dlg.querySelector('#trade-list');
+    if (list) list.innerHTML = convoyListHtml(state, data, Date.now());
+  };
+  form.addEventListener('input', paintPreview);
+  form.addEventListener('change', paintPreview);
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const f = readForm();
+    const msg = dlg.querySelector('#trade-msg');
+    msg.textContent = '';
+    const r = startConvoy(state, { partner: f.partner, direction: f.direction, resource: f.resource, qty: f.qty },
+      { data, nowMs: Date.now() });
+    if (r.error) {
+      msg.textContent = ERR_DE[r.error] ?? 'Konvoi nicht möglich.';
+      return;
+    }
+    dispatch(r, 'Konvoi ist losgefahren.');
+    paintList();
+  });
+  dlg.addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-settle]');
+    if (btn) {
+      dispatch(settleConvoyAction(state, { id: btn.dataset.settle }, ctx()), 'Konvoi abgerechnet.');
+      paintList();
+    }
+    if (e.target.closest('#trade-close')) closeDialog();
+  });
+  paintPreview();
+  paintList();
+  const timer = setInterval(() => {
+    if (!dlg.open) return;
+    paintList();
+  }, 1000);
+  dlg.addEventListener('close', () => clearInterval(timer), { once: true });
+}
+
+function fmtTradeDuration(min) {
+  return `${Math.floor(min / 60)} h ${min % 60} min`;
 }
 
 function openCharters() {
