@@ -40,7 +40,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js" crossorigin="anonymous"
             onerror="window.scriptLoadError='firebase-database.js';"></script>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
-    <meta name="pipboy-build" content="14.0.17">
+    <meta name="pipboy-build" content="14.0.18">
     
     <script>document.write('<link rel="stylesheet" href="style.css?v=' + Date.now() + '">');</script>
     
@@ -419,12 +419,23 @@ ${window.logBuffer.slice(-10).join('\n') || '(leer - Fehler trat vor dem ersten 
         <!-- Update-Hinweis: erscheint nur, wenn der Server eine andere Version
              hat als die geladene (src/ui/ui_update.js). Bewusst unten und
              schmal - er soll nicht im Weg stehen, waehrend gespielt wird. -->
-        <div id="update-banner" hidden class="fixed bottom-0 left-0 right-0 z-[2500] bg-black border-t-2 border-yellow-500 px-3 py-2 flex items-center justify-between gap-2 text-base">
-            <span id="update-banner-text" class="text-yellow-400 tracking-wider"></span>
-            <span class="flex gap-2 shrink-0">
-                <button id="update-banner-now" class="action-button px-3 py-1 border-yellow-500 text-yellow-400 text-sm" hidden>JETZT LADEN</button>
-                <button id="update-banner-later" class="action-button px-3 py-1 border-green-700 text-green-600 text-sm">SPÄTER</button>
-            </span>
+        <!-- Update-Fenster, mittig wie der AFK-Schutz. Vorher war das ein Balken
+             unten am Rand - leicht zu uebersehen und auf dem Handy hinter der
+             Daumenleiste. Die Kennungen (#update-banner, -text, -now, -later)
+             bleiben, weil ui_update.js und die Tests sie beim Namen nennen;
+             nur die Form ist neu. -->
+        <div id="update-banner" hidden class="popup-mitte" role="dialog" aria-modal="true" aria-labelledby="update-banner-titel">
+            <div class="popup-feld">
+                <div class="popup-titel" id="update-banner-titel">SYSTEMUPDATE</div>
+                <div id="update-banner-text" class="popup-text text-yellow-400 tracking-wider"></div>
+                <div class="popup-knoepfe">
+                    <button id="update-banner-now" class="action-button border-yellow-500 text-yellow-400" hidden>JETZT LADEN</button>
+                    <button id="update-banner-later" class="action-button border-green-700 text-green-600">SPÄTER</button>
+                </div>
+                <div class="popup-zeile" style="margin-top:.7rem">
+                    <span>ROBCO // VERSIONSKANAL</span><span id="update-banner-stand"></span>
+                </div>
+            </div>
         </div>
 
         <div id="main-content">

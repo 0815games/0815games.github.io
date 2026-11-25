@@ -252,15 +252,11 @@ const UI = {
     },
 
     update: function() {
-        const loginScreen = this.els.loginScreen;
-        const isLoginHidden = loginScreen && (loginScreen.style.display === 'none' || loginScreen.classList.contains('hidden'));
-        const isAuth = (typeof Network !== 'undefined' && Network.myId);
-        if (isLoginHidden && isAuth) {
-            if(Date.now() - this.lastInputTime > 300000) { 
-                console.log("AFK Trigger: Logout initiiert.");
-                this.logout("AFK: ZEITÜBERSCHREITUNG");
-            }
-        }
+        // Der AFK-Schutz steht in src/ui/ui_afk.js und wird aus der update() in
+        // ui_render_core.js gerufen - dort, wo auch der Spielstand geprueft
+        // wird. Hier stand frueher eine zweite, eigene Pruefung, die nach
+        // fuenf Minuten still ausloggte. Zwei Uhren fuer dieselbe Sache laufen
+        // auseinander; diese Fassung wird ohnehin ueberschrieben.
         // Hier stand früher ein renderChar()-Aufruf. Die Funktion ist entfernt
         // (BEFUNDE.md, 3); diese update()-Fassung wird ohnehin von
         // ui_render_core.js überschrieben.

@@ -184,7 +184,7 @@ test('die kleinen Groessen bestehen nur aus den Farben des Motivs', async () => 
       const farben = farbzahlen(await roh(datei));
       // Das Motiv hat vier Farben: Leuchtgruen, Gelb, das dunkle Gruen der
       // Scheibe und Schwarz. Mehr heisst weichgezeichnet und damit Matsch.
-      const erlaubt = new Set(['57,255,20', '234,179,8', '0,17,0', '0,0,0']);
+      const erlaubt = new Set(['57,255,20', '234,179,8', '5,15,5', '10,42,10', '0,0,0']);
       const fremd = [...farben.keys()].filter(f => !erlaubt.has(f));
       assert.equal(fremd.length, 0,
         `${kante}px: fremde Farben - das wird beim Verkleinern Matsch (${fremd.slice(0, 6).join(' | ')})`);
@@ -194,14 +194,13 @@ test('die kleinen Groessen bestehen nur aus den Farben des Motivs', async () => 
   }
 });
 
-test('das Motiv ist bei 16 px noch der Kreisel, kein Fleck', async () => {
-  // Der Kreisel hat drei Merkmale, und alle drei muessen bei 16 px messbar
-  // sein. Ein gruener Punkt haette keines davon - das war der Fehler des
-  // alten Masken-Icons.
-  //  1. die Mitte ist hell (der Reaktorkern)
-  //  2. zwischen Kern und Rand liegt Gelb (der gegenlaeufige Ring)
-  //  3. oben und unten ist es gruen, links und rechts nicht (die Boegen,
-  //     also die Luecken des Kreisels)
+test('das Motiv ist bei 16 px noch eine Vault-Tuer, kein Fleck', async () => {
+  // Drei Merkmale, alle drei muessen bei 16 px messbar sein:
+  //  1. in der Mitte liegt ein heller Fleck (das Messingschild)
+  //  2. es gibt einen dunklen Ring darum (der Kranz)
+  //  3. aussen stehen Zacken ueber den Korpus hinaus (die Zaehne)
+  // Die 33 selbst ist bei 16 px nicht lesbar - deshalb prueft der Test die
+  // Messingflaeche, nicht die Ziffern.
   const puffer = readFileSync(join(ROOT, 'favicon.ico'));
   const eintrag = 6;                       // erster Eintrag = 16 px
   const laenge = puffer.readUInt32LE(eintrag + 8);
@@ -219,37 +218,37 @@ test('das Motiv ist bei 16 px noch der Kreisel, kein Fleck', async () => {
   };
   const mitte = Math.floor(bild.breite / 2);
   const istGruen = ([r, g, b]) => g > 120 && r < 120;
-  const istGelb = ([r, g, b]) => r > 120 && g > 90 && b < 120;
+  const istMessing = ([r, g, b]) => r > 120 && g > 90 && b < 120;
+  const istDunkel = ([r, g, b]) => r < 60 && g < 70 && b < 60;
 
-  assert.equal(istGruen(pixel(mitte, mitte)), true, 'der Reaktorkern fehlt - die Mitte ist dunkel');
+  // 1) Messingschild in der Mitte
+  assert.equal(istMessing(pixel(mitte, mitte)) || istMessing(pixel(mitte, mitte - 1)),
+    true, 'kein Messingschild in der Mitte');
 
-  // Gelb auf halbem Weg zwischen Kern und Rand, an einer Stelle ohne Bogen.
-  let gelbGefunden = false;
-  for (let d = 2; d <= mitte; d++) {
-    if (istGelb(pixel(mitte, mitte - d)) || istGelb(pixel(mitte, mitte + d)) ||
-        istGelb(pixel(mitte - d, mitte)) || istGelb(pixel(mitte + d, mitte))) {
-      gelbGefunden = true;
-      break;
+  // 2) dunkler Kranz zwischen Schild und Korpusrand
+  let kranz = false;
+  for (let d = 3; d <= mitte - 1; d++) {
+    if (istDunkel(pixel(mitte, mitte - d))) { kranz = true; break; }
+  }
+  assert.equal(kranz, true, 'kein dunkler Kranz - das Motiv ist einfarbig');
+
+  // 3) Zaehne: an der Kante des Korpus, aber ausserhalb der Zahnluecken,
+  //    muss Gruen ueber den Korpus hinausragen. Ein geschlossener Kreis
+  //    haette bei 16 px eine glatte Aussenkante.
+  const aussen = [];
+  for (let y = 0; y < bild.hoehe; y++) {
+    for (let x = 0; x < bild.breite; x++) {
+      const r = Math.hypot(x + 0.5 - mitte, y + 0.5 - mitte) / (bild.breite / 100);
+      if (r > 36 && r < 49 && istGruen(pixel(x, y))) aussen.push(1);
     }
   }
-  assert.equal(gelbGefunden, true, 'kein gelber Ring - das Motiv ist bei 16 px einfarbig');
-
-  // Die Boegen oben und unten, die Luecken links und rechts. Genau das
-  // unterscheidet den Kreisel von einem geschlossenen Ring.
-  const rand = (x, y) => istGruen(pixel(x, y));
-  const oben = [1, 2, 3].some(d => rand(mitte, d) || rand(mitte - 1, d) || rand(mitte + 1, d));
-  const links = [1, 2, 3].some(d => rand(d, mitte) || rand(d, mitte - 1) || rand(d, mitte + 1));
-  assert.equal(oben, true, 'oben ist kein Bogen - das Motiv ist bei 16 px leer');
-  assert.equal(links, false, 'links ist zu - das ist ein geschlossener Ring, kein Kreisel');
+  assert.ok(aussen.length >= 8, `nur ${aussen.length} gruene Pixel im Zahnkranz - die Zaehne fehlen`);
 });
 
 test('die Vektorquelle beschreibt dieselben Maße wie das Werkzeug', async () => {
   // Zwei Beschreibungen desselben Motivs laufen auseinander, sobald eine
   // geaendert wird. Der Test haelt die Zahlen zusammen.
   const roh = readFileSync(join(ROOT, 'docs/muster/app-icon.svg'), 'utf8');
-  // Kommentare raus: der Kopfkommentar nennt die Zweige beim Namen
-  // (<g id="mittel">), und indexOf wuerde sonst den Kommentar finden statt
-  // das Markup.
   const svg = roh.replace(/<!--[\s\S]*?-->/g, '');
   const werkzeug = readFileSync(join(ROOT, 'tools', 'app-icon.mjs'), 'utf8');
 
@@ -261,31 +260,32 @@ test('die Vektorquelle beschreibt dieselben Maße wie das Werkzeug', async () =>
     return Number(treffer[1]);
   };
 
-  // Die Bogenradien und -breiten stehen im mittleren Zweig der SVG, weil die
-  // Pixelformel genau diese kraeftige Fassung nachzeichnet.
   const mittel = svg.slice(svg.indexOf('<g id="mittel">'));
-  assert.ok(mittel.includes(`A${zahl('bogenR')} ${zahl('bogenR')}`),
-    `Bogenradius r=${zahl('bogenR')} fehlt im mittleren Zweig`);
-  assert.ok(mittel.includes(`stroke-width="${zahl('bogenBreite')}"`),
-    `Bogenbreite ${zahl('bogenBreite')} fehlt im mittleren Zweig`);
 
-  // Beide Boegen: oben und unten. Ein einzelner Bogen waere ein Kreis mit
-  // einem Loch, kein Kreisel.
-  const boegen = (mittel.match(/A[\d.]+ [\d.]+ 0 [01] 1/g) || []).length;
-  assert.equal(boegen, 2, `${boegen} Boegen im mittleren Zweig - erwartet 2`);
+  // Zahnkranz: die Zaehne sind Trapeze, keine Rechtecke. Ein Rechteck haette
+  // vier gerade Kanten und damit keine Zacken.
+  const zahnPfade = (mittel.match(/<path d="M[^"]*Z"\/>/g) || []);
+  assert.equal(zahnPfade.length, 8, `${zahnPfade.length} Zahn-Pfade - erwartet 8`);
+  for (const p of zahnPfade) {
+    assert.equal((p.match(/L/g) || []).length, 3, 'ein Zahn hat keine vier Ecken');
+  }
 
-  // Gelber Ring: Mitte und Breite muessen zusammenpassen.
-  const mitteGelb = (zahl('gelbInnen') + zahl('gelbAussen')) / 2;
-  const breiteGelb = zahl('gelbAussen') - zahl('gelbInnen');
-  assert.ok(Math.abs(mitteGelb - 27) < 0.01 && Math.abs(breiteGelb - 8) < 0.01,
-    `Gelb r=${mitteGelb} / Breite ${breiteGelb} - die SVG zeichnet r=27 mit Breite 8`);
-  assert.ok(mittel.includes('stroke="#eab308"'), 'kein gelber Ring im mittleren Zweig');
+  // Acht Speichen im Kranz
+  const speichen = (mittel.match(/<rect [^>]*transform="rotate/g) || []).length;
+  assert.equal(speichen, zahl('speichen'), `${speichen} Speichen - MOTIV sagt ${zahl('speichen')}`);
 
-  // Der Kern muss heller/groesser sein als nichts - sonst ist die Mitte leer.
-  assert.ok(zahl('kern') > 8, `Kern r=${zahl('kern')} ist bei 16 px kein Punkt mehr`);
+  // Messingschild und dunkler Kranz
+  assert.ok(mittel.includes(`r="${zahl('rMitte')}" fill="#eab308"`),
+    `Messingschild r=${zahl('rMitte')} fehlt`);
+  assert.ok(mittel.includes(`r="${zahl('rRing')}" fill="none" stroke="#050f05"`),
+    `dunkler Kranz r=${zahl('rRing')} fehlt`);
 
-  // Beide Zweige (gross/mittel) muessen vorhanden sein - sonst rastert das
-  // Werkzeug eine leere Datei.
+  // Die grosse Fassung traegt die Nummer 33, die kleine nicht - bei 16 px
+  // waeren das vier Pixel.
+  const gross = svg.slice(svg.indexOf('<g id="gross">'), svg.indexOf('<g id="mittel">'));
+  assert.match(gross, />33</, 'die grosse Fassung traegt die Nummer 33 nicht');
+  assert.doesNotMatch(mittel, />33</, 'die kleine Fassung traegt die Nummer 33 - bei 16 px ist das ein Fleck');
+
   for (const zweig of ['gross', 'mittel']) {
     assert.ok(svg.includes(`<g id="${zweig}">`), `Zweig "${zweig}" fehlt in der SVG`);
   }

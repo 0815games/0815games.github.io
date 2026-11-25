@@ -357,6 +357,9 @@ Object.assign(UI, {
     renderCharacterSelection: function(saves) {
         this.charSelectMode = true; this.currentSaves = saves;
         if(this.els.loginScreen) this.els.loginScreen.style.display = 'none';
+        // Hier ist noch niemand im Spiel - der AFK-Schutz darf nicht laufen,
+        // sonst loggt er waehrend der Charakterwahl aus.
+        if (typeof UI !== 'undefined' && UI.stoppeAfkSchutz) UI.stoppeAfkSchutz();
         if(this.els.charSelectScreen) this.els.charSelectScreen.style.display = 'flex';
         if(this.els.charSlotsList) this.els.charSlotsList.innerHTML = '';
         

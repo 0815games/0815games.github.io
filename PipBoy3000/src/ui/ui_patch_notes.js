@@ -35,6 +35,24 @@ window.GameData.offenePunkte = [
 // nicht mit dem, was geplant war.
 window.GameData.RELEASED_PATCHES = [
   {
+    version: '14.0.18',
+    datum: '2026-11-24',
+    title: 'Vault-Tuer als Icon · AFK-Fenster · Update-Fenster mittig',
+    punkte: [
+      'Das App-Icon ist jetzt die zackige Vault-Tuer: acht Trapez-Zaehne am Rand, dunkler Kranz mit acht Speichen, achteckige Innenplatte, Messingschild mit der 33.',
+      'Die 33 traegt nur die grosse Fassung. Bei 16 px waeren das vier Pixel - ein Fleck, keine Ziffer. Die kleine Fassung ist dafuer kraeftiger im Zahnkranz.',
+      'AFK: Die Zeit steht bei fuenf Minuten - das war sie vorher auch, aber es passierte ein stiller Logout. Jetzt kommt ein Fenster in der Mitte: BIST DU NOCH DA? mit Countdown und Balken. Ein Klick holt zurueck.',
+      'Erst nach weiteren 60 Sekunden ohne Reaktion wird abgemeldet, mit Grund im Login-Text. Man hat also eine Minute, um zurueckzukommen.',
+      'Das Update-Fenster war ein Balken unten am Rand, leicht zu uebersehen und auf dem Handy hinter der Daumenleiste. Es ist jetzt mittig, in derselben Form wie der AFK-Schutz.',
+      'Beide Fenster rasten ein: zwei Stufen mit kurzem Ueberschwingen wie ein Relais, dann eine Scanlinie darueber. Wer im System Bewegung abbestellt hat, bekommt sie ohne Animation.',
+      'Zwei Uhren sind zu einer geworden: die alte stille Abmeldung in ui_core.js und ui_render_core.js ist raus, die Pruefung sitzt in src/ui/ui_afk.js.'
+    ],
+    offen: [
+      'Der AFK-Schutz haengt an update(). Steht das Spiel (kein Zug, kein Dialog), laeuft die Schleife trotzdem weiter - geprueft ist der Fall, in dem der Tab im Hintergrund war.',
+      'Das Fenster laesst sich nicht mit Escape schliessen; nur der Knopf holt zurueck. Das ist Absicht: Escape wuerde wie "wegklicken" wirken und die Abmeldung trotzdem ausloesen.'
+    ]
+  },
+  {
     version: '14.0.17',
     datum: '2026-11-24',
     title: 'App-Icon · der Kreisel vom Ladebildschirm',

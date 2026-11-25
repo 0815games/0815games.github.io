@@ -233,6 +233,34 @@ test('die Update-Pruefung laedt bei einem offenen Dialog nicht neu', async () =>
     'Der JETZT-LADEN-Knopf darf bei offenem Dialog nicht angeboten werden');
 });
 
+test('das Update-Fenster ist mittig und behaelt seine Kennungen', () => {
+  // Vorher war das ein Balken unten (fixed bottom-0). Uebersehen war da fast
+  // unvermeidlich - und auf dem Handy lag er hinter der Daumenleiste. Jetzt
+  // dieselbe Form wie der AFK-Schutz: mittig, mit Animation.
+  //
+  // Die Kennungen bleiben, weil ui_update.js sie beim Namen nennt. Ein
+  // umbenanntes Element waere genau der stille Fehler, bei dem das Update
+  // nie erscheint.
+  // Das ECHTE shell/index.html lesen, nicht das Mini-DOM aus umgebung():
+  // dort steht nur das Noetigste fuer die Update-Pruefung, nicht die Form.
+  const html = readFileSync(join(ROOT, 'shell/index.html'), 'utf8');
+  const echt = new JSDOM(html).window.document;
+  const feld = echt.getElementById('update-banner');
+  assert.ok(feld, 'kein #update-banner im HTML');
+  assert.ok(feld.classList.contains('popup-mitte'), 'Das Update-Fenster ist nicht mittig');
+  assert.ok(!/bottom-0|border-t-2/.test(feld.className), 'Es steht noch die Balken-Form daran');
+  for (const id of ['update-banner-text', 'update-banner-now', 'update-banner-later']) {
+    assert.ok(echt.getElementById(id), `${id} fehlt`);
+  }
+  // Rollen und Beschriftung fuer Vorleser und Tastatur.
+  assert.equal(feld.getAttribute('role'), 'dialog');
+  assert.equal(feld.getAttribute('aria-modal'), 'true');
+
+  const css = readFileSync(join(ROOT, 'shell/style.css'), 'utf8');
+  assert.match(css, /\.popup-mitte\s*\{[^}]*position:\s*fixed/);
+  assert.match(css, /@keyframes popup-einrasten/);
+});
+
 test('ein laufender Kampf und eine offene Speicherung blockieren ebenfalls', async () => {
   const umg = umgebung();
   const {window} = umg;

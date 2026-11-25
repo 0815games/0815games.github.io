@@ -49,6 +49,8 @@ export const ORDER = [
   // gehoeren ans Ende: ui_update.js liest beim Start Game.state und Combat.
   'src/ui/ui_patch_notes.js',
   'src/ui/ui_update.js',
+  // AFK-Schutz: Fenster nach fuenf Minuten Stille statt stillem Logout.
+  'src/ui/ui_afk.js',
   // Navigation (Marker, Bestaetigung, Richtungspfeil). Vor ui_view_world.js
   // nicht moeglich - das ist eine spaetere Datei und ruft Navigation beim
   // Klick und beim Zeichnen. Deshalb hier, und ui_view_world.js findet es

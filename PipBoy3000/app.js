@@ -1633,15 +1633,6 @@
       }
     },
     update: function() {
-      const loginScreen = this.els.loginScreen;
-      const isLoginHidden = loginScreen && (loginScreen.style.display === "none" || loginScreen.classList.contains("hidden"));
-      const isAuth = typeof Network !== "undefined" && Network.myId;
-      if (isLoginHidden && isAuth) {
-        if (Date.now() - this.lastInputTime > 3e5) {
-          console.log("AFK Trigger: Logout initiiert.");
-          this.logout("AFK: ZEITÜBERSCHREITUNG");
-        }
-      }
     },
     init: function() {
       const toastCont = document.getElementById("game-toast-container");
@@ -8155,18 +8146,7 @@
   // src/ui/ui_render_core.js
   Object.assign(UI, {
     update: function() {
-      const loginScreen = document.getElementById("login-screen");
-      const isLoginHidden = loginScreen && (loginScreen.style.display === "none" || loginScreen.classList.contains("hidden"));
-      const isAuth = typeof Network !== "undefined" && Network.myId;
-      if (isLoginHidden && isAuth) {
-        if (Date.now() - (this.lastInputTime || Date.now()) > 3e5) {
-          console.log("AFK Trigger: Zeitüberschreitung im UI Render Loop");
-          if (typeof this.logout === "function") {
-            this.logout("AFK: ZEITÜBERSCHREITUNG");
-          }
-          return;
-        }
-      }
+      if (typeof AFK !== "undefined" && AFK.pruefen) AFK.pruefen();
       if (!Game.state) return;
       if (!this.els.ammo) this.els.ammo = document.getElementById("val-ammo");
       if (!this.els.caps) this.els.caps = document.getElementById("val-caps");
@@ -8336,6 +8316,7 @@
         Game.state.view = name;
         if (Game.state) Game.state.inDialog = false;
         if (document.activeElement) document.activeElement.blur();
+        if (typeof UI !== "undefined" && UI.starteAfkSchutz) UI.starteAfkSchutz();
         Game.initCanvas();
         this.restoreOverlay();
         this.toggleControls(true);
@@ -8802,6 +8783,7 @@
       this.charSelectMode = true;
       this.currentSaves = saves;
       if (this.els.loginScreen) this.els.loginScreen.style.display = "none";
+      if (typeof UI !== "undefined" && UI.stoppeAfkSchutz) UI.stoppeAfkSchutz();
       if (this.els.charSelectScreen) this.els.charSelectScreen.style.display = "flex";
       if (this.els.charSlotsList) this.els.charSlotsList.innerHTML = "";
       if (!this.deleteSaveSlot) {
@@ -10371,6 +10353,24 @@
   ];
   window.GameData.RELEASED_PATCHES = [
     {
+      version: "14.0.18",
+      datum: "2026-11-24",
+      title: "Vault-Tuer als Icon · AFK-Fenster · Update-Fenster mittig",
+      punkte: [
+        "Das App-Icon ist jetzt die zackige Vault-Tuer: acht Trapez-Zaehne am Rand, dunkler Kranz mit acht Speichen, achteckige Innenplatte, Messingschild mit der 33.",
+        "Die 33 traegt nur die grosse Fassung. Bei 16 px waeren das vier Pixel - ein Fleck, keine Ziffer. Die kleine Fassung ist dafuer kraeftiger im Zahnkranz.",
+        "AFK: Die Zeit steht bei fuenf Minuten - das war sie vorher auch, aber es passierte ein stiller Logout. Jetzt kommt ein Fenster in der Mitte: BIST DU NOCH DA? mit Countdown und Balken. Ein Klick holt zurueck.",
+        "Erst nach weiteren 60 Sekunden ohne Reaktion wird abgemeldet, mit Grund im Login-Text. Man hat also eine Minute, um zurueckzukommen.",
+        "Das Update-Fenster war ein Balken unten am Rand, leicht zu uebersehen und auf dem Handy hinter der Daumenleiste. Es ist jetzt mittig, in derselben Form wie der AFK-Schutz.",
+        "Beide Fenster rasten ein: zwei Stufen mit kurzem Ueberschwingen wie ein Relais, dann eine Scanlinie darueber. Wer im System Bewegung abbestellt hat, bekommt sie ohne Animation.",
+        "Zwei Uhren sind zu einer geworden: die alte stille Abmeldung in ui_core.js und ui_render_core.js ist raus, die Pruefung sitzt in src/ui/ui_afk.js."
+      ],
+      offen: [
+        "Der AFK-Schutz haengt an update(). Steht das Spiel (kein Zug, kein Dialog), laeuft die Schleife trotzdem weiter - geprueft ist der Fall, in dem der Tab im Hintergrund war.",
+        'Das Fenster laesst sich nicht mit Escape schliessen; nur der Knopf holt zurueck. Das ist Absicht: Escape wuerde wie "wegklicken" wirken und die Abmeldung trotzdem ausloesen.'
+      ]
+    },
+    {
       version: "14.0.17",
       datum: "2026-11-24",
       title: "App-Icon · der Kreisel vom Ladebildschirm",
@@ -10579,6 +10579,8 @@
     let ziel = null;
     const sagen = (schluessel, werte = {}) => Object.entries(werte).reduce((satz, [name, wert]) => satz.replace(`{${name}}`, String(wert)), TEXTE[schluessel] || "");
     function zeichnen() {
+      const stand = document2.getElementById("update-banner-stand");
+      if (stand) stand.textContent = `AKTUELL ${build}`;
       if (!zustand) {
         balken.hidden = true;
         return;
@@ -10587,22 +10589,22 @@
       if (zustand.art === "veraltet") {
         const gruende = zustand.blocker || [];
         text.textContent = gruende.length ? sagen("wartet", { grund: gruende.map((g) => GRUND[g] || g).join(", ") }) : sagen("verfuegbar", { build: zustand.build });
-        text.className = "text-yellow-400";
+        text.className = "popup-text text-yellow-400";
         jetzt.hidden = gruende.length > 0;
       } else if (zustand.art === "laedt") {
         text.textContent = sagen("laedt");
-        text.className = "text-yellow-400 animate-pulse";
+        text.className = "popup-text text-yellow-400 animate-pulse";
         jetzt.hidden = true;
       } else if (zustand.art === "geladen") {
         text.textContent = sagen("geladen", { build: zustand.build });
-        text.className = "text-[#39ff14]";
+        text.className = "popup-text text-[#39ff14]";
         jetzt.hidden = true;
       } else if (zustand.art === "aktuell") {
         balken.hidden = true;
         return;
       } else {
         text.textContent = sagen("unerreichbar");
-        text.className = "text-green-700";
+        text.className = "popup-text text-green-700";
         jetzt.hidden = true;
       }
       if (spaeter) spaeter.hidden = zustand.art !== "veraltet" && zustand.art !== "unerreichbar";
@@ -10722,6 +10724,156 @@
       else this.toast("Version nicht erreichbar", "text-red-400");
     });
   };
+
+  // src/ui/ui_afk.js
+  var AFK_GRENZE = 5 * 60 * 1e3;
+  var AFK_NACHLauf = 60 * 1e3;
+  var TICK = 500;
+  var UI_AFK = {
+    // Wird beim Einloggen auf jetzt gesetzt, damit die Zeit nicht aus dem
+    // Login-Bildschirm mitzaehlt.
+    uhrStart: 0,
+    fensterOffen: false,
+    ticker: null,
+    // Nur im Spiel: nicht auf dem Login-Bildschirm, nicht im Charakter-Menue.
+    laeuft: function() {
+      if (typeof Game === "undefined" || !Game.state) return false;
+      const login = document.getElementById("login-screen");
+      const loginWeg = login && (login.style.display === "none" || login.classList.contains("hidden"));
+      const auth = typeof Network !== "undefined" && Network.myId;
+      return Boolean(loginWeg && auth);
+    },
+    start: function() {
+      this.uhrStart = Date.now();
+      if (typeof UI !== "undefined") UI.lastInputTime = this.uhrStart;
+      this.fensterSchliessen();
+      if (this.ticker) return;
+      this.ticker = setInterval(() => this.pruefen(), TICK);
+    },
+    stopp: function() {
+      if (this.ticker) clearInterval(this.ticker);
+      this.ticker = null;
+      this.fensterSchliessen();
+    },
+    // Wird beim Zurueckkommen ins Spiel gerufen, nicht bei jedem Zug: sonst
+    // zaehlt die AFK-Uhr nie hoch.
+    meldeEingabe: function() {
+      if (typeof UI !== "undefined") UI.lastInputTime = Date.now();
+      if (this.fensterOffen) this.fensterSchliessen();
+    },
+    // Wie lange ist es her? In Millisekunden, nie negativ (eine Uhr kann
+    // springen, wenn das Geraet schlaeft).
+    stille: function() {
+      const letzte = typeof UI !== "undefined" && UI.lastInputTime || this.uhrStart || Date.now();
+      return Math.max(0, Date.now() - letzte);
+    },
+    pruefen: function() {
+      if (typeof document === "undefined") return;
+      if (!this.laeuft()) {
+        if (this.fensterOffen) this.fensterSchliessen();
+        return;
+      }
+      const stille = this.stille();
+      if (stille >= AFK_GRENZE + AFK_NACHLauf) {
+        this.ausloggen();
+        return;
+      }
+      if (stille >= AFK_GRENZE) {
+        this.fensterZeigen(AFK_GRENZE + AFK_NACHLauf - stille);
+      }
+    },
+    fensterZeigen: function(restMs) {
+      const feld = this.feld();
+      if (!feld) return;
+      this.fensterOffen = true;
+      feld.hidden = false;
+      const feldInnen = feld.querySelector(".popup-feld");
+      if (feldInnen) {
+        feldInnen.style.animation = "none";
+        void feldInnen.offsetWidth;
+        feldInnen.style.animation = "";
+      }
+      this.zaehlerZeichnen(restMs);
+      const knopf = feld.querySelector("[data-afk-bleiben]");
+      if (knopf && document.activeElement !== knopf) knopf.focus();
+    },
+    zaehlerZeichnen: function(restMs) {
+      const feld = this.feld();
+      if (!feld) return;
+      const sekunden = Math.max(0, Math.ceil(restMs / 1e3));
+      const zaehler = feld.querySelector("[data-afk-zaehler]");
+      if (zaehler) zaehler.textContent = `${String(Math.floor(sekunden / 60))}:${String(sekunden % 60).padStart(2, "0")}`;
+      const balken = feld.querySelector("[data-afk-balken]");
+      if (balken) balken.style.width = `${Math.max(0, Math.min(100, restMs / AFK_NACHLauf * 100))}%`;
+    },
+    fensterSchliessen: function() {
+      const feld = this.feld();
+      if (feld) feld.hidden = true;
+      this.fensterOffen = false;
+    },
+    ausloggen: function() {
+      this.fensterSchliessen();
+      if (this.ticker) clearInterval(this.ticker);
+      this.ticker = null;
+      if (typeof UI !== "undefined" && typeof UI.logout === "function") {
+        UI.logout("AFK: ZEITUEBERSCHREITUNG");
+      }
+    },
+    // Das Fenster entsteht beim ersten Bedarf und bleibt danach im DOM.
+    // Kein innerHTML bei jedem Tick: das wuerde die Animation und den Fokus
+    // jede halbe Sekunde zerreissen.
+    feld: function() {
+      let el = document.getElementById("afk-popup");
+      if (el || typeof document === "undefined" || !document.body) return el;
+      el = document.createElement("div");
+      el.id = "afk-popup";
+      el.className = "popup-mitte";
+      el.hidden = true;
+      el.setAttribute("role", "dialog");
+      el.setAttribute("aria-modal", "true");
+      el.setAttribute("aria-labelledby", "afk-popup-titel");
+      el.innerHTML = `
+            <div class="popup-feld">
+                <div class="popup-titel" id="afk-popup-titel">BIST DU NOCH DA?</div>
+                <div class="popup-text">Keine Eingabe seit fuenf Minuten.</div>
+                <div class="popup-text" style="margin-top:.35rem">
+                    In <span data-afk-zaehler class="text-yellow-400">1:00</span> wirst du abgemeldet.
+                </div>
+                <div style="height:6px;background:#0f1f0f;border:1px solid #14532d;margin-top:.7rem">
+                    <div data-afk-balken style="height:100%;width:100%;background:#39ff14;transition:width .45s linear"></div>
+                </div>
+                <div class="popup-knoepfe">
+                    <button type="button" data-afk-bleiben class="action-button">ICH BIN DA</button>
+                </div>
+                <div class="popup-zeile" style="margin-top:.7rem">
+                    <span>VAULT-TEC // SITZUNGSSCHUTZ</span><span>5 MIN</span>
+                </div>
+            </div>`;
+      document.body.appendChild(el);
+      const bleiben = el.querySelector("[data-afk-bleiben]");
+      if (bleiben) {
+        bleiben.onclick = (e) => {
+          if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+          this.meldeEingabe();
+        };
+      }
+      return el;
+    }
+  };
+  window.UI = window.UI || {};
+  window.AFK = UI_AFK;
+  window.UI.starteAfkSchutz = function() {
+    UI_AFK.start();
+  };
+  window.UI.stoppeAfkSchutz = function() {
+    UI_AFK.stopp();
+  };
+  if (typeof module !== "undefined" && module.exports) {
+    module.exports = { UI_AFK, AFK_GRENZE, AFK_NACHLauf };
+  }
 
   // src/ui/ui_navigation.js
   window.GameData = window.GameData || {};
