@@ -439,6 +439,7 @@
   // src/data/data_item_icons.js
   if (typeof window.GameData === "undefined") window.GameData = {};
   window.GameData.itemBilder = [
+    "acid",
     "adhesive",
     "alien_blaster",
     "ammo",
@@ -481,8 +482,10 @@
     "cooked_scorp",
     "cooked_yao",
     "deathclaw_gauntlet",
+    "deathclaw_hand",
     "duct_tape",
     "fists",
+    "fusion_core",
     "gas_mask",
     "gears",
     "glue",
@@ -531,8 +534,10 @@
     "plasma_pistol",
     "plasma_rifle",
     "plastic",
+    "poison_gland",
     "police_baton",
     "power_armor",
+    "power_fist",
     "radaway",
     "radio_part",
     "radx",
@@ -541,6 +546,7 @@
     "raider_helm",
     "raider_leg_r",
     "revolver_44",
+    "ripper",
     "rolling_pin",
     "screws",
     "shotgun",

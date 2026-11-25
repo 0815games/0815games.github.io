@@ -153,12 +153,19 @@ test('in der Wolke stehend bekommt man Strahlung', () => {
 test('ausserhalb der Wolke bekommt man keine Strahlung', () => {
   const {Game, state} = freshGame();
   Game.baueRadWolken('desert');
-  const w = Game.radWolkenImSektor()[0];
-  // weit weg von jeder Wolke
-  state.player = {x: (w.x + 20) % 45 + 2, y: (w.y + 20) % 45 + 2};
-  for (const andere of Game.radWolkenImSektor()) {
-    assert.ok(!(andere.x === state.player.x && andere.y === state.player.y));
+  // Ein Feld suchen, das wirklich strahlungsfrei ist. Der fruehere Ansatz
+  // ("20 Felder versetzt, Modulo 45") prueft nur auf exakte Gleichheit mit
+  // einem Wolkenmittelpunkt - bei fuenf Wolken im Sektor kann das Feld im
+  // Radius einer anderen liegen. Mit dem Zufall war der Test dadurch rot,
+  // obwohl der Radius stimmte.
+  let frei = null;
+  for (let y = 0; y < 45 && !frei; y++) {
+    for (let x = 0; x < 45; x++) {
+      if (Game.radWolkenWertAufFeld(x, y) === 0) { frei = {x, y}; break; }
+    }
   }
+  assert.ok(frei, 'kein strahlungsfreies Feld gefunden - Wolken decken den Sektor ab');
+  state.player = frei;
 
   Game.tickRadWolken();
 

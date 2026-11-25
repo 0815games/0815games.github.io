@@ -1,5 +1,35 @@
 # CHANGELOG
 
+## v14.0.6 (Item-Bilder vollstaendig, 2026-11-24)
+Alle 126 Items haben jetzt ein eigenes Bild - vorher 13. Kein Item faellt mehr
+auf das Typ-Emoji zurueck, das Stimpack und RadAway gleich aussehen liess.
+
+- [FEATURE] **126 Motive** als gruene Linienkunst auf Schwarz, 684 kB gesamt
+  (Ø 5,4 kB, kein Bild ueber 20 kB). 128x128 px, auf den Inhalt beschnitten
+  mit gleichmaessigem Rand, damit sie bei 32 px noch lesbar sind.
+- [FEATURE] **Vier Fehlerklassen, vier Pruefungen** in `tools/icon-check.mjs`,
+  das vor jeder Aufbereitung laeuft und bei einem Fund abbricht:
+  weisser Hintergrund, weisser Streifen am Bildrand, dunkelgruener Schleier
+  statt Schwarz, gefuellte statt gezeichneter Silhouette.
+- [FEATURE] **Kontrollblatt** `docs/kontrollblatt-items.png`: alle 126 Motive
+  auf einem Bild zur Sichtpruefung. Die Pixelmetriken finden keinen falschen
+  Stil - das Kontrollblatt schon.
+- [FIX] **Emoji-Rueckfall wird nicht mehr an einer festen ID getestet.** Der
+  Test brach zweimal, weil das Set wuchs und das geratene Item inzwischen ein
+  Bild hatte. Er sucht jetzt selbst ein Item ohne Bild.
+
+### Warum ein Bild viermal neu gezeichnet wurde
+
+Das Bildmodell haelt den Stil nicht zuverlaessig ein. Bei 126 Motiven waren
+rund 20 Rohbilder unbrauchbar - nicht weil das Motiv misslang, sondern weil
+der Hintergrund weiss war, ein weisser Streifen am Rand saß oder das Motiv
+gefuellt statt als Kontur kam. Jede dieser Klassen brauchte ein eigenes
+Pruefmerkmal; drei davon waeren ohne Messung nie aufgefallen, weil die Datei
+technisch einwandfrei war: 1024x1024, schwarz, gruen, ladbar.
+
+Die Lehre: eine Pruefung auf "Datei existiert und hat die richtige Groesse"
+faengt nichts davon. Es braucht eine Messung am Inhalt.
+
 ## v14.0.5 (Item-Bilder, 2026-11-24)
 Bis hierher hatte jedes Item ein Emoji nach **Typ**: Stimpack und RadAway sahen
 beide wie eine Spritze aus, alle 34 Waffen wie eine Pistole.
