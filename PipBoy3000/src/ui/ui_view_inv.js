@@ -41,31 +41,10 @@ Object.assign(UI, {
             countDisplay.className = usedSlots >= maxSlots ? "text-red-500 font-bold animate-pulse" : "text-white font-mono";
         }
         
-        // Emoji nach Typ - der Rueckfall, wenn fuer ein Item noch kein Bild
-        // existiert. Bewusst beibehalten: das Set waechst in Etappen, und ein
-        // fehlendes Bild darf kein leeres Feld erzeugen.
-        const getIcon = (type) => {
-            switch(type) {
-                case 'weapon': return '🔫'; case 'body': return '🛡️'; case 'head': return '🪖';
-                case 'legs': return '👖'; case 'feet': return '🥾'; case 'arms': return '🦾';
-                case 'back': return '🎒'; case 'consumable': return '💉'; case 'junk': return '⚙️';
-                case 'component': return '🔩'; case 'ammo': return '🧨'; case 'blueprint': return '📜'; 
-                case 'tool': return '⛺'; default: return '📦';
-            }
-        };
-
-        // Item-Bild, wenn es eines gibt (img/items/<id>.png, erzeugt von
-        // tools/icons.mjs). Der Pfad ist relativ, damit er unter GitHub Pages
-        // (/PipBoy3000/) genauso stimmt wie unter Vercel.
-        const itemBild = (id, type) => {
-            if(typeof Game.itemBildPfad !== 'function') return getIcon(type);
-            const pfad = Game.itemBildPfad(id);
-            if(!pfad) return getIcon(type);
-            // onerror faellt auf das Emoji zurueck, falls die Datei fehlt:
-            // ein kaputtes Bild-Icon waere schlimmer als ein Emoji.
-            return `<img src="${pfad}" alt="" class="w-8 h-8 object-contain"
-                        onerror="this.replaceWith(document.createTextNode('${getIcon(type)}'))">`;
-        };
+        // Symbol und Emoji-Rueckfall stehen zentral in ui_item_symbol.js,
+        // damit dasselbe Item im Inventar, im Shop und im Lager gleich
+        // aussieht. Hier bleibt nur der Aufruf.
+        const itemBild = (id, type) => UI.itemSymbol(id, type, 'gross');
 
         const createBtn = (itemDef, entry, isEquipped, label, onClick) => {
             const btn = document.createElement('div');
@@ -87,7 +66,7 @@ Object.assign(UI, {
                 `<div class="absolute top-0 right-0 bg-green-900 text-white text-[10px] px-1 font-mono">${entry.count}</div>` : '';
 
             btn.innerHTML = `
-                <div class="text-2xl flex items-center justify-center">${itemBild(itemDef.id, itemDef.type)}</div>
+                <div class="flex items-center justify-center">${itemBild(itemDef.id, itemDef.type)}</div>
                 <div class="text-[10px] truncate max-w-full px-1 font-bold ${extraClass}">${displayName}</div>
                 ${countDisplay}
             `;

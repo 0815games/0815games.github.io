@@ -1,6 +1,11 @@
 # Item-Bilder — Pflege
 
-**Stand: alle 126 Items haben ein Bild.** 128 × 128 px, Ø 5,4 kB, 678 kB gesamt.
+**Stand: alle 126 Items haben ein Bild.** 128 × 128 px, Ø 5,4 kB, 683 kB gesamt.
+
+Gezeigt werden sie ueber `UI.itemSymbol()` aus `src/ui/ui_item_symbol.js` — eine
+Quelle fuer alle Ansichten (Inventar, Detail, Ausruesten, Schmiede, Zerlegen,
+Haendler, Lager). Eine Ansicht, die ein eigenes Emoji mitbringt, ist ein Fehler;
+`tests/item-bilder.test.mjs` prueft das.
 
 Diese Datei beschreibt, wie ein Motiv entsteht und woran ein unbrauchbares
 Rohbild erkannt wird. Die Fehlliste, die hier früher stand, ist leer — sie

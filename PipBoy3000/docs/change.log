@@ -1,5 +1,32 @@
 # CHANGELOG
 
+## v14.0.7 (Item-Bilder ueberall, 2026-11-24)
+Die Bilder hingen bisher an einer einzigen Stelle: dem Inventargitter. Schmiede,
+Zerlegen, Haendler, Lager, Item-Detail und Ausruest-Dialog zeigten weiterhin
+Text oder ihr eigenes Emoji - dasselbe Item sah im Regal anders aus als im
+Rucksack.
+
+- [FEATURE] **`src/ui/ui_item_symbol.js`** als einzige Quelle fuer Item-Symbole:
+  `UI.itemSymbol(id, type, groesse)` liefert Bild oder Emoji, `UI.itemReihe()`
+  das Innenleben einer Shop- oder Lagerzeile. Drei Groessen (5/6/8 px-Klassen),
+  damit Listen ruhig bleiben.
+- [FEATURE] **Bebildert:** Inventargitter, Item-Detail, Ausruest-Dialog,
+  Schmiede-Liste, Zerlegen-Liste, Haendler Regal und Verkauf, Lager und
+  Rucksack im Camp.
+- [FIX] **`meat_mole`** neu gezeichnet: zeigte das ganze Tier statt eines
+  Fleischstuecks. Damit 126 von 126 Motiven.
+- [TEST] **Zwei neue Tests** in `item-bilder.test.mjs`: das Symbol rendert im
+  echten DOM ein <img> mit relativem Pfad, und keine Ansicht bringt wieder eine
+  eigene Emoji-Tabelle mit. Der zweite verhindert genau den Rueckfall, der
+  diesen Umbau noetig gemacht hat.
+
+### Leerzeichen bei Emoji
+
+`w-8 h-8` auf einem Emoji quetscht es nicht, es zentriert nur. Bei den
+Bild-Icons kam dadurch ein leeres Feld von 32 px um ein 8-px-Emoji herum
+zustande. Der Rueckfall steht jetzt in einem `<span>` derselben Groesse und
+wird zentriert - Bild und Emoji sitzen an derselben Stelle.
+
 ## v14.0.6 (Item-Bilder vollstaendig, 2026-11-24)
 Alle 126 Items haben jetzt ein eigenes Bild - vorher 13. Kein Item faellt mehr
 auf das Typ-Emoji zurueck, das Stimpack und RadAway gleich aussehen liess.
