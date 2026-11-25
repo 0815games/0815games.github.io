@@ -4,6 +4,16 @@
 
 export const RELEASED_PATCHES = [
   {
+    build: '20261125-bal3',
+    date: '2026-11-25',
+    items: [
+      {
+        de: 'Balance je Biom: Jedes Biom erreicht Stadtlevel 5 nach etwa 6 aktiven Stunden und Stadtlevel 10 nach etwa 12 Stunden. Die Biom-Eigenheiten bleiben erhalten, nur der Stadtfortschritt gleicht sich an.',
+        en: 'Balance by biome: every biome reaches town level 5 after about 6 active hours and town level 10 after about 12 hours. The biome traits stay, only town progress evens out.',
+      },
+    ],
+  },
+  {
     build: '20261125-bal2',
     date: '2026-11-25',
     items: [

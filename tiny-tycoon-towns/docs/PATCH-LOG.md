@@ -866,3 +866,30 @@ Ereignis ergänzt.
     meisten und ist deshalb zu schnell, Riverlands verkauft wenig und ist zu langsam. Lösung wäre ein biomeabhängiger
     XP-Faktor für Verkäufe (Entscheidung nötig).
   - Browser-/Vercel-Prüfung nicht erfolgt. Keine Firebase-Regeländerung.
+
+### TTT-0052 – Biomeabhängige Faktoren: XP-Ausgleich je Biom (Welle `20261125-bal3`)
+
+- Auftrag des Nutzers: alle biomeabhängigen Faktoren angehen. Ziel: jedes Biom Stadtlevel 5 nach ca. 4 bis 8 aktiven
+  Stunden und Stadtlevel 10 nach 11 bis 13 Stunden.
+- Biomeabhängig sind im Spiel: Produktionsfaktor je Ressourcenklasse (abundant 1,5 / neutral 1,0 / scarce 0,25),
+  Verkaufsfreigabe (scarce nicht verkauft), Händler-Gewichtung, Gelände, XP aus Verkäufen und Konvois.
+- Entscheidung: Die Ertragsfaktoren und Verkaufsregeln bleiben, weil sie das Profil der Biome ausmachen (Tiefwald
+  Holz, Küste Salz, Hochland Stein). Ausgeglichen wird der Stadtfortschritt: XP je verdienter Münze mit einem
+  Biom-Faktor. Der Ausgleich ist eine Zahl je Biom in `data/economy.json` (`xp.biomeFactor`).
+- Änderungen:
+  - `src/domain/engine.js`: `coinXp(s, data)` (XP je Münze × Biom-Faktor) für Verkäufe und Konvoi-Auszahlungen.
+  - `data/economy.json`: `xp.biomeFactor` = Riverlands 1,15 · Tiefwald 1,051 · Hochland 0,875 · Küste 0,639.
+  - `tests/convoys.test.mjs`: XP-Erwartung mit Biom-Faktor, Toleranzvergleich.
+  - `src/patch-notes.mjs`: Stadtchronik `20261125-bal3` (DE/EN).
+  - Cache-Welle `20261125-bal2` → `20261125-bal3`.
+- Kalibrierung: vier Schleifen (Faktor × Verhältnis Stufe-10-Zeit / 12 h). Konvergiert nach drei Schleifen.
+- Tests (lokal, Node 22.22.3):
+  - `npm test`: 147 Tests, 147 pass, 0 fail. `npm run check`: kein Fehler.
+  - `npm run simulate` (30 Tage, aktive Stunden):
+    - Stadtlevel 5: Riverlands 5,8 · Tiefwald 6,0 · Hochland 6,0 · Küste 6,0. Alle im Korridor 4 bis 8.
+    - Stadtlevel 10: Riverlands 12,0 · Tiefwald 12,0 · Hochland 12,0 · Küste 12,0. Alle im Korridor 11 bis 13.
+- Grenzen / offen:
+  - Der Bot ist ein Modell. Echte Spieler können anders vorgehen. Der Ausgleich gilt für den Bot-Pfad.
+  - Die Ertragsfaktoren je Biom (0,25 bis 1,5) sind unverändert. Eine Änderung dort würde die Biom-Identität treffen
+    und ist eine Designentscheidung.
+  - Browser-/Vercel-Prüfung nicht erfolgt. Keine Firebase-Regeländerung.
