@@ -40,10 +40,10 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js" crossorigin="anonymous"
             onerror="window.scriptLoadError='firebase-database.js';"></script>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
-    <meta name="pipboy-build" content="14.0.15">
+    <meta name="pipboy-build" content="14.0.16">
     
-    <link rel="stylesheet" href="app.css?v=14.0.15">
-    <link rel="stylesheet" href="style.css?v=14.0.15">
+    <link rel="stylesheet" href="app.css?v=14.0.16">
+    <link rel="stylesheet" href="style.css?v=14.0.16">
     
     <style>
         @keyframes spin-reverse { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
@@ -242,14 +242,18 @@ ${window.logBuffer.slice(-10).join('\n') || '(leer - Fehler trat vor dem ersten 
         <div class="login-box crt-effect-container">
             <div id="boot-sequence">
                 
-                <div class="relative w-32 h-32 mb-6 mx-auto flex items-center justify-center">
-                    <div class="absolute inset-0 border-2 border-green-900 rounded-full"></div>
-                    <div class="absolute inset-0 w-full h-full rounded-full border-[6px] border-transparent border-t-[#39ff14] border-b-[#39ff14] opacity-60 animate-spin"></div>
-                    <div class="absolute inset-4 rounded-full border-2 border-dashed border-yellow-500/50 animate-spin-reverse"></div>
-                    <div class="relative w-16 h-16 rounded-full bg-[#001100] border border-[#39ff14] reactor-glow flex items-center justify-center overflow-hidden z-10">
-                        <div class="w-8 h-8 bg-[#39ff14] rounded-full animate-pulse shadow-[0_0_20px_#39ff14]"></div>
-                        <div class="absolute left-0 w-full h-[2px] bg-[#ccffcc] shadow-[0_0_5px_white] animate-scan-vertical"></div>
-                    </div>
+                <!-- Das Logo: die Vault-Tuer. Es ist dasselbe Bild wie das
+                     App-Icon (icon.svg, erzeugt aus docs/muster/app-icon.svg),
+                     nur gross - kein zweites Motiv, das auseinanderlaufen
+                     kann. Der Ring dreht sich langsam, das ist die einzige
+                     Bewegung; die Tuer selbst steht still wie eine echte.
+                     Vorher stand hier eine Zielscheibe aus Tailwind-Ringen -
+                     die hatte mit einem Vault nichts zu tun. -->
+                <div class="relative w-36 h-36 mb-6 mx-auto flex items-center justify-center">
+                    <div class="absolute inset-0 rounded-full border border-green-900/70"></div>
+                    <div class="absolute inset-1 rounded-full border border-dashed border-yellow-500/25 animate-spin"></div>
+                    <img src="icon.svg" alt="Vault-Tuer" width="120" height="120"
+                         class="relative w-28 h-28 z-10 vaulttor-glow">
                     <div class="absolute -left-4 top-1/2 w-4 h-[1px] bg-green-700"></div>
                     <div class="absolute -right-4 top-1/2 w-4 h-[1px] bg-green-700"></div>
                 </div>
@@ -608,6 +612,6 @@ ${window.logBuffer.slice(-10).join('\n') || '(leer - Fehler trat vor dem ersten 
     };
 </script>
 
-    <script src="app.js?v=14.0.15"></script>
+    <script src="app.js?v=14.0.16"></script>
 </body>
 </html>

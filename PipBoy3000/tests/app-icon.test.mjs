@@ -193,7 +193,8 @@ test('die kleinen Groessen bestehen aus genau zwei Farben', async () => {
 test('das Motiv ist bei 16 px noch eine Tuer, kein Fleck', async () => {
   // Drei Messungen an der 16er-Fassung:
   //  1. die Mitte ist dunkel (Kernloch) - ein voller Fleck haette dort Gruen
-  //  2. es gibt einen hellen Ring zwischen Kern und Rand
+  //  2. es gibt eine helle Nabe zwischen Kern und Rand (die Speichen ringsum
+  //     sind dunkel, die Nabe nicht)
   //  3. der Rand ist dunkel - das Motiv hat Luft zum Rand
   const puffer = readFileSync(join(ROOT, 'favicon.ico'));
   const eintrag = 6;                       // erster Eintrag = 16 px
@@ -213,8 +214,10 @@ test('das Motiv ist bei 16 px noch eine Tuer, kein Fleck', async () => {
   const mitte = Math.floor(bild.breite / 2);
   assert.equal(gruen(mitte, mitte), false, 'die Mitte ist zugemalt - kein Kernloch erkennbar');
 
-  // Ring: auf halbem Weg zwischen Mitte und Rand muss Gruen liegen.
-  assert.equal(gruen(mitte, mitte - 4), true,
+  // Nabe: direkt ausserhalb des Kernlochs liegt Gruen. Bei r=14 von 100 sind
+  // das bei 16 px knapp 2 Pixel - die Nabe ist der letzte Rest Motiv, der
+  // uebrig bleibt, wenn die Speichen schon wegbrechen.
+  assert.equal(gruen(mitte, mitte - 2), true,
     'zwischen Kern und Rand ist nichts - das Motiv ist bei 16 px leer');
 
   // Rand: die aeusserste Zeile bleibt schwarz, sonst klebt das Icon am Rand.
@@ -235,17 +238,42 @@ test('die Vektorquelle beschreibt dieselben Maße wie das Werkzeug', async () =>
     assert.ok(treffer, `${name} fehlt in MOTIV`);
     return Number(treffer[1]);
   };
+  // speichenGrad ist eine Liste, kein Einzelwert.
+  const liste = (name) => {
+    const treffer = motiv[1].match(new RegExp(`${name}:\\s*\\[([^\\]]+)\\]`));
+    assert.ok(treffer, `${name} fehlt in MOTIV`);
+    return treffer[1].split(',').map(t => Number(t.trim()));
+  };
 
-  // Scheibe und Kernloch stehen als r=... in der SVG.
+  // Die Scheibe steht als r=... in beiden Zweigen der SVG.
   assert.ok(svg.includes(`r="${zahl('scheibe')}"`), `Scheibe r=${zahl('scheibe')} fehlt in der SVG`);
-  assert.ok(svg.includes(`r="${zahl('loch')}"`), `Kernloch r=${zahl('loch')} fehlt in der SVG`);
 
-  // Trennring: Mittelpunkt und Breite muessen zusammenpassen.
-  const mitteRing = (zahl('ringInnen') + zahl('ringAussen')) / 2;
-  const breiteRing = zahl('ringAussen') - zahl('ringInnen');
-  assert.ok(Math.abs(breiteRing - 7) < 0.01, `Ringbreite ${breiteRing} - erwartet 7`);
-  assert.ok(svg.includes('r="31.5"') && svg.includes('stroke-width="7"'),
-    `Ring r=${mitteRing} / Breite ${breiteRing} steht nicht in der SVG`);
+  // Kernloch und Nabe in BEIDEN Zweigen: ein Loch ohne Ring drumherum ist
+  // ein Punkt, und ein Punkt ist das alte Zielscheiben-Icon.
+  const gross = svg.slice(svg.indexOf('<g id="gross">'), svg.indexOf('<g id="mittel">'));
+  const mittel = svg.slice(svg.indexOf('<g id="mittel">'));
+  for (const [name, zweig] of [['gross', gross], ['mittel', mittel]]) {
+    const loch = zweig.match(/r="([\d.]+)" fill="#000000"\/>\s*<\/g>/) ||
+                 zweig.match(/<circle cx="50" cy="50" r="([\d.]+)" fill="#000000"\/>/g);
+    assert.ok(zweig.includes('fill="#000000"'), `Zweig ${name} hat kein Kernloch`);
+    const loecher = [...zweig.matchAll(/<circle cx="50" cy="50" r="([\d.]+)" fill="#000000"/g)].map(m => Number(m[1]));
+    const naben = [...zweig.matchAll(/<circle cx="50" cy="50" r="([\d.]+)" fill="#39ff14"/g)].map(m => Number(m[1]));
+    assert.ok(loecher.length > 0, `Zweig ${name}: kein Kernloch`);
+    assert.ok(naben.length > 0, `Zweig ${name}: keine Nabe`);
+    assert.ok(Math.max(...naben) > Math.min(...loecher),
+      `Zweig ${name}: Nabe r=${Math.max(...naben)} ist nicht groesser als das Loch r=${Math.min(...loecher)}`);
+  }
+
+  // Die Bolzen: so viele Rechtecke mit rotate(0..315) wie MOTIV.bolzen sagt.
+  // Das ist der Unterschied zwischen Vault-Tuer und Zielscheibe - ohne sie
+  // ist es wieder ein Kreis mit Loechern.
+  const bolzen = (gross.match(/transform="rotate\(\d+ 50 50\)"\/>/g) || []).length;
+  assert.ok(bolzen >= zahl('bolzen'), `nur ${bolzen} gedrehte Formen im grossen Zweig - erwartet mindestens ${zahl('bolzen')}`);
+
+  // Drei Speichen, nicht vier: eine Tuer mit vier Speichen waere ein Kreuz
+  // und bei 16 px nicht mehr von einem Fenster zu unterscheiden.
+  const speichen = liste('speichenGrad');
+  assert.equal(speichen.length, 3, `MOTIV.speichenGrad nennt ${speichen.length} Speichen - erwartet 3`);
 
   // Beide Zweige (gross/mittel) muessen vorhanden sein - sonst rastert das
   // Werkzeug eine leere Datei.

@@ -14,10 +14,11 @@
 //   2. unter 64 px Pixelformel: pro Pixel entscheidet eine Bedingung, es gibt
 //                  nur zwei Farben. Kein Antialiasing, keine Graustufen.
 //
-// Die Zahlen der Formel sind dieselben wie in der SVG: Scheibe r=45,
-// Trennring 28..35, Kernloch r=9, sechs Schlitze ab r=35. Wer eines von beiden
-// aendert, muss das andere mitziehen - tests/app-icon.test.mjs prueft, dass
-// die Pixelformel genau zwei Farben liefert.
+// Die Zahlen der Formel sind dieselben wie in der SVG: Scheibe r=44,
+// acht Bolzen von r=38 bis 48.5, Speichen 90/210/330 Grad, Nabe r=12,
+// Kernloch r=5. Wer eines von beiden aendert, muss das andere mitziehen -
+// tests/app-icon.test.mjs prueft, dass die Pixelformel genau zwei Farben
+// liefert.
 //
 // Ausgeliefert wird aus dem Repo-Wurzelverzeichnis (GitHub Pages liefert
 // legacy aus), deshalb liegen die Dateien in shell/ und werden von dort
@@ -51,14 +52,43 @@ const PNG = [
 ];
 
 // Das Motiv in Zahlen. Die SVG beschreibt dasselbe, nur als Pfade.
+// Das Motiv wird etwas eingezoomt gezeichnet, damit bei 16 px ein schwarzer
+// Rand bleibt. Ohne das kleben die Bolzen am Bildrand (bei r=47 bleiben 3
+// Einheiten = 0.48 px, also nichts).
+const SKALA = 0.92;
+
 const MOTIV = {
-  scheibe: 45,          // Aussenkante
-  ringInnen: 28,        // Trennring von ... bis
-  ringAussen: 35,
-  loch: 9,              // Kernloch
-  schlitze: 6,          // Verriegelungsbolzen
-  schlitzBreiteGrad: 7  // Winkelbreite eines Schlitzes
+  skala: SKALA,
+  scheibe: 44,           // Aussenkante der Scheibe
+  bolzenAussen: 47,      // Bolzen reichen bis hierhin - nicht 50, sonst
+                         // klebt das Icon bei 16 px am Rand
+  bolzenBreiteGrad: 19, // Winkelbreite eines Bolzens (kraeftiger als die SVG:
+                        // bei 16 px ist ein Bolzen von 1.6 px Breite nicht mehr
+                        // als Bolzen zu erkennen)
+  bolzen: 8,             // Verriegelungsbolzen am Rand
+  speichenGrad: [90, 210, 330],  // drei Speichen, keine vier: so ist die
+                                 // Tuer auch bei 16 px nicht spiegelsymmetrisch
+  // Die kleinen Fassungen brauchen kraeftigere Speichen als die grosse -
+  // 10 Einheiten sind bei 16 px 1.6 Pixel und verschwinden. Die Werte hier
+  // entsprechen dem Zweig <g id="mittel"> in der SVG.
+  speichenBreite: 18,
+  speicheBis: 32,
+  nabe: 14,
+  loch: 6.5              // Kernloch
 };
+
+// Ein Bolzen ist ein Rechteck in Polarkoordinaten: zwischen zwei Winkeln und
+// zwei Radien. Als Winkelbreite gerechnet, damit aussen und innen gleich breit
+// bleibt - ein Rechteck im kartesischen Sinn wuerde nach aussen breiter.
+function bolzenTreffer(winkel, radius) {
+  const halb = MOTIV.bolzenBreiteGrad / 2;
+  for (let i = 0; i < MOTIV.bolzen; i++) {
+    let d = Math.abs(winkel - i * 360 / MOTIV.bolzen);
+    d = Math.min(d, 360 - d);
+    if (d <= halb) return true;
+  }
+  return false;
+}
 
 // Pixelgenaue Zeichnung fuer kleine Kantenlaengen.
 // Kein sharp-Resize, keine Interpolation: jeder Pixel ist entweder #39ff14
@@ -72,20 +102,25 @@ function zeichneKlein(kante) {
     for (let x = 0; x < kante; x++) {
       const dx = x + 0.5 - mitte;
       const dy = y + 0.5 - mitte;
-      const radius = Math.hypot(dx, dy) / einheit;
+      // Radius in Motivkoordinaten: SKALA zieht das ganze Bild zum Rand hin
+      // zusammen, damit aussen ein schwarzer Rand bleibt.
+      const radius = Math.hypot(dx, dy) / einheit / MOTIV.skala;
 
-      let gruen = radius <= MOTIV.scheibe;
-      if (radius >= MOTIV.ringInnen && radius <= MOTIV.ringAussen) gruen = false;
+      let winkel = Math.atan2(dx, -dy) * 180 / Math.PI;
+      if (winkel < 0) winkel += 360;
+
+      // Scheibe plus die Bolzen, die ueber sie hinausragen.
+      let gruen = radius <= MOTIV.scheibe || (radius <= MOTIV.bolzenAussen && bolzenTreffer(winkel, radius));
       if (radius <= MOTIV.loch) gruen = false;
-      if (radius > MOTIV.ringAussen) {
-        // Winkelabstand zum naechsten Bolzen; 0 Grad zeigt nach oben
-        let winkel = Math.atan2(dx, -dy) * 180 / Math.PI;
-        if (winkel < 0) winkel += 360;
-        const abstand = Math.min(...Array.from({length: MOTIV.schlitze}, (_, i) => {
-          const diff = Math.abs(winkel - i * 360 / MOTIV.schlitze);
-          return Math.min(diff, 360 - diff);
-        }));
-        if (abstand <= MOTIV.schlitzBreiteGrad / 2) gruen = false;
+
+      // Speichen: tangentiale Breite, nicht Winkelbreite - sonst waeren sie
+      // aussen breiter als innen.
+      if (radius > MOTIV.nabe - 1 && radius <= MOTIV.speicheBis) {
+        for (const s of MOTIV.speichenGrad) {
+          let d = Math.abs(winkel - s);
+          d = Math.min(d, 360 - d);
+          if (d * Math.PI / 180 * radius <= MOTIV.speichenBreite / 2) gruen = false;
+        }
       }
 
       const i = (y * kante + x) * 4;
@@ -117,6 +152,10 @@ async function quadrat(seite) {
   // Ab 120 px traegt der Innenring, darunter wuerde er zu Brei.
   return rastere(seite, seite >= 120 ? 'gross' : 'mittel');
 }
+
+// Ab hier wird geschrieben. Vorher nichts: das Modul ist auch als Bibliothek
+// importierbar (tools/emblem.mjs holt sich MOTIV und bolzenTreffer von hier).
+export {MOTIV, bolzenTreffer, zeichneKlein, RASTER_AB};
 
 for (const {name, size, typ} of PNG) {
   let bild = await quadrat(typ === 'maskable' ? Math.round(size * 0.8) : size);
