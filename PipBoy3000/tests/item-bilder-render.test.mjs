@@ -56,7 +56,9 @@ test('jede Inventarzelle zeigt ein Bild, kein Emoji', () => {
   Game.state = spielzustand(window);
   UI.renderInventory();
 
-  const zellen = [...liste.querySelectorAll('div.h-16')];
+  // Zellhoehe nicht festnageln: sie ist in v14.0.12 von h-16 auf h-24
+  // gewachsen. Erkannt wird die Zelle an dem Attribut, das sie auszeichnet.
+  const zellen = [...liste.querySelectorAll('div[class*="h-24"], div[class*="h-16"]')];
   assert.equal(zellen.length, 7,
     `erwartet 7 Zellen (5 Rucksack + 2 ausgeruestet), gefunden ${zellen.length}`);
 
@@ -181,4 +183,84 @@ test('itemSymbol bekommt nur IDs, die es im Katalog gibt', () => {
     'itemSymbol bekam undefined - dann greift nur noch das Emoji');
 
   dom.window.close();
+});
+
+// --- Pip-Boy-Design in den Dialogen (v14.0.12) ---------------------------
+// Rueckmeldung: "Bitte auch die Buttons normalisieren - aktuell falsche
+// Schrift und weiss? Hier wieder back to the roots und Fallout-Pipboy-Design."
+// Drei Dinge waren falsch: eine weisse Zahl im Stimpack-Dialog, Buttons ohne
+// .action-button (dadurch ohne Terminal-Schrift) und ein Emoji im Button.
+
+test('die Item-Dialoge bleiben im Pip-Boy-Entwurf', () => {
+  const {window, dom} = loadBundle(join(ROOT, 'app.js'));
+  const {document} = window;
+  const {UI, Game} = window;
+
+  Game.state = spielzustand(window);
+  UI.restoreOverlay();          // legt das Overlay an, das die Dialoge benutzen
+
+  const faelle = [
+    {index: 0, name: 'Stimpack'},
+    {index: 2, name: 'Rohrpistole'}
+  ];
+
+  for (const fall of faelle) {
+    UI.showItemConfirm(fall.index);
+    const box = document.querySelector('#ui-dialog-overlay > div');
+    assert.ok(box, `${fall.name}: Dialog wurde nicht geoeffnet`);
+
+    const buttons = [...box.querySelectorAll('button')];
+    assert.ok(buttons.length >= 2, `${fall.name}: zu wenige Buttons`);
+
+    for (const btn of buttons) {
+      assert.match(btn.className, /action-button/,
+        `${fall.name}: Button "${btn.textContent.trim()}" fehlt .action-button - dann greift die Terminal-Schrift nicht`);
+      // Kein Emoji im Button: das Inventar ist bildgefuehrt.
+      assert.ok(!EMOJI.test(btn.textContent), // eslint-disable-line no-undef
+        `${fall.name}: Button "${btn.textContent.trim()}" enthaelt ein Emoji`);
+    }
+
+    // Kein weisser Text mehr: weiss ist im Entwurf nur die Fehlermeldung.
+    const weiss = [...box.querySelectorAll('*')].filter(e => /text-white/.test(e.getAttribute('class') || ''));
+    assert.deepEqual(weiss.map(e => e.textContent.trim()), [],
+      `${fall.name}: weisse Schrift im Dialog`);
+
+    // Das Bild ist die Hauptsache und liegt in Originalgroesse vor.
+    const bild = box.querySelector('img');
+    assert.ok(bild, `${fall.name}: kein Bild im Dialog`);
+    assert.match(bild.getAttribute('class'), /w-32 h-32/,
+      `${fall.name}: Dialogbild ist nicht 128 px gross`);
+
+    UI.leaveDialog();
+  }
+
+  dom.window.close();
+});
+
+test('die Terminal-Schrift gilt auch fuer Tailwinds Standard-Sans', () => {
+  // Der Tailwind-Build setzte nur font-mono auf VT323. Jede Klasse ohne
+  // font-mono - und das sind die meisten - fiel auf die System-Sans zurueck.
+  // Genau das war die "falsche Schrift".
+  const build = readFileSync(join(ROOT, 'build.mjs'), 'utf8');
+  const thema = build.slice(build.indexOf('theme:'), build.indexOf('corePlugins'));
+  assert.match(thema, /sans:\s*\['VT323'/, 'font-sans steht nicht auf VT323');
+  assert.match(thema, /mono:\s*\['VT323'/, 'font-mono steht nicht auf VT323');
+
+  // Und im gebauten CSS muss die Regel ankommen.
+  const css = readFileSync(join(ROOT, 'app.css'), 'utf8');
+  assert.match(css, /font-family:\s*VT323/, 'app.css nennt VT323 nicht');
+});
+
+test('die Inventarzelle faerbt sich beim Antippen nicht gruen', () => {
+  // Seit die Bilder transparent sind, waeren sie auf gruenem Grund
+  // unsichtbar. Der Hover darf deshalb nur Rahmen und Glow aendern.
+  const quelle = readFileSync(join(ROOT, 'src', 'ui', 'ui_view_inv.js'), 'utf8');
+  // Kommentare zaehlen nicht: der Grund fuer den Wechsel steht dort als Text.
+  const ohneKommentare = quelle
+    .split('\n')
+    .filter(zeile => !/^\s*\/\//.test(zeile))
+    .join('\n');
+  assert.ok(!/hover:bg-green-500/.test(ohneKommentare),
+    'die Inventarzelle fuellt sich beim Hover noch gruen - transparente Bilder verschwinden dann');
+  assert.match(quelle, /hover:border-\[#39ff14\]/, 'kein Hover-Effekt auf dem Rahmen');
 });

@@ -144,3 +144,84 @@ test('Inventar, Shop und Lager zeigen dasselbe Symbol', () => {
   // Die Groesse unterscheidet sich, das Bild nicht.
   assert.notEqual(ausInventar, ausLager, 'Groesse wird ignoriert');
 });
+
+// --- Transparenz und Groesse (v14.0.12) ----------------------------------
+// Zwei Rueckmeldungen aus dem Spiel:
+//   "alle haben schwarzen Hintergrund - sollte durchsichtig sein"
+//   "Bilder sind schlecht erkennbar"
+// Der erste Punkt ist eine Eigenschaft der Dateien, der zweite eine der
+// Anzeige. Beides wird hier geprueft, damit es nicht wieder zurueckfaellt.
+
+test('jedes Bild hat einen durchsichtigen Hintergrund', async () => {
+  // Bis v14.0.11 wurde beim Aufbereiten deckendes Schwarz unterlegt. Im
+  // Inventar sass damit auf jeder Zelle ein eigener schwarzer Kasten.
+  const {default: sharp} = await import('sharp');
+  const ohneAlpha = [];
+  const keinTransparenterRand = [];
+
+  for (const datei of bilder()) {
+    const pfad = join(BILDER, datei);
+    const meta = await sharp(pfad).metadata();
+    if (!meta.hasAlpha) { ohneAlpha.push(datei); continue; }
+
+    // Der Rand muss wirklich frei sein - ein Bild mit Alphakanal, aber
+    // deckendem Rand, saehe im Inventar genauso aus wie vorher.
+    const {data, info} = await sharp(pfad).raw().toBuffer({resolveWithObject: true});
+    const randPunkte = [];
+    for (let x = 0; x < info.width; x += 4) {
+      randPunkte.push([x, 0], [x, info.height - 1]);
+    }
+    for (let y = 0; y < info.height; y += 4) {
+      randPunkte.push([0, y], [info.width - 1, y]);
+    }
+    const deckend = randPunkte.filter(([x, y]) => data[(y * info.width + x) * 4 + 3] > 20);
+    if (deckend.length > randPunkte.length * 0.02) {
+      keinTransparenterRand.push(`${datei} (${deckend.length} deckende Randpunkte)`);
+    }
+  }
+
+  assert.deepEqual(ohneAlpha, [], `ohne Alphakanal - node tools/icons.mjs ausfuehren:\n  ${ohneAlpha.join('\n  ')}`);
+  assert.deepEqual(keinTransparenterRand, [],
+    `Rand nicht durchsichtig:\n  ${keinTransparenterRand.join('\n  ')}`);
+});
+
+test('die Bilder nutzen nur den Leuchtton der Oberflaeche', async () => {
+  // Ein einheitlicher Ton laesst 126 Motive wie ein Set wirken. Die Rohbilder
+  // schwanken; tools/icons.mjs vereinheitlicht auf #39ff14.
+  const {default: sharp} = await import('sharp');
+  const abweichend = [];
+  for (const datei of bilder()) {
+    const {data, channels} = await sharp(join(BILDER, datei)).raw().toBuffer({resolveWithObject: true});
+    // Ein paar Stichproben deckender Pixel reichen.
+    let geprueft = 0;
+    for (let i = 0; i < data.length && geprueft < 40; i += channels) {
+      if (data[i + 3] < 200) continue;      // nur volle Linien
+      geprueft++;
+      if (data[i] !== 0x39 || data[i + 1] !== 0xff || data[i + 2] !== 0x14) {
+        abweichend.push(`${datei}: ${data[i]},${data[i + 1]},${data[i + 2]}`);
+        break;
+      }
+    }
+  }
+  assert.deepEqual(abweichend, [], `falscher Farbton:\n  ${abweichend.join('\n  ')}`);
+});
+
+test('das Inventar zeigt die Symbole gross genug', () => {
+  // 32 px reichen fuer Linienkunst mit 2-3 px Strich (bei 128 px) nicht.
+  // Untergrenze 48 px im Gitter, 128 px im Dialog - darunter ist das Motiv
+  // bei der Haelfte des Sets nicht zu erkennen.
+  const {window} = loadBundle(join(ROOT, 'app.js'));
+  const {UI} = window;
+
+  const gitter = UI.itemSymbol('pipe_pistol', 'weapon', 'gross');
+  assert.match(gitter, /w-12 h-12/, `Gittergroesse nicht 48 px: ${gitter.slice(0, 80)}`);
+
+  const dialog = UI.itemSymbol('pipe_pistol', 'weapon', 'voll');
+  assert.match(dialog, /w-32 h-32/, `Dialoggroesse nicht 128 px: ${dialog.slice(0, 80)}`);
+
+  // Das Gitter hat auf dem Telefon drei Spalten - bei vier waere die Zelle
+  // nur ~80 px breit und das 48-px-Symbol zu dominant.
+  const template = readFileSync(join(ROOT, 'templates', 'inventory.html'), 'utf8');
+  assert.match(template, /grid-cols-3/, 'Inventar hat auf dem Telefon keine drei Spalten mehr');
+  assert.match(template, /sm:grid-cols-4/, 'keine vierte Spalte ab Tablet');
+});

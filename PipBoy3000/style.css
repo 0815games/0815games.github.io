@@ -184,8 +184,12 @@ canvas { image-rendering: pixelated; image-rendering: crisp-edges; display: bloc
 button, .action-button, .header-btn, .shop-item-row { position: relative; z-index: 50; pointer-events: auto !important; }
 
 /* --- ALERTS, GLOWS & BUTTON STYLES --- */
-.action-button { background-color: #0f1f0f; color: var(--pip-green); border: 1px solid var(--pip-green); padding: 5px 10px; margin: 2px; cursor: pointer; text-transform: uppercase; font-size: 1.25rem; transition: all 0.1s; font-family: 'VT323', monospace; display: flex; align-items: center; justify-content: center; }
-.action-button:hover { background-color: var(--pip-green); color: black; }
+.action-button { background-color: #0f1f0f; color: var(--pip-green); border: 1px solid var(--pip-green); padding: 5px 10px; margin: 2px; cursor: pointer; text-transform: uppercase; font-size: 1.25rem; letter-spacing: 0.05em; transition: all 0.1s; font-family: 'VT323', monospace; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 12px rgba(57, 255, 20, 0.07); }
+/* Hover invertiert (Pip-Boy-Muster: gruener Grund, schwarze Schrift). Wichtig:
+   Text und Rand bleiben gesetzt, damit eine gesetzte Rahmenfarbe (z.B.
+   border-red-500 am WEGWERFEN-Button) erhalten bleibt und nicht beim
+   Darueberfahren auf Gruen umspringt. */
+.action-button:hover { background-color: var(--pip-green); color: #000; border-color: var(--pip-green); }
 .action-button:active { transform: scale(0.95); }
 .action-button:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(100%); }
 

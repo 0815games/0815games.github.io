@@ -1,5 +1,55 @@
 # CHANGELOG
 
+## v14.0.12 (Lesbare Bilder, transparente Items, Pip-Boy-Buttons, 2026-11-24)
+Zwei Rueckmeldungen aus dem Spiel: "Bilder sind jetzt im Inventar, aber schlecht
+erkennbar. Ausserdem haben alle schwarzen Hintergrund - sollte durchsichtig
+sein." und "Bitte die Buttons normalisieren - aktuell falsche Schrift und weiss?
+Hier wieder back to the roots und Fallout-Pipboy-Design."
+
+- [FIX] **Die Item-Bilder sind transparent.** `tools/icons.mjs` legte beim
+  Aufbereiten deckendes Schwarz unter. Im Inventar sass damit auf jeder Zelle
+  ein eigener schwarzer Kasten. Jetzt wird die Helligkeit des Rohbilds zum
+  Alpha-Wert: schwarz wird durchsichtig, gruen bleibt deckend, die Kanten
+  behalten ihren weichen Uebergang. Alle 126 Bilder neu erzeugt (594 kB,
+  vorher 683 kB).
+- [FIX] **Hover der Inventarzelle fuellt nicht mehr gruen.** Das war die
+  Voraussetzung fuer transparent: auf `hover:bg-green-500` waere ein gruenes
+  Symbol unsichtbar gewesen. Stattdessen leuchtet jetzt der Rahmen, dazu ein
+  Glow - der Pip-Boy-Effekt bleibt.
+- [FIX] **Symbole sind deutlich groesser.** Vorher 20/24/32 px, jetzt
+  24/32/48/128 px. Bei 32 px war von einer Linienzeichnung mit 2-3 px Strich
+  (bei 128 px) nichts zu erkennen - und die Haelfte der 126 Motive ist genau
+  so gezeichnet (gemessen: 29 Motive mit Strich <= 3 px).
+- [FIX] **Das Inventar hat auf dem Telefon drei Spalten** statt vier. Bei vier
+  war die Zelle ~80 px breit; mehr Symbol passt da nicht hinein. Dazu Zelle
+  von 64 auf 96 px Hoehe. Ab Tablet vier, ab Desktop fuenf Spalten.
+  Kategorie-Kopfzeilen nutzen `col-span-full` statt `col-span-4` - sonst
+  brachen sie bei drei und fuenf Spalten.
+- [FIX] **Die Item-Dialoge sind wieder im Entwurf.** Drei Fehler auf einmal:
+  eine weisse TP-Zahl (`text-white`), Buttons ohne `.action-button` (damit
+  ohne Terminal-Schrift) und ein Emoji im Loeschen-Button. Jetzt ueberall
+  `.action-button` mit Pip-Boy-Rahmen, keine weisse Schrift, kein Emoji.
+- [FIX] **Das Bild im Dialog hat Originalgroesse** (128 px). Der Dialog ist die
+  einzige Ansicht, in der man das Motiv in Ruhe ansieht - dort standen
+  vorher dieselben 32 px wie im Gitter.
+- [FIX] **Die Terminal-Schrift gilt ueberall.** Der Tailwind-Build setzte nur
+  `font-mono` auf VT323; jede Klasse ohne `font-mono` - und das sind die
+  meisten - fiel auf die System-Sans zurueck. Das war die "falsche Schrift".
+  Jetzt steht auch `font-sans` auf VT323.
+- [FIX] **`.action-button` behaelt die gesetzte Rahmenfarbe** beim Hover und
+  bekommt einen Innenschein. Vorher sprang ein roter WEGWERFEN-Button beim
+  Darueberfahren auf Gruen um.
+- [TEST] **`tests/item-bilder.test.mjs` (3 neu):** jedes Bild hat einen
+  durchsichtigen Rand, jedes Bild nutzt genau `#39ff14`, und das Inventar
+  zeigt mindestens 48 px im Gitter / 128 px im Dialog.
+  **`tests/item-bilder-render.test.mjs` (3 neu):** beide Item-Dialoge haben
+  nur `.action-button`-Buttons, keine weisse Schrift, kein Emoji und ein
+  128-px-Bild; `font-sans` steht auf VT323; die Zelle faerbt sich beim Hover
+  nicht gruen. Gegenprobe: mit dem alten Stand fallen genau diese drei um.
+
+Nicht gemacht: die 29 duennen Motive nachzeichnen. Sie sind bei 48 px jetzt
+lesbar; ob das reicht, entscheidet der naechste Blick auf einem echten Geraet.
+
 ## v14.0.11 (Neues App-Icon, 2026-11-24)
 "Das Logo ist haesslich." Das alte Icon war ein Gasmasken-Gesicht: duenne
 Striche, ein Strahlensymbol als Fleck in der Mitte, ein Filter, der unten zu

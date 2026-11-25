@@ -7,8 +7,12 @@
         <span>CAPS: <span id="inv-caps" class="text-yellow-400">0</span></span>
     </div>
 
-    <!-- GRID LAYOUT -->
-    <div id="inventory-list" class="w-full grid grid-cols-4 gap-2 overflow-y-auto p-1 pb-10">
+    <!-- GRID LAYOUT
+         3 Spalten auf dem Telefon, 4 ab Tablet, 5 auf breiten Schirmen.
+         Vorher fest 4: auf dem iPhone war die Zelle nur ~80 px breit, und
+         ein 32-px-Symbol darin ist bei Linienkunst nicht lesbar. Mit drei
+         Spalten wird die Zelle ~110 px breit - Platz fuer ein 48-px-Bild. -->
+    <div id="inventory-list" class="w-full grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-2 overflow-y-auto p-1 pb-10">
         <!-- Gefüllt von JS -->
     </div>
 

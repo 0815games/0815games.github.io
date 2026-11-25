@@ -20,11 +20,43 @@ const QUELLE = join(ROOT, 'docs/muster');
 const ZIEL = join(ROOT, 'img/items');
 
 const GROESSE = 128;
-// Das Motiv soll das Bild fuellen, aber nicht am Rand kleben.
-const RAND_ANTEIL = 0.08;
+// Das Motiv soll das Bild fuellen, aber nicht am Rand kleben. 5 % statt 8 %:
+// das Symbol wird im Inventar mit 48-56 px gezeigt, jedes Prozent Rand fehlt
+// dem Motiv direkt.
+const RAND_ANTEIL = 0.05;
 // Alles unter dieser Helligkeit gilt als Hintergrund. Der Grund ist schwarz,
 // die Linien gruen - 40 trennt beides zuverlaessig.
 const SCHWELLE = 40;
+// Farbe der Linien im Ergebnis. Die Rohbilder schwanken zwischen #39ff14 und
+// einem dunkleren Gruen; ein einheitlicher Ton laesst das Set zusammenwirken.
+const LINIEN = {r: 0x39, g: 0xff, b: 0x14};
+
+// Der Hintergrund wird zu TRANSPARENZ, nicht zu Schwarz.
+//
+// Bis v14.0.11 wurde hier deckendes Schwarz unterlegt. Im Inventar sass damit
+// auf jeder Zelle ein eigener schwarzer Kasten, und die Kachel wirkte wie ein
+// Fremdkoerper statt wie ein Symbol auf dem Panel. Jetzt traegt das Bild nur
+// die Linien; die Zelle liefert den Hintergrund.
+//
+// Die Helligkeit des Rohbilds wird zum Alpha-Wert: schwarz -> durchsichtig,
+// gruen -> deckend. Die Kanten behalten dabei ihren weichen Uebergang, sonst
+// wirken die Striche bei 48 px ausgefranst.
+function entfrembe(data, info) {
+  const {width, height, channels} = info;
+  const raus = Buffer.alloc(width * height * 4);
+  for (let i = 0, o = 0; o < raus.length; i += channels, o += 4) {
+    // Gruen ist der helle Kanal; Rot und Blau sind im Rohbild fast null.
+    const helligkeit = Math.max(data[i], data[i + 1], data[i + 2]);
+    const alpha = helligkeit <= SCHWELLE
+      ? 0
+      : Math.min(255, Math.round((helligkeit - SCHWELLE) / (255 - SCHWELLE) * 255));
+    raus[o] = LINIEN.r;
+    raus[o + 1] = LINIEN.g;
+    raus[o + 2] = LINIEN.b;
+    raus[o + 3] = alpha;
+  }
+  return raus;
+}
 
 export async function aufbereiten(datei, {ziel = ZIEL, groesse = GROESSE} = {}) {
   const {default: sharp} = await import('sharp');
@@ -52,17 +84,28 @@ export async function aufbereiten(datei, {ziel = ZIEL, groesse = GROESSE} = {}) 
   // Pipeline nur EINEN resize aus. In einer Kette wurde der zweite (auf 128)
   // still ignoriert und es kamen 260 px heraus - das faellt ohne Pruefung
   // nicht auf, weil das Bild ja existiert.
+  //
+  // Der Rand ist durchsichtig, nicht schwarz: sonst kaeme der Kasten zurueck.
   const mitRand = await sharp(beschnitten)
-    .resize(seite, seite, {fit: 'contain', background: {r: 0, g: 0, b: 0, alpha: 1}})
+    .resize(seite, seite, {fit: 'contain', background: {r: 0, g: 0, b: 0, alpha: 0}})
     .extend({
       top: rand, bottom: rand, left: rand, right: rand,
-      background: {r: 0, g: 0, b: 0, alpha: 1}
+      background: {r: 0, g: 0, b: 0, alpha: 0}
     })
     .toBuffer();
 
-  await sharp(mitRand)
+  // Erst auf die Zielgroesse, DANN entfremben: so wird der Alpha-Kanal einmal
+  // interpoliert statt zweimal, und die Kanten bleiben sauber.
+  const skaliert = await sharp(mitRand)
     .resize(groesse, groesse, {fit: 'fill', kernel: 'lanczos3'})
-    .png({compressionLevel: 9, palette: true})
+    .removeAlpha()
+    .raw()
+    .toBuffer({resolveWithObject: true});
+
+  const durchsichtig = entfrembe(skaliert.data, skaliert.info);
+
+  await sharp(durchsichtig, {raw: {width: groesse, height: groesse, channels: 4}})
+    .png({compressionLevel: 9})
     .toFile(zielPfad);
 
   const groesseBytes = (await readFile(zielPfad)).length;

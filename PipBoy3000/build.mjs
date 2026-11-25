@@ -134,7 +134,14 @@ async function buildCss() {
       join(ROOT, 'shell/*.html'),
       join(ROOT, 'templates/*.html')
     ],
-    theme: {extend: {fontFamily: {mono: ['VT323', 'ui-monospace', 'monospace']}}},
+    // Schrift: das Pip-Boy-Design ist eine Terminal-Schrift, keine System-Sans.
+    // Vorher war nur `mono` umgestellt - jede Klasse ohne font-mono (und das
+    // sind die meisten) fiel auf Tailwinds Standard-Sans zurueck. Genau das
+    // war die "falsche Schrift" im Item-Dialog.
+    theme: {extend: {fontFamily: {
+      sans: ['VT323', 'ui-monospace', 'monospace'],
+      mono: ['VT323', 'ui-monospace', 'monospace']
+    }}},
     corePlugins: {preflight: false}
   };
   const input = '@tailwind base;\n@tailwind components;\n@tailwind utilities;\n';

@@ -25,10 +25,20 @@ window.UI.itemTypEmoji = function(type) {
 
 // Groessen, die im Spiel vorkommen. Bewusst wenige: das Symbol soll in jeder
 // Liste gleich gross sein, sonst wirken die Zeilen unruhig.
+//
+// Die Werte sind in v14.0.12 gewachsen. Vorher: 20/24/32 px. Bei 32 px war
+// von einer Linienzeichnung mit 2-3 px Strich (bei 128 px) nichts mehr zu
+// erkennen - die Haelfte des Sets besteht aus genau solchen Motiven.
+//
+// Ab 48 px aufwaerts traegt die Zeichnung. Die Groessen sind deshalb so
+// gewaehlt, dass jede Stufe ueber dieser Schwelle liegt, wo es der Platz
+// zulaesst:
 const ITEM_SYMBOL_KLASSEN = {
-    klein: 'w-5 h-5',      // enge Listen (Lager, Zerlegen)
-    mittel: 'w-6 h-6',     // Shop- und Inventarzeilen
-    gross: 'w-8 h-8'       // Inventargitter
+    klein: 'w-6 h-6',      // 24 px - enge Listen (Lager, Wiki-Zeilen)
+    mittel: 'w-8 h-8',     // 32 px - Shop, Crafting, Charakterseite
+    gross: 'w-12 h-12',    // 48 px - Inventargitter
+    gross2: 'w-14 h-14',   // 56 px - Detaildialog, wo das Bild die Hauptsache ist
+    voll: 'w-32 h-32'      // 128 px - Detaildialog gross (Originalgroesse)
 };
 
 window.UI.itemSymbol = function(id, type, groesse) {
