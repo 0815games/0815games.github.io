@@ -57,13 +57,51 @@
     
     <script>
         // --- GLOBAL ERROR CAPTURE ---
+        // Der Puffer war bei jedem Crash-Bericht leer: captureLog() wurde
+        // nirgends aufgerufen. Jetzt haengen sich console.log/warn/error und
+        // window.onerror selbst ein - damit steht im Bericht, was bis zum
+        // Absturz passiert ist, nicht nur dass es ihn gab.
         window.logBuffer = [];
-        
+        window.letzteAktion = null;
+
         function captureLog(type, msg) {
-            const line = `[${new Date().toLocaleTimeString()}] [${type}] ${msg}`;
+            const zeit = new Date().toLocaleTimeString();
+            const line = `[${zeit}] [${type}] ${msg}`;
             window.logBuffer.push(line);
-            console.log(line);
+            // Nur die letzten 50 behalten: auf dem iPhone ist Speicher knapp,
+            // und fuer die Diagnose reicht das Ende.
+            if (window.logBuffer.length > 50) window.logBuffer.shift();
+            return line;
         }
+        window.captureLog = captureLog;
+
+        // Konsole mitschreiben, ohne das Original zu ersetzen.
+        (function mitschreiben() {
+            if (window._logMitschreibung) return;
+            window._logMitschreibung = true;
+            for (const stufe of ['log', 'warn', 'error']) {
+                const original = console[stufe] ? console[stufe].bind(console) : function() {};
+                console[stufe] = function(...args) {
+                    const text = args.map(a => {
+                        if (a instanceof Error) return a.message;
+                        if (typeof a === 'object' && a !== null) {
+                            try { return JSON.stringify(a); } catch (e) { return '[Objekt]'; }
+                        }
+                        return String(a);
+                    }).join(' ');
+                    captureLog(stufe.toUpperCase(), text);
+                    original(...args);
+                };
+            }
+        })();
+
+        // Klicks mitschreiben: der letzte Bedienschritt vor einem Absturz ist
+        // die wichtigste Information ueberhaupt und kostet zwei Zeilen.
+        window.merkeAktion = function(beschreibung) {
+            // Die Zeit wird mitgeschrieben, nicht der Stack: bei einem fremden
+            // Skript ist der Stack leer, der Ablauf aber trotzdem erkennbar.
+            window.letzteAktion = `${beschreibung} (${new Date().toLocaleTimeString()})`;
+        };
 
         // Fremde Skripte melden Fehler ohne Details: der Browser gibt aus
         // Sicherheitsgruenden "Script error." und keine Zeile/Stack, wenn das
@@ -117,6 +155,10 @@
                 if (!firebase.auth) fehlt.push('firebase-auth.js');
                 if (!firebase.database) fehlt.push('firebase-database.js');
             }
+            // Die onerror-Attribute an den Script-Tags setzen ein Flag. Das war
+            // bisher gesetzt, aber nirgends ausgelesen - im Bericht fehlte
+            // genau die Angabe, welches Skript nicht ankam.
+            if (window.scriptLoadError) fehlt.push(window.scriptLoadError + ' (onerror am Tag)');
             return fehlt;
         }
 
@@ -148,10 +190,12 @@ ${details.stack}
 === UMGEBUNG ===
 Online: ${navigator.onLine ? 'ja' : 'NEIN'}
 firebase: ${typeof firebase === 'undefined' ? 'NICHT GELADEN' : 'geladen'}
+Bildschirm: ${(window.screen && window.screen.width) || '?'}x${(window.screen && window.screen.height) || '?'} (Geraet), Geraetepixel: ${window.devicePixelRatio || 1}
 Netzwerk aktiv: ${(typeof Network !== 'undefined' && Network.active) ? 'ja' : 'nein / nicht initialisiert'}
+Letzte Aktion: ${window.letzteAktion || 'keine erfasst'}
 
 === LOG BUFFER (LAST 10) ===
-${window.logBuffer.slice(-10).join('\n')}
+${window.logBuffer.slice(-10).join('\n') || '(leer - Fehler trat vor dem ersten Logeintrag auf)'}
             `.trim();
 
             if(reportBox) reportBox.value = fullReport;
@@ -221,7 +265,7 @@ ${window.logBuffer.slice(-10).join('\n')}
                 </form>
                 <button id="btn-login" class="action-button w-full py-3 font-bold text-xl mb-2 mt-4">LOGIN</button>
                 <button id="btn-toggle-register" class="text-sm text-yellow-400 hover:text-yellow-200 cursor-pointer mb-4 underline bg-transparent border-none">Noch kein Account? Hier registrieren</button>
-                <button id="btn-offline" class="text-sm text-green-400 hover:text-green-200 cursor-pointer mb-4 underline bg-transparent border-none" onclick="UI.startOffline()">Ohne Anmeldung spielen</button>
+                <button id="btn-offline" class="text-sm text-green-400 hover:text-green-200 cursor-pointer mb-4 underline bg-transparent border-none" onclick="merkeAktion('Klick: Ohne Anmeldung spielen'); UI.startOffline()">Ohne Anmeldung spielen</button>
                 <div class="flex gap-2 w-full">
                     <button id="btn-manual-login" class="action-button flex-1 py-2 font-bold text-lg border-yellow-400 text-yellow-400" onclick="UI.showManualOverlay()">ANLEITUNG</button>
                     <button id="btn-changelog" class="action-button flex-1 py-2 font-bold text-lg border-blue-400 text-blue-400" onclick="UI.showChangelogOverlay()">LOGS</button>
