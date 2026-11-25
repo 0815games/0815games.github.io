@@ -201,22 +201,23 @@ Object.assign(UI, {
 
         if (isStimpack) {
              box.innerHTML = `
-                <h2 class="text-xl font-bold text-green-400 mb-2 border-b border-green-500 pb-2">${item.name}</h2>
-                <div class="text-xs text-green-200 mb-4 bg-green-900/20 p-2">
-                    <div class="flex justify-between"><span>TP Aktuell:</span> <span class="text-white font-bold">${Math.floor(Game.state.hp)} / ${Game.state.maxHp}</span></div>
-                    <div class="flex justify-between"><span>Verfügbar:</span> <span class="text-yellow-400 font-bold">${invItem.count} Stück</span></div>
+                <div class="flex justify-center mb-3">${UI.itemSymbol(invItem.id, item.type, 'voll')}</div>
+                <h2 class="text-2xl font-bold text-green-400 mb-2 border-b border-green-500 pb-2 tracking-wider">${item.name}</h2>
+                <div class="text-sm mb-4 bg-green-900/20 p-2 border border-green-900">
+                    <div class="flex justify-between"><span class="text-green-300">TP AKTUELL:</span> <span class="text-[#39ff14] font-bold">${Math.floor(Game.state.hp)} / ${Game.state.maxHp}</span></div>
+                    <div class="flex justify-between"><span class="text-green-300">VERFÜGBAR:</span> <span class="text-yellow-400 font-bold">${invItem.count} STÜCK</span></div>
                 </div>
-                
+
                 <div class="flex flex-col gap-3 w-full">
-                    <button id="btn-use-one" class="action-button border-green-500 text-green-500 hover:bg-green-900 py-3 font-bold flex justify-between px-4">
+                    <button id="btn-use-one" class="action-button border-green-500 text-green-400 py-3 font-bold flex justify-between px-4">
                         <span>1x BENUTZEN</span>
-                        <span class="text-xs mt-1 text-green-300">+${item.val} HP</span>
+                        <span class="text-sm text-green-300">+${item.val} HP</span>
                     </button>
-                    <button id="btn-use-max" class="action-button border-blue-500 text-blue-400 hover:bg-blue-900 py-3 font-bold flex justify-between px-4">
+                    <button id="btn-use-max" class="action-button border-yellow-500 text-yellow-400 py-3 font-bold flex justify-between px-4">
                         <span>AUTO-HEAL (MAX)</span>
-                        <span class="text-xs mt-1 text-blue-200">Bis voll</span>
+                        <span class="text-sm text-yellow-300">BIS VOLL</span>
                     </button>
-                    <button id="btn-cancel" class="action-button border-red-500 text-red-500 hover:bg-red-900 py-2 font-bold mt-2">
+                    <button id="btn-cancel" class="action-button border-green-800 text-green-600 py-2 font-bold mt-2">
                         ABBRUCH
                     </button>
                 </div>
@@ -248,11 +249,16 @@ Object.assign(UI, {
         // raw-Feld im Inventar unsichtbar.
         const isUsable = !!item.raw || !['junk', 'component', 'misc', 'rare', 'ammo'].includes(item.type);
 
+        // Das Bild ist hier die Hauptsache: der Dialog ist die einzige Ansicht,
+        // in der man das Motiv in Ruhe ansieht. 128 px sind die Originalgroesse,
+        // also scharf - vorher standen hier 32 px (v14.0.12).
         box.innerHTML = `
-            <div class="flex justify-center mb-2">${UI.itemSymbol(invItem.id, item.type, 'gross')}</div>
-            <h2 class="text-xl font-bold text-green-400 mb-2">${displayName}</h2>
-            <div class="text-xs text-green-200 mb-4 border-t border-b border-green-900 py-2">Typ: ${item.type.toUpperCase()}<br>Wert: ${item.cost} KK<br><span class="text-yellow-400">${statsText}</span></div>
-            <p class="text-green-200 mb-4 text-sm">${isUsable ? "Gegenstand benutzen oder wegwerfen?" : "Dieses Item kann nur verkauft oder zum Craften verwendet werden."}</p>
+            <div class="flex justify-center mb-3">${UI.itemSymbol(invItem.id, item.type, 'voll')}</div>
+            <h2 class="text-2xl font-bold text-green-400 mb-2 tracking-wider">${displayName}</h2>
+            <div class="text-sm text-green-200 mb-4 border-t border-b border-green-900 py-2 uppercase">
+                TYP: ${item.type.toUpperCase()}<br>WERT: ${item.cost} KK<br><span class="text-yellow-400">${statsText}</span>
+            </div>
+            <p class="text-green-300 mb-4 text-sm leading-snug">${isUsable ? "GEGENSTAND BENUTZEN ODER WEGWERFEN?" : "NUR ZUM VERKAUFEN ODER CRAFTEN GEEIGNET."}</p>
         `;
         
         const btnContainer = document.createElement('div');
@@ -260,7 +266,7 @@ Object.assign(UI, {
         
         if (isUsable) {
             const btnYes = document.createElement('button');
-            btnYes.className = "border border-green-500 text-green-500 hover:bg-green-900 px-4 py-3 font-bold w-full text-lg";
+            btnYes.className = "action-button border-green-500 text-green-400 px-4 py-3 font-bold w-full text-xl";
             btnYes.textContent = "BENUTZEN / AUSRÜSTEN";
             btnYes.onclick = () => { Game.useItem(invIndex); setTimeout(() => UI.leaveDialog(), 50); };
             btnContainer.appendChild(btnYes);
@@ -269,13 +275,15 @@ Object.assign(UI, {
         const row = document.createElement('div');
         row.className = "flex gap-2 w-full";
         
+        // Kein 🗑️ mehr: das Inventar ist bildgefuehrt, ein Emoji im Button
+        // faellt aus dem Entwurf. Die Farbe (Rot) traegt die Bedeutung.
         const btnTrash = document.createElement('button');
-        btnTrash.className = "border border-red-500 text-red-500 hover:bg-red-900 px-4 py-2 font-bold flex-1";
-        btnTrash.innerHTML = "WEGWERFEN 🗑️";
+        btnTrash.className = "action-button border-red-500 text-red-400 px-4 py-2 font-bold flex-1 text-base";
+        btnTrash.textContent = "WEGWERFEN";
         btnTrash.onclick = () => { Game.destroyItem(invIndex); setTimeout(() => UI.leaveDialog(), 50); };
-        
+
         const btnNo = document.createElement('button');
-        btnNo.className = "border border-gray-600 text-gray-500 hover:bg-gray-800 px-4 py-2 font-bold flex-1";
+        btnNo.className = "action-button border-green-800 text-green-600 px-4 py-2 font-bold flex-1 text-base";
         btnNo.textContent = "ABBRUCH";
         btnNo.onclick = () => { UI.leaveDialog(); };
         
@@ -303,15 +311,17 @@ Object.assign(UI, {
         box.className = "bg-black border-2 border-yellow-500 p-4 shadow-[0_0_15px_#aa0] max-w-sm text-center mb-4 w-full pointer-events-auto";
         box.onclick = (e) => e.stopPropagation();
 
+        // Wie im Item-Dialog: das Bild in Originalgroesse, Buttons ueber
+        // .action-button (Schrift und Rahmen kommen aus dem Stylesheet).
         box.innerHTML = `
             <div class="text-xs text-yellow-600 font-bold tracking-widest mb-1">SLOT: ${slot.toUpperCase()}</div>
-            <div class="flex justify-center mb-2">${UI.itemSymbol(item.id, def.type, 'gross')}</div>
-            <h2 class="text-xl font-bold text-yellow-400 mb-4 border-b border-yellow-500 pb-2">${name}</h2>
+            <div class="flex justify-center mb-3">${UI.itemSymbol(item.id, def.type, 'voll')}</div>
+            <h2 class="text-2xl font-bold text-yellow-400 mb-4 border-b border-yellow-500 pb-2 tracking-wider">${name}</h2>
             <div class="flex flex-col gap-2 w-full">
-                <button id="btn-unequip" class="action-button w-full border-yellow-500 text-yellow-500 hover:bg-yellow-900 py-3 font-bold">
+                <button id="btn-unequip" class="action-button w-full border-yellow-500 text-yellow-400 py-3 font-bold text-lg">
                     ABLEGEN (INS INVENTAR)
                 </button>
-                <button id="btn-cancel-eq" class="action-button border-gray-600 text-gray-500 hover:bg-gray-800 py-2 font-bold mt-2">
+                <button id="btn-cancel-eq" class="action-button border-green-800 text-green-600 py-2 font-bold mt-2">
                     ABBRUCH
                 </button>
             </div>

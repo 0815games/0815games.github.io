@@ -58,12 +58,21 @@ Object.assign(UI, {
         const bildId = (itemDef, entry) => (entry && entry.id) || (itemDef && itemDef.id) || null;
         const itemBild = (itemDef, entry) => UI.itemSymbol(bildId(itemDef, entry), itemDef && itemDef.type, 'gross');
 
+        // Zellhoehe. Vorher 64 px bei 32 px Symbol - das Bild war der kleinste
+        // Teil der Kachel. Jetzt 96 px hoch und 48 px Symbol; das Motiv ist
+        // damit fast doppelt so gross (v14.0.12).
+        const ZELLE_HOEHE = 'h-24';
+
         const createBtn = (itemDef, entry, isEquipped, label, onClick) => {
             const btn = document.createElement('div');
-            let cssClass = "relative border border-green-500 bg-green-900/30 w-full h-16 flex flex-col items-center justify-center transition-colors group";
-            
-            if(onClick) cssClass += " cursor-pointer hover:bg-green-500 hover:text-black";
-            else cssClass += " cursor-default opacity-80"; 
+            let cssClass = `relative border border-green-500 bg-green-900/30 w-full ${ZELLE_HOEHE} flex flex-col items-center justify-center transition-colors group`;
+
+            // Kein hover:bg-green-500 mehr: seit die Item-Bilder transparent
+            // sind, waeren sie auf gruenem Grund unsichtbar. Stattdessen
+            // leuchtet der Rahmen und die Zelle hellt leicht auf - der
+            // Pip-Boy-Effekt bleibt, das Motiv auch.
+            if(onClick) cssClass += " cursor-pointer hover:border-[#39ff14] hover:bg-green-900/60 hover:shadow-[0_0_10px_rgba(57,255,20,0.5)]";
+            else cssClass += " cursor-default opacity-80";
             
             if (entry && entry.isNew && !isEquipped) {
                 cssClass += " new-item-glow";
@@ -74,12 +83,12 @@ Object.assign(UI, {
             let displayName = entry.props && entry.props.name ? entry.props.name : itemDef.name;
             let extraClass = entry.props && entry.props.color ? entry.props.color : "";
 
-            const countDisplay = (entry.count > 1 || itemDef.type === 'ammo') ? 
-                `<div class="absolute top-0 right-0 bg-green-900 text-white text-[10px] px-1 font-mono">${entry.count}</div>` : '';
+            const countDisplay = (entry.count > 1 || itemDef.type === 'ammo') ?
+                `<div class="absolute top-0 right-0 bg-green-900 text-[#39ff14] text-[11px] px-1 font-mono border-l border-b border-green-700">${entry.count}</div>` : '';
 
             btn.innerHTML = `
                 <div class="flex items-center justify-center">${itemBild(itemDef, entry)}</div>
-                <div class="text-[10px] truncate max-w-full px-1 font-bold ${extraClass}">${displayName}</div>
+                <div class="text-[11px] leading-tight truncate max-w-full px-1 font-bold text-green-300 ${extraClass}">${displayName}</div>
                 ${countDisplay}
             `;
 
@@ -144,7 +153,7 @@ Object.assign(UI, {
             if(cats[key].items.length > 0) {
                 hasItems = true;
                 const header = document.createElement('div');
-                header.className = "col-span-4 bg-green-900/40 text-green-300 text-xs font-bold px-2 py-1 mt-2 border-b border-green-700 tracking-wider flex items-center gap-2";
+                header.className = "col-span-full bg-green-900/40 text-green-300 text-xs font-bold px-2 py-1 mt-2 border-b border-green-700 tracking-wider flex items-center gap-2";
                 header.innerHTML = cats[key].label;
                 list.appendChild(header);
                 cats[key].items.forEach(btn => list.appendChild(btn));
@@ -178,14 +187,14 @@ Object.assign(UI, {
 
         if(equippedList.length > 0) {
             const sep = document.createElement('div');
-            sep.className = "col-span-4 flex items-center justify-center text-[10px] text-green-900 font-bold tracking-widest my-2 opacity-80 mt-6";
+            sep.className = "col-span-full flex items-center justify-center text-[10px] text-green-900 font-bold tracking-widest my-2 opacity-80 mt-6";
             sep.innerHTML = "<span class='bg-black px-2 border-b border-green-900 w-full text-center'>--- AKTIV AUSGERÜSTET ---</span>";
             list.appendChild(sep);
             equippedList.forEach(b => list.appendChild(b));
         }
 
         if(!hasItems && equippedList.length === 0) {
-            list.innerHTML = '<div class="col-span-4 text-center text-gray-500 italic mt-10">Leerer Rucksack...</div>';
+            list.innerHTML = '<div class="col-span-full text-center text-gray-500 italic mt-10">Leerer Rucksack...</div>';
         }
     }
 });

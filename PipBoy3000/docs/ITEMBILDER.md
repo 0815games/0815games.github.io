@@ -1,6 +1,7 @@
 # Item-Bilder — Pflege
 
-**Stand: alle 126 Items haben ein Bild.** 128 × 128 px, Ø 5,4 kB, 683 kB gesamt.
+**Stand: alle 126 Items haben ein Bild.** 128 × 128 px, **transparent**,
+Ø 4,7 kB, 594 kB gesamt.
 
 Gezeigt werden sie ueber `UI.itemSymbol()` aus `src/ui/ui_item_symbol.js` — eine
 Quelle fuer alle Ansichten (Inventar, Detail, Ausruesten, Schmiede, Zerlegen,
@@ -177,9 +178,33 @@ npm run assets         # alles zusammen
 npm test               # u. a. tests/item-bilder.test.mjs, tests/app-icon.test.mjs
 ```
 
-`tools/icons.mjs` schneidet auf den Inhalt zu (`trim`, Schwelle 40), legt 8 %
+`tools/icons.mjs` schneidet auf den Inhalt zu (`trim`, Schwelle 40), legt 5 %
 Rand an, skaliert in **zwei getrennten `sharp`-Instanzen** auf 128 px und
-schreibt als PNG-Palette mit Stufe 9.
+macht den Hintergrund **durchsichtig**: die Helligkeit des Rohbilds wird zum
+Alpha-Wert, die Linien bekommen einheitlich `#39ff14`. Kanten behalten ihren
+weichen Uebergang - sonst wirken die Striche bei 48 px ausgefranst.
+
+Warum transparent: bis v14.0.11 lag deckendes Schwarz unter jedem Bild. Im
+Inventar sass damit auf jeder Zelle ein eigener schwarzer Kasten, und das
+Symbol wirkte wie ein Fremdkoerper auf dem Panel statt wie ein Teil davon.
+
+**Voraussetzung:** die Zelle darf beim Antippen nicht die Flaeche fuellen.
+Mit `hover:bg-green-500` waere ein gruenes Symbol auf gruenem Grund
+unsichtbar - die Zelle leuchtet stattdessen am Rahmen
+(`tests/item-bilder-render.test.mjs` prueft das).
+
+### Anzeigegroessen
+
+| Groesse | px | wo |
+|---|---|---|
+| `klein` | 24 | Lager, Wiki-Zeilen, Rucksack-Kopfzeile |
+| `mittel` | 32 | Shop, Crafting, Charakterseite |
+| `gross` | 48 | Inventargitter |
+| `voll` | 128 | Item-Dialog (Originalgroesse, scharf) |
+
+Unter 48 px ist Linienkunst mit 2-3 px Strich (bei 128 px) nicht lesbar - und
+29 der 126 Motive sind so gezeichnet. Deshalb drei Spalten im Inventar auf dem
+Telefon: bei vier waere die Zelle zu schmal fuer ein 48-px-Symbol.
 
 Die Trennung ist Pflicht: `sharp` führt pro Pipeline nur **einen** `resize`
 aus, ein zweiter in derselben Kette wird still ignoriert. Alle Bilder kamen
