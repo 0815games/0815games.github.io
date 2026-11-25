@@ -2,8 +2,8 @@
 // Die Aktionen laufen in main.js über startConvoy und settleConvoyAction.
 import {
   convoyDurationMin, exportPayout, importCost, CONVOY_MIN_QTY, CONVOY_MAX_QTY, MAX_ACTIVE_CONVOYS,
-} from './domain/trade.js?v=20261125-bal3';
-import { activeConvoys } from './domain/convoys.js?v=20261125-bal3';
+} from './domain/trade.js?v=20261125-bal4';
+import { activeConvoys } from './domain/convoys.js?v=20261125-bal4';
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 

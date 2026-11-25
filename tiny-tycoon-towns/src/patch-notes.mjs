@@ -4,6 +4,16 @@
 
 export const RELEASED_PATCHES = [
   {
+    build: '20261125-bal4',
+    date: '2026-11-25',
+    items: [
+      {
+        de: 'Fehlerbehebung: Beim Erstellen einer neuen Stadt gab es eine Fehlermeldung in der Konsole. Die Karte zeichnet jetzt erst, wenn die Stadt geladen ist.',
+        en: 'Bug fix: creating a new town logged an error in the console. The map now draws only once the town is loaded.',
+      },
+    ],
+  },
+  {
     build: '20261125-bal3',
     date: '2026-11-25',
     items: [

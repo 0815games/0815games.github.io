@@ -4,36 +4,36 @@ import {
   createTown, newSeed, chooseBiome, placeBuilding, upgradeBuilding,
   toggleSell, buyOffer, advance, hydrateTown, setTutorialStep, settleConvoyAction,
   plantField, removeField, renewField,
-} from './domain/engine.js?v=20261125-bal3';
-import { forestHealth, fishStock, fishingGround, soilOf, FULL } from './domain/economy.js?v=20261125-bal3';
+} from './domain/engine.js?v=20261125-bal4';
+import { forestHealth, fishStock, fishingGround, soilOf, FULL } from './domain/economy.js?v=20261125-bal4';
 import {
   checkPlacement, placementHint, fieldsOf, plantableNeighbours, fieldSlots,
-} from './domain/placement.js?v=20261125-bal3';
-import { startConvoy } from './domain/convoys.js?v=20261125-bal3';
-import { tradeFormHtml, convoyListHtml, previewFor } from './trade-ui.js?v=20261125-bal3';
+} from './domain/placement.js?v=20261125-bal4';
+import { startConvoy } from './domain/convoys.js?v=20261125-bal4';
+import { tradeFormHtml, convoyListHtml, previewFor } from './trade-ui.js?v=20261125-bal4';
 import {
   productionMultiplier, ratePerMin, buildCost, storageCap, classOf,
-} from './domain/economy.js?v=20261125-bal3';
-import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261125-bal3';
-import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261125-bal3';
-import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261125-bal3';
+} from './domain/economy.js?v=20261125-bal4';
+import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261125-bal4';
+import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261125-bal4';
+import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261125-bal4';
 import {
   PERKS, canFoundCharter, grantCharters, buyPerk, perkEffect, perkLevel, availableCharters, emptyCharter,
   applyCharterToData, reconcileCrowns,
-} from './domain/charters.js?v=20261125-bal3';
+} from './domain/charters.js?v=20261125-bal4';
 const SEEN_NOTES_KEY = 'ttt:notes-seen';
-import { withTimeout } from './async-util.js?v=20261125-bal3';
-import { checkTownName } from './town-names.js?v=20261125-bal3';
-import { friendsShell, mountFriends } from './friends-ui.js?v=20261125-bal3';
-import { createBoard } from './world/board.js?v=20261125-bal3';
-import { createLoginScene } from './world/login-scene.js?v=20261125-bal3';
-import { TUTORIAL_STEPS, HELP_SECTIONS } from './tutorial.js?v=20261125-bal3';
-import { createVersionUI } from './version-ui.mjs?v=20261125-bal3';
-import { startAfkWatch, showAfkOverlay } from './afk.js?v=20261125-bal3';
-import { fullResources, fillPercent } from './stock-dock.js?v=20261125-bal3';
-import { nextRequestToShow, requestBadgeLabel } from './friend-requests.js?v=20261125-bal3';
+import { withTimeout } from './async-util.js?v=20261125-bal4';
+import { checkTownName } from './town-names.js?v=20261125-bal4';
+import { friendsShell, mountFriends } from './friends-ui.js?v=20261125-bal4';
+import { createBoard } from './world/board.js?v=20261125-bal4';
+import { createLoginScene } from './world/login-scene.js?v=20261125-bal4';
+import { TUTORIAL_STEPS, HELP_SECTIONS } from './tutorial.js?v=20261125-bal4';
+import { createVersionUI } from './version-ui.mjs?v=20261125-bal4';
+import { startAfkWatch, showAfkOverlay } from './afk.js?v=20261125-bal4';
+import { fullResources, fillPercent } from './stock-dock.js?v=20261125-bal4';
+import { nextRequestToShow, requestBadgeLabel } from './friend-requests.js?v=20261125-bal4';
 
-const BUILD = '20261125-bal3';
+const BUILD = '20261125-bal4';
 console.info(`Tiny Tycoon Towns ${BUILD}`);
 const LAST_BIOME_KEY = 'ttt.lastBiome';
 const LOCAL_KEY = (uid) => `ttt.save.v1.${uid}`;
@@ -122,7 +122,7 @@ const REMOTE_TIMEOUT_MS = 10_000;
 async function loadData() {
   const names = ['resources', 'biomes', 'buildings', 'economy', 'merchant', 'npcs'];
   const parts = await Promise.all(names.map((n) =>
-    fetch(`data/${n}.json?v=20261125-bal3`).then((r) => {
+    fetch(`data/${n}.json?v=20261125-bal4`).then((r) => {
       if (!r.ok) throw new Error(`data/${n}.json: HTTP ${r.status}`);
       return r.json();
     })));
@@ -168,7 +168,7 @@ async function boot() {
   window.addEventListener('offline', updateSync);
 
   try {
-    cloud = await import('./cloud.js?v=20261125-bal3');
+    cloud = await import('./cloud.js?v=20261125-bal4');
   } catch {
     showFatal('Das Konto-System konnte nicht geladen werden. Ohne Anmeldung lässt sich nicht spielen. Bitte Verbindung prüfen und neu laden.');
     return;
@@ -589,7 +589,8 @@ function ensureBoard() {
     getModel: () => ({
       state,
       data,
-      unlocked: (x, y) => isUnlocked(x, y, state.townLevel, data),
+      // Ohne geladene Stadt (Erstellen, Laden) ist nichts freigeschaltet. Sonst Absturz im Zeichenlauf.
+      unlocked: (x, y) => !!state && isUnlocked(x, y, state.townLevel, data),
     }),
   });
 }
@@ -1496,7 +1497,7 @@ async function startVisit(friendUid, friendName) {
     getModel: () => ({
       state: model.state,
       data: baseData,
-      unlocked: (x, y) => isUnlocked(x, y, model.state.townLevel, data),
+      unlocked: (x, y) => !!model.state && isUnlocked(x, y, model.state.townLevel, data),
     }),
   });
   updateVisitInfo();

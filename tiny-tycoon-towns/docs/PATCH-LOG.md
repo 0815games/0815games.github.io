@@ -893,3 +893,19 @@ Ereignis ergänzt.
   - Die Ertragsfaktoren je Biom (0,25 bis 1,5) sind unverändert. Eine Änderung dort würde die Biom-Identität treffen
     und ist eine Designentscheidung.
   - Browser-/Vercel-Prüfung nicht erfolgt. Keine Firebase-Regeländerung.
+
+### TTT-0053 – Fehler beim Erstellen einer neuen Stadt (Welle `20261125-bal4`)
+
+- Meldung des Nutzers (F12-Konsole, Build 20261125-bal3): `TypeError: Cannot read properties of null (reading 'townLevel')`
+  in `main.js` (`getModel().unlocked`), aufgerufen aus `scene.js` `renderWorld` und `board.js` (Zeichenlauf). Die
+  Meldung wiederholte sich in jedem Frame.
+- Ursache: Der Zeichenlauf des Spielbretts läuft auch, wenn keine Stadt geladen ist (`state === null`, beim Erstellen
+  einer neuen Stadt). `unlocked` las dann `state.townLevel`.
+- Änderung: `src/main.js` (zwei Stellen, Spielbrett und zweites Brett): `unlocked` gibt `false` zurück, solange kein
+  Stand geladen ist.
+- Cache-Welle `20261125-bal3` → `20261125-bal4`. Stadtchronik DE/EN.
+- Tests: `npm test` siehe Lauf unten; `npm run check` ohne Fehler.
+- Grenzen: Der Fehler ließ sich in der Sandbox nicht direkt auslösen, weil die Firebase-Module von
+  `gstatic.com` nicht erreichbar sind und das Spiel dort nicht startet. Die Korrektur folgt aus dem Code, nicht aus
+  einem Lauf im Spiel. Die Prüfung im Live-Spiel steht aus.
+- Kein Vercel verwendet (Nutzerwunsch). Keine Firebase-Regeländerung.
