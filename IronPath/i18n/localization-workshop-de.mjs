@@ -7,7 +7,7 @@ export const germanWorkshop=Object.freeze({
  'Workshop data is invalid or requires a newer version.':'Die Werkstattdaten sind ungültig oder benötigen eine neuere Version.',
  'Workshop could not be saved. Check your connection and try again.':'Die Werkstatt konnte nicht gespeichert werden. Prüfe deine Verbindung und versuche es erneut.',
  'A save needs confirmation. Retry it before making another change.':'Ein Speichervorgang muss bestätigt werden. Versuche ihn erneut, bevor du etwas anderes änderst.', 'RETRY SAVE':'SPEICHERN ERNEUT VERSUCHEN',
- 'Equipped loadout':'Angelegte Ausrüstung','WEAPON':'WAFFE','GEAR':'AUSRÜSTUNG','GADGET':'GERÄT','UNEQUIP':'ABLEGEN',
+ 'Equipped loadout':'Angelegte Ausrüstung','WEAPON':'WAFFE','GEAR':'AUSRÜSTUNG','GADGET':'GERÄT','VEST':'WESTE','BOOTS':'SCHUHE','5 PLACES':'5 PLÄTZE','UNEQUIP':'ABLEGEN',
  'Craft and equip':'Herstellen und ausrüsten','Existing equipment':'Vorhandene Ausrüstung','CRAFT':'HERSTELLEN','MODIFY':'MODIFIZIEREN','INSTALLED':'INSTALLIERT','MODIFY · {scrap} SCRAP':'MODIFIZIEREN · {scrap} SCHROTT','UNLOCKED':'FREIGESCHALTET','EQUIPPED':'AUSGERÜSTET','EQUIP':'AUSRÜSTEN','IN LOADOUT':'IM LADEOUT','ADD TO LOADOUT':'ZUM LADEOUT HINZUFÜGEN',
  '{scrap} scrap · {components} boss components':'{scrap} Schrott · {components} Bosskomponenten','Craft {name}?':'{name} herstellen?','Spend {scrap} scrap and {components} boss components?':'{scrap} Schrott und {components} Bosskomponenten ausgeben?',
  'Install {name}?':'{name} installieren?','Spend {scrap} scrap? This replaces the current modification.':'{scrap} Schrott ausgeben? Dies ersetzt die aktuelle Modifikation.',

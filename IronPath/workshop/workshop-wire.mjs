@@ -7,8 +7,8 @@
 // IPL-0137: wire v2 stores the taken array — every worn piece at once. The
 // decoder still reads the retired three-slot v1 and migrates it to wearing
 // everything the account owns.
-import {validateWorkshop} from './workshop-model.mjs?v=20261121-fund1';
-import {initializeWorkshop,applyWorkshopCommand} from './workshop-transactions.mjs?v=20261121-fund1';
+import {validateWorkshop} from './workshop-model.mjs?v=20261121-dossier1';
+import {initializeWorkshop,applyWorkshopCommand} from './workshop-transactions.mjs?v=20261121-dossier1';
 import {isPrestige} from '../core/prestige.mjs?v=20261112-pressure1';
 import {completeStory} from '../core/campaign.mjs?v=20261112-pressure1';
 const LIMIT=2048;
@@ -92,7 +92,7 @@ export function meltPrestige(profile){
 }
 // A prestige trophy goes away for good; the scrap it cost is not refunded.
 export {meltWorkshop};
-export {RECIPES,MOD_SCRAP,slotOf,toggleEquipped} from './workshop-model.mjs?v=20261121-fund1';
+export {RECIPES,MOD_SCRAP,slotOf,toggleEquipped} from './workshop-model.mjs?v=20261121-dossier1';
 
 // ---- co-op match loadout wire (protocol 2, taken list) ----
 export function encodeMatchLoadout(snapshot){

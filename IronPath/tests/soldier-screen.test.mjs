@@ -50,6 +50,8 @@ test('the dossier renders identity, XP progress and the combat profile',()=>{
   assert.equal(nodes.get('soldierSlotWeaponName').textContent,'NOTHING TAKEN');
   assert.equal(nodes.get('soldierSlotGearName').textContent,'NOTHING TAKEN');
   assert.equal(nodes.get('soldierSlotGadgetName').textContent,'NOTHING TAKEN');
+  assert.equal(nodes.get('soldierSlotVestName').textContent,'NOTHING TAKEN');
+  assert.equal(nodes.get('soldierSlotBootsName').textContent,'NOTHING TAKEN');
   assert.equal(nodes.get('soldierInventoryCount').textContent,'0 pieces owned');
   assert.equal(nodes.get('soldierLegacyNote').hidden,true,'no legacy equipment, no note');
   assert.equal(nodes.get('soldierCollectionEmpty').hidden,false,'an empty collection says so');
@@ -80,20 +82,21 @@ test('the loadout slots equip through the workshop service',async()=>{
   });
   screen.open();
   assert.equal(nodes.get('soldierSlotGearName').textContent,'NOTHING TAKEN');
+  assert.equal(nodes.get('soldierSlotBootsName').textContent,'NOTHING TAKEN');
   // Open the gear picker: it lists the owned boots.
   nodes.get('soldierSlotGear').onclick();
   assert.equal(nodes.get('soldierSlotPicker').hidden,false,'the slot picker opens');
   assert.equal(nodes.get('soldierSlotGear').attrs['aria-expanded'],'true','the open slot reports itself');
   const picker=nodes.get('soldierSlotPicker');
   assert.match(picker.children[0].textContent,/GEAR/,'the picker names the slot');
-  const row=picker.children[1],equipButton=row.children[1];
-  assert.equal(row.children[0].textContent,'Field Boots','the owned piece is listed by name');
+  const row=picker.children[1],equipButton=row.children.at(-1);
+  assert.ok(row.children.some(child=>child.textContent==='Field Boots'),'the owned piece is listed by name');
   assert.match(equipButton.textContent,/^TAKE$/,'not worn yet');
   equipButton.onclick();
   await new Promise(resolve=>setImmediate(resolve));
   assert.deepEqual(calls,[{type:'equip',item:'boots'}],'the change goes through the service, never a local write');
   screen.refresh();
-  assert.equal(nodes.get('soldierSlotGearName').textContent,'Field Boots','the doll shows what she wears now');
+  assert.equal(nodes.get('soldierSlotBootsName').textContent,'Field Boots','the doll shows what she wears now on the boots place');
   assert.equal(nodes.get('soldierInventoryCount').textContent,'1 pieces owned');
 });
 
@@ -106,7 +109,7 @@ test('the reworked markup: slim identity rail, paper doll with three slot cards'
   const doll=html.indexOf('id="soldierDoll"');
   assert.ok(doll>panels,'the paper doll sits inside the panels');
   assert.ok(html.indexOf('id="soldierPortrait"')>doll,'the portrait stands in the doll');
-  for(const slot of ['Gear','Weapon','Gadget']){
+  for(const slot of ['Gear','Weapon','Gadget','Vest','Boots']){
     assert.ok(html.indexOf(`id="soldierSlot${slot}"`)>doll,`the ${slot} slot card exists`);
     assert.ok(html.includes(`id="soldierSlot${slot}Name"`),`the ${slot} card names its piece`);
   }

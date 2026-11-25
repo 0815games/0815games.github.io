@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see docs/PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261121-fund1';
+import {getLanguage} from './language.mjs?v=20261121-dossier1';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,18 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'dossier1',build:'20261121-dossier1',pr:491,
+    title:{en:'Places & Paint · The Dossier Wears Its Gear',de:'Plätze & Pinsel · Das Dossier trägt seine Ausrüstung'},
+    shipped:[
+      {en:'The field dossier arranges the loadout on RPG places around the figure — weapon in her hand, vest on her chest, boots at her feet, spare gear at the hip, gadgets on the belt. Every worn piece shows its own artwork on its place; the picker and the collection list carry it too.',de:'Das Feld-Dossier ordnet das Ladeout auf RPG-Plätzen um die Figur – Waffe in der Hand, Weste auf der Brust, Schuhe an den Füßen, Rest-Ausrüstung an der Hüfte, Gadgets am Gurt. Jedes getragene Stück zeigt auf seinem Platz sein eigenes Artwork; Picker und Sammlungsliste führen es ebenfalls.'},
+      {en:'Ten found legacy pieces got painted item artwork in the armory style (olive, sand, high contrast): scope, vest, boots, binoculars, field radio, satchel, pouch, manual, badge and tank kit. Craft and prestige artwork follows next.',de:'Zehn gefundene Legacy-Stücke bekamen gemaltes Item-Artwork im Armory-Stil (Olive, Sand, hoher Kontrast): Zielfernrohr, Weste, Stiefel, Fernglas, Feldfunk, Tasche, Demolitionstasche, Handbuch, Abzeichen und Panzer-Spotter-Kit. Craft- und Prestige-Artwork folgt.'},
+      {en:'The mechanics stay untouched: three slots, toggle gear, wave finds — the split into places is presentation only. Cache wave 20261121-dossier1.',de:'Die Mechanik bleibt unberührt: drei Slots, Toggle-Ausrüstung, Wellen-Funde – die Aufteilung auf Plätze ist reine Darstellung. Cache-Welle 20261121-dossier1.'},
+    ],
+    open:[
+      {en:'Next up: artwork for the crafted and prestige pieces, then the skills optics.',de:'Als Nächstes: Artwork für die hergestellten und Prestige-Stücke, danach die Optik der Fähigkeiten.'},
+    ]
+  },
   {
     id:'fund1',build:'20261121-fund1',pr:487,
     title:{en:'Found · The Report Offers the Piece',de:'Gefunden · Der Bericht bietet das Stück'},

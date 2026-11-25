@@ -6,7 +6,7 @@ aber ersetzt weder Git noch die GitHub-PR-Historie. Die dazugehörige
 [Arbeitsanweisung](../../AGENTS.md) verlangt, dieses Log vor der Arbeit zu lesen
 und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
 
-Die Einträge IPL-0001 bis IPL-0108 stehen im
+Die Einträge IPL-0001 bis IPL-0119 stehen im
 [Archiv](PATCH-LOG-ARCHIV.md); hier stehen die neuesten 20. Beide Dateien
 zusammen sind lückenlos und doppelfrei - `../scripts/patch.mjs` (Unterbefehl `check`) und
 `../tests/patch-log-archive.test.mjs` prüfen das.
@@ -57,19 +57,6 @@ jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderl
 
 
 
-## IPL-0119 – Sechsstellige Party-Codes (Welle `20261123-party6`, PR `#381`)
-- **Zeit / Quelle:** 2026-11-23 UTC; Betreiber: „Regeln sind [veröffentlicht], erklär mir aber bitte noch mal den Hintergrund …" — die Prestige-/War-Effort-Regeln aus `IPL-0118` sind damit live (in `AUSBAU-PLAN.md` abgehakt) — danach auf Nachfrage und ausdrücklichen Bauauftrag Punkt 5. Hintergrund: Der vierstellige Code-Raum (10.000) ist von jedem kostenlosen Konto in Sekunden aufgezählt (im eigenen `FOUR-DIGIT-STAGING.md` als ungelöste Missbrauchsfläche geführt; Regeln können nicht drosseln). Code-Kenntnis gibt keine Match-Rechte (Host-Freigabe bleibt das Tor), aber Spam-Anfragen an alle offenen Partys und triviale Kollisionen. Sechs Stellen = Faktor 100.
-- **Block / Ziel:** Party-Einladungen. Erzeugung sechsstellig in beiden Lobbys, Beitritt und Freundes-Einladungen akzeptieren 4 oder 6 Stellen (Alt-Codes laufen mit ihrer Sitzung aus), Einladungs-Ablauf unverändert.
-- **Branch / Basis:** `arena/c92634ee-0815games-github-io` ab `16105d049f50789c8ae2d94c25cca42b3160f9a2` (`main`, Merge PR `#380`) plus Doku-Commit „Punkt 4a/4b abgehakt".
-- **Änderungen / Dateien:**
-  - `IronPath/net/firebase-four-digit-lobby.mjs` + `firebase-four-lobby.mjs`: `code()` zieht aus 1.000.000 (ablehnungsbereinigt), `validCode` akzeptiert `4|6` Stellen; Erzeugung fällt bei verweigertem Sechs-Stellen-Schlüssel sitzungsweise auf vier Stellen zurück (endlessLastRun-Muster), statt die Party scheitern zu lassen — bis der Betreiber die neuen Regeln veröffentlicht. Dateinamen bleiben (historisch), Fehlertext heißt jetzt „Invalid party-code lobby".
-  - `IronPath/core/coop-invites.mjs` (2 Stellen), `net/firebase-four-digit-panel.mjs`, `net/firebase-four-panel.mjs`, `core/tutorial.mjs`, `index.html` (beide Code-Eingaben `maxlength=6`, Hinweise „six-digit"), DE-Texte in `localization-de.mjs`/`localization-more-static-de.mjs`; Meldung beim Beitritt längenneutral („Enter the party code.").
-  - Regeln (additiv, Betreiber veröffentlicht): `firebase/party-codes-six-candidate.mjs` erzeugt `PARTY-CODES-SIX-DIGIT-TO-PUBLISH.json` aus dem live Stand `PRESTIGE-EFFORT-TO-PUBLISH.json` — Diff exakt 17 Regeltexte (`/^[0-9]{4}$/` → `/^[0-9]{4}([0-9]{2})?$/`: `partyCodes`/`fourCodes` je 6, `inviteCode`-Validierungen auf `parties`/`fourParties` je 2, `coopInvites` 1), byte-genau reproduzierbar, Drift-Abbruch bei abweichender Stellenzahl. Dazu `PARTY-CODES-SIX-ROLLOUT.md`, Pin-Test, Emulator-Beweis (`rules-test/party-codes-six.test.mjs`, `firebase-party-six.emulator.json`, npm-Skript `test:party-six`, CI-Schritt in `database-rules`). `WORKSHOP-RULES-TO-PUBLISH.json` unberührt. Trockenlauf `rules-publish-dry-run.mjs`: 0 Blocker, 17 Review-Punkte = die beabsichtigten Weitungen.
-  - Tests: `tests/party-code-six.test.mjs` (neu, 4 Tests: Erzeugung 6, Beitritt 4+6, 5/7 abgelehnt, Sitzungs-Rückfall unter verweigernden Regeln, Freundes-Einladungen), `tests/firebase-four-lobby.test.mjs` auf sechsstellig nachgezogen; `party-toggle` (Alt-Code `0123`) läuft über den Auslauf unverändert grün.
-  - Cache-Welle `20261123-party6` (79 Dateien), Feldnotizen `party6` in `patch-notes.mjs`; Log-Rotation `IPL-0099` ins Archiv (Haupt `IPL-0100…IPL-0119`, Archiv bis `IPL-0099`); `AUSBAU-PLAN.md`: Punkt 4a/4b abgehakt, Punkt 5 auf `[~]` (Publish offen).
-- **Prüfungen:** `party-code-six` 4/4, `party-codes-six-rules` 3/3, `firebase-four-lobby` + `party-toggle` grün (Emulator-Beweis läuft als CI-Schritt `test:party-six`). `patch.mjs check --fast`: 0 Fehler. Gesamtsuite 1333 Tests, 1332 bestanden + 1 bekannter Flachklon-Skip (`release-pages-site` nach Unshallow 6/6) – effektiv 1333/1333.
-- **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet`. Commit, Push, PR `#381`, CI, Merge und Pages-Auslieferung werden als Ereignis nachgetragen. Der sechsstellige Raum wird erst mit der Regel-Veröffentlichung durch den Betreiber voll wirksam (Anleitung `PARTY-CODES-SIX-ROLLOUT.md`, Rückfall = `PRESTIGE-EFFORT-TO-PUBLISH.json`); bis dahin greift der Client-Rückfall.
-- **Offen / nächster Schritt:** Betreiber veröffentlicht die Regeln; danach Punkt 6: Start-Requests erst messen (Ladezeit/Netz), dann über Bundling entscheiden.
 
 ## IPL-0120 – Start-Requests vermessen, Bundling-Entscheidung: kein Umbau (keine Welle, kein Browser-Code)
 - **Zeit / Quelle:** 2026-11-23 UTC; Betreiber: „Is published" (Sechs-Stellen-Regeln live; Punkt 5 in `AUSBAU-PLAN.md` abgehakt, Doku-Commit auf diesem Branch), danach „Let's go" – Punkt 6 der Reihenfolge: erst messen, dann entscheiden, nicht vorschnell umbauen.
@@ -327,3 +314,12 @@ Nur Darstellung, kein Sim-State, kein Wire-Format, statisch im Terrain-Cache (Re
 - **Prüfung:** Suite **1368 pass / 1369, 0 fail** – neu `fund-system.test.mjs` (kein Ankerplan, keine Duplikate, der Fund zieht nie allein an, der Delta nennt die Fund-ID), Anker-Tests auf den neuen Würfel umgestellt, UI-Harness-Listen kennen `armory`/`workshop-wire`, DOM-Stubs guarden die Fund-Zeilen; `schnelltor` „Kein Fehler, 2 Hinweis(e)".
 - **Git / PR / Release:** Branch `arena/3a67c99d-0815games-github-io` ab `ebb73c33`; Commits `2cb832d` (Fund + Report-Wahl), `b93f731` (Amend), `a223fb9` (Cache-Welle `20261121-fund1`, 88 Dateien, Doku), `2b3f15ab` (einheitlicher `armory`-Token), Test-Fixes `30df04f`…`3d26d416` (Emulator-Pins folgen dem Fund: Doppel-Bonus raus, Cold-Roll-Rng, Log-Capture für die Workshop-Steps); Push, PR `#487`, CI grün (externes Vercel-Rate-Limit ohne Einfluss), Merge `5f1d5ab`. Pages und Betreiber-Kommentar werden als Ereignis nachgetragen.
 - **Offen / nächster Schritt:** Pages-Lauf + Kommentar nachtragen; dann Welle C (Armory-Optik), danach Skills-Optik.
+
+## IPL-0139 – Dossier: RPG-Plätze für die Waffen + gemaltes Item-Artwork (Welle `20261121-dossier1`, PR `#491`)
+
+- **Was:** Aus dem `ask_user` zur Betreiber-Sichtung auf #487 („das sieht Scheiße aus… richtige Plätze… gerne Bilder… ARTE"). Nur das Dossier, nicht die Werkstatt: Die Figurenkarten sind jetzt ein klassisches RPG-Ladeout-Board um die Figur – Waffe in der Hand, Weste auf der Brust, Schuhe an den Füßen, Rest-Ausrüstung an der Hüfte, Gadgets am Gurt. Jeder Platz zeigt das Artwork des getragenen Stücks, die Picker und die Sammlungsliste ebenfalls.
+- **Artwork:** Zehn gemalte Legacy-Fundstücke im Armory-Stil (painterly, Olive/Sand, gewebter Grund wie `armory-kit.jpg`): Scope, Vest, Boots, Binoculars, Field Radio, Satchel, Pouch, Manual, Badge, Tank Kit. Craft- und Prestige-Stücke folgen mit eigenem Artwork (Bildkontingent pro Turn); bis dahin zeigen sie weiter die Textkarte.
+- **Mechanik unangetastet:** `slotOf` bleibt die drei Slots weapon/gear/gadget, Toggle-Ausrüstung (IPL-0137) und Fund (IPL-0138) unverändert – die Platz-Aufteilung ist reine Darstellung (`placeOf`: boots=`legacy-3`/`boots`, vest=`legacy-2`/`prestige-convoy-plate`, der Rest gear). Neue Platz-IDs `soldierSlotVest`/`soldierSlotBoots` neben den bestehenden; i18n `VEST`/`BOOTS`/`5 PLACES`; Cache-Welle `20261121-dossier1` auf Screen, CSS, Workshop-De und Patch-Notes.
+- **Prüfung:** Suite 1368 pass / 1 skipped (Shallow-Checkout-Skip, lokal ohne vollen Git-Checkout), 0 fail; `soldier-screen.test.mjs` pinnt die fünf Plätze und den Boots-Platz; Browser-Pins (`soldierSlot*Name`, Sammlungsliste) unverändert grün; `schnelltor` „Kein Fehler".
+- **Git / PR / Release:** Branch `arena/d9f74ff0-0815games-github-io` ab `3fb0923`; Commit `f16c0eb` (Plätze + Artwork, 109 Dateien), Push, PR `#491`, CI, Merge – wird nachgetragen.
+- **Offen / nächster Schritt:** Craft- und Prestige-Artwork nachliefern; danach die Skills-Optik.
