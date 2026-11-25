@@ -505,7 +505,7 @@ if (!commandCenterToken) throw new Error('account.js does not import command-cen
     await page.locator('#settingsClose').click();assert.equal(await page.locator('#settingsDialog').evaluate(e=>e.open),false,'the dialog the field menu opened closes again');
     // Back to the Command Center: pause the solo run via Command Center workspace navigation.
     await page.locator('#backToCommand').evaluate(button=>button.click());await page.locator('#menuSkills').click();assert.equal(await page.locator('#skillDialog').evaluate(e=>e.open),true);await page.locator('#skillCancel').click();
-    assert.equal(await page.locator('.command-utilities button').count(),4,'Command HQ utility row holds four compact actions');
+    assert.equal(await page.locator('.command-utilities button').count(),2,'Command HQ utility row holds Settings and Sign Out only');
     assert.equal(await page.locator('.command-utilities #menuDeleteCharacter').count(),0,'Delete character lives inside Settings -> Account');
     for(const [trigger,dialog] of [['#menuFriends','#friendsDialog'],['#menuLeaderboard','#leaderboardDialog']]){
       await page.locator(trigger).click();assert.equal(await page.locator(dialog).evaluate(e=>e.open),true);
@@ -513,6 +513,8 @@ if (!commandCenterToken) throw new Error('account.js does not import command-cen
     }
     await page.locator('#menuSettings').click();assert.equal(await page.locator('#settingsDialog').evaluate(e=>e.open),true);
     assert.equal(await page.locator('#settingsTabGeneral').getAttribute('aria-selected'),'true');
+    assert.equal(await page.locator('#settingsPanelGeneral #menuPatchNotes').isVisible(),true,'FIELD NOTES lives in Settings');
+    assert.equal(await page.locator('#settingsPanelGeneral #menuTutorial').isVisible(),true,'FIELD TUTORIAL lives in Settings');
     await page.locator('#settingsTabAccount').click();assert.equal(await page.locator('#settingsPanelAccount').isVisible(),true);assert.equal(await page.locator('#settingsAccountEmail').innerText(),'soldier@example.test');assert.equal(await page.locator('#settingsPanelAccount #menuDeleteCharacter').isVisible(),true);
     await page.locator('#settingsCurrentPassword').fill('old-secret');await page.locator('#settingsNewPassword').fill('new-secret-1');await page.locator('#settingsConfirmPassword').fill('mismatch-1');await page.locator('#settingsPasswordSubmit').click();
     assert.match(await page.locator('#settingsAccountStatus').innerText(),/do not match/i,'Settings -> Account reports mismatched passwords in-dialog');
