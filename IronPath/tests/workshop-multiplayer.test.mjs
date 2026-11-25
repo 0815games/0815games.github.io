@@ -8,7 +8,7 @@ function fixture(mode='coop',ids=['alice','bob']){const profiles=Object.fromEntr
 test('locks each account loadout and does not track subsequent account changes',()=>{
  const {profiles,args}=fixture(),lock=lockWorkshopRoster(args);assert.ok(lock);assert.equal(lock.players.length,2);
  const a=decodeMatchLoadout(lock.players[0].loadout,'coop'),b=decodeMatchLoadout(lock.players[1].loadout,'coop');assert.equal(workshopEffects(a,1).damage,3);assert.equal(workshopEffects(b,1).movement,20);
- profiles.alice=applyWireWorkshopCommand(profiles.alice,{type:'equip',slot:'gadget',item:'none'});assert.equal(workshopEffects(a,1).damage,3);assert.equal(verifyWorkshopRoster(lock,args),true);
+ profiles.alice=applyWireWorkshopCommand(profiles.alice,{type:'equip',item:'legacy-1'});assert.equal(workshopEffects(a,1).damage,3);assert.equal(verifyWorkshopRoster(lock,args),true);
  assert.equal(verifyWorkshopRoster(lock,{...args,offers:{...args.offers,alice:makeWorkshopOffer(profiles.alice,'coop')}}),false);
 });
 test('rejects missing, old, malformed and mode-mismatched clients',()=>{

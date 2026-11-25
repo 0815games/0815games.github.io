@@ -1,85 +1,86 @@
-import {createWorkshopAccount} from './workshop/workshop-account.mjs?v=20261112-tagless1';
-import {createWorkshopView} from './workshop/workshop-view.mjs?v=20261112-tagless1';
-import {createSoldierScreen} from './ui/soldier-screen.mjs?v=20261125-aim14';
-import {localizeSkillSummary} from './core/skill-summary-localization.mjs?v=20261125-aim14';
+import {createWorkshopAccount} from './workshop/workshop-account.mjs?v=20261125-aim15';
+import {createWorkshopView} from './workshop/workshop-view.mjs?v=20261125-aim15';
+import {createSoldierScreen} from './ui/soldier-screen.mjs?v=20261125-aim15';
+import {localizeSkillSummary} from './core/skill-summary-localization.mjs?v=20261125-aim15';
 import {renderSkillIndicators} from './ui/skill-indicator.mjs?v=20261104-skillindicator1';
-import {setupLanguage,translate,translateText,onLanguageChange,getLanguage} from './language.mjs?v=20261125-aim14';
+import {setupLanguage,translate,translateText,onLanguageChange,getLanguage} from './language.mjs?v=20261125-aim15';
 import {setupFullscreen} from './core/fullscreen.mjs?v=20261104-fullscreen1';
-import {setupFieldMenu} from './ui/field-menu.mjs?v=20261125-aim14';
-import {createSettings,readSettings} from './core/settings.mjs?v=20261125-aim14';
-import {createPasswordChange} from './core/password-change.mjs?v=20261125-aim14';
+import {setupFieldMenu} from './ui/field-menu.mjs?v=20261125-aim15';
+import {createSettings,readSettings} from './core/settings.mjs?v=20261125-aim15';
+import {createPasswordChange} from './core/password-change.mjs?v=20261125-aim15';
 // Field notes: the patch log as a screen. Read-only, so it is wired next to the
 // settings dialog and nothing else in the account has to know about it.
-import {createPatchNotes} from './patch-notes.mjs?v=20261125-aim14';
+import {createPatchNotes} from './patch-notes.mjs?v=20261125-aim15';
 import {bindDisclosureDismiss} from './ui/disclosure-dismiss.mjs?v=20261104-dismissall1';
 import {bindDialogBackdrop} from './ui/dialog-dismiss.mjs?v=20261104-dismiss1';
-import {setupLeaderboard} from './ui/leaderboards-ui.mjs?v=20261125-aim14';
-import {createLeaderboardService,createScoreReporter,waveFromMask} from './core/leaderboards.mjs?v=20261125-aim14';
-import {setupFriends} from './ui/friends-ui.mjs?v=20261125-aim14';
-import {createMultiplayerPrompts} from './core/multiplayer-prompts.mjs?v=20261125-aim14';
+import {setupLeaderboard} from './ui/leaderboards-ui.mjs?v=20261125-aim15';
+import {createLeaderboardService,createScoreReporter,waveFromMask} from './core/leaderboards.mjs?v=20261125-aim15';
+import {setupFriends} from './ui/friends-ui.mjs?v=20261125-aim15';
+import {createMultiplayerPrompts} from './core/multiplayer-prompts.mjs?v=20261125-aim15';
 import {createCharacterDeletion} from './core/character-deletion.mjs?v=20261031-patch8';
-import {validateCharacterName,characterNameKey} from './core/character-name.mjs?v=20261125-aim14';
-import {createCharacterNameClaim} from './core/character-name-claim.mjs?v=20261125-aim14';
-import {createCharacterNameConflictHandler} from './core/character-name-conflict.mjs?v=20261125-aim14';
-import {createDischargeNotice,createDischargeSignOut,DISCHARGE_MESSAGE} from './ui/discharge-notice.mjs?v=20261125-aim14';
-import {createCommandCenter} from './core/command-center.mjs?v=20261125-aim14';
+import {validateCharacterName,characterNameKey} from './core/character-name.mjs?v=20261125-aim15';
+import {createCharacterNameClaim} from './core/character-name-claim.mjs?v=20261125-aim15';
+import {createCharacterNameConflictHandler} from './core/character-name-conflict.mjs?v=20261125-aim15';
+import {createDischargeNotice,createDischargeSignOut,DISCHARGE_MESSAGE} from './ui/discharge-notice.mjs?v=20261125-aim15';
+import {createCommandCenter} from './core/command-center.mjs?v=20261125-aim15';
 import {featureEnabled} from './core/features.mjs?v=20261112-endless1';
-import {createEndlessLauncher,readLastEndlessRun,sanitizeEndlessLastRun,writeLastEndlessRun,ENDLESS_LAST_RUN_KEY} from './core/endless-launcher.mjs?v=20261125-aim14';
-import {initializeWireWorkshop,applyWireWorkshopCommand} from './workshop/workshop-wire.mjs?v=20261112-tagless1';
+import {createEndlessLauncher,readLastEndlessRun,sanitizeEndlessLastRun,writeLastEndlessRun,ENDLESS_LAST_RUN_KEY} from './core/endless-launcher.mjs?v=20261125-aim15';
+import {initializeWireWorkshop,applyWireWorkshopCommand} from './workshop/workshop-wire.mjs?v=20261125-aim15';
 // Story completion writes progress and the mission's prestige trophy together.
-import {completeStoryMission,meltPrestige,decodeWorkshop as decodeWorkshopSafe} from './workshop/workshop-wire.mjs?v=20261112-tagless1';
+import {completeStoryMission,meltPrestige,decodeWorkshop as decodeWorkshopSafe} from './workshop/workshop-wire.mjs?v=20261125-aim15';
+import {captureWorkshopLoadout,workshopEffects} from './workshop/workshop-effects.mjs?v=20261125-aim15';
 import {missingPrestige} from './core/prestige.mjs?v=20261112-pressure1';
-import {donateWarEffort as donateWarEffortCore,readWarEffort,warEffortTier,WAR_EFFORT_DONATION,WAR_EFFORT_TIER_COST,WAR_EFFORT_GOAL,WAR_EFFORT_MAX_TIER} from './core/war-effort.mjs?v=20261125-aim14';
-import {recordPrestigeClear as recordPrestigeClearCore} from './core/campaign-prestige.mjs?v=20261125-aim14';
-import {createFirebaseRecoverableGame} from './net/firebase-recoverable-game.mjs?v=20261125-aim14';
-import {createFourPlayerPanel} from './net/firebase-four-panel.mjs?v=20261125-aim14';
-import {watchFriendPortrait} from './core/friend-portrait.mjs?v=20261125-aim14';
-import {createFirebaseFourLobby} from './net/firebase-four-lobby.mjs?v=20261125-aim14';
-import {skillBuildSummary,canSaveSkillDraft} from './core/skill-planner.mjs?v=20261125-aim14';
-import {setupAuthForm} from './core/auth-form.mjs?v=20261125-aim14';
-import {applyLoginScene} from './ui/login-scene.mjs?v=20261125-aim14';
+import {donateWarEffort as donateWarEffortCore,readWarEffort,warEffortTier,WAR_EFFORT_DONATION,WAR_EFFORT_TIER_COST,WAR_EFFORT_GOAL,WAR_EFFORT_MAX_TIER} from './core/war-effort.mjs?v=20261125-aim15';
+import {recordPrestigeClear as recordPrestigeClearCore} from './core/campaign-prestige.mjs?v=20261125-aim15';
+import {createFirebaseRecoverableGame} from './net/firebase-recoverable-game.mjs?v=20261125-aim15';
+import {createFourPlayerPanel} from './net/firebase-four-panel.mjs?v=20261125-aim15';
+import {watchFriendPortrait} from './core/friend-portrait.mjs?v=20261125-aim15';
+import {createFirebaseFourLobby} from './net/firebase-four-lobby.mjs?v=20261125-aim15';
+import {skillBuildSummary,canSaveSkillDraft} from './core/skill-planner.mjs?v=20261125-aim15';
+import {setupAuthForm} from './core/auth-form.mjs?v=20261125-aim15';
+import {applyLoginScene} from './ui/login-scene.mjs?v=20261125-aim15';
 import {createAccountServices,requiresAccountGuard} from './core/account-services.mjs?v=20261031-releaseguard1';
-import {createVersionUI} from './ui/version-ui.mjs?v=20261125-aim14';
-import {createWriteTracker} from './core/version-check.mjs?v=20261125-aim14';
+import {createVersionUI} from './ui/version-ui.mjs?v=20261125-aim15';
+import {createWriteTracker} from './core/version-check.mjs?v=20261125-aim15';
 import {createAfkTimer,createSessionTabLock} from './core/afk-session.mjs?v=20261031-update3';
-import {createActiveSessionManager,createSameBrowserSessionMonitor,createWindowSessionId} from './core/active-session.mjs?v=20261125-aim14';
+import {createActiveSessionManager,createSameBrowserSessionMonitor,createWindowSessionId} from './core/active-session.mjs?v=20261125-aim15';
 import {drawAfkRestScene} from './ui/afk-rest-scene.mjs?v=20261117-afkart1';
 import {createMaintenanceUI} from './ui/maintenance-ui.mjs?v=20261031-update3';
 import {getMaintenanceBoot} from './core/maintenance-bootstrap.mjs?v=20261031-update3';
 import {MAINTENANCE_PATH,createMaintenanceMonitor,isSessionAfterCutoff} from './core/maintenance-check.mjs?v=20261031-update3';
 import {serviceMedals} from './core/service-record.mjs?v=20261112-tagless1';
-import {createConfirmation} from './ui/confirmation.mjs?v=20261125-aim14';
-import {renderSkillTree,armoryIcon} from './ui/development-ui.mjs?v=20261125-aim14';
-import {runFirstRunEnding,endingDone,markEndingDone,createEndingHandoffs,FIELD_SCHOOL_ENTRIES} from './ui/first-run-ending.mjs?v=20261125-aim14';
-import {createGuide,forgetGuideSeen} from './ui/first-run-guide.mjs?v=20261125-aim14';
-import {initialOfferedTutorial,shouldAutoPresentTutorial,tutorialResumeTarget,shouldPayTutorialReward,createTutorialSync} from './core/tutorial-sync.mjs?v=20261125-aim14';
-import {createGeneralRadio} from './core/general-radio.mjs?v=20261125-aim14';
-import {createTutorialDossier} from './core/tutorial-dossier.mjs?v=20261125-aim14';
-import {createMenuTour} from './ui/menu-tour.mjs?v=20261125-aim14';
-import {mountOverlayPopover} from './ui/popover-host.mjs?v=20261125-aim14';
+import {createConfirmation} from './ui/confirmation.mjs?v=20261125-aim15';
+import {renderSkillTree,armoryIcon} from './ui/development-ui.mjs?v=20261125-aim15';
+import {runFirstRunEnding,endingDone,markEndingDone,createEndingHandoffs,FIELD_SCHOOL_ENTRIES} from './ui/first-run-ending.mjs?v=20261125-aim15';
+import {createGuide,forgetGuideSeen} from './ui/first-run-guide.mjs?v=20261125-aim15';
+import {initialOfferedTutorial,shouldAutoPresentTutorial,tutorialResumeTarget,shouldPayTutorialReward,createTutorialSync} from './core/tutorial-sync.mjs?v=20261125-aim15';
+import {createGeneralRadio} from './core/general-radio.mjs?v=20261125-aim15';
+import {createTutorialDossier} from './core/tutorial-dossier.mjs?v=20261125-aim15';
+import {createMenuTour} from './ui/menu-tour.mjs?v=20261125-aim15';
+import {mountOverlayPopover} from './ui/popover-host.mjs?v=20261125-aim15';
 import {ITEMS,readArmory,rewardWave,upgradeArmory,equipArmory,encodeLoadout} from './core/armory.mjs?v=20261112-tagless1';
-import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement,webBonuses} from './core/skills.mjs?v=20261125-aim14';
-import {migrateSkillsProfile,needsSkillMigration,readLegacySkillBackup,summarizeSkillMigration} from './core/skills-migration.mjs?v=20261125-aim14';
-import {rewardDelta} from './core/run-results.mjs?v=20261125-aim14';
-import {createCoopRewardQueue} from './core/coop-rewards.mjs?v=20261125-aim14';
-import {createPartyEndCoordinator} from './core/party-end-coordinator.mjs?v=20261125-aim14';
-import {createPartySignOut} from './core/party-signout.mjs?v=20261125-aim14';
+import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement,webBonuses} from './core/skills.mjs?v=20261125-aim15';
+import {migrateSkillsProfile,needsSkillMigration,readLegacySkillBackup,summarizeSkillMigration} from './core/skills-migration.mjs?v=20261125-aim15';
+import {rewardDelta} from './core/run-results.mjs?v=20261125-aim15';
+import {createCoopRewardQueue} from './core/coop-rewards.mjs?v=20261125-aim15';
+import {createPartyEndCoordinator} from './core/party-end-coordinator.mjs?v=20261125-aim15';
+import {createPartySignOut} from './core/party-signout.mjs?v=20261125-aim15';
 import {creditSoloWave} from './workshop/workshop-solo-credit.mjs?v=20261112-tagless1';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import { getDatabase, ref, onValue, runTransaction as firebaseRunTransaction, get, remove as firebaseRemove, set as firebaseSet, update as firebaseUpdate, goOffline, onDisconnect, serverTimestamp, query, orderByKey, startAfter, limitToFirst, orderByChild, limitToLast } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
-import { createFirebasePartyLobby } from './net/firebase-party-lobby.mjs?v=20261125-aim14';
-import { createFourDigitPanel } from './net/firebase-four-digit-panel.mjs?v=20261125-aim14';
+import { createFirebasePartyLobby } from './net/firebase-party-lobby.mjs?v=20261125-aim15';
+import { createFourDigitPanel } from './net/firebase-four-digit-panel.mjs?v=20261125-aim15';
 import { createFourDigitLobby } from './net/firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
-import { startGame } from './game.js?v=20261125-aim14';
-import { createFirebasePartyGame } from './net/firebase-party-game.mjs?v=20261125-aim14';
-import { createPlayer } from './core/match.mjs?v=20261125-aim14';
-import { bunkerStart } from './core/solo-deployment.mjs?v=20261125-aim14';
+import { startGame } from './game.js?v=20261125-aim15';
+import { createFirebasePartyGame } from './net/firebase-party-game.mjs?v=20261125-aim15';
+import { createPlayer } from './core/match.mjs?v=20261125-aim15';
+import { bunkerStart } from './core/solo-deployment.mjs?v=20261125-aim15';
 import { resolveAvatar,encodeAvatar,AVATAR_STORAGE_KEY } from './core/avatar.mjs?v=20261119-avatar3';
 import { composePortrait,facePortrait } from './core/avatar-layers.mjs?v=20261119-avatar3';
 import { createAvatarSync } from './core/avatar-sync.mjs?v=20261119-avatar3';
-import { setupRecruitScreen } from './ui/recruit-screen.mjs?v=20261125-aim14';
-import { renderRankInsignia } from './core/rank-insignia.mjs?v=20261125-aim14';
+import { setupRecruitScreen } from './ui/recruit-screen.mjs?v=20261125-aim15';
+import { renderRankInsignia } from './core/rank-insignia.mjs?v=20261125-aim15';
 import { characterProgress } from './core/progression.mjs?v=20261105-prestige1';
 
 // Firebase's actual write promises remain pending while offline, including when
@@ -200,7 +201,7 @@ function syncContextBackButtons(){
  syncContextBackButton($('resultsClose'),fromHq,'Close results');
 }
 let authForm=null;
-setupLanguage({document,storage:languageStorage,onChange:()=>{recruitScreen?.refresh?.();authForm?.refresh?.();commandCenter?.render();gameControl?.refreshLanguage?.();soldierUI?.refresh();syncContextBackButtons();if(armoryCategory==='workshop')renderWorkshop();if(profile){$('profileLevel').textContent=levelText(profile.xp);refreshProfileRank(profile);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(profile.xp)-1,20)+2*parseBuild(profile.skills,level(profile.xp)).assault+(readArmory(profile.armory).equipped===1?3:0)+webBonuses(parseBuild(profile.skills,level(profile.xp))).damage});updateSkillPrompt(profile);if($('armoryDialog').open)renderArmory();if($('skillDialog').open)renderSkills();}}});
+setupLanguage({document,storage:languageStorage,onChange:()=>{recruitScreen?.refresh?.();authForm?.refresh?.();commandCenter?.render();gameControl?.refreshLanguage?.();soldierUI?.refresh();syncContextBackButtons();if(armoryCategory==='workshop')renderWorkshop();if(profile){$('profileLevel').textContent=levelText(profile.xp);refreshProfileRank(profile);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(profile.xp)-1,20)+2*parseBuild(profile.skills,level(profile.xp)).assault+heroDamageBonus(profile)+webBonuses(parseBuild(profile.skills,level(profile.xp))).damage});updateSkillPrompt(profile);if($('armoryDialog').open)renderArmory();if($('skillDialog').open)renderSkills();}}});
 onLanguageChange(()=>{versionUI?.refresh();maintenanceUI?.refresh();});versionUI?.refresh();
 const promptCenter=createMultiplayerPrompts({document,translate:translateText});onLanguageChange(()=>promptCenter.refresh());
 const fullscreen=setupFullscreen({document,button:$('fullscreenToggle'),status:$('fullscreenStatus'),translate:translateText,onLanguageChange});
@@ -716,7 +717,17 @@ function refreshProfileRank(value){
  const lvl=level((value??profile)?.xp||0);
  renderRankInsignia(document,document.getElementById('profileRank'),{level:lvl},{size:22});
 }
-function showProfile(value){updateSkillPrompt(value);profile=value;void refreshSoldierPortrait();$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(profile.skills,level(value.xp))).damage});$('saveStatus').textContent='';display('game');if(featureEnabled('friends'))friendsUI.start();scoreReporter?.close();scoreReporter=featureEnabled('leaderboards')?createScoreReporter({service:createLeaderboardService({db,auth,sdk:{ref,get,onValue,runTransaction,query,orderByChild,limitToLast}}),getName:()=>profile?.name,onSuccess:()=>{$('scoreSaveStatus').textContent='';},onError:()=>{$('scoreSaveStatus').textContent=translateText('High score could not be saved yet; retrying.');}}):null;if(scoreReporter)releaseScoreReporters.add(scoreReporter);if(!gameStarted){gameStarted=true;gameControl=startGame(account,{confirmAction:confirmation.ask,reducedGraphics:settings.isReduced(),initialSettings:settings.snapshot(),leaveParty:()=>fourPanel?.isActive()?fourPanel.leaveParty():partyPanel.leaveParty(),onForceCloseParty:(id,tick)=>fourPanel?.forceCompleteParty(id,tick)??false,experimentalFourViewport:fourPlayerTest,experimentalWorkshop:featureEnabled('workshop'),deferTutorial:true,promptCenter,generalRadio,onReturnToCommand:()=>commandCenter?.showAfterEnd(),onResumeBattle:()=>commandCenter?.showBattle(),onRunFinished:()=>versionUI?.afterGame(),onTrainingComplete:()=>endingHandoffs.schedule({version:sessionVersion,id:user?.uid})});settings.apply();commandCenter=createCommandCenter({document,getProfile:()=>profile,getGame:()=>gameControl,isPartyActive:()=>partyPanel.isActive()||!!fourPanel?.isActive(),endlessLauncher,getPortrait:recruitPortraitUrl,onTutorial:openTutorialDossierDialog,onViewChange:view=>{syncContextBackButtons();const screen=$('gameWorkspace')?.dataset?.screen;const audioView=view==='workspace'?(screen==='lobby'?'menu':(screen==='online'?'online':'battle')):'menu';gameControl?.setView?.(audioView);if(view==='workspace'){menuTour?.dismiss?.();generalRadio?.stop?.();}},openParty:()=>{if($('fourPartyPanel').hidden)$('partyToggle').onclick();},closeParty:()=>{fourPanel?.hide();$('partyToggle').setAttribute('aria-expanded','false');},signOut:requestLogout});}else notifySession();commandCenter.showMenu();}
+// The HERO DAMAGE line counts what the soldier actually wears: the workshop
+// taken list through the same effects the match uses, or the old one-slot
+// legacy index for accounts that have not met the workshop yet (IPL-0137).
+function heroDamageBonus(value){
+ const workshop=decodeWorkshopSafe(value?.workshop);
+ if(!workshop)return readArmory(value?.armory).equipped===1?3:0;
+ const snapshot=captureWorkshopLoadout(workshop,'solo');
+ const effects=snapshot?workshopEffects(snapshot,0):null;
+ return effects?effects.damage:(readArmory(value?.armory).equipped===1?3:0);
+}
+function showProfile(value){updateSkillPrompt(value);profile=value;void refreshSoldierPortrait();$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+heroDamageBonus(value)+webBonuses(parseBuild(profile.skills,level(value.xp))).damage});$('saveStatus').textContent='';display('game');if(featureEnabled('friends'))friendsUI.start();scoreReporter?.close();scoreReporter=featureEnabled('leaderboards')?createScoreReporter({service:createLeaderboardService({db,auth,sdk:{ref,get,onValue,runTransaction,query,orderByChild,limitToLast}}),getName:()=>profile?.name,onSuccess:()=>{$('scoreSaveStatus').textContent='';},onError:()=>{$('scoreSaveStatus').textContent=translateText('High score could not be saved yet; retrying.');}}):null;if(scoreReporter)releaseScoreReporters.add(scoreReporter);if(!gameStarted){gameStarted=true;gameControl=startGame(account,{confirmAction:confirmation.ask,reducedGraphics:settings.isReduced(),initialSettings:settings.snapshot(),leaveParty:()=>fourPanel?.isActive()?fourPanel.leaveParty():partyPanel.leaveParty(),onForceCloseParty:(id,tick)=>fourPanel?.forceCompleteParty(id,tick)??false,experimentalFourViewport:fourPlayerTest,experimentalWorkshop:featureEnabled('workshop'),deferTutorial:true,promptCenter,generalRadio,onReturnToCommand:()=>commandCenter?.showAfterEnd(),onResumeBattle:()=>commandCenter?.showBattle(),onRunFinished:()=>versionUI?.afterGame(),onTrainingComplete:()=>endingHandoffs.schedule({version:sessionVersion,id:user?.uid})});settings.apply();commandCenter=createCommandCenter({document,getProfile:()=>profile,getGame:()=>gameControl,isPartyActive:()=>partyPanel.isActive()||!!fourPanel?.isActive(),endlessLauncher,getPortrait:recruitPortraitUrl,onTutorial:openTutorialDossierDialog,onViewChange:view=>{syncContextBackButtons();const screen=$('gameWorkspace')?.dataset?.screen;const audioView=view==='workspace'?(screen==='lobby'?'menu':(screen==='online'?'online':'battle')):'menu';gameControl?.setView?.(audioView);if(view==='workspace'){menuTour?.dismiss?.();generalRadio?.stop?.();}},openParty:()=>{if($('fourPartyPanel').hidden)$('partyToggle').onclick();},closeParty:()=>{fourPanel?.hide();$('partyToggle').setAttribute('aria-expanded','false');},signOut:requestLogout});}else notifySession();commandCenter.showMenu();}
 const attemptedSkillMigrations=new Set();
 let skillMigrationSummary=null;
 async function runSkillMigration(currentUser,version,snapshotValue){
@@ -766,7 +777,7 @@ async function loadProfile(currentUser,version){
  // ever show it. The decision is taken ONCE, from the first snapshot of the
  // session: a face that is removed later (cleanup, a purged field) is not
  // quietly written back, and a refused write is not an error.
- void avatarSync.sync(value);$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);refreshProfileRank(value);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(value.skills,level(value.xp))).damage});// A face that arrives during the session - the hand-over above landing, or
+ void avatarSync.sync(value);$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);refreshProfileRank(value);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+heroDamageBonus(value)+webBonuses(parseBuild(value.skills,level(value.xp))).damage});// A face that arrives during the session - the hand-over above landing, or
  // another device choosing one - has to reach the dossier too, not just the
  // next reload. refreshSoldierPortrait recomposes only when the encoded face
  // really changed, and it runs before the menu repaints so the command center

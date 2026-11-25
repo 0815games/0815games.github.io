@@ -18,13 +18,13 @@ async function ready(reference){let stop;await new Promise((resolve,reject)=>{st
 test('migration round trips an empty workshop scalar and preserves existing account values',async()=>{
  const reference=ref(a,'players/alice');await set(reference,base());const stop=await ready(reference);
  try{const result=await runTransaction(reference,current=>initializeWireWorkshop(current)??undefined,{applyLocally:false});assert.equal(result.committed,true);
-  const stored=(await get(reference)).val(),w=decodeWorkshop(stored.workshop);assert.equal(typeof stored.workshop,'string');assert.equal(w.components,0);assert.deepEqual(w.owned,['legacy-1','legacy-2']);assert.deepEqual({...w.mods},{});assert.equal(w.equipped.gear,'legacy-2');assert.deepEqual(stored.armory,base().armory);assert.deepEqual(stored.coopRewards,base().coopRewards);
+  const stored=(await get(reference)).val(),w=decodeWorkshop(stored.workshop);assert.equal(typeof stored.workshop,'string');assert.equal(w.components,0);assert.deepEqual(w.owned,['legacy-1','legacy-2']);assert.deepEqual({...w.mods},{});assert.deepEqual([...w.equipped],['legacy-1','legacy-2'],'the first read wears every owned piece');assert.deepEqual(stored.armory,base().armory);assert.deepEqual(stored.coopRewards,base().coopRewards);
   await assertFails(get(ref(other,'players/alice')));await assertFails(set(ref(other,'players/alice/workshop'),'tampered'));
  }finally{stop();}
 });
 test('completely empty owned and mod collections survive Firebase storage',async()=>{
  const reference=ref(a,'players/alice');const empty=initializeWireWorkshop({name:'Alice',gender:'female',xp:0});await set(reference,empty);
- const saved=(await get(reference)).val(),decoded=decodeWorkshop(saved.workshop);assert.deepEqual(decoded.owned,[]);assert.deepEqual({...decoded.mods},{});assert.deepEqual(decoded.equipped,{weapon:'standard',gear:'none',gadget:'none'});
+ const saved=(await get(reference)).val(),decoded=decodeWorkshop(saved.workshop);assert.deepEqual(decoded.owned,[]);assert.deepEqual({...decoded.mods},{});assert.deepEqual(decoded.equipped,[],'nothing owned, nothing worn');
 });
 test('competing transactions cannot both spend the same scrap',async()=>{
  let p=initializeWireWorkshop(base()),w=decodeWorkshop(p.workshop);w.components=1;p.workshop=encodeWorkshop(w);
@@ -40,7 +40,7 @@ test('competing transactions cannot both spend the same scrap',async()=>{
  }finally{stopA();stopB();}
 });
 test('unsupported or corrupt workshop is never reset by a transaction',async()=>{
- const reference=ref(a,'players/alice'),profile={...base(),workshop:'[2,0,[],[],[]]'};await set(reference,profile);const stop=await ready(reference);
+ const reference=ref(a,'players/alice'),profile={...base(),workshop:'[9,0,[],[],[]]'};await set(reference,profile);const stop=await ready(reference);
  try{const result=await runTransaction(reference,current=>applyWireWorkshopCommand(current,{type:'craft',item:'boots'})??undefined,{applyLocally:false});assert.equal(result.committed,false);assert.deepEqual((await get(reference)).val(),profile);}finally{stop();}
 });
 
@@ -61,6 +61,7 @@ test('workshop account service performs real emulator transactions',async()=>{
  const account=createWorkshopAccount({db:a,auth:{currentUser:{uid:'alice'}},sdk:{ref,onValue,runTransaction},canEdit:()=>true});
  const reference=ref(a,'players/alice');await set(reference,base());
  assert.equal((await account.initialize()).status,'saved');assert.equal((await account.command({type:'craft',item:'boots'})).status,'saved');
+ assert.ok(decodeWorkshop((await get(reference)).val().workshop).equipped.includes('boots'),'the fresh craft joins the loadout');
  assert.equal((await account.command({type:'equip',slot:'gear',item:'boots'})).status,'saved');
- const saved=(await get(reference)).val();assert.equal(saved.armory.scrap,10);assert.equal(decodeWorkshop(saved.workshop).equipped.gear,'boots');assert.equal(saved.armory.fortify,3);assert.deepEqual(saved.coopRewards,{abcd:31});
+ const saved=(await get(reference)).val();assert.equal(saved.armory.scrap,10);assert.ok(!decodeWorkshop(saved.workshop).equipped.includes('boots'),'the toggle takes it back off');assert.equal(saved.armory.fortify,3);assert.deepEqual(saved.coopRewards,{abcd:31});
 });

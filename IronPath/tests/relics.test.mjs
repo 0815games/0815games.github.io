@@ -7,7 +7,7 @@ import {captureWorkshopLoadout,workshopEffects} from '../workshop/workshop-effec
 import {prestigeEarned,PRESTIGE_IDS} from '../core/prestige.mjs';
 import {THREATS} from '../core/campaign-pressure.mjs';
 
-const workshop=()=>({version:1,components:0,owned:[],equipped:{weapon:'standard',gear:'none',gadget:'none'},mods:{}});
+const workshop=()=>({version:2,components:0,owned:[],equipped:[],mods:{}});
 
 test('five acts each carry exactly one relic and end on their shipped finale',()=>{
   assert.equal(ACTS.length,5);
@@ -76,13 +76,13 @@ test('relics ride the solo snapshot and standardize for competitive modes',()=>{
 test('the prestige trophies are melted: no grants, no effects, stripped on sync',()=>{
   assert.equal(prestigeEarned('prestige-relay',{storyProgress:12}),false);
   // An old save carries a prestige item, equipped with a mod.
-  const old={version:1,components:0,owned:['prestige-relay'],equipped:{weapon:'standard',gear:'none',gadget:'prestige-relay'},mods:{'prestige-relay':'beacon'}};
+  const old={version:2,components:0,owned:['prestige-relay'],equipped:['prestige-relay'],mods:{'prestige-relay':'beacon'}};
   const encoded=encodeWorkshop(old);assert.ok(encoded);
   const profile={storyProgress:4,workshop:encoded};
   const melted=meltPrestige(profile);
   const workshopAfter=decodeWorkshop(melted.workshop);
   assert.deepEqual(workshopAfter.owned,[]);
-  assert.equal(workshopAfter.equipped.gadget,'none');
+  assert.deepEqual(workshopAfter.equipped,[],'the melted trophy leaves the taken list');
   assert.deepEqual({...workshopAfter.mods},{});
   // Completing a mission melts instead of granting: no trophy returns.
   const completed=completeStoryMission({storyProgress:9,storyCampaign:1,workshop:encoded},'supply-line');

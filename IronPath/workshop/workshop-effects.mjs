@@ -2,7 +2,7 @@
 // and co-op; competitive modes standardize to neutral. Values are covered by
 // the balance suite. All bonuses belong to the wearer except bunkerHealth,
 // which is shared with their team.
-import {validateWorkshop} from './workshop-model.mjs?v=20261112-tagless1';
+import {validateWorkshop} from './workshop-model.mjs?v=20261125-aim15';
 import {PRESTIGE,isPrestige} from '../core/prestige.mjs?v=20261112-pressure1';
 import {legacyEquipmentEffects} from '../core/equipment-effects.mjs?v=20261107-balance1';
 import {RELICS,isRelic,earnedRelicIds} from '../core/relics.mjs?v=20261112-tagless1';
@@ -42,7 +42,9 @@ function add(target,source){for(const [key,value] of Object.entries(source||{}))
 // Competitively standardized effects are neutral; visual choices remain.
 export function captureWorkshopLoadout(workshop,mode,profile=null){
  if(!validateWorkshop(workshop)||!modes.has(mode))return null;
- const items=['weapon','gear','gadget'].map(slot=>{const id=workshop.equipped[slot];return Object.freeze({slot,id,mod:workshop.mods[id]||null});});
+ // IPL-0137: the taken list — every piece the soldier wears at once. Slot
+ // competition is gone, so items carry no slot and any length is valid.
+ const items=workshop.equipped.map(id=>Object.freeze({id,mod:workshop.mods[id]||null}));
  // Act relics ride along on the snapshot for every mode that keeps account
  // progression. The multiplayer wire format does not carry them yet, so they
  // are attached for solo only until co-op grows its own protocol field.
@@ -50,12 +52,15 @@ export function captureWorkshopLoadout(workshop,mode,profile=null){
  return Object.freeze({version:1,mode,items:Object.freeze(items),relics});
 }
 export function workshopEffects(snapshot,wave){
- if(!snapshot||snapshot.version!==1||!modes.has(snapshot.mode)||!Array.isArray(snapshot.items)||snapshot.items.length!==3||!Number.isSafeInteger(wave)||wave<0)return null;
+ if(!snapshot||snapshot.version!==1||!modes.has(snapshot.mode)||!Array.isArray(snapshot.items)||snapshot.items.length>50||!Number.isSafeInteger(wave)||wave<0)return null;
  // Revalidate snapshots rather than trusting serialized multiplayer input.
- const slots=['weapon','gear','gadget'];if(snapshot.items.some((item,i)=>!item||item.slot!==slots[i]||typeof item.id!=='string'||!(item.mod===null||typeof item.mod==='string')))return null;
+ // IPL-0137: items are the taken list — {id, mod}, any length, no slots, no
+ // duplicates; validation runs against a real workshop value below.
+ if(snapshot.items.some(item=>!item||typeof item.id!=='string'||item.id.length<1||!(item.mod===null||typeof item.mod==='string')))return null;
  const ids=snapshot.items.map(item=>item.id),owned=ids.filter(id=>id!=='standard'&&id!=='none'),mods={};
+ if(new Set(owned).size!==owned.length)return null;
  for(const item of snapshot.items){if(item.mod!==null){if(Object.hasOwn(mods,item.id))return null;mods[item.id]=item.mod;}}
- const w={version:1,components:0,owned,equipped:Object.fromEntries(snapshot.items.map(i=>[i.slot,i.id])),mods};if(!validateWorkshop(w))return null;
+ const w={version:2,components:0,owned,equipped:owned,mods};if(!validateWorkshop(w))return null;
  const result={...BASE};if(snapshot.mode==='versus'||snapshot.mode==='two-vs-two')return result;
  // Act relics are flat account passives: no wave growth, merged after items.
  if(Array.isArray(snapshot.relics))for(const id of snapshot.relics){if(isRelic(id))add(result,RELICS[id].bonus);}
