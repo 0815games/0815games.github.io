@@ -1,10 +1,15 @@
 // App-Icon: Startbildschirm, Homescreen und Browser-Tab.
 //
-// Quelle ist ein Rohbild (docs/muster/app-icon.png), aus dem
+// Quelle ist die Vektordatei docs/muster/app-icon.svg, aus der
 // tools/app-icon.mjs alle Groessen erzeugt. Geprueft wird hier, dass die
 // Dateien da sind, die richtigen Masse haben und im HTML auch verlinkt
 // werden - ein nicht verlinktes Icon ist im Browser unsichtbar und faellt
 // niemandem als Fehler auf.
+//
+// Der zweite Teil prueft das, was beim alten Masken-Icon schiefging: es war
+// bei 16 px nur noch ein gruener Fleck. Ein Icon, das man im Browser-Tab
+// nicht erkennt, ist kein Icon - und Marcels "das Logo ist haesslich" kam
+// genau von dort.
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync, existsSync, statSync} from 'node:fs';
@@ -131,5 +136,120 @@ test('der Build liefert die Icons mit aus', () => {
   for (const name of ['icon-192.png', 'apple-touch-icon.png', 'manifest.webmanifest']) {
     assert.ok(!artifacts.includes(`'shell/${name}'`),
       `ARTIFACTS nennt shell/${name} - der Build wuerde seine eigene Quelle loeschen`);
+  }
+});
+
+// --- Erkennbarkeit in kleiner Groesse ------------------------------------
+// Das alte Icon war bei 16 px ein gruener Fleck: duenne Striche, ein
+// Strahlensymbol in der Mitte, ein Filter, der zu einem Kuchen verschmolz.
+// Ein Icon muss im Browser-Tab erkennbar sein - dort ist es 16 px gross.
+// Diese drei Tests pruefen deshalb die kleinen Groessen, nicht die grossen.
+
+// Liest ein PNG ueber sharp als rohe RGB-Werte. sharp wird nur hier geladen,
+// damit die uebrigen Tests auch ohne native Abhaengigkeit laufen.
+async function roh(datei) {
+  const {default: sharp} = await import('sharp');
+  const {data, info} = await sharp(readFileSync(datei)).raw().toBuffer({resolveWithObject: true});
+  return {data, breite: info.width, hoehe: info.height, kanaele: info.channels};
+}
+
+// Zaehlt die Farben. Erlaubt sind genau zwei: Leuchtgruen und Schwarz.
+function farbzahlen({data, kanaele}) {
+  const gesehen = new Map();
+  for (let i = 0; i < data.length; i += kanaele) {
+    const schluessel = `${data[i]},${data[i + 1]},${data[i + 2]}`;
+    gesehen.set(schluessel, (gesehen.get(schluessel) || 0) + 1);
+  }
+  return gesehen;
+}
+
+test('die kleinen Groessen bestehen aus genau zwei Farben', async () => {
+  // 16 und 32 px liegen im ICO, das der Browser-Tab benutzt. Wird dort
+  // weichgezeichnet, entstehen hunderte Zwischentoene - und das Motiv
+  // verschwindet in Grau. Deshalb: nur #39ff14 und #000000.
+  const puffer = readFileSync(join(ROOT, 'favicon.ico'));
+  const anzahl = puffer.readUInt16LE(4);
+  assert.ok(anzahl >= 3, `nur ${anzahl} Groessen im ICO`);
+
+  for (let i = 0; i < anzahl; i++) {
+    const eintrag = 6 + 16 * i;
+    const laenge = puffer.readUInt32LE(eintrag + 8);
+    const versatz = puffer.readUInt32LE(eintrag + 12);
+    const kante = puffer.readUInt8(eintrag);
+    const datei = join(ROOT, 'shell', `.ico-pruefung-${kante}.png`);
+    // Das PNG aus dem ICO muss ueber sharp lesbar sein; dazu kurz ablegen.
+    const {writeFileSync, unlinkSync} = await import('node:fs');
+    writeFileSync(datei, puffer.subarray(versatz, versatz + laenge));
+    try {
+      const farben = farbzahlen(await roh(datei));
+      assert.ok(farben.size <= 4,
+        `${kante}px: ${farben.size} Farben - das wird beim Verkleinern Matsch (${[...farben.keys()].slice(0, 6).join(' | ')})`);
+    } finally {
+      unlinkSync(datei);
+    }
+  }
+});
+
+test('das Motiv ist bei 16 px noch eine Tuer, kein Fleck', async () => {
+  // Drei Messungen an der 16er-Fassung:
+  //  1. die Mitte ist dunkel (Kernloch) - ein voller Fleck haette dort Gruen
+  //  2. es gibt einen hellen Ring zwischen Kern und Rand
+  //  3. der Rand ist dunkel - das Motiv hat Luft zum Rand
+  const puffer = readFileSync(join(ROOT, 'favicon.ico'));
+  const eintrag = 6;                       // erster Eintrag = 16 px
+  const laenge = puffer.readUInt32LE(eintrag + 8);
+  const versatz = puffer.readUInt32LE(eintrag + 12);
+  const {writeFileSync} = await import('node:fs');
+  const datei = join(ROOT, 'shell', '.ico-16.png');
+  writeFileSync(datei, puffer.subarray(versatz, versatz + laenge));
+  const bild = await roh(datei);
+  const {unlinkSync} = await import('node:fs');
+  unlinkSync(datei);
+
+  const gruen = (x, y) => {
+    const i = (y * bild.breite + x) * bild.kanaele;
+    return bild.data[i + 1] > 100;         // G-Kanal
+  };
+  const mitte = Math.floor(bild.breite / 2);
+  assert.equal(gruen(mitte, mitte), false, 'die Mitte ist zugemalt - kein Kernloch erkennbar');
+
+  // Ring: auf halbem Weg zwischen Mitte und Rand muss Gruen liegen.
+  assert.equal(gruen(mitte, mitte - 4), true,
+    'zwischen Kern und Rand ist nichts - das Motiv ist bei 16 px leer');
+
+  // Rand: die aeusserste Zeile bleibt schwarz, sonst klebt das Icon am Rand.
+  assert.equal(gruen(0, mitte), false, 'das Motiv beruehrt den linken Rand');
+  assert.equal(gruen(bild.breite - 1, mitte), false, 'das Motiv beruehrt den rechten Rand');
+});
+
+test('die Vektorquelle beschreibt dieselben Maße wie das Werkzeug', async () => {
+  // Zwei Beschreibungen desselben Motivs laufen auseinander, sobald eine
+  // geaendert wird. Der Test haelt die Zahlen zusammen.
+  const svg = readFileSync(join(ROOT, 'docs/muster/app-icon.svg'), 'utf8');
+  const werkzeug = readFileSync(join(ROOT, 'tools', 'app-icon.mjs'), 'utf8');
+
+  const motiv = werkzeug.match(/const MOTIV = \{([\s\S]*?)\};/);
+  assert.ok(motiv, 'MOTIV fehlt in tools/app-icon.mjs');
+  const zahl = (name) => {
+    const treffer = motiv[1].match(new RegExp(`${name}:\\s*([\\d.]+)`));
+    assert.ok(treffer, `${name} fehlt in MOTIV`);
+    return Number(treffer[1]);
+  };
+
+  // Scheibe und Kernloch stehen als r=... in der SVG.
+  assert.ok(svg.includes(`r="${zahl('scheibe')}"`), `Scheibe r=${zahl('scheibe')} fehlt in der SVG`);
+  assert.ok(svg.includes(`r="${zahl('loch')}"`), `Kernloch r=${zahl('loch')} fehlt in der SVG`);
+
+  // Trennring: Mittelpunkt und Breite muessen zusammenpassen.
+  const mitteRing = (zahl('ringInnen') + zahl('ringAussen')) / 2;
+  const breiteRing = zahl('ringAussen') - zahl('ringInnen');
+  assert.ok(Math.abs(breiteRing - 7) < 0.01, `Ringbreite ${breiteRing} - erwartet 7`);
+  assert.ok(svg.includes('r="31.5"') && svg.includes('stroke-width="7"'),
+    `Ring r=${mitteRing} / Breite ${breiteRing} steht nicht in der SVG`);
+
+  // Beide Zweige (gross/mittel) muessen vorhanden sein - sonst rastert das
+  // Werkzeug eine leere Datei.
+  for (const zweig of ['gross', 'mittel']) {
+    assert.ok(svg.includes(`<g id="${zweig}">`), `Zweig "${zweig}" fehlt in der SVG`);
   }
 });

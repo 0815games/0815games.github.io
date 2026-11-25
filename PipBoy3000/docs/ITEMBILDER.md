@@ -139,13 +139,24 @@ Homescreen und Browser-Tab hat ein eigenes Rohbild und ein eigenes Skript.
 
 | | |
 |---|---|
-| Rohbild | `docs/muster/app-icon.png` |
+| Quelle | `docs/muster/app-icon.svg` (Vektor, kein Rohbild) |
 | Aufbereitung | `node tools/app-icon.mjs` (`npm run icons:app`) |
 | Quelle | `shell/icon-192.png`, `icon-512.png`, `icon-512-maskable.png`, `apple-touch-icon.png`, `favicon.ico`, `icon.svg`, `manifest.webmanifest` |
 | Ausgeliefert | dieselben Namen im Wurzelverzeichnis (Build kopiert) |
 
-Alle Groessen entstehen aus dem einen Rohbild. Wer eine nachpflegt, hat nach
+Alle Groessen entstehen aus der einen Vektordatei. Wer eine nachpflegt, hat nach
 der naechsten Aenderung zwei verschiedene Icons im Umlauf.
+
+**Zwei Wege, je nach Groesse.** Ab 64 px wird die SVG gerastert; darunter
+zeichnet `tools/app-icon.mjs` eine Pixelformel. Der Grund ist eine Rechnung:
+bei 16 px ist ein Strich von 2.4 Einheiten 0.38 px. Weichgezeichnet wird
+daraus eine graue Flaeche ohne Kontur - das alte Masken-Icon war im
+Browser-Tab genau deshalb ein gruener Fleck (140 Zwischentoene, gemessen).
+Die Pixelformel liefert genau zwei Farben und ist damit auch im Favicon klar.
+
+Die SVG hat dafuer zwei Zweige: `gross` (ab 120 px, mit Innenring) und
+`mittel` (64-119 px, ohne). Beide beschreiben dieselben Radien wie die Formel
+im Werkzeug - `tests/app-icon.test.mjs` haelt die Zahlen zusammen.
 
 Besonderheiten gegenueber den Item-Bildern:
 

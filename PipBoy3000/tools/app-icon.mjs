@@ -1,11 +1,23 @@
 // App-Icon fuer Startbildschirm, Homescreen und Browser-Tab.
 //
-// Quelle ist EIN Rohbild (docs/muster/app-icon.png). Daraus entstehen alle
-// Groessen, die die Plattformen erwarten - nicht umgekehrt. Wer eine Groesse
-// von Hand nachpflegt, hat nach der naechsten Aenderung zwei verschiedene
-// Icons im Umlauf.
+// QUELLE IST DIE VEKTORDATEI docs/muster/app-icon.svg. Aus ihr entstehen alle
+// Groessen - nicht umgekehrt. Wer eine Groesse von Hand nachpflegt, hat nach
+// der naechsten Aenderung zwei verschiedene Icons im Umlauf.
 //
 //   node tools/app-icon.mjs
+//
+// Warum nicht alles aus der SVG: bei 16 px ist ein Strich von 2.4 Einheiten
+// 0.38 px. Beim Weichzeichnen wird daraus eine graue Flaeche ohne Kontur -
+// genau der Fehler des alten Masken-Icons. Deshalb zwei Wege:
+//
+//   1. ab 64 px    SVG rastern (density hoch, dann herunterrechnen)
+//   2. unter 64 px Pixelformel: pro Pixel entscheidet eine Bedingung, es gibt
+//                  nur zwei Farben. Kein Antialiasing, keine Graustufen.
+//
+// Die Zahlen der Formel sind dieselben wie in der SVG: Scheibe r=45,
+// Trennring 28..35, Kernloch r=9, sechs Schlitze ab r=35. Wer eines von beiden
+// aendert, muss das andere mitziehen - tests/app-icon.test.mjs prueft, dass
+// die Pixelformel genau zwei Farben liefert.
 //
 // Ausgeliefert wird aus dem Repo-Wurzelverzeichnis (GitHub Pages liefert
 // legacy aus), deshalb liegen die Dateien in shell/ und werden von dort
@@ -15,17 +27,20 @@
 // erwartet eine randlose Flaeche. Ein eigener Rand wuerde als schwarzer
 // Rahmen um das gerundete Icon stehen. Android nutzt das Rohbild als
 // "any"-Layer und beschneidet selbst.
-import {readFile, writeFile, copyFile} from 'node:fs/promises';
+import {readFile, writeFile} from 'node:fs/promises';
 import {join, dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const QUELLE = join(ROOT, 'docs/muster/app-icon.png');
+const QUELLE = join(ROOT, 'docs/muster/app-icon.svg');
 const SHELL = join(ROOT, 'shell');
-const THEME = '#39ff14';   // Leuchtgruen der Oberflaeche
+const THEME = '#39ff14';          // Leuchtgruen der Oberflaeche
 const HINTERGRUND = '#000000';
 
 const {default: sharp} = await import('sharp');
+
+// Ab dieser Kante wird gerastert, darunter gezeichnet.
+const RASTER_AB = 64;
 
 // PNG fuer Apple und Browser-Tab, plus maskable-Variante mit Sicherheitsrand.
 const PNG = [
@@ -35,18 +50,72 @@ const PNG = [
   {name: 'apple-touch-icon.png', size: 180, typ: 'any'}
 ];
 
-const roh = await readFile(QUELLE);
+// Das Motiv in Zahlen. Die SVG beschreibt dasselbe, nur als Pfade.
+const MOTIV = {
+  scheibe: 45,          // Aussenkante
+  ringInnen: 28,        // Trennring von ... bis
+  ringAussen: 35,
+  loch: 9,              // Kernloch
+  schlitze: 6,          // Verriegelungsbolzen
+  schlitzBreiteGrad: 7  // Winkelbreite eines Schlitzes
+};
 
-// Auf Inhalt beschneiden, dann quadratisch mit Rand. Ohne das Zuschneiden
-// sitzt das Motiv je nach Erzeugung unterschiedlich im Bild, und das Icon
-// springt zwischen den Groessen.
-async function quadrat(seite) {
-  // sharp fuehrt pro Pipeline nur EINEN resize aus - deshalb zwei Instanzen.
-  const beschnitten = await sharp(roh).trim({threshold: 10}).png().toBuffer();
-  return sharp(beschnitten)
+// Pixelgenaue Zeichnung fuer kleine Kantenlaengen.
+// Kein sharp-Resize, keine Interpolation: jeder Pixel ist entweder #39ff14
+// oder #000000. Das ist der Unterschied zwischen "erkennbar" und "Matsch".
+function zeichneKlein(kante) {
+  const puffer = Buffer.alloc(kante * kante * 4);
+  const mitte = kante / 2;
+  const einheit = kante / 100;   // das 100er-Raster der SVG
+
+  for (let y = 0; y < kante; y++) {
+    for (let x = 0; x < kante; x++) {
+      const dx = x + 0.5 - mitte;
+      const dy = y + 0.5 - mitte;
+      const radius = Math.hypot(dx, dy) / einheit;
+
+      let gruen = radius <= MOTIV.scheibe;
+      if (radius >= MOTIV.ringInnen && radius <= MOTIV.ringAussen) gruen = false;
+      if (radius <= MOTIV.loch) gruen = false;
+      if (radius > MOTIV.ringAussen) {
+        // Winkelabstand zum naechsten Bolzen; 0 Grad zeigt nach oben
+        let winkel = Math.atan2(dx, -dy) * 180 / Math.PI;
+        if (winkel < 0) winkel += 360;
+        const abstand = Math.min(...Array.from({length: MOTIV.schlitze}, (_, i) => {
+          const diff = Math.abs(winkel - i * 360 / MOTIV.schlitze);
+          return Math.min(diff, 360 - diff);
+        }));
+        if (abstand <= MOTIV.schlitzBreiteGrad / 2) gruen = false;
+      }
+
+      const i = (y * kante + x) * 4;
+      puffer[i] = gruen ? 0x39 : 0x00;
+      puffer[i + 1] = gruen ? 0xff : 0x00;
+      puffer[i + 2] = gruen ? 0x14 : 0x00;
+      puffer[i + 3] = 0xff;
+    }
+  }
+  return sharp(puffer, {raw: {width: kante, height: kante, channels: 4}})
+    .png({compressionLevel: 9})
+    .toBuffer();
+}
+
+// SVG rastern. density hoch, damit die Kanten vor dem Herunterrechnen fein
+// sind; danach genau einmal auf die Zielkante.
+async function rastere(seite, zweig) {
+  let svg = (await readFile(QUELLE, 'utf8'))
+    .replace('<g id="gross">', `<g id="gross"${zweig === 'gross' ? '' : ' display="none"'}>`)
+    .replace('<g id="mittel">', `<g id="mittel"${zweig === 'mittel' ? '' : ' display="none"'}>`);
+  return sharp(Buffer.from(svg), {density: 1200})
     .resize(seite, seite, {fit: 'contain', background: HINTERGRUND})
     .png({compressionLevel: 9})
     .toBuffer();
+}
+
+async function quadrat(seite) {
+  if (seite < RASTER_AB) return zeichneKlein(seite);
+  // Ab 120 px traegt der Innenring, darunter wuerde er zu Brei.
+  return rastere(seite, seite >= 120 ? 'gross' : 'mittel');
 }
 
 for (const {name, size, typ} of PNG) {
@@ -65,6 +134,9 @@ for (const {name, size, typ} of PNG) {
 // Favicon: klein, aber als .ico braucht es mehrere Groessen. sharp kann kein
 // ICO, deshalb schreibt das Skript die ICO-Struktur selbst - PNG-Eintraege
 // sind seit Vista erlaubt und sparen eine Abhaengigkeit.
+//
+// Alle drei Groessen kommen aus der Pixelformel: 16 und 32 sind der Grund,
+// warum es sie ueberhaupt gibt.
 async function ico() {
   const groessen = [16, 32, 48];
   const bilder = [];
@@ -96,31 +168,15 @@ async function ico() {
 
 await ico();
 
-// Ausserdem eine SVG-Fassung fuer Browser, die sie bevorzugen: scharf in jeder
-// Groesse, ein paar hundert Byte. Das Motiv ist bewusst als Vektor nachgebaut -
-// aus dem PNG automatisch vektorisieren waere bei Linienkunst unbrauchbar.
-const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <rect width="100" height="100" fill="${HINTERGRUND}"/>
-  <g fill="none" stroke="${THEME}" stroke-width="5" stroke-linecap="round">
-    <circle cx="50" cy="48" r="30"/>
-    <circle cx="38" cy="40" r="8"/>
-    <circle cx="62" cy="40" r="8"/>
-    <path d="M36 70a14 14 0 0 0 28 0"/>
-    <path d="M38 68h24M41 75h18"/>
-  </g>
-  <g fill="${THEME}">
-    <circle cx="50" cy="57" r="2.4"/>
-    <path d="M50 51.4 53 57h-6z"/>
-    <path d="M46.6 58.6 43.6 61h6.6z" transform="rotate(120 50 57)"/>
-    <path d="M46.6 58.6 43.6 61h6.6z" transform="rotate(240 50 57)"/>
-  </g>
-</svg>
-`;
+// Die ausgelieferte SVG ist die grosse Fassung ohne den zweiten Zweig: sie
+// wird im Browser fuer die Adressleiste und fuer "Zum Startbildschirm" in
+// beliebiger Groesse skaliert. Unter 64 px greift ohnehin das ICO.
+const voll = await readFile(QUELLE, 'utf8');
+const svg = voll
+  .replace(/<!--[\s\S]*?-->/g, '')                        // Kommentare raus
+  .replace(/\s*<g id="mittel">[\s\S]*?<\/g>\s*(?=<\/svg>)/, '\n')  // zweiter Zweig raus
+  .replace(/ id="gross"/, '')
+  .replace(/\n\s*\n/g, '\n')
+  .trim() + '\n';
 await writeFile(join(SHELL, 'icon.svg'), svg);
 console.log(`  ${'icon.svg'.padEnd(24)} vektoriell    ${(Buffer.byteLength(svg) / 1024).toFixed(1)} kB`);
-
-// In das Wurzelverzeichnis, damit Pages sie ohne Umweg ausliefert.
-for (const name of [...PNG.map(p => p.name), 'favicon.ico', 'icon.svg']) {
-  await copyFile(join(SHELL, name), join(ROOT, name));
-}
-console.log(`\n${PNG.length + 2} Dateien nach shell/ und ins Wurzelverzeichnis geschrieben.`);
