@@ -12,7 +12,8 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { createTown, advance, placeBuilding, upgradeBuilding, BIOMES } from '../src/domain/engine.js';
+import { createTown, advance, placeBuilding, upgradeBuilding, plantField, BIOMES } from '../src/domain/engine.js';
+import { checkPlacement, fieldsOf, plantableNeighbours, fieldSlots } from '../src/domain/placement.js';
 import { buildCost, productionMultiplier, storageCap } from '../src/domain/economy.js';
 import { GRID, keyOf, isUnlocked } from '../src/domain/grid.js';
 import { charterGain } from '../src/domain/charters.js';
@@ -53,7 +54,9 @@ function botAct(state, ctx) {
     if (!best) break;
     const r = best.kind === 'build'
       ? placeBuilding(s, { x: best.x, y: best.y, buildingId: best.id }, ctx)
-      : upgradeBuilding(s, { x: best.x, y: best.y }, ctx);
+      : best.kind === 'field'
+        ? plantField(s, { fx: best.fx, fy: best.fy, x: best.x, y: best.y }, ctx)
+        : upgradeBuilding(s, { x: best.x, y: best.y }, ctx);
     if (r.error) break;
     s = r.state;
   }
@@ -87,17 +90,35 @@ function bestAction(s, ctx) {
       if (!isUnlocked(x, y, level, d)) continue;
       const tile = s.tiles[keyOf(x, y)];
       if (!tile || tile.building) continue;
-      const rate = def.baseRatePerMin * productionMultiplier(s, x, y, id, d);
+      const place = checkPlacement(s, x, y, id, d);
+      if (!place.ok) continue; // Gelände passt nicht (Berg, Wald, Ufer …)
+      // Farm: Wert einer Farm = Grundrate eines Feldes (die Felder kommen unten dazu).
+      const rate = def.baseRatePerMin * previewMultiplier(s, x, y, id, place.mode, d);
       consider(producerScore(s, d, def, rate, cost), { kind: 'build', id, x, y });
     }
   }
 
-  // Upgrades bestehender Produktion: Gewinn je Stufe / Kosten.
+  // Felder der Farm: jedes Feld liefert die Grundrate der Farm.
+  const fieldCost = d.economy.fields;
+  if (s.coins >= fieldCost.coins && (s.stock[fieldCost.material.resource] ?? 0) >= fieldCost.material.amount) {
+    for (let y = 0; y < GRID; y++) for (let x = 0; x < GRID; x++) {
+      const b = s.tiles[keyOf(x, y)]?.building;
+      if (!b || b.id !== 'farm' || fieldsOf(s, x, y).length >= fieldSlots(b.level)) continue;
+      const rate = d.buildings.farm.baseRatePerMin * productionMultiplier(s, x, y, 'farm', d);
+      for (const k of plantableNeighbours(s, x, y, d)) {
+        const [fx2, fy2] = k.split(',').map(Number);
+        consider(producerScore(s, d, d.buildings.farm, rate, { coins: fieldCost.coins }), { kind: 'field', fx: x, fy: y, x: fx2, y: fy2 });
+      }
+    }
+  }
+
+  // Upgrades bestehender Produktion: Gewinn je Stufe / Kosten. Farm: nur wenn alle Felder belegt sind.
   for (let y = 0; y < GRID; y++) for (let x = 0; x < GRID; x++) {
     const b = s.tiles[keyOf(x, y)]?.building;
     if (!b || !d.buildings[b.id].resource) continue;
     const def = d.buildings[b.id];
     if (b.level >= def.maxLevel) continue;
+    if (def.perField && fieldsOf(s, x, y).length < fieldSlots(b.level)) continue;
     const cost = buildCost(b.id, b.level, d);
     if (s.coins < cost.coins || (s.stock[cost.material.resource] ?? 0) < cost.material.amount) continue;
     const gain = def.baseRatePerMin * productionMultiplier(s, x, y, b.id, d);
@@ -107,12 +128,15 @@ function bestAction(s, ctx) {
   // Lager, wenn die Vorräte fast die Kapazität erreichen.
   const cap = storageCap(s, d);
   const fullest = Math.max(0, ...Object.values(s.stock)) / cap;
-  if (fullest > 0.9) {
+  // Bot-Regel: höchstens 5 Lager, sonst baut er nur noch Lager statt Felder und Upgrades.
+  const warehouses = Object.values(s.tiles).filter((t) => t.building?.id === 'warehouse').length;
+  if (fullest > 0.9 && warehouses < 5) {
     const wh = d.buildings.warehouse;
     const cost = buildCost('warehouse', 0, d);
     if (s.coins >= cost.coins && (s.stock[cost.material.resource] ?? 0) >= cost.material.amount) {
       for (let y = 0; y < GRID; y++) for (let x = 0; x < GRID; x++) {
         if (!isUnlocked(x, y, level, d) || s.tiles[keyOf(x, y)]?.building) continue;
+        if (!checkPlacement(s, x, y, 'warehouse', d).ok) continue;
         consider(0.5, { kind: 'build', id: 'warehouse', x, y });
         return best;
       }
@@ -120,6 +144,13 @@ function bestAction(s, ctx) {
     void wh;
   }
   return best;
+}
+
+/** Faktor für ein Gebäude auf (x, y), ohne den Spielstand zu verändern. Berücksichtigt die Fischerei-Betriebsart. */
+function previewMultiplier(s, x, y, id, mode, d) {
+  const k = keyOf(x, y);
+  const st = { ...s, tiles: { ...s.tiles, [k]: { ...s.tiles[k], building: mode ? { id, level: 1, mode } : { id, level: 1 } } } };
+  return productionMultiplier(st, x, y, id, d);
 }
 
 /** Eine Simulation eines Bioms. Gibt Meilensteine zurück. */

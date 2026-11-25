@@ -3,32 +3,36 @@
 import {
   createTown, newSeed, chooseBiome, placeBuilding, upgradeBuilding,
   toggleSell, buyOffer, advance, hydrateTown, setTutorialStep, settleConvoyAction,
-} from './domain/engine.js?v=20261125-zoom2';
-import { startConvoy } from './domain/convoys.js?v=20261125-zoom2';
-import { tradeFormHtml, convoyListHtml, previewFor } from './trade-ui.js?v=20261125-zoom2';
+  plantField, removeField,
+} from './domain/engine.js?v=20261125-zoom3';
+import {
+  checkPlacement, placementHint, fieldsOf, plantableNeighbours, fieldSlots,
+} from './domain/placement.js?v=20261125-zoom3';
+import { startConvoy } from './domain/convoys.js?v=20261125-zoom3';
+import { tradeFormHtml, convoyListHtml, previewFor } from './trade-ui.js?v=20261125-zoom3';
 import {
   productionMultiplier, ratePerMin, buildCost, storageCap, classOf,
-} from './domain/economy.js?v=20261125-zoom2';
-import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261125-zoom2';
-import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261125-zoom2';
-import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261125-zoom2';
+} from './domain/economy.js?v=20261125-zoom3';
+import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261125-zoom3';
+import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261125-zoom3';
+import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261125-zoom3';
 import {
   PERKS, canFoundCharter, grantCharters, buyPerk, perkEffect, perkLevel, availableCharters, emptyCharter,
   applyCharterToData, reconcileCrowns,
-} from './domain/charters.js?v=20261125-zoom2';
+} from './domain/charters.js?v=20261125-zoom3';
 const SEEN_NOTES_KEY = 'ttt:notes-seen';
-import { withTimeout } from './async-util.js?v=20261125-zoom2';
-import { checkTownName } from './town-names.js?v=20261125-zoom2';
-import { friendsShell, mountFriends } from './friends-ui.js?v=20261125-zoom2';
-import { createBoard } from './world/board.js?v=20261125-zoom2';
-import { createLoginScene } from './world/login-scene.js?v=20261125-zoom2';
-import { TUTORIAL_STEPS, HELP_SECTIONS } from './tutorial.js?v=20261125-zoom2';
-import { createVersionUI } from './version-ui.mjs?v=20261125-zoom2';
-import { startAfkWatch, showAfkOverlay } from './afk.js?v=20261125-zoom2';
-import { fullResources, fillPercent } from './stock-dock.js?v=20261125-zoom2';
-import { nextRequestToShow, requestBadgeLabel } from './friend-requests.js?v=20261125-zoom2';
+import { withTimeout } from './async-util.js?v=20261125-zoom3';
+import { checkTownName } from './town-names.js?v=20261125-zoom3';
+import { friendsShell, mountFriends } from './friends-ui.js?v=20261125-zoom3';
+import { createBoard } from './world/board.js?v=20261125-zoom3';
+import { createLoginScene } from './world/login-scene.js?v=20261125-zoom3';
+import { TUTORIAL_STEPS, HELP_SECTIONS } from './tutorial.js?v=20261125-zoom3';
+import { createVersionUI } from './version-ui.mjs?v=20261125-zoom3';
+import { startAfkWatch, showAfkOverlay } from './afk.js?v=20261125-zoom3';
+import { fullResources, fillPercent } from './stock-dock.js?v=20261125-zoom3';
+import { nextRequestToShow, requestBadgeLabel } from './friend-requests.js?v=20261125-zoom3';
 
-const BUILD = '20261125-zoom2';
+const BUILD = '20261125-zoom3';
 console.info(`Tiny Tycoon Towns ${BUILD}`);
 const LAST_BIOME_KEY = 'ttt.lastBiome';
 const LOCAL_KEY = (uid) => `ttt.save.v1.${uid}`;
@@ -36,7 +40,7 @@ const OFFLINE_DIALOG_MS = 60_000;
 const LOCAL_SAVE_MS = 5_000;
 const CLOUD_SAVE_MS = 60_000;
 const TOWN_NAMES = ['Eichenhain', 'Kieselau', 'Sonnenbrück', 'Mühlbach', 'Fuchsfurt', 'Silberwiese', 'Nebelhorn', 'Tannenbach'];
-const TERRAIN_DE = { meadow: 'Wiese', forest: 'Wald', rock: 'Fels', water: 'Wasser', sand: 'Strand' };
+const TERRAIN_DE = { meadow: 'Wiese', forest: 'Wald', rock: 'Fels', water: 'Wasser', sand: 'Strand', mountain: 'Berg' };
 const CLASS_DE = { abundant: 'Reich (×1,5)', neutral: 'neutral', scarce: 'Karg (×0,25)' };
 const MOOD_DE = {
   greedy: 'Eberhard reibt sich die Hände: Gute Ware hat ihren Preis.',
@@ -66,6 +70,14 @@ const ERR_DE = {
   alreadyBought: 'Dieses Angebot hast du heute schon gekauft.',
   storageFull: 'Das Lager für diese Ressource wäre überfüllt.',
   unknownResource: 'Unbekannte Ressource.',
+  terrain: 'Dafür ist dieses Gelände nicht geeignet.',
+  near: 'Das passende Gelände fehlt direkt daneben.',
+  fieldOccupied: 'Auf diesem Feld liegt ein Acker.',
+  alreadyField: 'Hier liegt schon ein Feld.',
+  notNextToFarm: 'Felder legst du direkt neben dem Hof an.',
+  noFieldSlot: 'Der Hof hat keinen freien Feldplatz. Mehr Plätze gibt es mit einer höheren Stufe.',
+  noFarm: 'Hier steht kein Hof.',
+  noField: 'Hier liegt kein Feld.',
 };
 
 const $ = (sel) => document.querySelector(sel);
@@ -108,7 +120,7 @@ const REMOTE_TIMEOUT_MS = 10_000;
 async function loadData() {
   const names = ['resources', 'biomes', 'buildings', 'economy', 'merchant', 'npcs'];
   const parts = await Promise.all(names.map((n) =>
-    fetch(`data/${n}.json?v=20261125-zoom2`).then((r) => {
+    fetch(`data/${n}.json?v=20261125-zoom3`).then((r) => {
       if (!r.ok) throw new Error(`data/${n}.json: HTTP ${r.status}`);
       return r.json();
     })));
@@ -154,7 +166,7 @@ async function boot() {
   window.addEventListener('offline', updateSync);
 
   try {
-    cloud = await import('./cloud.js?v=20261125-zoom2');
+    cloud = await import('./cloud.js?v=20261125-zoom3');
   } catch {
     showFatal('Das Konto-System konnte nicht geladen werden. Ohne Anmeldung lässt sich nicht spielen. Bitte Verbindung prüfen und neu laden.');
     return;
@@ -657,6 +669,10 @@ function onPanelClick(e) {
   const { x, y } = selected;
   if (action === 'build') dispatch(placeBuilding(state, { x, y, buildingId: id }, ctx()), 'Gebaut.');
   if (action === 'upgrade') dispatch(upgradeBuilding(state, { x, y }, ctx()), 'Aufgewertet.');
+  if (action === 'plant') {
+    dispatch(plantField(state, { fx: x, fy: y, x: Number(btn.dataset.tx), y: Number(btn.dataset.ty) }, ctx()), 'Feld angelegt.');
+  }
+  if (action === 'unfield') dispatch(removeField(state, { x: Number(btn.dataset.tx), y: Number(btn.dataset.ty) }), 'Feld entfernt.');
   if (action === 'buy') dispatch(buyOffer(state, { index: Number(index) }, ctx()), 'Gekauft. Eberhard nickt zufrieden.');
   if (action === 'close') {
     popupOpen = false;
@@ -999,6 +1015,9 @@ function buildingDetails(b, x, y) {
   const def = data.buildings[b.id];
   const m = productionMultiplier(state, x, y, b.id, data);
   let html = `<section><h3>${def.icon} ${esc(def.name.de)} <span class="muted">Stufe ${b.level}/${def.maxLevel}</span></h3>`;
+  if (def.modes && b.mode) {
+    html += `<p class="small">Betriebsart: <strong>${esc(def.modes[b.mode].name.de)}</strong></p>`;
+  }
   if (def.resource) {
     const rate = ratePerMin(state, x, y, data);
     html += `<p>Produktion: <strong>${fmtRate(rate)} ${esc(data.resources[def.resource].name.de)} / min</strong></p>`;
@@ -1006,6 +1025,7 @@ function buildingDetails(b, x, y) {
   } else {
     html += `<p class="small">${def.id === 'warehouse' ? 'Erhöht die Lagerkapazität um 250 je Stufe.' : 'Erhöht den Verkaufsdurchsatz um 40 pro Minute je Stufe.'}</p>`;
   }
+  if (def.perField) html += farmFieldsHtml(b, x, y);
   if (b.level < def.maxLevel) {
     const c = buildCost(b.id, b.level, data);
     const ok = state.coins >= c.coins && state.stock[c.material.resource] >= c.material.amount;
@@ -1018,6 +1038,41 @@ function buildingDetails(b, x, y) {
   return `${html}</section>`;
 }
 
+/** Felder der Farm: angelegte Felder mit Entfernen, freie Wiesen daneben zum Anlegen. */
+function farmFieldsHtml(b, x, y) {
+  const slots = fieldSlots(b.level);
+  const owned = fieldsOf(state, x, y);
+  const free = plantableNeighbours(state, x, y, data);
+  const cost = data.economy.fields;
+  const coinsOk = state.coins >= cost.coins;
+  const woodOk = (state.stock[cost.material.resource] ?? 0) >= cost.material.amount;
+  const fieldLabel = (k) => k.split(',').map((v) => Number(v) + 1).join(', ');
+  let html = `<p>Felder: <strong>${owned.length} / ${slots}</strong> <span class="small muted">(eines je Stufe, nur direkt daneben)</span></p>`;
+  if (owned.length) {
+    html += '<div class="field-list">';
+    for (const k of owned) {
+      const [tx, ty] = k.split(',');
+      html += `<span class="field-chip">Feld ${fieldLabel(k)} <button type="button" class="ghost small" data-action="unfield" data-tx="${tx}" data-ty="${ty}">Entfernen</button></span>`;
+    }
+    html += '</div>';
+  }
+  if (owned.length < slots) {
+    if (!free.length) {
+      html += '<p class="small warn">Keine freie Wiese daneben. Ein Feld braucht eine unbebaute Wiese direkt am Hof.</p>';
+    } else {
+      html += `<p class="small">Feld anlegen: ${fmt0(cost.coins)} 🪙 und ${cost.material.amount} ${esc(data.resources[cost.material.resource].name.de)}</p><div class="field-list">`;
+      for (const k of free) {
+        const [tx, ty] = k.split(',');
+        const disabled = !coinsOk || !woodOk ? 'disabled' : '';
+        html += `<button type="button" data-action="plant" data-tx="${tx}" data-ty="${ty}" ${disabled}>Feld ${fieldLabel(k)}</button>`;
+      }
+      html += '</div>';
+      if (!coinsOk || !woodOk) html += `<p class="small warn">${missingText({ coins: cost.coins, material: cost.material })}</p>`;
+    }
+  }
+  return html;
+}
+
 /** Eine Bauoption je Ansicht. ‹ › blättert durch alle Gebäude. */
 function buildMenu(x, y) {
   const entries = Object.entries(data.buildings).filter(([, d]) => !d.fixed);
@@ -1026,14 +1081,24 @@ function buildMenu(x, y) {
   const c = buildCost(id, 0, data);
   const locked = d.unlockTownLevel > state.townLevel;
   const affordable = state.coins >= c.coins && state.stock[c.material.resource] >= c.material.amount;
+  const place = checkPlacement(state, x, y, id, data);
   let meta;
   if (d.resource) {
-    const m = productionMultiplier({ ...state, tiles: withTempBuilding(x, y, id) }, x, y, id, data);
-    const rate = d.baseRatePerMin * m;
-    meta = `${fmtRate(rate)} ${esc(data.resources[d.resource].name.de)}/min auf diesem Feld (${multiplierText(m)})`;
+    const preview = withTempBuilding(x, y, id, place.mode);
+    const m = productionMultiplier({ ...state, tiles: preview }, x, y, id, data);
+    const units = d.perField ? 0 : 1;
+    const rate = d.baseRatePerMin * (units || 1) * m;
+    meta = d.perField
+      ? `je angelegtem Feld ${fmtRate(rate)} ${esc(data.resources[d.resource].name.de)}/min (${multiplierText(m)})`
+      : `${fmtRate(rate)} ${esc(data.resources[d.resource].name.de)}/min auf diesem Feld (${multiplierText(m)})`;
+    if (place.mode && d.modes) meta += ` · ${esc(d.modes[place.mode].name.de)}`;
   } else {
     meta = id === 'warehouse' ? 'Mehr Lagerkapazität' : 'Mehr Verkaufsdurchsatz';
   }
+  const hint = placementHint(d);
+  const placeNote = !place.ok && !locked
+    ? `<div class="locked-note">${esc(hint || ERR_DE[place.reason] || 'Hier nicht möglich.')}</div>`
+    : (hint ? `<div class="meta small">${esc(hint)}</div>` : '');
   return `<section>
     <div class="cycle">
       <button type="button" data-action="cycle" data-dir="-1" data-cycle aria-label="Vorherige Option">‹</button>
@@ -1043,8 +1108,9 @@ function buildMenu(x, y) {
           <div class="meta">${meta}</div>
           ${locked ? `<div class="locked-note">Ab Stadtlevel ${d.unlockTownLevel}</div>` : ''}
           ${!locked && !affordable ? `<div class="locked-note">${missingText(c)}</div>` : ''}
+          ${placeNote}
         </div>
-        <button type="button" data-action="build" data-id="${id}" ${locked || !affordable ? 'disabled' : ''}>Bauen</button>
+        <button type="button" data-action="build" data-id="${id}" ${locked || !affordable || !place.ok ? 'disabled' : ''}>Bauen</button>
       </div>
       <button type="button" data-action="cycle" data-dir="1" data-cycle aria-label="Nächste Option">›</button>
     </div>
@@ -1052,9 +1118,9 @@ function buildMenu(x, y) {
 }
 
 /** Temporary tile map with a building placed, used only for bonus previews. */
-function withTempBuilding(x, y, id) {
+function withTempBuilding(x, y, id, mode) {
   const tiles = { ...state.tiles };
-  tiles[keyOf(x, y)] = { ...tiles[keyOf(x, y)], building: { id, level: 1 } };
+  tiles[keyOf(x, y)] = { ...tiles[keyOf(x, y)], building: mode ? { id, level: 1, mode } : { id, level: 1 } };
   return tiles;
 }
 

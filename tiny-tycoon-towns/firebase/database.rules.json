@@ -60,7 +60,7 @@
           "tiles": {
             ".read": "auth != null",
             "$tile": {
-              ".validate": "newData.hasChildren(['terrain']) && (newData.child('terrain').val() == 'meadow' || newData.child('terrain').val() == 'forest' || newData.child('terrain').val() == 'rock' || newData.child('terrain').val() == 'water' || newData.child('terrain').val() == 'sand')"
+              ".validate": "newData.hasChildren(['terrain']) && (newData.child('terrain').val() == 'meadow' || newData.child('terrain').val() == 'forest' || newData.child('terrain').val() == 'rock' || newData.child('terrain').val() == 'water' || newData.child('terrain').val() == 'sand' || newData.child('terrain').val() == 'mountain')"
             }
           },
           "merchant": {

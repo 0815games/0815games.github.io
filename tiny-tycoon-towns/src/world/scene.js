@@ -1,8 +1,8 @@
 // Weltansicht: Insel im Meer, Kamera, Eingabe, Partikel und Tag-Nacht.
 // renderWorld() zeichnet nur auf einen Kontext und ist deshalb auch ohne Browser prüfbar.
 // createScene() verbindet sie mit einem <canvas> im DOM.
-import { HW, HH, toScreen, toTile, hash } from './iso.js?v=20261125-zoom2';
-import { drawTile, drawBuilding, fillPoly, shade, mix, P } from './art.js?v=20261125-zoom2';
+import { HW, HH, toScreen, toTile, hash } from './iso.js?v=20261125-zoom3';
+import { drawTile, drawBuilding, fillPoly, shade, mix, P } from './art.js?v=20261125-zoom3';
 
 export const GRID_SIZE = 10;     // spielbares Raster (siehe src/domain/grid.js)
 export const HALL = { x: 4, y: 4 };
@@ -174,6 +174,7 @@ export function renderWorld(ctx, { W, H, view, model, time, day, fx, hover }) {
         locked,
         // Bei niedrigem Zoom weniger Kleinkram (Performance). Wellen nur auf dem Raster.
         detail: view.zoom >= DETAIL_MIN_ZOOM,
+        field: !!model.state?.tiles?.[`${x},${y}`]?.field,
         waves: inGrid(x, y) && view.zoom >= DETAIL_MIN_ZOOM,
       });
       const tile = inGrid(x, y) ? model.state?.tiles?.[`${x},${y}`] : null;

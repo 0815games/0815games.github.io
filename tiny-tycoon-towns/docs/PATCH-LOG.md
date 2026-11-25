@@ -739,3 +739,44 @@ Ereignis ergänzt.
   - Nicht geprüft: Darstellung im Browser und auf dem Handy. Ob die Details bei 0,75 optisch stören, muss der Nutzer sehen.
 - Git / PR / Veröffentlichung: Commit folgt. Nicht veröffentlicht.
 - Offen / nächster Schritt: Bei Standardzoom kostet das Zeichnen weiter ~25 ms in der Messung. Ein Zwischenspeicher für die statischen Kacheln wäre dafür der nächste Schritt, falls das Ruckeln bleibt.
+
+### TTT-0048 – Ökosystem: Platzierungsregeln, Berge, Felder der Farm, Fischerei-Arten (Welle `20261125-zoom3`)
+
+- Zeit / Quelle: Sitzung 2026-11-25 (UTC). Nutzerwunsch: Gebäude sollen zum Ort passen (Mine nur auf Berg,
+  Farm braucht Felder, Fischerei nur auf Wasser). Antworten des Nutzers: Berg als neues Gelände; Felder auf
+  freien Nachbarwiesen, je Stufe der Farm ein Feld mehr, nur direkt daneben; Fischerei beides (Steg auf Wasser
+  mit weniger Ertrag, Boot am Ufer mit mehr Ertrag); Regeln für alle Rohstoffgebäude.
+- Branch / Basis: `arena/84679235-0815games-github-io`, Basis `72cba04` (`main`).
+- Änderungen / Dateien:
+  - `data/buildings.json`: `placement` je Gebäude (Gelände, Nachbarschaft, Hinweistext). Farm: `perField`.
+    Fischerei: `modes` (Steg 0,6, Boot 1,3). Mine: Bergbonus 1,2. Perlenhütte: Wasser, Bonus 1,4. Imkerei: Wald daneben.
+  - `data/economy.json`: `fields` (10 Münzen, 2 Holz je Feld).
+  - `src/domain/placement.js` (neu): `checkPlacement`, Felder-Helfer, Nachbarschaft.
+  - `src/domain/engine.js`: `placeBuilding` prüft Regeln; neu `plantField`, `removeField`; Produktion über `ratePerMin`.
+  - `src/domain/economy.js`: Betriebsart-Faktor; `ratePerMin` für Farm = Felder × Grundrate.
+  - `src/domain/terrain.js`: Berge (Hochland 2–3 Züge, andere Biome höchstens einer, klein); Startfläche garantiert
+    mindestens 4 Wald und 2 Fels (sonst fehlt Holz im Hochland, dort gab es keinen Wald).
+  - `src/world/art.js`, `src/world/scene.js`: Berggipfel, Ackerfurchen.
+  - `src/main.js`: Bauauswahl zeigt Regel und sperrt Bauen; Farm-Panel mit Feldern anlegen/entfernen; Betriebsart.
+  - `firebase/database.rules.json`: Gelände `mountain` erlaubt (**Regeländerung**).
+  - `scripts/simulate-balance.mjs`: Bot hält Platzregeln ein, legt Felder an, baut höchstens 5 Lager.
+  - Tests: `tests/placement.test.mjs` (neu, 17 Tests), `tests/domain.test.mjs` (3 Tests angepasst).
+  - `src/patch-notes.mjs`: Stadtchronik `20261125-zoom3` (DE/EN). Cache-Welle `20261125-zoom3`.
+- Bestehende Gebäude auf anderem Gelände bleiben stehen und produzieren weiter. Nur neue Platzierungen werden geprüft.
+  Bestehende Farmen ohne Felder liefern ab jetzt nichts, bis Felder angelegt sind.
+- Prüfungen (lokal, Node 22.22.3):
+  - `npm test`: 146 Tests, 146 pass, 0 fail.
+  - `npm run check`: kein Fehler, 3 Hinweise.
+  - `npm run simulate` (Bot, 30 Tage, 2 × 15 min aktiv je Tag). Ergebnis nach dieser Änderung:
+    - Stadtlevel 5 nach ca. 2,6 bis 3,6 aktiven Stunden. Korridor 4 bis 8 wird unterschritten (zu früh).
+    - Stadtlevel 10: Deepwoods nach 13,5 h (Korridor 11 bis 13, knapp darüber). Highlands, Coast, Riverlands
+      nicht in 30 Tagen (Level 9, 9, 8).
+    - Vor dieser Änderung (Stand `72cba04`): Deepwoods 11,3 h, Highlands 10,9 h, Riverlands und Coast ohne Level 10.
+    - Die Balance-Kurve ist damit **nicht** eingehalten. Die Korridor-Zahlen sind nicht geändert worden.
+  - Nicht geprüft: Darstellung im Browser (Berge, Felder, Bauauswahl), Vercel-Vorschau, Firebase-Regeln im Emulator.
+- Git / PR / Veröffentlichung: Commit folgt. Regeln **nicht** in Firebase veröffentlicht. Der Betreiber muss
+  `firebase/database.rules.json` erneut einspielen (siehe Hinweis im Antworttext).
+- Offen / nächster Schritt:
+  - Balance: Level 5 zu früh, Level 10 zu spät bzw. nicht erreicht. Entscheidung nötig: Feldplätze, XP oder Kartenform anpassen.
+  - Wald-Regeneration und Fischbestände (Ökosystem im engeren Sinn) sind noch nicht umgesetzt.
+  - Browser-Prüfung der neuen Oberfläche.

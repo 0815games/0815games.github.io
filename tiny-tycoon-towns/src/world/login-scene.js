@@ -1,8 +1,8 @@
 // Animierte Insel als Hintergrund des Anmeldebildschirms.
 // Dieselbe Zeichnung wie im Spiel (scene.js), nur mit kreisender Kamera,
 // schnellem Tag-Nacht-Zyklus und Mausparallaxe. Kein Spielzustand, keine Daten.
-import { renderWorld, makeFx, stepFx } from './scene.js?v=20261125-zoom2';
-import { toScreen, hash } from './iso.js?v=20261125-zoom2';
+import { renderWorld, makeFx, stepFx } from './scene.js?v=20261125-zoom3';
+import { toScreen, hash } from './iso.js?v=20261125-zoom3';
 
 // Gebäude für das Bild: id, Kachel, Stufe. Feste Anordnung, damit die Szene immer gleich aussieht.
 const SHOWCASE = [

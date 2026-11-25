@@ -1,5 +1,6 @@
 // Pure formulas from GAME_PLAN.md section 4.5 - 4.7. No state mutation here.
-import { inBounds, keyOf } from './grid.js?v=20261125-zoom2';
+import { inBounds, keyOf } from './grid.js?v=20261125-zoom3';
+import { fieldsOf } from './placement.js?v=20261125-zoom3';
 
 export const RESOURCE_CLASSES = ['abundant', 'neutral', 'scarce'];
 
@@ -42,6 +43,10 @@ export function productionMultiplier(state, x, y, buildingId, data) {
   if (def.terrainBonus && tile?.terrain === def.terrainBonus.terrain) {
     m *= def.terrainBonus.multiplier;
   }
+  // Betriebsart (z. B. Fischerei: Steg oder Boot am Ufer).
+  if (def.modes && tile?.building?.mode && def.modes[tile.building.mode]) {
+    m *= def.modes[tile.building.mode].multiplier;
+  }
   if (def.adjacencyBonus) {
     const { adjacentTo, multiplier } = def.adjacencyBonus;
     const hit = neighbourTiles(state, x, y).some((t) =>
@@ -55,13 +60,17 @@ export function productionMultiplier(state, x, y, buildingId, data) {
   return m;
 }
 
-/** Units per minute a building at its current level produces. */
+/**
+ * Einheiten pro Minute. Normale Gebäude wachsen mit der Stufe. Die Farm (perField) liefert je angelegtem
+ * Feld die Grundrate, die Stufe bestimmt nur, wie viele Felder möglich sind.
+ */
 export function ratePerMin(state, x, y, data) {
   const b = state.tiles[keyOf(x, y)]?.building;
   if (!b) return 0;
   const def = data.buildings[b.id];
   if (!def.resource) return 0;
-  return def.baseRatePerMin * b.level * productionMultiplier(state, x, y, b.id, data);
+  const units = def.perField ? fieldsOf(state, x, y).length : b.level;
+  return def.baseRatePerMin * units * productionMultiplier(state, x, y, b.id, data);
 }
 
 /** Cost to build (level = 0) or to upgrade from `level` to `level + 1`. */

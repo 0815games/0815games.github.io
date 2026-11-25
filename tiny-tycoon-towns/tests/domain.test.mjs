@@ -137,6 +137,7 @@ test('town hall cannot be upgraded', () => {
 
 test('production formula: farm on meadow in riverlands (grain is abundant)', () => {
   let t = withBuilding(townFor('riverlands'), 2, 2, 'farm', 1, 'meadow');
+  t.tiles['3,2'] = { terrain: 'meadow', field: { owner: '2,2' } }; // ein Feld, sonst kein Ertrag
   t.sellEnabled.grain = false; // isolate production
   const M = productionMultiplier(t, 2, 2, 'farm', data);
   assert.ok(Math.abs(M - 1.5 * 1.2) < 1e-9, `M=${M}`);
@@ -154,12 +155,13 @@ test('adjacency: apiary next to farm gets +15%', () => {
   assert.ok(Math.abs(withNb / without - 1.15) < 1e-9);
 });
 
-test('adjacency: fishery next to water', () => {
-  const t = withBuilding(townFor('deepwoods'), 2, 2, 'fishery', 1, 'meadow');
-  const dry = productionMultiplier(t, 2, 2, 'fishery', data);
-  const wet = structuredClone(t);
-  wet.tiles['3,2'].terrain = 'water';
-  assert.ok(Math.abs(productionMultiplier(wet, 2, 2, 'fishery', data) / dry - 1.3) < 1e-9);
+test('fishery modes: Steg on water is weaker than a boat at the shore', () => {
+  const steg = withBuilding(townFor('deepwoods'), 2, 2, 'fishery', 1, 'water');
+  steg.tiles['2,2'].building.mode = 'steg';
+  const boot = withBuilding(townFor('deepwoods'), 2, 2, 'fishery', 1, 'meadow');
+  boot.tiles['2,2'].building.mode = 'boot';
+  const m = (st) => productionMultiplier(st, 2, 2, 'fishery', data);
+  assert.ok(Math.abs(m(boot) / m(steg) - 1.3 / 0.6) < 1e-9);
 });
 
 test('town level adds 2% per level to production multiplier', () => {
@@ -181,11 +183,11 @@ test('storage cap grows with warehouse levels and clamps production', () => {
   t = withBuilding(t, 3, 3, 'warehouse', 2);
   assert.equal(storageCap(t, data), 1000);
 
-  let p = withBuilding(townFor('riverlands'), 2, 2, 'farm', 30, 'meadow');
-  p.stock.grain = 499.9;
-  p.sellEnabled.grain = false;
+  let p = withBuilding(townFor('highlands'), 2, 2, 'quarry', 30, 'rock');
+  p.stock.stone = 499.9;
+  p.sellEnabled.stone = false;
   const r = advance(p, p.lastTick + 3_600_000, ctx({ maxElapsedSec: 8 * 3600 }));
-  assert.equal(r.state.stock.grain, 500);
+  assert.equal(r.state.stock.stone, 500);
 });
 
 test('selling keeps the reserve of 20 and respects the sell switch', () => {

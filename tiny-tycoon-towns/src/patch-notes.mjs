@@ -4,6 +4,28 @@
 
 export const RELEASED_PATCHES = [
   {
+    build: '20261125-zoom3',
+    date: '2026-11-25',
+    items: [
+      {
+        de: 'Gebäude stehen jetzt dort, wo sie hingehören. Die Eisenmine braucht einen Berg (neues Gelände im Hochland), der Steinbruch Fels, das Sägewerk Wald, die Saline Strand, die Perlentaucherhütte Wasser.',
+        en: 'Buildings now belong where they make sense. The iron mine needs a mountain (new terrain in the highlands), the quarry rock, the sawmill forest, the saltworks sand, the pearl diver hut water.',
+      },
+      {
+        de: 'Der Hof braucht Felder. Jedes Feld liegt auf einer freien Wiese direkt daneben und kostet Münzen und Holz. Je Stufe des Hofes gibt es ein Feld mehr. Ohne Feld kein Getreide.',
+        en: 'The farm needs fields. Each field sits on a free meadow next to it and costs coins and lumber. The farm gets one more field per level. No field, no grain.',
+      },
+      {
+        de: 'Die Fischerei gibt es in zwei Arten: als Steg mit Angler auf dem Wasser (weniger Ertrag) und am Ufer mit Boot (mehr Ertrag).',
+        en: 'The fishery comes in two forms: a pier with an angler on the water (lower yield) and a boat at the shore (higher yield).',
+      },
+      {
+        de: 'Die Imkerei braucht Wald direkt daneben. Eine Startfläche hat immer etwas Wald und Fels zum Bauen.',
+        en: 'The apiary needs forest right next to it. Every start area always has some forest and rock to build on.',
+      },
+    ],
+  },
+  {
     build: '20261125-zoom2',
     date: '2026-11-25',
     items: [
