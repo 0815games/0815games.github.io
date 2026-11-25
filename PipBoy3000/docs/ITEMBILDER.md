@@ -1,175 +1,132 @@
-# Item-Bilder — was noch fehlt
+# Item-Bilder — Pflege
 
-Stand: 23 von 126 Items haben ein Bild (`img/items/`).
-Werkzeug: `npm run icons` (beschneiden, Rand, 128 px, Tabelle schreiben).
-Rohbilder liegen in `docs/muster/<id>.png`, ausgeliefert wird `img/items/<id>.png`.
+**Stand: alle 126 Items haben ein Bild.** 128 × 128 px, Ø 5,4 kB, 678 kB gesamt.
 
-## Stil (für alle Prompts gleich)
+Diese Datei beschreibt, wie ein Motiv entsteht und woran ein unbrauchbares
+Rohbild erkannt wird. Die Fehlliste, die hier früher stand, ist leer — sie
+wird bei Bedarf wieder aufgenommen.
 
-> monochrome phosphor green line art (#39ff14) on a solid pure black background,
-> thick clean uniform stroke width, upright, centered, filling about 80% of the
-> square frame, narrow black margin. No text, no letters, no numbers, no border,
-> no frame, no shadow, no gradient.
-
-Die Lage ist entscheidend: **aufrecht oder diagonal mit gefüllter Fläche.**
-Die erste Spritze lag flach diagonal im Bild und war bei 32 px nur ein Strich.
-
-## Fertig (23)
-
-Verbrauchsgüter: `stimpack` `radaway` `radx` `nuka_cola` `nuka_quantum`
-`jet` `buffout` `stealth_boy`
-Munition: `ammo_10mm` `ammo_shell` `ammo_micro`
-Waffen: `pistol_10mm` `revolver_44` `shotgun` `combat_shotgun` `smg`
-`assault_rifle` `minigun` `laser_pistol` `laser_rifle` `plasma_pistol` `plasma_rifle`
-Rüstung: `power_armor`
-
-## Inhaltsfehler: Tiere statt Fleisch
-
-`meat_roach` `meat_fly` `meat_mole` zeigen das ganze Tier (Kakerlake,
-Fliege, Ratte) statt eines Fleischstuecks. Das Pruefskript kann das nicht
-fangen - die Bilder sind technisch einwandfrei, nur inhaltlich falsch.
-
-Ursache: "a lump of raw insect meat with legs attached" wurde als ganzes
-Insekt gelesen. Richtig ist: das Fleischstueck ist die Hauptform, die
-Herkunft nur ein kleines Detail.
-
-Regel: bei Fleisch zuerst die FORM nennen (Steak, Rippchen, Klaue,
-Braten), die Herkunft nur als Beigabe.
-
-## Dunkler Schleier statt Schwarz
-
-`wrench` und `camp_kit` hatten im Rohbild einen dunkelgruenen Schleier:
-Hintergrund (5,22,5) statt (0,1,0). Die Weiss-Pruefung sieht das nicht,
-weil 22 im Gruenkanal weit unter der Weiss-Schwelle liegt. Im Inventar
-wirken solche Icons als hellere Kacheln neben 118 sauberen.
-
-`tools/icon-check.mjs` prueft jetzt zusaetzlich: liegt der Anteil der
-Hintergrundpixel mit Gruenwert ueber 8 bei mehr als 30 %, ist der
-Hintergrund nicht schwarz.
-
-## Befüllte statt gezeichneter Motive
-
-`cooked_lurk` kam als vollflaechig gefuellte Silhouette zurueck statt als
-Linienkunst (25 % helle Pixel gegen 14,6 % Mittel). Die Weiss-Pruefung
-sieht das nicht — hier hilft nur der Blick aufs Kontrollblatt.
-
-Regel fuer die Restmotive: "outline line art, hollow interior, no solid
-fill" gehoert bei jedem Motiv in den Prompt, das eine grosse Flaeche hat.
-
-## Ausschuss in Block 5
-
-`bp_stimpack` und `gears` hatten weissen Hintergrund (85,6 % / 36,3 %) —
-mit dem Zusatz "on a SOLID PURE BLACK BACKGROUND (no white, no light grey)"
-im Prompt beide im zweiten Anlauf sauber.
-
-`duct_tape` war zweimal Ausschuss (weisser Streifen am unteren Rand,
-y 896-1023 und y 925-1023). Der dritte Versuch mit "top-down, perfectly
-centered, at least 15 percent margin on every side" war sauber — das
-Motiv ist im Set.
-
-## Regel: Hintergrund pruefen
-
-Ein Motiv kann inhaltlich stimmen und trotzdem unbrauchbar sein, wenn der
-Hintergrund weiss ist. Das Faerbungsmuster "green line art on a solid pure
-black background" wird nicht immer befolgt. `tools/icon-check.mjs` zaehlt
-weisse Pixel und bricht ab - bei `gears` war nur der Hintergrund falsch,
-die Zahnraeder selbst waren sauber.
-
-## Ausschuss in Block 4 — erledigt
-
-`greaves_metal` und `helmet_combat` wurden vom Pruefskript abgefangen
-(14,9 % und 80,5 % weisse Pixel) und neu gezeichnet. Beide sind jetzt im Set.
-
-## Bildfehler-Prüfung
-
-`node tools/icon-check.mjs` (laeuft bei `npm run icons` zuerst) meldet Rohbilder
-mit mehr als 0,5 % weissen Pixeln und bricht dann ab.
-
-Bisher gefunden: `knuckles` (weisse Stoerung in allen vier Ecken) und
-`pipe_sniper` (gefuellte Grafik auf Weiss statt Linien auf Schwarz). Beide neu
-gezeichnet, die Pruefung greift jetzt vor der Aufbereitung.
-
-## Erledigt in Block 3 — Restliche Waffen (23)
-
-Schusswaffen:
-
-| id | Motiv |
+| | |
 |---|---|
-| `pipe_pistol` | Rohrpistole aus Rohren und Klebeband |
-| `pipe_rifle` | Rohrgewehr mit langem Rohr und Holzschaft |
-| `pipe_revolver` | Rohrrevolver, grob, mit Trommel |
-| `pipe_sniper` | Rohr-Sniper mit Zielfernrohr aus Rohren |
-| `hunting_rifle` | Jagdgewehr, Holzschaft, Repetierhebel |
-| `sniper_rifle` | Scharfschützengewehr mit großem Zielfernrohr und Zweibein |
-| `alien_blaster` | außerirdische Strahlenwaffe, organisch gerundet |
+| Rohbilder | `docs/muster/<id>.png` (1024–2048 px, nicht ausliefern) |
+| Ausgeliefert | `img/items/<id>.png` |
+| Aufbereitung | `npm run icons` → `tools/icons.mjs`, danach Tabelle schreiben |
+| Prüfung vorher | `npm run icons:check` → `tools/icon-check.mjs` |
+| Sichtprüfung | `docs/kontrollblatt-items.png` (alle Motive auf einem Bild) |
 
-Nahkampf:
+`npm run icons` ruft die Prüfung selbst auf und bricht bei einem Fund ab.
+Ein fehlerhaftes Rohbild kommt damit nicht ins Set.
 
-| id | Motiv |
+## Ein neues Motiv
+
+1. Rohbild nach dem Stil unten erzeugen, ablegen als `docs/muster/<item-id>.png`.
+   Die ID muss der Schlüssel in `src/data/data_items.js` sein.
+2. `npm run icons` — beschneiden, Rand, 128 px, Tabelle schreiben.
+3. `npm test` — prüft Tabelle, Dateigröße, Pfade und dass jedes Bild ein Item hat.
+4. Kontrollblatt neu bauen und ansehen. **Der Schritt ist nicht optional** (siehe
+   Fehlerklasse 4).
+
+Fehlt ein Bild, greift im Inventar das Typ-Emoji. Das ist der Rückfall, nicht
+der Normalfall: seit v14.0.6 hat jedes Item ein Motiv.
+
+## Stil
+
+> A single flat vector icon of …, drawn in the style of a Fallout Pip-Boy
+> terminal interface: monochrome phosphor green line art (#39ff14) on a solid
+> pure black background. Thick, clean, uniform stroke width. Upright, centered,
+> filling about 80% of the square frame, narrow black margin. No text, no
+> letters, no numbers, no border, no frame, no shadow, no gradient.
+
+Vier Zusätze, die aus Fehlversuchen entstanden sind. Sie gehören in **jeden**
+Prompt — ohne sie liegt die Trefferquote bei etwa 85 %:
+
+| Zusatz | verhindert |
 |---|---|
-| `fists` | gepanzerte Faust / Schlaghandschuh |
-| `knuckles` | Schlagring mit vier Löchern und Noppen |
-| `switchblade` | Springmesser, schmale Klinge, Knopf am Griff |
-| `knife` | Kampfmesser, kurze Klinge, Parierstange |
-| `machete` | Machete, breite Klinge |
-| `rolling_pin` | Nudelholz aus Holz mit zwei Griffen |
-| `pipe_wrench` | Rohrzange, gezahnte Backe |
-| `police_baton` | Schlagstock mit Seitengriff |
-| `baseball_bat` | Baseballschläger aus Holz |
-| `bat_alum` | Alu-Schläger, glatter Lauf, Klebeband am Griff |
-| `bat_spiked` | Baseballschläger mit Nägeln |
-| `sledgehammer` | Vorschlaghammer, schwerer Kopf |
-| `super_sledge` | Superhammer, überdimensionierter Kopf mit Bolzen |
-| `ripper` | Kettensäge-Klinge mit Motor und Kabel |
-| `power_fist` | angetriebene Powerfaust mit Hydraulik |
-| `deathclaw_gauntlet` | Handschuh aus Todeskrallen-Klauen |
+| `on a SOLID PURE BLACK BACKGROUND (no white, no light grey)` | weißen Hintergrund |
+| `perfectly centered, at least 15 percent margin on every side` | weißen Streifen am Bildrand |
+| `outline line art, hollow interior, no solid fill` | vollflächig gefüllte Silhouette |
+| `pure black, no dark green tint, no haze, no vignette` | dunkelgrünen Schleier |
 
-## Block 4 — Rüstung (25) — KOMPLETT
+**Lage:** aufrecht oder diagonal, aber die Form muss die Fläche füllen. Die
+erste Spritze lag flach diagonal in einem 2048er Quadrat und war bei 32 px nur
+ein Strich.
 
-| Stufe | ids |
-|---|---|
-| Raider ✓ | `raider_armor` `raider_helm` `raider_arm_l` `raider_leg_r` |
-| Leder ✓ | `leather_armor` `leather_helm` `bracers_leather` `pants_leather` `boots_leather` |
-| Metall ✓ | `metal_armor` `helmet_metal` `metal_arms` `greaves_metal` |
-| Kampf ✓ | `combat_armor` `helmet_combat` `combat_arms` `combat_legs` `boots_combat` |
-| Synth ✓ | `synth_armor` `synth_helmet` |
-| Sonstiges ✓ | `vault_suit` `hazmat_suit` `cap_baseball` `helmet_mining` `gas_mask` `jeans` `boots_worn` |
+**Fleisch:** zuerst die FORM nennen (Steak, Rippchen, Keule), die Herkunft nur
+als kleines Detail. „a lump of raw insect meat with legs attached" wurde als
+ganzes Insekt gelesen — `meat_roach`, `meat_fly` und `meat_mole` zeigten
+zunächst das Tier statt des Fleisches.
 
-## Block 5 — Handwerk, Rohstoffe, Rucksäcke (42)  ← laeuft
+**Rohstoffe:** Einzelteil statt Kiste. Eine Schraube ist bei 32 px lesbar, eine
+Schraubenschachtel nicht.
 
-Rucksäcke (fertig): `backpack_frame` `backpack_leather` `backpack_metal`
-`backpack_military` `backpack_cargo`
+**Rüstung:** die vier Teile einer Stufe trennen über die Silhouette (Brustplatte,
+Helm, Armschutz, Beinschutz), die Stufen untereinander über die Oberfläche
+(Schrott, Naht, Nieten, Verbundplatten, glatte Naht).
 
-Werkzeug: `camp_kit` `lockpick` `wrench` `clipboard` `tin_can`
-`radio_part` `fusion_core`
+## Die vier Fehlerklassen
 
-Baupläne ✓: `bp_ammo` `bp_stimpack`
+Bei 126 Motiven waren rund 20 Rohbilder unbrauchbar — fast nie, weil das Motiv
+misslang, sondern wegen der Aufbereitung. Drei der vier Klassen sind an der
+Datei nicht zu erkennen: 1024 × 1024, schwarz, grün, ladbar, technisch
+einwandfrei.
 
-Munition (fertig): `ammo` (Schrott .38) `ammo_308` `ammo_cell`
+### 1. Weißer Hintergrund
 
-Rohstoffe ✓: `junk_metal` `cloth` `screws` `glue` `springs` `plastic` `leather`
-`gears` `circuit` `adhesive` `oil` `duct_tape`
+Der Stilsatz wird nicht zuverlässig befolgt. Bei `gears` stimmte das Motiv
+vollständig — nur der Hintergrund war weiß statt schwarz.
 
-Selten (4/8): `nuclear_mat` `legendary_part` `titanium` `bone`
-Offen: `deathclaw_hand` `acid` `poison_gland` `gunpowder`
+Erkennung: Anteil weißer Pixel über **0,5 %**.
 
-Nahrung (roh) 5/8: `meat_dog` `meat_scorp` `meat_yao` `meat_lurk` `hide_yao`
-Falsch, neu: `meat_roach` `meat_fly` `meat_mole`
+### 2. Weißer Streifen am Bildrand
 
-Nahrung (gebraten): `cooked_roach` `cooked_mole` `cooked_fly`
-`cooked_scorp` `cooked_lurk` `cooked_dog` `cooked_yao`
+`duct_tape` scheiterte zweimal mit einem weißen Streifen über die volle Breite
+am unteren Rand (y 896–1023, dann y 925–1023). Das Motiv war jedes Mal richtig.
+Beim Zuschneiden wäre daraus eine weiße Kante im Icon geworden.
 
-Verbrauchsgut ✓: `super_stimpack`
+Erkennung: weiße Pixel über 0,5 % **plus** Meldung, ob sie in einem
+zusammenhängenden Streifen an der ersten oder letzten Bildzeile liegen.
 
-## Regel für die Rohstoffe
+### 3. Dunkelgrüner Schleier
 
-Bei Rohmaterial reicht ein **Symbol-Motiv** (Schraube, Zahnrad, Klebeband-
-Rolle) statt einer realistischen Darstellung — bei 32 px ist eine
-Schraubenschachtel nicht lesbar, eine einzelne Schraube schon.
+`wrench` und `camp_kit` hatten einen Hintergrund von (5,22,5) statt (0,1,0).
+Grünwert 22 liegt weit unter der Weiß-Schwelle, die Prüfung sah nichts. Im
+Inventar wirken solche Icons als hellere Kacheln neben 118 sauberen.
 
-## Prüfung nach jedem Block
+Erkennung: Anteil der Hintergrundpixel (Grünwert ≤ 60) mit Grünwert über 8 —
+bei mehr als **30 %** ist der Hintergrund nicht schwarz.
+
+### 4. Gefüllte statt gezeichneter Silhouette
+
+`cooked_lurk` kam vollflächig gefüllt zurück (25,4 % helle Pixel gegen 6,7 %
+Median). Die Datei war einwandfrei.
+
+**Diese Klasse fängt keine Pixelmetrik.** Sie fiel nur beim Ansehen des
+Kontrollblatts auf. Deshalb ist Schritt 4 oben nicht optional.
+
+## Werkzeuge
 
 ```sh
-npm run icons          # aufbereiten + Tabelle schreiben
-npm test               # tests/item-bilder.test.mjs prüft Tabelle, Größe, Pfade
+npm run icons:check    # nur prüfen
+npm run icons          # prüfen + aufbereiten + Tabelle schreiben
+npm test               # u. a. tests/item-bilder.test.mjs
 ```
+
+`tools/icons.mjs` schneidet auf den Inhalt zu (`trim`, Schwelle 40), legt 8 %
+Rand an, skaliert in **zwei getrennten `sharp`-Instanzen** auf 128 px und
+schreibt als PNG-Palette mit Stufe 9.
+
+Die Trennung ist Pflicht: `sharp` führt pro Pipeline nur **einen** `resize`
+aus, ein zweiter in derselben Kette wird still ignoriert. Alle Bilder kamen
+dadurch mit 254–276 px statt 128 heraus.
+
+## Test
+
+`tests/item-bilder.test.mjs` prüft:
+
+- Tabelle und Dateibestand sind deckungsgleich
+- jedes Bild gehört zu einem existierenden Item
+- 128 × 128 und unter 20 kB
+- Pfade sind relativ (`img/items/…`, kein führender Schrägstrich — sonst bricht
+  einer der beiden Hosts, GitHub Pages und Vercel)
+- **jedes** Item hat ein Bild; schlägt das fehl, ist der Emoji-Rückfall wieder
+  im Spiel und braucht einen eigenen Test
