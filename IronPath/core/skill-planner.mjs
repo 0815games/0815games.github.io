@@ -1,5 +1,5 @@
-import {SKILL_PATHS,SKILL_PATH_MAP,WEB_NODES,NODES_PER_CLASS,webReady,webBonuses,pointsLeft,abilityName,parseBuild,encodeBuild,specialistUnlocked,hasCapstone} from './skills.mjs?v=20261124-aim10';
-import {COMBOS,CAPSTONES,comboTier} from './skill-combos.mjs?v=20261124-aim10';
+import {SKILL_PATHS,SKILL_PATH_MAP,WEB_NODES,NODES_PER_CLASS,webReady,webBonuses,pointsLeft,abilityName,parseBuild,encodeBuild,specialistUnlocked,hasCapstone} from './skills.mjs?v=20261125-aim11';
+import {COMBOS,CAPSTONES,comboTier} from './skill-combos.mjs?v=20261125-aim11';
 export const nodeKey=(path,rank)=>`${path}:${rank}`;
 export function prerequisites(path,rank){
   if(rank===1)return [];

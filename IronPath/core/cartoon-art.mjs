@@ -1,11 +1,11 @@
-import {translateText as tr,getLanguage} from '../language.mjs?v=20261124-aim10';
+import {translateText as tr,getLanguage} from '../language.mjs?v=20261125-aim11';
 import {towerDisplay} from './progression.mjs?v=20261105-prestige1';
-import {specializationRank} from './tower-specialization.mjs?v=20261124-aim10';
-import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261124-aim10';
-import {ENEMY_INTEL,SOLDIER_MAX_HP} from './combat.mjs?v=20261124-aim10';
+import {specializationRank} from './tower-specialization.mjs?v=20261125-aim11';
+import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261125-aim11';
+import {ENEMY_INTEL,SOLDIER_MAX_HP} from './combat.mjs?v=20261125-aim11';
 import {bossPhase} from './boss-mechanics.mjs?v=20261031-finale1';
 import {shotTrace,shotsToDraw} from './shot-tracers.mjs?v=20261117-shots1';
-import {buildRoadPath} from './road-geometry.mjs?v=20261124-aim10';
+import {buildRoadPath} from './road-geometry.mjs?v=20261125-aim11';
 // Drawing only: the simulation, coordinates and hit areas stay unchanged.
 const ink='#1d3028',paper='#f1e7c4';
 function line(ctx,points,color=ink,width=3){ctx.beginPath();points.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();}
@@ -420,7 +420,7 @@ function sprite(ctx,name,notify){
     // V3 art ships under the same file names as V2: without a version query a
     // returning player's browser serves the old sprite from its HTTP cache and
     // the new emblems never land. Bump this with every art re-issue.
-    image.src=`assets/${name}-sprite.png?v=20261124-aim10`;
+    image.src=`assets/${name}-sprite.png?v=20261125-aim11`;
   }
   const entry=spriteImages.get(name);return entry.ready?entry.image:null;
 }
@@ -1287,7 +1287,23 @@ function detailRng(seed){let s=(seed>>>0)||1;return ()=>{s=(s^(s<<13))>>>0;s=(s^
 // scatter (tufts, stones, cracks, puddles, reeds, drifts), all derived from
 // the map seed alone. Pure presentation - roads, zones, pads and buildings
 // paint over whatever lands beneath them.
-const GROUND_TINTS=['#d9b98a','#9db3c4','#a8b48a','#c4a9a0','#b7a9c0'];
+// IPL-0133 Toon-Boden: flat plate colours per theme, derived from the
+// painted ground plates (median-cut + a signature accent per biome). The
+// arrays are WEIGHTED by repetition: light plates read most, the darks act
+// as shadow patches, the last slot sprinkles the accent (rust, warm white,
+// deep olive). Flat fields + ink seam are what make the ground speak the
+// units' language; the photo plate only whispers at 32% on top.
+const GROUND_PLATES=Object.freeze({
+  forest:['#8fa84a','#8fa84a','#8fa84a','#8c823d','#8c823d','#5b5326','#5b5326','#22210f'],
+  road:['#73661b','#73661b','#73661b','#5b5c25','#5b5c25','#393b1d','#393b1d','#2a2c14'],
+  urban:['#64635f','#64635f','#64635f','#54524c','#54524c','#38352d','#38352d','#90463a'],
+  outpost:['#64635f','#64635f','#64635f','#54524c','#54524c','#38352d','#38352d','#90463a'],
+  scrub:['#e6aa61','#e6aa61','#e6aa61','#d39650','#d39650','#9e6b37','#9e6b37','#c48c49'],
+  arctic:['#dfe8df','#dfe8df','#dfe8df','#c6d4cf','#c6d4cf','#93a5a0','#93a5a0','#faf0e2'],
+  marsh:['#9fae9e','#9fae9e','#9fae9e','#a2b249','#a2b249','#656e50','#656e50','#3e452d'],
+  talwald:['#acc55e','#acc55e','#acc55e','#7a7b46','#7a7b46','#514d2d','#514d2d','#1b1910'],
+  junction:['#3a403d','#3a403d','#3a403d','#2d3431','#2d3431','#232826','#232826','#1a1e1e'],
+});
 export function drawGroundDetails(ctx,theme,width,height,seed){
   const r=detailRng(seed);
   const P={
@@ -1326,17 +1342,27 @@ export function drawGroundDetails(ctx,theme,width,height,seed){
     else if(k<.7){oval(ctx,x,y,2+r2()*2,1.2+r2(),'#8a8074',null);}
     else{ctx.save();ctx.globalAlpha=.12;oval(ctx,x,y,6+r2()*8,3+r2()*4,'#242018',null);ctx.restore();}}};
   const n=10+Math.floor(r()*7);
-  for(let i=0;i<n;i++){ctx.save();ctx.globalAlpha=.04+r()*.05;ctx.beginPath();ctx.ellipse(r()*width,r()*height,60+r()*110,36+r()*80,r()*Math.PI,0,Math.PI*2);ctx.fillStyle=r()<.5?P.patch[0]:P.patch[1];ctx.fill();ctx.restore();}
+  for(let i=0;i<n;i++){
+    const x=r()*width,y=r()*height,rx=60+r()*110,ry=36+r()*80,rot=r()*Math.PI;
+    ctx.save();ctx.globalAlpha=.04+r()*.05;ctx.beginPath();ctx.ellipse(x,y,rx,ry,rot,0,Math.PI*2);ctx.fillStyle=r()<.5?P.patch[0]:P.patch[1];ctx.fill();ctx.restore();
+    // IPL-0133: the wash keeps its colour, but the rim speaks ink - a
+    // hairline contour turns each smudge into a flat painted ground plate.
+    ctx.save();ctx.globalAlpha=.16+r()*.08;ctx.beginPath();ctx.ellipse(x,y,rx,ry,rot,0,Math.PI*2);ctx.strokeStyle=ink;ctx.lineWidth=1.5;ctx.stroke();ctx.restore();
+  }
   const m=Math.round((width*height)/(960*540)*(55+r()*40));
   for(let i=0;i<m;i++)P.items(r()*width,r()*height,r(),r);
 }
-// V3.2 ground: an organic painted patchwork, not soft rectangles. Each patch
-// is a plate sample clipped to a seeded wobbly BLOB and feathered, laid in
-// three octaves (base cover, mid variety, small accents) with per-patch
-// mirror, offset and hue/brightness jitter - the patches interlock like oil
-// paint and every field composes its own ground from its own seed.
-function blobPath(c,cx,cy,rx,ry,rng){
-  const n=11,wob=[];for(let k=0;k<n;k++)wob.push(.86+rng()*.28);
+// IPL-0133 Toon-Boden: an organic patchwork of HARD-edged plates. Each patch
+// is a plate sample clipped to a seeded wobbly blob and rimmed with sprite
+// ink (Tusche seam), laid in three octaves (base cover, mid variety, small
+// accents) with per-patch mirror and offset - flat-shaded ground plates in
+// the same language as the units, and every field still composes its own
+// ground from its own seed.
+// IPL-0133 Toon-Boden: the wobble is computed once so the clip and the ink
+// seam stroke share exactly ONE shape - hard-edged plates, no feather.
+function blobWobble(rng){const n=11,wob=[];for(let k=0;k<n;k++)wob.push(.86+rng()*.28);return wob;}
+function blobPath(c,cx,cy,rx,ry,wob){
+  const n=wob.length;
   c.beginPath();
   for(let k=0;k<=n;k++){
     const a=k/n*Math.PI*2,r=wob[k%n];
@@ -1345,7 +1371,7 @@ function blobPath(c,cx,cy,rx,ry,rng){
   }
   c.closePath();
 }
-function paintTileMosaic(target,img,width,height,rng,doc){
+function paintTileMosaic(target,img,width,height,rng,doc,plates){
   const iw=img.naturalWidth||img.width,ih=img.naturalHeight||img.height;
   if(!iw||!ih)return;
   const sample=Math.min(iw,ih);
@@ -1354,19 +1380,25 @@ function paintTileMosaic(target,img,width,height,rng,doc){
   const patch=(ts,td)=>{
     const canvas=getScratch(ts,td),c=canvas.getContext('2d');if(!c)return null;
     c.clearRect(0,0,ts,td);
+    const wob=blobWobble(rng);
+    blobPath(c,ts/2,td/2,ts*.54,td*.56,wob);
+    c.save();c.clip();
+    // Flat toon plate colour first: the ground speaks in flat fields, the
+    // same language as the units' colour planes.
+    c.fillStyle=(plates&&plates.length?plates[Math.floor(rng()*plates.length)]:'#5b5326');
+    c.fillRect(0,0,ts,td);
+    // The painted plate only whispers at 32% - texture without the collage.
     const ss=sample*(.36+rng()*.3),sx=rng()*Math.max(0,iw-ss),sy=rng()*Math.max(0,ih-ss);
-    c.save();
+    c.save();c.globalAlpha=.32;
     const mx=rng()<.5,my=rng()<.5;c.translate(mx?ts:0,my?td:0);c.scale(mx?-1:1,my?-1:1);
     c.drawImage(img,sx,sy,ss,ss,0,0,ts,td);
     c.restore();
-    // Clip to the blob and feather its rim: destination-in with a radial
-    // gradient INSIDE the blob shape.
-    c.globalCompositeOperation='destination-in';
-    c.save();blobPath(c,ts/2,td/2,ts*.54,td*.56,rng);
-    const g=c.createRadialGradient(ts/2,td/2,Math.min(ts,td)*.2,ts/2,td/2,Math.max(ts,td)*.55);
-    g.addColorStop(0,'rgba(0,0,0,1)');g.addColorStop(.72,'rgba(0,0,0,.97)');g.addColorStop(1,'rgba(0,0,0,0)');
-    c.fillStyle=g;c.fill();c.restore();
-    c.globalCompositeOperation='source-over';
+    c.restore();
+    // The Tusche seam: same path, stroked once, at the sprite ink weight.
+    c.save();
+    c.lineJoin='round';c.lineCap='round';c.strokeStyle=ink;c.lineWidth=2.4;
+    c.stroke();
+    c.restore();
     return canvas;
   };
   const octaves=[
@@ -1434,7 +1466,7 @@ function drawTerrain(ctx,path,theme,{paths=[path],width=960,height=540,storyMiss
         // The seeded tile mosaic: interlocking feathered patches, a different
         // whole-map composition for every field.
         target.save();target.globalAlpha=.94;
-        paintTileMosaic(target,img,width,height,detailRng((groundSeed^0x9e3779b9)>>>0),doc);
+        paintTileMosaic(target,img,width,height,detailRng((groundSeed^0x9e3779b9)>>>0),doc,GROUND_PLATES[theme]||GROUND_PLATES.road);
         target.restore();
       }
       else if(img){
@@ -1446,8 +1478,6 @@ function drawTerrain(ctx,path,theme,{paths=[path],width=960,height=540,storyMiss
         target.drawImage(img,-ox,-oy,ow,oh);
         target.restore();
       }
-      const tr=detailRng((groundSeed^0x85ebca6b)>>>0);
-      target.save();target.globalAlpha=.05+tr()*.04;target.fillStyle=GROUND_TINTS[Math.floor(tr()*GROUND_TINTS.length)];target.fillRect(0,0,width,height);target.restore();
       drawGroundDetails(target,theme,width,height,groundSeed);
     }
     for(const road of paths)drawRoad(target,road,theme,img,roadImg);thinIce(target,path,theme);bog(target,path,theme);for(const zone of zones)drawZone(target,zone);
@@ -1456,9 +1486,10 @@ function drawTerrain(ctx,path,theme,{paths=[path],width=960,height=540,storyMiss
     // Field dressing grows with the map (capped: it must not swallow the road
     // it was placed clear of).
     drawDeco(target,deco,theme,notify,Math.max(1,Math.min(1.45,width/1100)));
-    // V3 grade: an olive cast with a painted vignette - the frame darkens,
+    // IPL-0133: the olive cast drops to half strength so the toon plates
+    // keep their colour; the painted vignette stays - the frame darkens,
     // the field centre stays bright, and the eye lands where the fighting is.
-    target.save();target.globalAlpha=.14;target.fillStyle='#2c4232';target.fillRect(0,0,width,height);target.globalAlpha=1;
+    target.save();target.globalAlpha=.08;target.fillStyle='#2c4232';target.fillRect(0,0,width,height);target.globalAlpha=1;
     const vig=radial(target,width/2,height/2,Math.min(width,height)*.44,width/2,height/2,Math.max(width,height)*.74);
     if(vig){vig.addColorStop(0,'rgba(9,13,10,0)');vig.addColorStop(1,'rgba(9,13,10,.36)');target.fillStyle=vig;}
     else{target.globalAlpha=.16;target.fillStyle='#090d0a';}

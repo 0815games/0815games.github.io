@@ -1,16 +1,16 @@
-import {createWorkshopMultiplayerMatch} from '../workshop/workshop-multiplayer-game.mjs?v=20261124-aim10';
+import {createWorkshopMultiplayerMatch} from '../workshop/workshop-multiplayer-game.mjs?v=20261125-aim11';
 import {validWorkshopMatchLock,validWorkshopMatchState} from '../workshop/workshop-match-validation.mjs?v=20261112-tagless1';
 import {guardMultiplayerTab} from '../core/multiplayer-tab-guard.mjs?v=20261103-hardening2';
-import {createFourCoop,createTwoVsTwo,squadMapFor} from '../core/four-modes.mjs?v=20261124-aim10';
-import {createVersus} from '../core/versus.mjs?v=20261124-aim10';
+import {createFourCoop,createTwoVsTwo,squadMapFor} from '../core/four-modes.mjs?v=20261125-aim11';
+import {createVersus} from '../core/versus.mjs?v=20261125-aim11';
 import {createFixedStepClock} from '../core/fixed-step-clock.mjs?v=20261102-coopmotion1';
-import {isMapId,DEFAULT_MAP} from '../core/maps.mjs?v=20261124-aim10';
-import {MAX_WAVE_MASK} from '../core/combat.mjs?v=20261124-aim10';
+import {isMapId,DEFAULT_MAP} from '../core/maps.mjs?v=20261125-aim11';
+import {MAX_WAVE_MASK} from '../core/combat.mjs?v=20261125-aim11';
 import {createFirebasePartyChannel} from './firebase-party-channel.mjs?v=20261112-lag2';
 import {createFirebasePartyPresence} from './firebase-party-presence.mjs?v=20261103-unified1';
-import {createFirebasePartyClientSession,createFirebasePartyHostSession} from './firebase-party-session.mjs?v=20261124-aim10';
-import {createPartyHost} from '../core/party-host.mjs?v=20261124-aim10';
-import {createMatch,STEP} from '../core/simulation.mjs?v=20261124-aim10';
+import {createFirebasePartyClientSession,createFirebasePartyHostSession} from './firebase-party-session.mjs?v=20261125-aim11';
+import {createPartyHost} from '../core/party-host.mjs?v=20261125-aim11';
+import {createMatch,STEP} from '../core/simulation.mjs?v=20261125-aim11';
 
 // Game-facing adapter for an already-established party. It is not a lobby or
 // an authentication boundary. Security rules must enforce the roster and paths.

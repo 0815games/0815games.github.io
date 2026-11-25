@@ -1,4 +1,4 @@
-import {MAX_WAVE_MASK} from './combat.mjs?v=20261124-aim10';
+import {MAX_WAVE_MASK} from './combat.mjs?v=20261125-aim11';
 
 // This is a delivery/save handshake, not an anti-cheat authority. Each client
 // confirms only its own finished report and server-acknowledged reward receipts.
