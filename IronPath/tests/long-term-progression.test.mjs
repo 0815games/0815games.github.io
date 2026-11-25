@@ -4,7 +4,7 @@ import {createPlayer,applyCommand} from '../core/match.mjs';
 import {createMatch,stepMatch} from '../core/simulation.mjs';
 import {serviceMedals} from '../core/service-record.mjs';
 let a=readArmory({scrap:1000,fortify:0,plating:0,owned:63,equipped:1});
-for(const wave of [14,16,18,20])a=rewardWave(a,wave);assert.equal(a.owned,1023);const duplicate=rewardWave(a,20);assert.equal(duplicate.scrap,a.scrap+20);
+for(const wave of [14,16,18,20])a=rewardWave(a,wave,()=>0);assert.equal(a.owned,1023,'four finds complete the locker');const cold=rewardWave(a,20,()=>1);assert.equal(cold.scrap,a.scrap+10);
 a=upgradeArmory(a,'supply');a=upgradeArmory(a,'safeguard');a=equipArmory(a,10);assert.equal(encodeLoadout(a),'0,0,10;0,0;1,1');assert.deepEqual(parseLoadout(encodeLoadout(a)),{fortify:0,plating:0,equipped:10,repair:0,gun:0,supply:1,safeguard:1});assert.equal(equipArmory({...a,owned:63},10),null);
 assert.equal(serviceMedals({xp:999999,armory:a}).find(m=>m.name==='Full Arsenal').unlocked,true);
 const player=(id,loadout='0,0,0',level=10)=>createPlayer(id,{name:id,gender:'male',level,loadout,skills:'v2;assault;1;0;00000000000000'});

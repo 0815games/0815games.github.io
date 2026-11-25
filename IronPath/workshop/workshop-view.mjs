@@ -3,11 +3,11 @@
 // Rendered inside the armory dialog so players find everything in one place.
 // Every change goes through the account service, which runs the account
 // transaction; nothing here writes a save directly.
-import {RECIPES,MOD_SCRAP,modsOf,migrateWorkshop,validLegacy} from './workshop-model.mjs?v=20261125-aim15';
+import {RECIPES,MOD_SCRAP,modsOf,migrateWorkshop,validLegacy} from './workshop-model.mjs?v=20261121-fund1';
 import {PRESTIGE,PRESTIGE_IDS,isPrestige,prestigeEarned} from '../core/prestige.mjs?v=20261112-pressure1';
 import {CAMPAIGN,campaignProgress} from '../core/campaign.mjs?v=20261112-pressure1';
-import {decodeWorkshop} from './workshop-wire.mjs?v=20261125-aim15';
-import {readArmory,ITEMS} from '../core/armory.mjs?v=20261112-tagless1';
+import {decodeWorkshop} from './workshop-wire.mjs?v=20261121-fund1';
+import {readArmory,ITEMS} from '../core/armory.mjs?v=20261121-fund1';
 import {WORKSHOP_CATALOG} from './workshop-catalog.mjs?v=20261108-balance2';
 // Which legacy item (by index) belongs to which new slot.
 const legacySlots=['gadget','gear','gear','gadget','gadget','gear','gadget','gadget','gadget','gadget'];
@@ -127,7 +127,7 @@ export function createWorkshopView({document,root,getProfile,service,confirm,tra
   const legacy=el('section','workshop-legacy');
   legacy.append(el('h3','',tr('Existing equipment')));
   const legacyOwned=workshop.owned.filter(value=>value.startsWith('legacy-'));
-  if(!legacyOwned.length)legacy.append(el('p','',tr('No existing equipment yet. It is earned on waves 2, 4, 6, 8, 10, 12, 14, 16, 18 and 20.')));
+  if(!legacyOwned.length)legacy.append(el('p','',tr('No existing equipment yet. Every completed wave can find one of the ten pieces - FOUND in the report.')));
   for(const id of legacyOwned){
    const index=Number(id.slice(7))-1,item=ITEMS[index],taken=workshop.equipped.includes(id);
    const row=el('article','workshop-legacy-item');

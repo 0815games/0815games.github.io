@@ -32,6 +32,11 @@
 #runResults[data-save="pending"] .debrief-save,#runResults[data-save="uncertain"] .debrief-save{color:#f4d48c}
 #runResults[data-save="failed"] .debrief-save{color:#f0a89a}
 #runResults .debrief-equipment{padding:10px 12px;background:#38452e;border-left:3px solid #d6b96e;color:#fff0c8;animation:debrief-reveal .35s .24s ease-out both}
+#runResults .debrief-found{display:grid;gap:6px;margin-top:8px}
+#runResults .debrief-found-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:7px 10px;background:#1b3025;border:1px solid #52634d;font-size:.8rem}
+#runResults .debrief-found-row strong{color:#f2dfae;flex:1 1 auto;min-width:0}
+#runResults .debrief-found-row span{color:#9fd0a8;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase}
+#runResults .debrief-found-row button{padding:5px 12px;font-size:.72rem}
 #runResults .debrief-progress{padding:13px 15px;background:#1b3025;border:1px solid #52634d;margin-top:14px}
 #runResults .debrief-progress-heading{display:flex;justify-content:space-between;gap:8px;color:#e8d49d;font-size:.7rem;letter-spacing:.1em;font-weight:800}
 #runResults .debrief-progress progress{display:block;width:100%;height:10px;margin:10px 0 4px;accent-color:#d3b56f}

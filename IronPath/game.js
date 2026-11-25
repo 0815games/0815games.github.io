@@ -1,60 +1,62 @@
-import {createSoloDeployment} from './core/solo-deployment.mjs?v=20261125-aim15';
+import {createSoloDeployment} from './core/solo-deployment.mjs?v=20261121-fund1';
 import {newRunReceiptId} from './workshop/workshop-run-receipt.mjs?v=20261031-finale1';
 import {canvasResolution} from './core/canvas-resolution.mjs?v=20261105-sharp1';
-import {createPowerGovernor} from './core/power-governor.mjs?v=20261125-aim15';
+import {createPowerGovernor} from './core/power-governor.mjs?v=20261121-fund1';
 import {createMapZoom} from './core/map-zoom.mjs?v=20261105-sharp1';
 import {featureEnabled} from './core/features.mjs?v=20261112-endless1';
-import {localizeGameMessage} from './core/game-localization.mjs?v=20261125-aim15';
+import {localizeGameMessage} from './core/game-localization.mjs?v=20261121-fund1';
 import {translateStoryDetail} from './core/story-localization.mjs?v=20261110-storyde1';
-import {translateText as tr,getLanguage} from './language.mjs?v=20261125-aim15';
+import {translateText as tr,getLanguage} from './language.mjs?v=20261121-fund1';
 import {createSoldierMotion} from './core/soldier-motion.mjs?v=20261104-movement1';
-import {createTowerAim} from './core/tower-aim.mjs?v=20261125-aim15';
+import {createTowerAim} from './core/tower-aim.mjs?v=20261121-fund1';
 import {bindDialogBackdrop} from './ui/dialog-dismiss.mjs?v=20261104-dismiss1';
 import {createFocusPause} from './core/focus-pause.mjs?v=20261104-hostpause1';
 import {cinematicFrames,cinematicScene,relicHandover} from './core/story-cinematics.mjs?v=20261031-finale2';
 import {CAMPAIGN,campaignProgress,campaignMission,campaignAvailable,campaignDifficulty,campaignWaveContract,ACTS,actOf,actEndIndex,actComplete} from './core/campaign.mjs?v=20261112-pressure1';
 import {RELICS,earnedRelicIds} from './core/relics.mjs?v=20261112-tagless1';
-import {prestigeTierOf,prestigeScrapBonus,PRESTIGE_MAX_TIER} from './core/campaign-prestige.mjs?v=20261125-aim15';
+import {prestigeTierOf,prestigeScrapBonus,PRESTIGE_MAX_TIER} from './core/campaign-prestige.mjs?v=20261121-fund1';
 import {prestigeScale} from './core/campaign-pressure.mjs?v=20261112-pressure1';
 import {createStoryMission,storyStatus,stepStory,resolveStoryDecision,drainStoryNotifications} from './core/story-mission.mjs?v=20261111-events1';
 import {STAGE_CAPTIONS,EVENT_TEMPLATES} from './core/story-events.mjs?v=20261206-acttwo1';
-import {TRAINING_MISSION_ID,TRAINING_MAP,TRAINING_WAVES,TRAINING_BOSS_EVERY,FIRST_RUN_DEFEAT_XP,trainingContract,trainingStatus,trainingWon,trainingXP,trainingBonusXP,trainingSeen,markTrainingSeen,forgetTrainingSeen,trainingWaveRadioCue} from './core/training-run.mjs?v=20261125-aim15';
-import {projectFourGameView} from './core/four-game-view.mjs?v=20261125-aim15';
-import {createBattleViewportController} from './battle/battle-viewport-controller.mjs?v=20261125-aim15';
-import {drawInBattleViewport} from './battle/battle-viewport.mjs?v=20261125-aim15';
-import {waveRewardSummary,nextSteps} from './core/run-results.mjs?v=20261125-aim15';
+import {TRAINING_MISSION_ID,TRAINING_MAP,TRAINING_WAVES,TRAINING_BOSS_EVERY,FIRST_RUN_DEFEAT_XP,trainingContract,trainingStatus,trainingWon,trainingXP,trainingBonusXP,trainingSeen,markTrainingSeen,forgetTrainingSeen,trainingWaveRadioCue} from './core/training-run.mjs?v=20261121-fund1';
+import {projectFourGameView} from './core/four-game-view.mjs?v=20261121-fund1';
+import {createBattleViewportController} from './battle/battle-viewport-controller.mjs?v=20261121-fund1';
+import {drawInBattleViewport} from './battle/battle-viewport.mjs?v=20261121-fund1';
+import {waveRewardSummary,nextSteps} from './core/run-results.mjs?v=20261121-fund1';
+import {ITEMS} from './core/armory.mjs?v=20261121-fund1';
+import {decodeWorkshop} from './workshop/workshop-wire.mjs?v=20261121-fund1';
 import {reportRank} from './core/report-promotion.mjs?v=20261117-rank1';
 // The rank mark is painted by the kit that owns ranks; the report only asks which one.
-import {renderRankInsignia} from './core/rank-insignia.mjs?v=20261125-aim15';
-import {createGroundTracks} from './core/ground-tracks.mjs?v=20261125-aim15';
-import {projectCoopMotion} from './core/coop-motion.mjs?v=20261125-aim15';
+import {renderRankInsignia} from './core/rank-insignia.mjs?v=20261121-fund1';
+import {createGroundTracks} from './core/ground-tracks.mjs?v=20261121-fund1';
+import {projectCoopMotion} from './core/coop-motion.mjs?v=20261121-fund1';
 import {bossPhaseLabel,bossTelegraph} from './core/boss-mechanics.mjs?v=20261031-finale1';
-import {createBattleSound} from './battle/battle-sound.mjs?v=20261125-aim15';
+import {createBattleSound} from './battle/battle-sound.mjs?v=20261121-fund1';
 import {RUN_PERKS,perkOffers} from './core/run-perks.mjs?v=20261102-terrain4';
 import {TERRAIN_BRIEFINGS,ZONE_BRIEFINGS,terrainFor} from './core/terrain.mjs?v=20261124-zones1';
-import {getMap,createRandomMapId,sectorOf} from './core/maps.mjs?v=20261125-aim15';
-import {createCombatEffects} from './core/combat-fx.mjs?v=20261125-aim15';
-import {hitFeedbackForEvent,createHitAnnouncer} from './core/hit-feedback.mjs?v=20261125-aim15';
-import {drawCartoonBattle} from './core/cartoon-art.mjs?v=20261125-aim15';
-import {abilityName,SKILL_PATH_MAP} from './core/skills.mjs?v=20261125-aim15';
-import {classUpgradeState,classPathConfig,classPathInvested} from './core/tower-class-paths.mjs?v=20261125-aim15';
-import {towerClassIcon} from './ui/development-ui.mjs?v=20261125-aim15';
+import {getMap,createRandomMapId,sectorOf} from './core/maps.mjs?v=20261121-fund1';
+import {createCombatEffects} from './core/combat-fx.mjs?v=20261121-fund1';
+import {hitFeedbackForEvent,createHitAnnouncer} from './core/hit-feedback.mjs?v=20261121-fund1';
+import {drawCartoonBattle} from './core/cartoon-art.mjs?v=20261121-fund1';
+import {abilityName,SKILL_PATH_MAP} from './core/skills.mjs?v=20261121-fund1';
+import {classUpgradeState,classPathConfig,classPathInvested} from './core/tower-class-paths.mjs?v=20261121-fund1';
+import {towerClassIcon} from './ui/development-ui.mjs?v=20261121-fund1';
 import { COOP_SERVER_URL } from './core/coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './core/coop-client.mjs?v=20261031-coopui1';
-import { createCoopInput } from './core/coop-input.mjs?v=20261125-aim15';
-import { createTutorial } from './core/tutorial.mjs?v=20261125-aim15';
-import { createCoach, coachSeen, markCoachSeen } from './ui/first-run-coach.mjs?v=20261125-aim15';
-import { abilityHud, abilityHudSvg } from './ui/ability-hud.mjs?v=20261125-aim15';
-import { stepMatch, getTowerRange, STEP } from './core/simulation.mjs?v=20261125-aim15';
-import { createPlayer, applyCommand, towerRefund, repairOffer, getSupplies, TOWER_COSTS, trainingBuildLocked } from './core/match.mjs?v=20261125-aim15';
-import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats,sectorModifier } from './core/combat.mjs?v=20261125-aim15';
+import { createCoopInput } from './core/coop-input.mjs?v=20261121-fund1';
+import { createTutorial } from './core/tutorial.mjs?v=20261121-fund1';
+import { createCoach, coachSeen, markCoachSeen } from './ui/first-run-coach.mjs?v=20261121-fund1';
+import { abilityHud, abilityHudSvg } from './ui/ability-hud.mjs?v=20261121-fund1';
+import { stepMatch, getTowerRange, STEP } from './core/simulation.mjs?v=20261121-fund1';
+import { createPlayer, applyCommand, towerRefund, repairOffer, getSupplies, TOWER_COSTS, trainingBuildLocked } from './core/match.mjs?v=20261121-fund1';
+import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats,sectorModifier } from './core/combat.mjs?v=20261121-fund1';
 import { MAX_TOWER_LEVEL, upgradeCost, towerDisplay, characterProgress, towerUpgradeInvestment } from './core/progression.mjs?v=20261105-prestige1';
 import { createBattleXpHud } from './battle/battle-xp-hud.mjs?v=20261117-hudxp1';
-import { towerUpgradeCues } from './core/tower-upgrade-cue.mjs?v=20261125-aim15';
+import { towerUpgradeCues } from './core/tower-upgrade-cue.mjs?v=20261121-fund1';
 import { createFieldNotice } from './ui/field-notice.mjs?v=20261117-fieldnotice1';
 import { createMapIntro } from './ui/map-intro.mjs?v=20261117-mapintro1';
-import { createBossBanner } from './ui/boss-banner.mjs?v=20261125-aim15';
-import { specializationRank, upgradeCostFor, branchUnlockLevel } from './core/tower-specialization.mjs?v=20261125-aim15';
+import { createBossBanner } from './ui/boss-banner.mjs?v=20261121-fund1';
+import { specializationRank, upgradeCostFor, branchUnlockLevel } from './core/tower-specialization.mjs?v=20261121-fund1';
 export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=createCoopClient, confirmAction=async()=>false, leaveParty=null, onForceCloseParty=null, nextMapId=createRandomMapId, experimentalFourViewport=false,experimentalWorkshop=false,deferTutorial=false,reducedGraphics=false,initialSettings=null,onReturnToCommand=()=>{},onResumeBattle=()=>{},onTrainingComplete=null,onRunFinished=()=>{},promptCenter=null,generalRadio=null}={}) {
   // One-way release teardown; the guarded caller still has to replace the
   // whole document, because the rest of this UI is not a reusable SPA.
@@ -192,13 +194,13 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     // A previous report can still be waiting to subscribe to the profile, before
     // any Firebase write promise exists. Keep unresolved reports across resets.
     for(const old of releaseReports)if(!old.pending&&!old.statsPending&&!old.failed&&!old.statsFailed&&!old.disconnected&&(!old.campaign||old.campaignSaved===true))releaseReports.delete(old);
-    const next={id,receiptId:null,mode:id?'coop':'solo',xp:0,scrap:0,items:[],levels:0,unlocks:[],pending:0,failed:false,statsPending:0,statsFailed:false,confirmedEarlier:false,finished:false,snapshot:null,playerId:null};releaseReports.add(next);return next;
+    const next={id,receiptId:null,mode:id?'coop':'solo',xp:0,scrap:0,items:[],found:[],stored:new Set(),levels:0,unlocks:[],pending:0,failed:false,statsPending:0,statsFailed:false,confirmedEarlier:false,finished:false,snapshot:null,playerId:null};releaseReports.add(next);return next;
   }
   // Every endless solo run gets one random receipt id; campaign sends null and keeps legacy saving.
   // Receipts are only sent when the gated workshop alpha is enabled, so the live
   // game never writes workshop fields before the candidate rules are approved.
   const runReceipt=()=>report&&!report.soloMission?report.receiptId:null;
-  function addReward(target,detail){if(!target||!detail?.delta)return;const d=detail.delta;target.xp+=d.xp;target.scrap+=d.scrap;target.levels+=d.levels;target.items.push(...d.items);target.unlocks.push(...(d.unlocks||[]));if(!target.profile||(detail.profile?.xp||0)>=(target.profile.xp||0))target.profile=detail.profile;}
+  function addReward(target,detail){if(!target||!detail?.delta)return;const d=detail.delta;target.xp+=d.xp;target.scrap+=d.scrap;target.levels+=d.levels;target.items.push(...d.items);target.found.push(...(d.foundIds||[]));target.unlocks.push(...(d.unlocks||[]));if(!target.profile||(detail.profile?.xp||0)>=(target.profile.xp||0))target.profile=detail.profile;}
   // Count the actual promise before it starts. A rejected or unconfirmed save
   // prevents an automatic update; a timeout is not evidence of cancellation.
   function trackReportSave(target,work,{reward=false,statistic=false}={}){
@@ -272,9 +274,36 @@ function renderResults(target){
     $('resultsTitle').textContent=tr(outcome);$('runResults').dataset.outcome=['Victory!','Mission complete!','Training complete!'].includes(outcome)?'victory':['Defeat','Mission failed','Bunker lost'].includes(outcome)?'defeat':'neutral';
     $('resultsOutcome').textContent=target.training?tr('TRAINING CONTRACT · FIRST DEPLOYMENT'):target.soloMission?tr('CAMPAIGN · {title}',{title:tr(target.soloMission.title).toUpperCase()}):tr(snapshot.fourInfo?.mode==='two-vs-two'?'2 VS 2 · SURVIVAL':snapshot.fourInfo?.mode==='four-coop'?'FOUR-PLAYER CO-OP':snapshot.mode==='versus'?'1 VS 1 · SURVIVAL':target.mode==='coop'?'CO-OP OPERATION':'SOLO OPERATION');
     $('resultsWaves').textContent=tr(waves.count===1?'{count} wave completed · reached wave {wave}':'{count} waves completed · reached wave {wave}',{count:waves.count,wave:snapshot.wave||0})+'\n'+tr('Wave reward value: {xp} XP',{xp:waves.xp})+'\n'+tr(target.mode==='coop'&&snapshot.mode!=='versus'?'{count} enemies defeated (team)':'{count} enemies defeated',{count:snapshot.lootKills||0});
-    $('resultsRewards').textContent=tr('Confirmed during this session: +{xp} XP · +{scrap} scrap',{xp:target.xp,scrap:target.scrap})+(target.items.length?'\n'+tr('New equipment: {items}',{items:target.items.map(x=>tr(x)).join(', ')}):'');
+    $('resultsRewards').textContent=tr('Confirmed during this session: +{xp} XP · +{scrap} scrap',{xp:target.xp,scrap:target.scrap})+(target.items.length?'\n'+tr('FOUND: {items}',{items:target.items.map(x=>tr(x)).join(', ')}):'');
     $('resultsStatWaves').textContent=String(waves.count);$('resultsStatEnemies').textContent=String(snapshot.lootKills||0);$('resultsEnemiesLabel').textContent=tr(target.mode==='coop'&&snapshot.mode!=='versus'?'ENEMIES DEFEATED · TEAM':'ENEMIES DEFEATED');$('resultsStatDamage').textContent=String(Math.round(damage.reduce((sum,n)=>sum+(Number.isFinite(n)?n:0),0)));
-    $('resultsRewardXp').textContent=tr('+{value} XP',{value:target.xp});$('resultsRewardScrap').textContent=`+${target.scrap}`;$('resultsEquipment').hidden=!target.items.length;$('resultsEquipment').textContent=target.items.length?tr('New equipment: {items}',{items:target.items.map(x=>tr(x)).join(', ')}):'';
+    $('resultsRewardXp').textContent=tr('+{value} XP',{value:target.xp});$('resultsRewardScrap').textContent=`+${target.scrap}`;$('resultsEquipment').hidden=!target.items.length;$('resultsEquipment').textContent=target.items.length?tr('FOUND: {items}',{items:target.items.map(x=>tr(x)).join(', ')}):'';
+    // Found pieces offer the choice (IPL-0138): wear it right away or leave it
+    // in the store. Wearing goes through the workshop service like every other
+    // equip; storing is this report's own note and changes nothing.
+    const foundActions=$('resultsFoundActions');
+    // The field harnesses run renderResults over stubbed elements; the choice
+    // rows only exist where the DOM does.
+    if(foundActions&&typeof foundActions.replaceChildren==='function'&&typeof document.createElement==='function'){
+    foundActions.replaceChildren();
+    const worn=new Set(decodeWorkshop(account.getProfile()?.workshop)?.equipped||[]);
+    for(const id of target.found||[]){
+      const index=Number(id.slice(7))-1,item=ITEMS[index];if(!item)continue;
+      const row=document.createElement('div');row.className='debrief-found-row';
+      const name=document.createElement('strong');name.textContent=tr(item.name);row.append(name);
+      const finish=text=>{const status=document.createElement('span');status.textContent=tr(text);row.append(status);};
+      if(worn.has(id))finish('TAKEN');
+      else if(target.stored.has(id))finish('STORED');
+      else{
+        const wear=document.createElement('button');wear.type='button';wear.textContent=tr('TAKE');wear.disabled=!!target.wearing;
+        wear.onclick=async()=>{target.wearing=true;renderResults(target);try{const result=await account.command({type:'equip',item:id});if(result?.status==='saved'){target.profile=result.profile;target.found=target.found.filter(other=>other!==id);}else if(result?.status!=='cancelled')finish('STORED');}finally{target.wearing=false;renderResults(target);}};
+        const store=document.createElement('button');store.type='button';store.className='is-secondary';store.textContent=tr('STORE');
+        store.onclick=()=>{target.stored.add(id);renderResults(target);};
+        row.append(wear,store);
+      }
+      foundActions.append(row);
+    }
+    foundActions.hidden=!foundActions.children.length;
+    }
     const currentProfile=account.getProfile(),profiles=[target.profile,currentProfile].filter(p=>Number.isSafeInteger(p?.xp)&&p.xp>=0),profile=profiles.sort((a,b)=>b.xp-a.xp)[0];$('resultsProgressSection').hidden=!profile;
     if(profile){const progress=characterProgress(profile.xp);$('resultsProgressLevel').textContent=tr('LEVEL {level}',{level:progress.level});$('resultsProgressBar').max=progress.required;$('resultsProgressBar').value=progress.current;$('resultsProgressText').textContent=tr('{current} / {required} XP to next level',{current:progress.current,required:progress.required});}
     // The rank sits next to the level because that is what a uniform shows:

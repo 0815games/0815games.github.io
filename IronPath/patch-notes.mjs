@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see docs/PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261125-aim15';
+import {getLanguage} from './language.mjs?v=20261121-fund1';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,18 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'fund1',build:'20261121-fund1',pr:487,
+    title:{en:'Found · The Report Offers the Piece',de:'Gefunden · Der Bericht bietet das Stück'},
+    shipped:[
+      {en:'Equipment can be found on every completed wave: from wave 1 on, each wave rolls fifteen percent for one of the ten pieces the account is still missing. The wave 2/4/.../20 anchors are gone and the wave stays the single source.',de:'Ausrüstung kann in jeder abgeschlossenen Welle gefunden werden: Ab Welle 1 würfelt jede Welle mit fünfzehn Prozent auf eines der zehn Stücke, die dem Konto noch fehlen. Die Anker-Wellen 2/4/.../20 sind weg, und die Welle bleibt die einzige Quelle.'},
+      {en:'The mission report shows FOUND with TAKE (wear it through the workshop service) or STORE (leave it in the store). Nothing wears itself; the toggle list stays the only worn state.',de:'Der Missionsbericht zeigt FOUND mit TAKE (über den Workshop-Service anlegen) oder STORE (im Lager lassen). Nichts zieht sich selbst an; die Schalterliste bleibt der einzige getragene Zustand.'},
+      {en:'Raised the cache wave to 20261121-fund1, so every device rolls the find with the same eyes.',de:'Die Cache-Welle auf 20261121-fund1 erhöht, damit jedes Gerät den Fund mit denselben Augen würfelt.'},
+    ],
+    open:[
+      {en:'Next up is the armory optics - the character cards and slot tiles of the dossier - then the skills optics.',de:'Als Nächstes kommt die Optik der Waffenkammer - die Figurenkarten und Slot-Kacheln des Dossiers - und danach die Optik der Fähigkeiten.'},
+    ]
+  },
   {
     id:'aim15',build:'20261125-aim15',pr:483,
     title:{en:'Everything at Once · The Soldier Wears Her Whole Locker',de:'Alles auf einmal · Der Soldat trägt den ganzen Schrank'},

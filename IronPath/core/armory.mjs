@@ -22,10 +22,15 @@ export function readArmory(value){
   if(!Number.isInteger(a.scrap)||a.scrap<0||a.scrap>10000000||!['fortify','plating','repair','gun','supply','safeguard'].every(k=>Number.isInteger(a[k])&&a[k]>=0&&a[k]<=3)||!Number.isInteger(a.owned)||a.owned<0||a.owned>1023||!Number.isInteger(a.equipped)||a.equipped<0||a.equipped>ITEMS.length||a.equipped>0&&!(a.owned&(1<<(a.equipped-1))))return {...DEFAULT_ARMORY};
   return a;
 }
-export function rewardWave(value,wave){
+// Every completed wave rolls a find (IPL-0138): one still-missing piece of
+// the ten, with FIND_CHANCE. The old wave 2/4/.../20 anchors are gone — the
+// wave is the single source of equipment finds, there is no chest or shop
+// drop beside it. `rng` exists for tests; production calls never pass it.
+export const FIND_CHANCE=0.15;
+export function rewardWave(value,wave,rng=Math.random){
   const a=readArmory(value);a.scrap=Math.min(10000000,a.scrap+10);
-  const item=ITEMS.findIndex(i=>i.wave===wave)+1;
-  if(item){const bit=1<<(item-1);if(a.owned&bit)a.scrap=Math.min(10000000,a.scrap+10);else a.owned|=bit;}
+  const missing=[];for(let i=0;i<ITEMS.length;i++)if(!(a.owned&(1<<i)))missing.push(i);
+  if(missing.length&&rng()<FIND_CHANCE)a.owned|=1<<missing[Math.floor(rng()*missing.length)];
   return a;
 }
 export function upgradeArmory(value,kind){

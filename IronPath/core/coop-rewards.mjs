@@ -1,13 +1,13 @@
-import {WAVE_COUNT,MAX_WAVE_MASK} from './combat.mjs?v=20261125-aim15';
-import {rewardWave} from './armory.mjs?v=20261112-tagless1';
+import {WAVE_COUNT,MAX_WAVE_MASK} from './combat.mjs?v=20261121-fund1';
+import {rewardWave} from './armory.mjs?v=20261121-fund1';
 import {waveXP} from './progression.mjs?v=20261105-prestige1';
-import {rewardDelta} from './run-results.mjs?v=20261125-aim15';
+import {rewardDelta} from './run-results.mjs?v=20261121-fund1';
 import {applyWorkshopWaveCredit} from '../workshop/workshop-wave-credit.mjs?v=20261112-tagless1';
-import {initializeWireWorkshop,decodeWorkshop} from '../workshop/workshop-wire.mjs?v=20261125-aim15';
+import {initializeWireWorkshop,decodeWorkshop} from '../workshop/workshop-wire.mjs?v=20261121-fund1';
 
 // Idempotent, per-account credits. One transaction changes XP and the match's
 // wave receipt together; the player-host is not trusted or cheat-proof.
-export function createCoopRewardQueue({db,auth,sdk,partyId,block=0,onStatus=()=>{},onChange=()=>{},clock=Date.now,workshop=false}){
+export function createCoopRewardQueue({db,auth,sdk,partyId,block=0,onStatus=()=>{},onChange=()=>{},clock=Date.now,workshop=false,rng=Math.random}){
   const uid=auth?.currentUser?.uid;
   if(!db||!uid||!sdk||typeof sdk.ref!=='function'||typeof sdk.onValue!=='function'||typeof sdk.runTransaction!=='function'||!/^[a-f0-9]{32}$/.test(partyId)||!Number.isSafeInteger(block)||block<0||typeof onStatus!=='function'||typeof onChange!=='function')throw new Error('Invalid reward queue');
   const receiptId=block===0?partyId:((BigInt('0x'+partyId)+BigInt(block))%(1n<<128n)).toString(16).padStart(32,'0');
@@ -38,8 +38,8 @@ export function createCoopRewardQueue({db,auth,sdk,partyId,block=0,onStatus=()=>
         if(!added){alreadyGranted=true;return current;}
         // Gated workshop alpha: the same transaction also credits components,
         // preserved legacy unlocks and the coop receipt. Client-reported results.
-        if(workshop){const credited=applyWorkshopWaveCredit(current.workshop?current:initializeWireWorkshop(current)??{}, {kind:'coop',receiptId,mask,block});if(!credited||!decodeWorkshop(credited.workshop))return undefined;before=current;return credited;}
-        let xp=0,armory=current.armory;for(let wave=1;wave<=WAVE_COUNT;wave++)if(added&(1<<(wave-1))){const actualWave=block*WAVE_COUNT+wave;xp+=waveXP(actualWave);armory=rewardWave(armory,actualWave);}
+        if(workshop){const credited=applyWorkshopWaveCredit(current.workshop?current:initializeWireWorkshop(current)??{}, {kind:'coop',receiptId,mask,block,rng});if(!credited||!decodeWorkshop(credited.workshop))return undefined;before=current;return credited;}
+        let xp=0,armory=current.armory;for(let wave=1;wave<=WAVE_COUNT;wave++)if(added&(1<<(wave-1))){const actualWave=block*WAVE_COUNT+wave;xp+=waveXP(actualWave);armory=rewardWave(armory,actualWave,rng);}
         if(current.xp+xp>10000000)return undefined;
         before=current;return {...current,xp:current.xp+xp,armory,coopRewards:{...receipts,[receiptId]:old|mask}};
       },{applyLocally:false});
