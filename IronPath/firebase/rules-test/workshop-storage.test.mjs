@@ -51,7 +51,7 @@ test('concurrent completed-wave replays credit a boss only once',async()=>{
  try{
   const outcomes=await Promise.all([ra,rb].map(reference=>runTransaction(reference,current=>applyWorkshopWaveCredit(current,options)??undefined,{applyLocally:false})));
   assert.equal(outcomes.filter(result=>result.committed).length,1);
-  const saved=(await get(ra)).val();assert.equal(saved.xp,260);assert.equal(saved.armory.scrap,110); // five waves of plain scrap; the old anchor duplicate bonus is gone (IPL-0138)
+  const saved=(await get(ra)).val();assert.equal(saved.xp,260);assert.equal(saved.armory.scrap,130); // five waves of plain scrap + the wave-5 boss; the old anchor duplicate bonus is gone (IPL-0138)
   assert.equal(decodeWorkshop(saved.workshop).components,1);assert.equal(saved.coopRewards[receiptId],31);assert.equal(saved.coopRewards.abcd,31);assert.equal(saved.armory.fortify,3);
  }finally{stopA();stopB();}
 });
