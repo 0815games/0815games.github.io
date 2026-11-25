@@ -1222,8 +1222,13 @@ function drawDeco(ctx,deco,theme,notify,scale=1){
       ctx.save();ctx.translate(d.x,d.y);
       // Grounding comes baked into the V3 sprites: they sit on their own
       // earthen plinth with a soft contact shadow, exactly like the towers.
-      // The old dark clearing ovals doubled that shadow into a smudge.
+      // On top of that a two-step silhouette shadow (reported: the whole
+      // field reads flat, buildings "go under" the ground) - it follows the
+      // ink outline, so every piece separates from the busy tile mosaic.
+      // The terrain layer caches this once; no per-frame cost.
+      ctx.filter='drop-shadow(0 1.5px 1.5px rgba(8,12,8,.55)) drop-shadow(0 4px 6px rgba(8,12,8,.32))';
       ctx.drawImage(artwork,-w/2,13-h,w,h);
+      ctx.filter='none';
       ctx.restore();continue;
     }
     ctx.save();ctx.translate(d.x,d.y);if(d.rot)ctx.rotate(Math.PI/2);
