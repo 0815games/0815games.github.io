@@ -1,8 +1,8 @@
 import {characterProgress} from './progression.mjs?v=20261105-prestige1';
 import {readArmory,ITEMS} from './armory.mjs?v=20261112-tagless1';
-import {parseBuild,webBonuses,abilityName,specialistUnlocked,SKILL_PATH_MAP} from './skills.mjs?v=20261125-aim15';
-import {decodeWorkshop} from '../workshop/workshop-wire.mjs?v=20261125-aim15';
-import {captureWorkshopLoadout,workshopEffects} from '../workshop/workshop-effects.mjs?v=20261125-aim15';
+import {parseBuild,webBonuses,abilityName,specialistUnlocked,SKILL_PATH_MAP} from './skills.mjs?v=20261121-fund1';
+import {decodeWorkshop} from '../workshop/workshop-wire.mjs?v=20261121-fund1';
+import {captureWorkshopLoadout,workshopEffects} from '../workshop/workshop-effects.mjs?v=20261121-fund1';
 // Base loadout values only. Terrain, temporary perks and enemy defenses can
 // change the actual battlefield result; no simulation state is written here.
 //
