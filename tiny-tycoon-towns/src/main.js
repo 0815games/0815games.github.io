@@ -385,6 +385,7 @@ function showLoginScreen(mode, msg = '') {
     <p id="auth-msg" class="warn small" role="alert">${esc(msg)}</p>
     <button type="submit" class="primary">${isLogin ? 'Anmelden' : 'Konto erstellen'}</button>
     <button type="button" id="auth-switch" class="ghost">${isLogin ? 'Neu hier? Konto erstellen' : 'Schon registriert? Anmelden'}</button>
+    <a class="auth-admin-link" href="admin.html">Betreiber-Bereich</a>
   </form>`;
   $('#auth-switch').addEventListener('click', () => showLoginScreen(isLogin ? 'register' : 'login'));
   $('#auth-form').addEventListener('submit', async (e) => {
