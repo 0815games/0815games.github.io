@@ -27,7 +27,7 @@ import { checkTownName } from './town-names.js?v=20261125-bal7';
 import { friendsShell, mountFriends } from './friends-ui.js?v=20261125-bal7';
 import { createBoard } from './world/board.js?v=20261125-bal7';
 import { createLoginScene } from './world/login-scene.js?v=20261125-bal7';
-import { TUTORIAL_STEPS, HELP_SECTIONS } from './tutorial.js?v=20261125-bal7';
+import { TUTORIAL_STEPS, HELP_SECTIONS, CHECK_LABELS, tutorialResume, tutorialStored } from './tutorial.js?v=20261125-bal7';
 import { createVersionUI } from './version-ui.mjs?v=20261125-bal7';
 import { startAfkWatch, showAfkOverlay } from './afk.js?v=20261125-bal7';
 import { fullResources, fillPercent } from './stock-dock.js?v=20261125-bal7';
@@ -777,25 +777,35 @@ function endTutorial() {
 
 function saveTutorialStep(step) {
   if (!state) return;
-  dispatch(setTutorialStep(state, Math.min(step, TUTORIAL_STEPS.length)));
+  dispatch(setTutorialStep(state, tutorialStored(Math.min(step, TUTORIAL_STEPS.length))));
 }
 
-/** Hinweis und Knopf im offenen Schritt nachziehen, sobald die Aufgabe erledigt ist. */
+/** Hinweis, Häkchen und Knopf im offenen Schritt nachziehen, sobald eine Aufgabe erledigt ist. */
 function refreshTutorialTask() {
   if (tutorialIndex === null) return;
   const step = TUTORIAL_STEPS[tutorialIndex];
+  const last = tutorialIndex === TUTORIAL_STEPS.length - 1;
+  if (step?.checklist) {
+    for (const t of step.checklist) {
+      const el = $(`#tut-check-${t}`);
+      if (!el) continue;
+      const done = tutorialTaskDone(state, t);
+      el.textContent = `${done ? '✓' : '○'} ${CHECK_LABELS[t]}`;
+      el.classList.toggle('done', done);
+    }
+    const next = $('#tut-next');
+    if (next) next.textContent = last ? 'Fertig' : 'Weiter';
+    return;
+  }
   if (!step?.task) return;
   const done = tutorialTaskDone(state, step.task);
   const hint = $('#tut-hint');
-  const next = $('#tut-next');
   if (hint) {
     hint.textContent = done ? 'Gut gemacht, du hast es ausprobiert.' : 'Probier es direkt aus. Oder wähle Später.';
     hint.classList.toggle('done', done);
   }
-  if (next) {
-    const last = tutorialIndex === TUTORIAL_STEPS.length - 1;
-    next.textContent = last ? 'Fertig' : done ? 'Weiter' : 'Später';
-  }
+  const next = $('#tut-next');
+  if (next) next.textContent = last ? 'Fertig' : done ? 'Weiter' : 'Später';
 }
 
 function showTutorialStep(index) {
@@ -812,6 +822,7 @@ function showTutorialStep(index) {
     <h2 id="tut-title">${esc(step.title)}</h2>
     <p>${esc(step.text)}</p>
     ${step.task ? '<p class="small tut-hint" id="tut-hint"></p>' : ''}
+    ${step.checklist ? `<ul class="tut-check">${step.checklist.map((t) => `<li id="tut-check-${t}"></li>`).join('')}</ul>` : ''}
     <p class="row">
       <button type="button" id="tut-skip" class="ghost">Überspringen</button>
       <button type="button" id="tut-next" class="primary">${last ? 'Fertig' : 'Weiter'}</button>
@@ -843,13 +854,39 @@ function showHelp() {
   openDialog(`<div class="dlg-body help">
     <h2 id="dlg-title">Hilfe</h2>
     ${sections}
-    <p class="row"><button type="button" id="help-close" class="primary">Schließen</button></p>
+    <p class="row"><button type="button" id="help-tut" class="ghost">Anleitung noch einmal</button><button type="button" id="help-close" class="primary">Schließen</button></p>
   </div>`);
   $('#help-close').addEventListener('click', closeDialog);
+  $('#help-tut').addEventListener('click', () => {
+    closeDialog();
+    saveTutorialStep(0);
+    showTutorialStep(0);
+  });
 }
 
+/** Beim Start einer Stadt einmal anbieten. Danach nur fortsetzen, was offen ist. */
 function maybeStartTutorial() {
-  if (state && (state.tutorialStep ?? 0) < TUTORIAL_STEPS.length) showTutorialStep(state.tutorialStep ?? 0);
+  if (!state) return;
+  const r = tutorialResume(state.tutorialStep ?? 0);
+  if (r === 'offer') return offerTutorial();
+  if (r !== null) showTutorialStep(r);
+}
+
+function offerTutorial() {
+  // Einmal gefragt: auch wer den Dialog nur schließt, bekommt ihn nicht wieder. Über Hilfe geht es jederzeit.
+  saveTutorialStep(TUTORIAL_STEPS.length);
+  openDialog(`<div class="dlg-body help">
+    <h2 id="dlg-title">Willkommen in deiner Stadt</h2>
+    <p>Möchtest du eine kurze Anleitung? Du baust selbst ein Wohnhaus, weist einen Arbeiter zu und prüfst am Ende, was steht.</p>
+    <p class="row"><button type="button" id="tut-offer-no" class="ghost">Nein danke</button><button type="button" id="tut-offer-yes" class="primary">Anleitung starten</button></p>
+  </div>`);
+  $('#tut-offer-yes').addEventListener('click', () => {
+    closeDialog();
+    saveTutorialStep(0);
+    showTutorialStep(0);
+  });
+  $('#tut-offer-no').addEventListener('click', closeDialog);
+  $('#tut-offer-yes').focus();
 }
 
 function tick() {

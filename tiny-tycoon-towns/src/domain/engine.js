@@ -256,7 +256,7 @@ export function toggleSell(state, { resource }) {
 
 /** Tutorial-Fortschritt pro Konto (wird mit dem Spielstand gespeichert). Reine Zustandsänderung. */
 export function setTutorialStep(state, step) {
-  if (!Number.isInteger(step) || step < 0 || step > 99) return fail(state, 'invalidStep');
+  if (!Number.isInteger(step) || step < 0 || step > 199) return fail(state, 'invalidStep');
   const s = clone(state);
   s.tutorialStep = step;
   return { state: s, events: [] };

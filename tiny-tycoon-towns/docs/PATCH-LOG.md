@@ -1122,3 +1122,22 @@ Ereignis ergänzt.
     nächsten Start, weil `maybeStartTutorial` nur bis zur Länge vergleicht. Das ist gewollt als Hinweis auf das Neue,
     kann aber auch als lästig empfunden werden. Entscheidung offen.
   - Nicht im Browser geprüft.
+
+### TTT-0066 – Tutorial: einmal anbieten, Schritt für Schritt prüfen (lokal, nicht veröffentlicht)
+
+- Auftrag des Nutzers: Das Tutorial soll bei Start einer Stadt einmal angeboten werden. Dann von Anfang bis Ende
+  durchgeführt werden, mit Gegencheck, ob alles gebaut wurde.
+- Angebot: Bei einer neuen Stadt (Stand 0) erscheint ein Dialog „Anleitung starten“ oder „Nein danke“. Wer den Dialog
+  nur schließt, wird nicht noch einmal gefragt. Über Hilfe („Anleitung noch einmal“) geht es jederzeit.
+- Aufgaben: „Gebäude bauen“ (Aufgabe `build`), „Wohnhaus bauen“ (`house`), „Arbeit und Lohn“ (`worker`).
+  Jede Aufgabe wartet auf die Aktion. „Später“ bleibt immer möglich.
+- Check am Ende: Liste mit ✓ und ○ für Gebäude, Wohnhaus und Arbeiter. Die Häkchen aktualisieren sich nach jeder Aktion.
+- Gespeicherter Stand (`state.tutorialStep`, Firebase-Regel: beliebige Zahl):
+  0 neu, 1 bis 7 alter Lauf, 8 alter Lauf fertig (bleibt ruhig), 100 + Schritt neuer Lauf.
+  Engine und Admin nehmen jetzt bis 199 statt 99.
+- Tests: `tests/tutorial.test.mjs` 3 neue Tests (Zuordnung der Werte, Bereich 199, Bezeichnungen der Check-Liste).
+  `tests/settlement.test.mjs`: Aufgabe `build`. `npm test` 176/176 grün. `npm run check` ohne Fehler.
+- Grenzen / offen:
+  - Die Schritte Spielfeld, Lager, Verkauf, Stadtlevel, Händler und Hilfe sind weiterhin Text. Nur die Bau- und Zuweisungs-
+    schritte prüfen die Aktion.
+  - Nicht im Browser geprüft.

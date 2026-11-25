@@ -15,8 +15,9 @@ export const TUTORIAL_STEPS = Object.freeze([
   },
   {
     title: 'Gebäude bauen',
-    text: 'Im Feld-Fenster baust du Gebäude. Mit den Pfeilen wählst du die Option. Jedes Gebäude braucht Münzen und Material.',
-    target: null,
+    text: 'Im Feld-Fenster baust du Gebäude. Mit den Pfeilen wählst du die Option. Jedes Gebäude braucht Münzen und Material. Probier es aus: Tippe auf ein freies Feld und baue ein Gebäude.',
+    target: '#board',
+    task: 'build',
   },
   {
     title: 'Lager und Reserve',
@@ -60,7 +61,37 @@ export const TUTORIAL_STEPS = Object.freeze([
     text: 'Gebäude und Wohnhäuser haben fünf sichtbare Stufen. Du erkennst sie am Bild. Die Bewohner wachsen langsam nach, bis zur Kapazität des Hauses.',
     target: null,
   },
+  {
+    title: 'Dein Check',
+    text: 'Hier siehst du, was du in diesem Tutorial gebaut und zugewiesen hast. Fehlt etwas, holst du es am Feld nach. Die Anleitung findest du jederzeit unter Hilfe.',
+    target: null,
+    checklist: ['build', 'house', 'worker'],
+  },
 ]);
+
+// Gespeichert wird state.tutorialStep:
+//   0 = noch nicht angeboten, 1 bis 7 = alter Lauf in Arbeit, 8 = alter Lauf fertig,
+//   100 + Schritt = neuer Lauf (100 + Länge = fertig).
+export const TUTORIAL_STORE_OFFSET = 100;
+
+export const CHECK_LABELS = Object.freeze({
+  build: 'Ein Gebäude gebaut',
+  house: 'Ein Wohnhaus gebaut',
+  worker: 'Einen Arbeiter zugewiesen',
+});
+
+/** Was beim Start passiert: 'offer' (Angebot zeigen), eine Schrittnummer oder null (nichts mehr). */
+export function tutorialResume(stored) {
+  const v = Number(stored) || 0;
+  if (v === 0) return 'offer';
+  if (v >= 1 && v <= 7) return v;
+  if (v >= TUTORIAL_STORE_OFFSET && v - TUTORIAL_STORE_OFFSET < TUTORIAL_STEPS.length) return v - TUTORIAL_STORE_OFFSET;
+  return null;
+}
+
+export function tutorialStored(step) {
+  return TUTORIAL_STORE_OFFSET + step;
+}
 
 // Übersicht unter „Hilfe“. Jeder Abschnitt hat eine Überschrift und Absätze.
 export const HELP_SECTIONS = Object.freeze([

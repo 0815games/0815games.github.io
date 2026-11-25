@@ -729,3 +729,6 @@ button.danger { background: #E4837A; border-color: var(--ink); }
 
 .tut-hint { color: var(--ink); opacity: 0.75; }
 .tut-hint.done { opacity: 1; font-weight: 700; }
+.tut-check { list-style: none; padding: 0; margin: 4px 0 8px; }
+.tut-check li { padding: 2px 0; opacity: 0.6; }
+.tut-check li.done { opacity: 1; font-weight: 700; }

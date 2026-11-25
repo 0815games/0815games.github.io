@@ -100,11 +100,13 @@ export function assignWorkers(houses, producers, manual, cfg) {
 
 /**
  * Ob die Aufgabe eines Tutorial-Schritts erledigt ist. Liest nur den Zustand.
- * house: mindestens ein Wohnhaus steht. worker: mindestens ein Arbeiter ist manuell zugewiesen.
+ * build: mindestens ein Gebäude außer dem Rathaus steht. house: ein Wohnhaus steht.
+ * worker: mindestens ein Arbeiter ist manuell zugewiesen.
  */
 export function tutorialTaskDone(state, task) {
   if (!state) return false;
   const tiles = Object.values(state.tiles);
+  if (task === 'build') return tiles.some((t) => t.building && t.building.id !== 'townHall');
   if (task === 'house') return tiles.some((t) => t.building?.id === 'house');
   if (task === 'worker') return tiles.some((t) => (t.building?.manual ?? []).some((m) => m.n > 0));
   return false;
