@@ -9,10 +9,12 @@ import {applyCommand, createPlayer} from '../core/match.mjs';
 import {createMatch, stepMatch} from '../core/simulation.mjs';
 import {strict as assert} from 'node:assert';
 
-test('legacy saves move up the weapon store and pay duplicate items as scrap',async()=>{
+test('every wave rolls the find: cold rolls pay scrap, sure rolls fill the locker',async()=>{
 let a=readArmory(null);assert.equal(a.scrap,0);assert.equal(upgradeArmory(a,'fortify'),null);assert.equal(equipArmory(a,1),null);
-a=rewardWave(a,1);a=rewardWave(a,2);assert.equal(a.scrap,20);assert.equal(a.owned,1);a=rewardWave(a,2);assert.equal(a.scrap,40,'duplicate item grants bonus scrap');
-a=upgradeArmory(a,'fortify');assert.equal(a.scrap,10);assert.equal(a.fortify,1);assert.equal(upgradeArmory(a,'fortify'),null);a=equipArmory(a,1);assert.equal(encodeLoadout(a),'1,0,1');assert.deepEqual(parseLoadout('4,0,1'),{fortify:0,plating:0,equipped:0});
+a=rewardWave(a,1,()=>1);a=rewardWave(a,2,()=>1);a=rewardWave(a,3,()=>1);a=rewardWave(a,4,()=>1);assert.equal(a.scrap,40);assert.equal(a.owned,0,'a cold roll finds nothing');
+a=rewardWave(a,5,()=>0);assert.equal(a.owned,1,'a sure roll takes the first missing piece');a=rewardWave(a,6,()=>0);assert.equal(a.owned,3);
+const full={...a,owned:1023};assert.equal(rewardWave(full,7,()=>0).owned,1023,'a complete locker cannot find more');assert.equal(rewardWave(full,7,()=>0).scrap,full.scrap+10);
+a=upgradeArmory(a,'fortify');assert.equal(a.scrap,30,'six waves of scrap, one upgrade');assert.equal(a.fortify,1);assert.equal(upgradeArmory(a,'fortify'),null);a=equipArmory(a,1);assert.equal(encodeLoadout(a),'1,0,1');assert.deepEqual(parseLoadout('4,0,1'),{fortify:0,plating:0,equipped:0});
 const player=(id,loadout)=>createPlayer(id,{name:id,gender:'male',loadout},500,300);
 const state=createMatch([player('a','1,1,2'),player('b','3,2,0')]);assert.equal(state.maxHp,140);assert.equal(state.plating,2,'highest player upgrade applies to shared bunker');
 state.wave=1;state.running=true;state.spawnLeft=5;state.spawnTimer=100;state.enemies.push({hp:100,segment:8,x:900,y:400,speed:0,damage:10});stepMatch(state);assert.equal(state.hp,132);
@@ -21,11 +23,11 @@ const strong=createMatch([player('a','0,0,1')]);strong.wave=1;strong.running=tru
 console.log('Armory progression, loot, and shared bunker tests passed.');
 });
 
-test('later waves unlock the expanded gear, and the pre-match upgrades reach the field',async()=>{
+test('finds fill the expanded gear, and the pre-match upgrades reach the field',async()=>{
 const old={scrap:300,fortify:2,plating:1,owned:7,equipped:1};let a=readArmory(old);
 assert.equal(a.scrap,300);assert.equal(a.fortify,2);assert.equal(a.repair,0);assert.equal(a.gun,0);assert.equal(encodeLoadout(a),'2,1,1');
 a=upgradeArmory(a,'repair');a=upgradeArmory(a,'gun');assert.equal(a.scrap,240);assert.equal(encodeLoadout(a),'2,1,1;1,1');assert.deepEqual(parseLoadout('2,1,1;1,1'),{fortify:2,plating:1,equipped:1,repair:1,gun:1});
-for(const wave of [8,10,12])a=rewardWave(a,wave);assert.equal(a.owned,63);assert.equal(equipArmory(a,6).equipped,6);const before=a.scrap;a=rewardWave(a,12);assert.equal(a.scrap,before+20);assert.equal(equipArmory({...a,owned:7},4),null);
+for(const wave of [8,10,12])a=rewardWave(a,wave,()=>0);assert.equal(a.owned,63,'three finds take the next missing pieces');assert.equal(equipArmory(a,6).equipped,6);const before=a.scrap;a=rewardWave(a,12,()=>1);assert.equal(a.scrap,before+10,'a cold roll pays plain scrap');assert.equal(equipArmory({...a,owned:7},4),null);
 assert.deepEqual(parseLoadout('1,1,11;1,1'),{fortify:0,plating:0,equipped:0});assert.equal(upgradeArmory({...a,repair:3},'repair'),null);
 const p=(id,loadout,x=500,y=300,skills)=>createPlayer(id,{name:id,gender:'female',loadout,skills,level:10},x,y);
 const solo=createMatch([p('solo','0,0,6;2,1')]);assert.equal(solo.money,150);assert.equal(solo.repair,2);assert.equal(solo.gun,1);

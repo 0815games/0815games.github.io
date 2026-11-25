@@ -23,6 +23,8 @@ import {projectFourGameView} from './core/four-game-view.mjs?v=20261125-aim15';
 import {createBattleViewportController} from './battle/battle-viewport-controller.mjs?v=20261125-aim15';
 import {drawInBattleViewport} from './battle/battle-viewport.mjs?v=20261125-aim15';
 import {waveRewardSummary,nextSteps} from './core/run-results.mjs?v=20261125-aim15';
+import {ITEMS} from './core/armory.mjs?v=20261125-aim15';
+import {decodeWorkshop} from './workshop/workshop-wire.mjs?v=20261125-aim15';
 import {reportRank} from './core/report-promotion.mjs?v=20261117-rank1';
 // The rank mark is painted by the kit that owns ranks; the report only asks which one.
 import {renderRankInsignia} from './core/rank-insignia.mjs?v=20261125-aim15';
@@ -192,13 +194,13 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     // A previous report can still be waiting to subscribe to the profile, before
     // any Firebase write promise exists. Keep unresolved reports across resets.
     for(const old of releaseReports)if(!old.pending&&!old.statsPending&&!old.failed&&!old.statsFailed&&!old.disconnected&&(!old.campaign||old.campaignSaved===true))releaseReports.delete(old);
-    const next={id,receiptId:null,mode:id?'coop':'solo',xp:0,scrap:0,items:[],levels:0,unlocks:[],pending:0,failed:false,statsPending:0,statsFailed:false,confirmedEarlier:false,finished:false,snapshot:null,playerId:null};releaseReports.add(next);return next;
+    const next={id,receiptId:null,mode:id?'coop':'solo',xp:0,scrap:0,items:[],found:[],stored:new Set(),levels:0,unlocks:[],pending:0,failed:false,statsPending:0,statsFailed:false,confirmedEarlier:false,finished:false,snapshot:null,playerId:null};releaseReports.add(next);return next;
   }
   // Every endless solo run gets one random receipt id; campaign sends null and keeps legacy saving.
   // Receipts are only sent when the gated workshop alpha is enabled, so the live
   // game never writes workshop fields before the candidate rules are approved.
   const runReceipt=()=>report&&!report.soloMission?report.receiptId:null;
-  function addReward(target,detail){if(!target||!detail?.delta)return;const d=detail.delta;target.xp+=d.xp;target.scrap+=d.scrap;target.levels+=d.levels;target.items.push(...d.items);target.unlocks.push(...(d.unlocks||[]));if(!target.profile||(detail.profile?.xp||0)>=(target.profile.xp||0))target.profile=detail.profile;}
+  function addReward(target,detail){if(!target||!detail?.delta)return;const d=detail.delta;target.xp+=d.xp;target.scrap+=d.scrap;target.levels+=d.levels;target.items.push(...d.items);target.found.push(...(d.foundIds||[]));target.unlocks.push(...(d.unlocks||[]));if(!target.profile||(detail.profile?.xp||0)>=(target.profile.xp||0))target.profile=detail.profile;}
   // Count the actual promise before it starts. A rejected or unconfirmed save
   // prevents an automatic update; a timeout is not evidence of cancellation.
   function trackReportSave(target,work,{reward=false,statistic=false}={}){
@@ -272,9 +274,36 @@ function renderResults(target){
     $('resultsTitle').textContent=tr(outcome);$('runResults').dataset.outcome=['Victory!','Mission complete!','Training complete!'].includes(outcome)?'victory':['Defeat','Mission failed','Bunker lost'].includes(outcome)?'defeat':'neutral';
     $('resultsOutcome').textContent=target.training?tr('TRAINING CONTRACT · FIRST DEPLOYMENT'):target.soloMission?tr('CAMPAIGN · {title}',{title:tr(target.soloMission.title).toUpperCase()}):tr(snapshot.fourInfo?.mode==='two-vs-two'?'2 VS 2 · SURVIVAL':snapshot.fourInfo?.mode==='four-coop'?'FOUR-PLAYER CO-OP':snapshot.mode==='versus'?'1 VS 1 · SURVIVAL':target.mode==='coop'?'CO-OP OPERATION':'SOLO OPERATION');
     $('resultsWaves').textContent=tr(waves.count===1?'{count} wave completed · reached wave {wave}':'{count} waves completed · reached wave {wave}',{count:waves.count,wave:snapshot.wave||0})+'\n'+tr('Wave reward value: {xp} XP',{xp:waves.xp})+'\n'+tr(target.mode==='coop'&&snapshot.mode!=='versus'?'{count} enemies defeated (team)':'{count} enemies defeated',{count:snapshot.lootKills||0});
-    $('resultsRewards').textContent=tr('Confirmed during this session: +{xp} XP · +{scrap} scrap',{xp:target.xp,scrap:target.scrap})+(target.items.length?'\n'+tr('New equipment: {items}',{items:target.items.map(x=>tr(x)).join(', ')}):'');
+    $('resultsRewards').textContent=tr('Confirmed during this session: +{xp} XP · +{scrap} scrap',{xp:target.xp,scrap:target.scrap})+(target.items.length?'\n'+tr('FOUND: {items}',{items:target.items.map(x=>tr(x)).join(', ')}):'');
     $('resultsStatWaves').textContent=String(waves.count);$('resultsStatEnemies').textContent=String(snapshot.lootKills||0);$('resultsEnemiesLabel').textContent=tr(target.mode==='coop'&&snapshot.mode!=='versus'?'ENEMIES DEFEATED · TEAM':'ENEMIES DEFEATED');$('resultsStatDamage').textContent=String(Math.round(damage.reduce((sum,n)=>sum+(Number.isFinite(n)?n:0),0)));
-    $('resultsRewardXp').textContent=tr('+{value} XP',{value:target.xp});$('resultsRewardScrap').textContent=`+${target.scrap}`;$('resultsEquipment').hidden=!target.items.length;$('resultsEquipment').textContent=target.items.length?tr('New equipment: {items}',{items:target.items.map(x=>tr(x)).join(', ')}):'';
+    $('resultsRewardXp').textContent=tr('+{value} XP',{value:target.xp});$('resultsRewardScrap').textContent=`+${target.scrap}`;$('resultsEquipment').hidden=!target.items.length;$('resultsEquipment').textContent=target.items.length?tr('FOUND: {items}',{items:target.items.map(x=>tr(x)).join(', ')}):'';
+    // Found pieces offer the choice (IPL-0138): wear it right away or leave it
+    // in the store. Wearing goes through the workshop service like every other
+    // equip; storing is this report's own note and changes nothing.
+    const foundActions=$('resultsFoundActions');
+    // The field harnesses run renderResults over stubbed elements; the choice
+    // rows only exist where the DOM does.
+    if(foundActions&&typeof foundActions.replaceChildren==='function'&&typeof document.createElement==='function'){
+    foundActions.replaceChildren();
+    const worn=new Set(decodeWorkshop(account.getProfile()?.workshop)?.equipped||[]);
+    for(const id of target.found||[]){
+      const index=Number(id.slice(7))-1,item=ITEMS[index];if(!item)continue;
+      const row=document.createElement('div');row.className='debrief-found-row';
+      const name=document.createElement('strong');name.textContent=tr(item.name);row.append(name);
+      const finish=text=>{const status=document.createElement('span');status.textContent=tr(text);row.append(status);};
+      if(worn.has(id))finish('TAKEN');
+      else if(target.stored.has(id))finish('STORED');
+      else{
+        const wear=document.createElement('button');wear.type='button';wear.textContent=tr('TAKE');wear.disabled=!!target.wearing;
+        wear.onclick=async()=>{target.wearing=true;renderResults(target);try{const result=await account.command({type:'equip',item:id});if(result?.status==='saved'){target.profile=result.profile;target.found=target.found.filter(other=>other!==id);}else if(result?.status!=='cancelled')finish('STORED');}finally{target.wearing=false;renderResults(target);}};
+        const store=document.createElement('button');store.type='button';store.className='is-secondary';store.textContent=tr('STORE');
+        store.onclick=()=>{target.stored.add(id);renderResults(target);};
+        row.append(wear,store);
+      }
+      foundActions.append(row);
+    }
+    foundActions.hidden=!foundActions.children.length;
+    }
     const currentProfile=account.getProfile(),profiles=[target.profile,currentProfile].filter(p=>Number.isSafeInteger(p?.xp)&&p.xp>=0),profile=profiles.sort((a,b)=>b.xp-a.xp)[0];$('resultsProgressSection').hidden=!profile;
     if(profile){const progress=characterProgress(profile.xp);$('resultsProgressLevel').textContent=tr('LEVEL {level}',{level:progress.level});$('resultsProgressBar').max=progress.required;$('resultsProgressBar').value=progress.current;$('resultsProgressText').textContent=tr('{current} / {required} XP to next level',{current:progress.current,required:progress.required});}
     // The rank sits next to the level because that is what a uniform shows:

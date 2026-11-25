@@ -127,7 +127,7 @@ export function createWorkshopView({document,root,getProfile,service,confirm,tra
   const legacy=el('section','workshop-legacy');
   legacy.append(el('h3','',tr('Existing equipment')));
   const legacyOwned=workshop.owned.filter(value=>value.startsWith('legacy-'));
-  if(!legacyOwned.length)legacy.append(el('p','',tr('No existing equipment yet. It is earned on waves 2, 4, 6, 8, 10, 12, 14, 16, 18 and 20.')));
+  if(!legacyOwned.length)legacy.append(el('p','',tr('No existing equipment yet. Every completed wave can find one of the ten pieces - FOUND in the report.')));
   for(const id of legacyOwned){
    const index=Number(id.slice(7))-1,item=ITEMS[index],taken=workshop.equipped.includes(id);
    const row=el('article','workshop-legacy-item');
