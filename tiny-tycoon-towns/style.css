@@ -669,6 +669,10 @@ button.danger { background: #E4837A; border-color: var(--ink); }
   width: 16px; height: 16px; margin: 0; padding: 0; border: 0; accent-color: var(--ink);
 }
 
+/* Handel-Knöpfe kleiner: Losschicken nicht mehr volle Breite, Abrechnen kompakt. Mindesthöhe 36 px. */
+.trade-form button.primary { min-height: 40px; font-size: 15px; padding: 6px 16px; justify-self: start; }
+.trade-list .trade-item button { min-height: 36px; padding: 4px 12px; font-size: 14px; }
+
 /* ---------- Lager unten links: Leiste, Mobile eingeklappt, Desktop mit allen Angaben ---------- */
 .stock-dock {
   position: fixed; left: 12px; bottom: 12px; z-index: 40;

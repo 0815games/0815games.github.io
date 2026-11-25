@@ -963,3 +963,14 @@ Ereignis ergänzt.
   - Der Zwei-Konten-Test auf zwei Geräten steht aus (Nutzer). Im Sandbox-Browser ist Firebase nicht erreichbar, daher keine Live-Prüfung.
   - Die Regeln für `friendRequests` und `friends` sind unverändert. Sie passen zum Ablauf (Anfrage senden, annehmen, ablehnen).
   - Keine Firebase-Regeländerung.
+
+### TTT-0057 – Handel-Menü: Knöpfe verkleinern (Welle `20261125-bal8`)
+
+- Auftrag des Nutzers: die Knöpfe im Handel-Menü verkleinern.
+- Änderung: `style.css`. „Losschicken“ (`.trade-form button.primary`) 40 px hoch, 15 px Schrift, nicht mehr volle Breite.
+  „Abrechnen“ in der Konvoi-Liste (`.trade-list .trade-item button`) 36 px hoch, 14 px Schrift.
+- Grenze: Die Mindesthöhe für Touch liegt sonst bei 44 px. Die Knöpfe bleiben darunter. Bitte am Handy prüfen,
+  ob das Antippen noch bequem ist. Sonst auf 44 px zurück.
+- Cache-Welle `20261125-bal7` → `20261125-bal8`. Stadtchronik DE/EN.
+- Tests: `npm test` und `npm run check` siehe Lauf unten. Reine CSS-Änderung, kein Test für Optik.
+- Nicht im Gerät oder Browser geprüft (Firebase in der Sandbox nicht erreichbar). Keine Firebase-Regeländerung.

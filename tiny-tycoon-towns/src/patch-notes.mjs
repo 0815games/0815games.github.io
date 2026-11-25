@@ -4,6 +4,16 @@
 
 export const RELEASED_PATCHES = [
   {
+    build: '20261125-bal8',
+    date: '2026-11-25',
+    items: [
+      {
+        de: 'Handel: Die Knöpfe „Losschicken“ und „Abrechnen“ sind kleiner. „Losschicken“ füllt nicht mehr die ganze Breite.',
+        en: 'Trade: the "Losschicken" and "Abrechnen" buttons are smaller. "Losschicken" no longer spans the full width.',
+      },
+    ],
+  },
+  {
     build: '20261125-bal7',
     date: '2026-11-25',
     items: [

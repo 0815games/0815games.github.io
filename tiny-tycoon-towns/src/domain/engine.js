@@ -1,16 +1,16 @@
 // Game engine: state creation, player actions and time advance.
 // Every exported action is (state, input, ctx) -> { state, events, error? }.
 // The input state is never mutated.
-import { generateTerrain } from './terrain.js?v=20261125-bal7';
-import { GRID, HALL, keyOf, parseKey, inBounds, isUnlocked } from './grid.js?v=20261125-bal7';
-import { checkPlacement, fieldsOf, fieldSlots } from './placement.js?v=20261125-bal7';
+import { generateTerrain } from './terrain.js?v=20261125-bal8';
+import { GRID, HALL, keyOf, parseKey, inBounds, isUnlocked } from './grid.js?v=20261125-bal8';
+import { checkPlacement, fieldsOf, fieldSlots } from './placement.js?v=20261125-bal8';
 import {
   classOf, buildCost, productionMultiplier, townLevelFor,
   storageCap, throughputPerMin, sellPrice, ratePerMin,
   FULL, fishingGround, soilOf, fishStock, forestHealth,
-} from './economy.js?v=20261125-bal7';
-import { merchantOffers } from './merchant.js?v=20261125-bal7';
-import { arriveConvoys, payoutFor } from './convoys.js?v=20261125-bal7';
+} from './economy.js?v=20261125-bal8';
+import { merchantOffers } from './merchant.js?v=20261125-bal8';
+import { arriveConvoys, payoutFor } from './convoys.js?v=20261125-bal8';
 
 export const SCHEMA_VERSION = 1;
 export const BIOMES = ['riverlands', 'deepwoods', 'highlands', 'coast'];
