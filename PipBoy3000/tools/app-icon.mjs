@@ -6,19 +6,22 @@
 //
 //   node tools/app-icon.mjs
 //
-// Warum nicht alles aus der SVG: bei 16 px ist ein Strich von 2.4 Einheiten
-// 0.38 px. Beim Weichzeichnen wird daraus eine graue Flaeche ohne Kontur -
-// genau der Fehler des alten Masken-Icons. Deshalb zwei Wege:
+// Das Motiv ist das des Lade-Kreisels vom Startbildschirm: zwei gruene Boegen
+// oben und unten, ein gelber Punktkranz als gegenlaeufiger Ring, in der Mitte
+// der Reaktor (dunkle Scheibe, gruener Ring, gruener Kern).
+//
+// Warum nicht alles aus der SVG: bei 16 px ist eine Bogenbreite von 8
+// Einheiten 1.3 Pixel. Beim Weichzeichnen wird daraus eine graue Flaeche ohne
+// Kontur - genau der Fehler des alten Masken-Icons. Deshalb zwei Wege:
 //
 //   1. ab 64 px    SVG rastern (density hoch, dann herunterrechnen)
 //   2. unter 64 px Pixelformel: pro Pixel entscheidet eine Bedingung, es gibt
-//                  nur zwei Farben. Kein Antialiasing, keine Graustufen.
+//                  nur die Farben des Motivs. Kein Antialiasing.
 //
-// Die Zahlen der Formel sind dieselben wie in der SVG: Scheibe r=44,
-// acht Bolzen von r=38 bis 48.5, Speichen 90/210/330 Grad, Nabe r=12,
-// Kernloch r=5. Wer eines von beiden aendert, muss das andere mitziehen -
-// tests/app-icon.test.mjs prueft, dass die Pixelformel genau zwei Farben
-// liefert.
+// Die Zahlen der Formel sind dieselben wie in der SVG: Boegen r=40 mit 12
+// Einheiten Breite ueber 150 Grad, gelber Ring 26..30, Scheibe r=27 mit
+// gruenem Ring bis 28.75, Kern r=13. Die kleine Fassung hat keinen Punktkranz -
+// zwoelf Punkte auf 32 px waeren zwoelf einzelne Pixel, also ein grauer Ring.
 //
 // Ausgeliefert wird aus dem Repo-Wurzelverzeichnis (GitHub Pages liefert
 // legacy aus), deshalb liegen die Dateien in shell/ und werden von dort
@@ -51,39 +54,37 @@ const PNG = [
   {name: 'apple-touch-icon.png', size: 180, typ: 'any'}
 ];
 
-// Das Motiv in Zahlen. Die SVG beschreibt dasselbe, nur als Pfade.
-// Das Motiv wird etwas eingezoomt gezeichnet, damit bei 16 px ein schwarzer
-// Rand bleibt. Ohne das kleben die Bolzen am Bildrand (bei r=47 bleiben 3
-// Einheiten = 0.48 px, also nichts).
-const SKALA = 0.92;
-
+// Das Motiv in Zahlen. Die SVG beschreibt dasselbe, nur als Pfade; die Werte
+// hier entsprechen dem Zweig <g id="mittel"> - die kraeftige Fassung ohne
+// Punktkranz, die auch fuer das Favicon gezeichnet wird.
 const MOTIV = {
-  skala: SKALA,
-  scheibe: 44,           // Aussenkante der Scheibe
-  bolzenAussen: 47,      // Bolzen reichen bis hierhin - nicht 50, sonst
-                         // klebt das Icon bei 16 px am Rand
-  bolzenBreiteGrad: 19, // Winkelbreite eines Bolzens (kraeftiger als die SVG:
-                        // bei 16 px ist ein Bolzen von 1.6 px Breite nicht mehr
-                        // als Bolzen zu erkennen)
-  bolzen: 8,             // Verriegelungsbolzen am Rand
-  speichenGrad: [90, 210, 330],  // drei Speichen, keine vier: so ist die
-                                 // Tuer auch bei 16 px nicht spiegelsymmetrisch
-  // Die kleinen Fassungen brauchen kraeftigere Speichen als die grosse -
-  // 10 Einheiten sind bei 16 px 1.6 Pixel und verschwinden. Die Werte hier
-  // entsprechen dem Zweig <g id="mittel"> in der SVG.
-  speichenBreite: 18,
-  speicheBis: 32,
-  nabe: 14,
-  loch: 6.5              // Kernloch
+  bogenR: 39,            // Mitte der beiden Boegen (oben und unten)
+  bogenBreite: 15,       // bei 16 px sind das 2.4 Pixel - duenn waere weg
+  bogenGrad: 130,        // Bogenweite; die Luecken links und rechts machen aus
+                         // dem Kreis einen Kreisel und keine Zielscheibe
+  bogenMitte: [0, 180],  // oben und unten
+  gelbInnen: 23,         // gelber Ring von ... bis. 8 Einheiten = 1.3 px bei
+  gelbAussen: 31,        // 16 px - schmaler wird zu Matsch
+  scheibe: 22,           // dunkle Scheibe
+  ringAussen: 22.75,     // gruener Ring darum
+  kern: 12               // gruener Kern
 };
 
-// Ein Bolzen ist ein Rechteck in Polarkoordinaten: zwischen zwei Winkeln und
-// zwei Radien. Als Winkelbreite gerechnet, damit aussen und innen gleich breit
-// bleibt - ein Rechteck im kartesischen Sinn wuerde nach aussen breiter.
-function bolzenTreffer(winkel, radius) {
-  const halb = MOTIV.bolzenBreiteGrad / 2;
-  for (let i = 0; i < MOTIV.bolzen; i++) {
-    let d = Math.abs(winkel - i * 360 / MOTIV.bolzen);
+// Die Farben des Motivs. Kein Farbverlauf, keine Zwischentoene - das ist der
+// ganze Witz der Pixelformel.
+const GRUEN = [0x39, 0xff, 0x14];
+const GELB = [0xea, 0xb3, 0x08];
+const GRUEN_DUNKEL = [0x00, 0x11, 0x00];   // Fuellung der Scheibe
+const SCHWARZ = [0x00, 0x00, 0x00];
+
+// Liegt der Punkt im Bogen? Zwei Boegen, je 150 Grad breit, oben und unten
+// zentriert. Der Radius entscheidet ueber die Dicke, der Winkel ueber die
+// Laenge - ohne das waeren es Klammern statt eines drehenden Rings.
+function bogenTreffer(winkel, radius) {
+  if (Math.abs(radius - MOTIV.bogenR) > MOTIV.bogenBreite / 2) return false;
+  const halb = MOTIV.bogenGrad / 2;
+  for (const mitte of MOTIV.bogenMitte) {
+    let d = Math.abs(winkel - mitte);
     d = Math.min(d, 360 - d);
     if (d <= halb) return true;
   }
@@ -91,8 +92,8 @@ function bolzenTreffer(winkel, radius) {
 }
 
 // Pixelgenaue Zeichnung fuer kleine Kantenlaengen.
-// Kein sharp-Resize, keine Interpolation: jeder Pixel ist entweder #39ff14
-// oder #000000. Das ist der Unterschied zwischen "erkennbar" und "Matsch".
+// Kein sharp-Resize, keine Interpolation: jeder Pixel ist eine der vier
+// Motivfarben. Das ist der Unterschied zwischen "erkennbar" und "Matsch".
 function zeichneKlein(kante) {
   const puffer = Buffer.alloc(kante * kante * 4);
   const mitte = kante / 2;
@@ -102,31 +103,23 @@ function zeichneKlein(kante) {
     for (let x = 0; x < kante; x++) {
       const dx = x + 0.5 - mitte;
       const dy = y + 0.5 - mitte;
-      // Radius in Motivkoordinaten: SKALA zieht das ganze Bild zum Rand hin
-      // zusammen, damit aussen ein schwarzer Rand bleibt.
-      const radius = Math.hypot(dx, dy) / einheit / MOTIV.skala;
+      const radius = Math.hypot(dx, dy) / einheit;
 
       let winkel = Math.atan2(dx, -dy) * 180 / Math.PI;
       if (winkel < 0) winkel += 360;
 
-      // Scheibe plus die Bolzen, die ueber sie hinausragen.
-      let gruen = radius <= MOTIV.scheibe || (radius <= MOTIV.bolzenAussen && bolzenTreffer(winkel, radius));
-      if (radius <= MOTIV.loch) gruen = false;
-
-      // Speichen: tangentiale Breite, nicht Winkelbreite - sonst waeren sie
-      // aussen breiter als innen.
-      if (radius > MOTIV.nabe - 1 && radius <= MOTIV.speicheBis) {
-        for (const s of MOTIV.speichenGrad) {
-          let d = Math.abs(winkel - s);
-          d = Math.min(d, 360 - d);
-          if (d * Math.PI / 180 * radius <= MOTIV.speichenBreite / 2) gruen = false;
-        }
-      }
+      // Von aussen nach innen: Boegen, gelber Ring, gruener Ring, Scheibe, Kern.
+      let farbe = SCHWARZ;
+      if (bogenTreffer(winkel, radius)) farbe = GRUEN;
+      if (radius >= MOTIV.gelbInnen && radius <= MOTIV.gelbAussen) farbe = GELB;
+      if (radius <= MOTIV.scheibe) farbe = GRUEN_DUNKEL;
+      if (radius <= MOTIV.ringAussen && radius > MOTIV.scheibe) farbe = GRUEN;
+      if (radius <= MOTIV.kern) farbe = GRUEN;
 
       const i = (y * kante + x) * 4;
-      puffer[i] = gruen ? 0x39 : 0x00;
-      puffer[i + 1] = gruen ? 0xff : 0x00;
-      puffer[i + 2] = gruen ? 0x14 : 0x00;
+      puffer[i] = farbe[0];
+      puffer[i + 1] = farbe[1];
+      puffer[i + 2] = farbe[2];
       puffer[i + 3] = 0xff;
     }
   }
@@ -155,7 +148,7 @@ async function quadrat(seite) {
 
 // Ab hier wird geschrieben. Vorher nichts: das Modul ist auch als Bibliothek
 // importierbar (tools/emblem.mjs holt sich MOTIV und bolzenTreffer von hier).
-export {MOTIV, bolzenTreffer, zeichneKlein, RASTER_AB};
+export {MOTIV, bogenTreffer, zeichneKlein, RASTER_AB};
 
 for (const {name, size, typ} of PNG) {
   let bild = await quadrat(typ === 'maskable' ? Math.round(size * 0.8) : size);

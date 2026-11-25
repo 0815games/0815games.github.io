@@ -163,7 +163,7 @@ function farbzahlen({data, kanaele}) {
   return gesehen;
 }
 
-test('die kleinen Groessen bestehen aus genau zwei Farben', async () => {
+test('die kleinen Groessen bestehen nur aus den Farben des Motivs', async () => {
   // 16 und 32 px liegen im ICO, das der Browser-Tab benutzt. Wird dort
   // weichgezeichnet, entstehen hunderte Zwischentoene - und das Motiv
   // verschwindet in Grau. Deshalb: nur #39ff14 und #000000.
@@ -182,20 +182,26 @@ test('die kleinen Groessen bestehen aus genau zwei Farben', async () => {
     writeFileSync(datei, puffer.subarray(versatz, versatz + laenge));
     try {
       const farben = farbzahlen(await roh(datei));
-      assert.ok(farben.size <= 4,
-        `${kante}px: ${farben.size} Farben - das wird beim Verkleinern Matsch (${[...farben.keys()].slice(0, 6).join(' | ')})`);
+      // Das Motiv hat vier Farben: Leuchtgruen, Gelb, das dunkle Gruen der
+      // Scheibe und Schwarz. Mehr heisst weichgezeichnet und damit Matsch.
+      const erlaubt = new Set(['57,255,20', '234,179,8', '0,17,0', '0,0,0']);
+      const fremd = [...farben.keys()].filter(f => !erlaubt.has(f));
+      assert.equal(fremd.length, 0,
+        `${kante}px: fremde Farben - das wird beim Verkleinern Matsch (${fremd.slice(0, 6).join(' | ')})`);
     } finally {
       unlinkSync(datei);
     }
   }
 });
 
-test('das Motiv ist bei 16 px noch eine Tuer, kein Fleck', async () => {
-  // Drei Messungen an der 16er-Fassung:
-  //  1. die Mitte ist dunkel (Kernloch) - ein voller Fleck haette dort Gruen
-  //  2. es gibt eine helle Nabe zwischen Kern und Rand (die Speichen ringsum
-  //     sind dunkel, die Nabe nicht)
-  //  3. der Rand ist dunkel - das Motiv hat Luft zum Rand
+test('das Motiv ist bei 16 px noch der Kreisel, kein Fleck', async () => {
+  // Der Kreisel hat drei Merkmale, und alle drei muessen bei 16 px messbar
+  // sein. Ein gruener Punkt haette keines davon - das war der Fehler des
+  // alten Masken-Icons.
+  //  1. die Mitte ist hell (der Reaktorkern)
+  //  2. zwischen Kern und Rand liegt Gelb (der gegenlaeufige Ring)
+  //  3. oben und unten ist es gruen, links und rechts nicht (die Boegen,
+  //     also die Luecken des Kreisels)
   const puffer = readFileSync(join(ROOT, 'favicon.ico'));
   const eintrag = 6;                       // erster Eintrag = 16 px
   const laenge = puffer.readUInt32LE(eintrag + 8);
@@ -207,28 +213,44 @@ test('das Motiv ist bei 16 px noch eine Tuer, kein Fleck', async () => {
   const {unlinkSync} = await import('node:fs');
   unlinkSync(datei);
 
-  const gruen = (x, y) => {
+  const pixel = (x, y) => {
     const i = (y * bild.breite + x) * bild.kanaele;
-    return bild.data[i + 1] > 100;         // G-Kanal
+    return [bild.data[i], bild.data[i + 1], bild.data[i + 2]];
   };
   const mitte = Math.floor(bild.breite / 2);
-  assert.equal(gruen(mitte, mitte), false, 'die Mitte ist zugemalt - kein Kernloch erkennbar');
+  const istGruen = ([r, g, b]) => g > 120 && r < 120;
+  const istGelb = ([r, g, b]) => r > 120 && g > 90 && b < 120;
 
-  // Nabe: direkt ausserhalb des Kernlochs liegt Gruen. Bei r=14 von 100 sind
-  // das bei 16 px knapp 2 Pixel - die Nabe ist der letzte Rest Motiv, der
-  // uebrig bleibt, wenn die Speichen schon wegbrechen.
-  assert.equal(gruen(mitte, mitte - 2), true,
-    'zwischen Kern und Rand ist nichts - das Motiv ist bei 16 px leer');
+  assert.equal(istGruen(pixel(mitte, mitte)), true, 'der Reaktorkern fehlt - die Mitte ist dunkel');
 
-  // Rand: die aeusserste Zeile bleibt schwarz, sonst klebt das Icon am Rand.
-  assert.equal(gruen(0, mitte), false, 'das Motiv beruehrt den linken Rand');
-  assert.equal(gruen(bild.breite - 1, mitte), false, 'das Motiv beruehrt den rechten Rand');
+  // Gelb auf halbem Weg zwischen Kern und Rand, an einer Stelle ohne Bogen.
+  let gelbGefunden = false;
+  for (let d = 2; d <= mitte; d++) {
+    if (istGelb(pixel(mitte, mitte - d)) || istGelb(pixel(mitte, mitte + d)) ||
+        istGelb(pixel(mitte - d, mitte)) || istGelb(pixel(mitte + d, mitte))) {
+      gelbGefunden = true;
+      break;
+    }
+  }
+  assert.equal(gelbGefunden, true, 'kein gelber Ring - das Motiv ist bei 16 px einfarbig');
+
+  // Die Boegen oben und unten, die Luecken links und rechts. Genau das
+  // unterscheidet den Kreisel von einem geschlossenen Ring.
+  const rand = (x, y) => istGruen(pixel(x, y));
+  const oben = [1, 2, 3].some(d => rand(mitte, d) || rand(mitte - 1, d) || rand(mitte + 1, d));
+  const links = [1, 2, 3].some(d => rand(d, mitte) || rand(d, mitte - 1) || rand(d, mitte + 1));
+  assert.equal(oben, true, 'oben ist kein Bogen - das Motiv ist bei 16 px leer');
+  assert.equal(links, false, 'links ist zu - das ist ein geschlossener Ring, kein Kreisel');
 });
 
 test('die Vektorquelle beschreibt dieselben Maße wie das Werkzeug', async () => {
   // Zwei Beschreibungen desselben Motivs laufen auseinander, sobald eine
   // geaendert wird. Der Test haelt die Zahlen zusammen.
-  const svg = readFileSync(join(ROOT, 'docs/muster/app-icon.svg'), 'utf8');
+  const roh = readFileSync(join(ROOT, 'docs/muster/app-icon.svg'), 'utf8');
+  // Kommentare raus: der Kopfkommentar nennt die Zweige beim Namen
+  // (<g id="mittel">), und indexOf wuerde sonst den Kommentar finden statt
+  // das Markup.
+  const svg = roh.replace(/<!--[\s\S]*?-->/g, '');
   const werkzeug = readFileSync(join(ROOT, 'tools', 'app-icon.mjs'), 'utf8');
 
   const motiv = werkzeug.match(/const MOTIV = \{([\s\S]*?)\};/);
@@ -238,42 +260,29 @@ test('die Vektorquelle beschreibt dieselben Maße wie das Werkzeug', async () =>
     assert.ok(treffer, `${name} fehlt in MOTIV`);
     return Number(treffer[1]);
   };
-  // speichenGrad ist eine Liste, kein Einzelwert.
-  const liste = (name) => {
-    const treffer = motiv[1].match(new RegExp(`${name}:\\s*\\[([^\\]]+)\\]`));
-    assert.ok(treffer, `${name} fehlt in MOTIV`);
-    return treffer[1].split(',').map(t => Number(t.trim()));
-  };
 
-  // Die Scheibe steht als r=... in beiden Zweigen der SVG.
-  assert.ok(svg.includes(`r="${zahl('scheibe')}"`), `Scheibe r=${zahl('scheibe')} fehlt in der SVG`);
-
-  // Kernloch und Nabe in BEIDEN Zweigen: ein Loch ohne Ring drumherum ist
-  // ein Punkt, und ein Punkt ist das alte Zielscheiben-Icon.
-  const gross = svg.slice(svg.indexOf('<g id="gross">'), svg.indexOf('<g id="mittel">'));
+  // Die Bogenradien und -breiten stehen im mittleren Zweig der SVG, weil die
+  // Pixelformel genau diese kraeftige Fassung nachzeichnet.
   const mittel = svg.slice(svg.indexOf('<g id="mittel">'));
-  for (const [name, zweig] of [['gross', gross], ['mittel', mittel]]) {
-    const loch = zweig.match(/r="([\d.]+)" fill="#000000"\/>\s*<\/g>/) ||
-                 zweig.match(/<circle cx="50" cy="50" r="([\d.]+)" fill="#000000"\/>/g);
-    assert.ok(zweig.includes('fill="#000000"'), `Zweig ${name} hat kein Kernloch`);
-    const loecher = [...zweig.matchAll(/<circle cx="50" cy="50" r="([\d.]+)" fill="#000000"/g)].map(m => Number(m[1]));
-    const naben = [...zweig.matchAll(/<circle cx="50" cy="50" r="([\d.]+)" fill="#39ff14"/g)].map(m => Number(m[1]));
-    assert.ok(loecher.length > 0, `Zweig ${name}: kein Kernloch`);
-    assert.ok(naben.length > 0, `Zweig ${name}: keine Nabe`);
-    assert.ok(Math.max(...naben) > Math.min(...loecher),
-      `Zweig ${name}: Nabe r=${Math.max(...naben)} ist nicht groesser als das Loch r=${Math.min(...loecher)}`);
-  }
+  assert.ok(mittel.includes(`A${zahl('bogenR')} ${zahl('bogenR')}`),
+    `Bogenradius r=${zahl('bogenR')} fehlt im mittleren Zweig`);
+  assert.ok(mittel.includes(`stroke-width="${zahl('bogenBreite')}"`),
+    `Bogenbreite ${zahl('bogenBreite')} fehlt im mittleren Zweig`);
 
-  // Die Bolzen: so viele Rechtecke mit rotate(0..315) wie MOTIV.bolzen sagt.
-  // Das ist der Unterschied zwischen Vault-Tuer und Zielscheibe - ohne sie
-  // ist es wieder ein Kreis mit Loechern.
-  const bolzen = (gross.match(/transform="rotate\(\d+ 50 50\)"\/>/g) || []).length;
-  assert.ok(bolzen >= zahl('bolzen'), `nur ${bolzen} gedrehte Formen im grossen Zweig - erwartet mindestens ${zahl('bolzen')}`);
+  // Beide Boegen: oben und unten. Ein einzelner Bogen waere ein Kreis mit
+  // einem Loch, kein Kreisel.
+  const boegen = (mittel.match(/A[\d.]+ [\d.]+ 0 [01] 1/g) || []).length;
+  assert.equal(boegen, 2, `${boegen} Boegen im mittleren Zweig - erwartet 2`);
 
-  // Drei Speichen, nicht vier: eine Tuer mit vier Speichen waere ein Kreuz
-  // und bei 16 px nicht mehr von einem Fenster zu unterscheiden.
-  const speichen = liste('speichenGrad');
-  assert.equal(speichen.length, 3, `MOTIV.speichenGrad nennt ${speichen.length} Speichen - erwartet 3`);
+  // Gelber Ring: Mitte und Breite muessen zusammenpassen.
+  const mitteGelb = (zahl('gelbInnen') + zahl('gelbAussen')) / 2;
+  const breiteGelb = zahl('gelbAussen') - zahl('gelbInnen');
+  assert.ok(Math.abs(mitteGelb - 27) < 0.01 && Math.abs(breiteGelb - 8) < 0.01,
+    `Gelb r=${mitteGelb} / Breite ${breiteGelb} - die SVG zeichnet r=27 mit Breite 8`);
+  assert.ok(mittel.includes('stroke="#eab308"'), 'kein gelber Ring im mittleren Zweig');
+
+  // Der Kern muss heller/groesser sein als nichts - sonst ist die Mitte leer.
+  assert.ok(zahl('kern') > 8, `Kern r=${zahl('kern')} ist bei 16 px kein Punkt mehr`);
 
   // Beide Zweige (gross/mittel) muessen vorhanden sein - sonst rastert das
   // Werkzeug eine leere Datei.

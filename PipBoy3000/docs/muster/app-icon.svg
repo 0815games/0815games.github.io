@@ -1,79 +1,57 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
   <!--
-    Pip-Boy 3003 - Vault-Tuer
+    Pip-Boy 3003 - App-Icon
 
-    DIESE DATEI IST DIE QUELLE DES MOTIVS. Zwei Stellen lesen sie:
+    DIESE DATEI IST DIE QUELLE ALLER ICON-GROESSEN.
+    tools/app-icon.mjs rastert sie und schreibt PNG, ICO und die ausgelieferte
+    SVG-Fassung. Nach jeder Aenderung:   npm run icons:app
 
-      tools/app-icon.mjs   rastert daraus Icon, Favicon und die
-                           ausgelieferte icon.svg
-      src/ui/ui_emblem.js  zeichnet dieselben Formen gross im Boot-Screen
-                           (ui_emblem.js ist erzeugt - nicht von Hand aendern)
+    Das Motiv ist das des Lade-Kreisels vom Startbildschirm: zwei gruene
+    Boegen oben und unten (der drehende Ring), ein gelber Punktkranz innen
+    (der gegenlaeufige Ring) und in der Mitte der Reaktor - dunkle Scheibe,
+    gruener Ring, gruener Kern.
 
-    Nach jeder Aenderung:   npm run bilder
+    Zwei Fassungen, weil ein Motiv allein nicht in jeder Groesse traegt:
+      ab 64 px    <g id="gross">  mit Punktkranz
+      darunter    <g id="mittel"> ohne Punkte, aber mit dickeren Boegen und
+                                  einem vollen gelben Ring. Zwoelf Punkte auf
+                                  16 px waeren zwoelf einzelne Pixel.
+    Unter 64 px keine SVG-Ableitung, sondern die Pixelformel in
+    tools/app-icon.mjs - dieselben Massen wie im mittleren Zweig.
 
-    Aufbau von aussen nach innen, wie an einer echten Vault-Tuer:
-      1. acht Verriegelungsbolzen am Rand - kurz und breit, damit sie bei
-         16 px nicht zu Staub zerfallen
-      2. die Scheibe
-      3. Nut-Ring knapp innen (nur in der grossen Fassung; bei 16 px wuerde
-         er die Flaeche in zwei duenne Ringe zerlegen)
-      4. drei massive Speichen - sie machen aus dem Zahnrad eine Tuer
-      5. Nabe mit Kernloch
-
-    Das alte Motiv war eine Zielscheibe: gleichmaessige Ringe und ein Punkt in
-    der Mitte. Marcel: "Das Logo ist haesslich." Eine Zielscheibe ist kein
-    Vault. Bolzen, Speichen und Kernloch sind es.
-
-    Geometrie (dieselben Zahlen stehen in tools/app-icon.mjs als MOTIV und in
-    tools/emblem.mjs als QUELLE):
-      Scheibe r=44 | Bolzen r=38..48.5, Breite 9 | Nut-Ring 38..41
-      Speichen 90/210/330 Grad, Breite 10, aussen r=39 | Nabe r=12 | Kernloch r=5
+    Zur Geschichte, damit es niemand wieder einbaut: vorher war das Motiv eine
+    Zielscheibe aus gleichmaessigen Ringen, dann kurz eine Vault-Tuer. Beides
+    war nicht das, was auf dem Startbildschirm steht. Das Icon zeigt jetzt, was
+    das Spiel zeigt.
   -->
   <rect width="100" height="100" fill="#000000"/>
 
-  <!-- Ab 120 px: mit Nut-Ring, der die Tuer eine Stufe dreidimensionaler macht -->
+  <!-- Ab 64 px: mit Punktkranz und duennem Innenring -->
   <g id="gross">
-    <g fill="#39ff14">
-      <rect x="45.5" y="3" width="9" height="8" transform="rotate(0 50 50)"/>
-      <rect x="45.5" y="3" width="9" height="8" transform="rotate(45 50 50)"/>
-      <rect x="45.5" y="3" width="9" height="8" transform="rotate(90 50 50)"/>
-      <rect x="45.5" y="3" width="9" height="8" transform="rotate(135 50 50)"/>
-      <rect x="45.5" y="3" width="9" height="8" transform="rotate(180 50 50)"/>
-      <rect x="45.5" y="3" width="9" height="8" transform="rotate(225 50 50)"/>
-      <rect x="45.5" y="3" width="9" height="8" transform="rotate(270 50 50)"/>
-      <rect x="45.5" y="3" width="9" height="8" transform="rotate(315 50 50)"/>
-    </g>
-    <circle cx="50" cy="50" r="44" fill="#39ff14"/>
-    <circle cx="50" cy="50" r="39.5" fill="none" stroke="#000000" stroke-width="3"/>
-    <g fill="#000000">
-      <rect x="45" y="11" width="10" height="28" transform="rotate(90 50 50)"/>
-      <rect x="45" y="11" width="10" height="28" transform="rotate(210 50 50)"/>
-      <rect x="45" y="11" width="10" height="28" transform="rotate(330 50 50)"/>
-    </g>
-    <circle cx="50" cy="50" r="12" fill="#39ff14"/>
-    <circle cx="50" cy="50" r="5" fill="#000000"/>
+      <path d="M10.40 39.39A41 41 0 0 1 89.60 39.39" fill="none" stroke="#39ff14" stroke-width="8" stroke-linecap="round"/>
+      <path d="M89.60 60.61A41 41 0 0 1 10.40 60.61" fill="none" stroke="#39ff14" stroke-width="8" stroke-linecap="round"/>
+      <circle cx="50.00" cy="18.50" r="2.1" fill="#eab308"/>
+      <circle cx="65.75" cy="22.72" r="2.1" fill="#eab308"/>
+      <circle cx="77.28" cy="34.25" r="2.1" fill="#eab308"/>
+      <circle cx="81.50" cy="50.00" r="2.1" fill="#eab308"/>
+      <circle cx="77.28" cy="65.75" r="2.1" fill="#eab308"/>
+      <circle cx="65.75" cy="77.28" r="2.1" fill="#eab308"/>
+      <circle cx="50.00" cy="81.50" r="2.1" fill="#eab308"/>
+      <circle cx="34.25" cy="77.28" r="2.1" fill="#eab308"/>
+      <circle cx="22.72" cy="65.75" r="2.1" fill="#eab308"/>
+      <circle cx="18.50" cy="50.00" r="2.1" fill="#eab308"/>
+      <circle cx="22.72" cy="34.25" r="2.1" fill="#eab308"/>
+      <circle cx="34.25" cy="22.72" r="2.1" fill="#eab308"/>
+      <circle cx="50" cy="50" r="23" fill="#001100" stroke="#39ff14" stroke-width="2"/>
+      <circle cx="50" cy="50" r="10" fill="#39ff14"/>
   </g>
 
-  <!-- 64-119 px: ohne Nut-Ring, kraeftigere Speichen und groessere Nabe -
-       sonst verschwinden sie beim Verkleinern zuerst -->
+  <!-- Kleine Fassungen: kraeftiger, ohne Punktkranz -->
   <g id="mittel">
-    <g fill="#39ff14">
-      <rect x="44" y="1.5" width="12" height="11.5" transform="rotate(0 50 50)"/>
-      <rect x="44" y="1.5" width="12" height="11.5" transform="rotate(45 50 50)"/>
-      <rect x="44" y="1.5" width="12" height="11.5" transform="rotate(90 50 50)"/>
-      <rect x="44" y="1.5" width="12" height="11.5" transform="rotate(135 50 50)"/>
-      <rect x="44" y="1.5" width="12" height="11.5" transform="rotate(180 50 50)"/>
-      <rect x="44" y="1.5" width="12" height="11.5" transform="rotate(225 50 50)"/>
-      <rect x="44" y="1.5" width="12" height="11.5" transform="rotate(270 50 50)"/>
-      <rect x="44" y="1.5" width="12" height="11.5" transform="rotate(315 50 50)"/>
-    </g>
-    <circle cx="50" cy="50" r="44" fill="#39ff14"/>
-    <g fill="#000000">
-      <rect x="41" y="18" width="18" height="26" transform="rotate(90 50 50)"/>
-      <rect x="41" y="18" width="18" height="26" transform="rotate(210 50 50)"/>
-      <rect x="41" y="18" width="18" height="26" transform="rotate(330 50 50)"/>
-    </g>
-    <circle cx="50" cy="50" r="14" fill="#39ff14"/>
-    <circle cx="50" cy="50" r="6.5" fill="#000000"/>
+      <path d="M14.65 33.52A39 39 0 0 1 85.35 33.52" fill="none" stroke="#39ff14" stroke-width="15" stroke-linecap="round"/>
+      <path d="M85.35 66.48A39 39 0 0 1 14.65 66.48" fill="none" stroke="#39ff14" stroke-width="15" stroke-linecap="round"/>
+      <circle cx="50" cy="50" r="27" fill="none" stroke="#eab308" stroke-width="8"/>
+      <circle cx="50" cy="50" r="22" fill="#001100" stroke="#39ff14" stroke-width="1.6"/>
+      <circle cx="50" cy="50" r="12" fill="#39ff14"/>
   </g>
 </svg>
