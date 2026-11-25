@@ -37,13 +37,37 @@ jobs:
           fi
 
       - name: Run experimental workshop storage tests (emulator-only rules)
-        run: npm run test:workshop
+        shell: bash
+        run: |
+          if npm run test:workshop > workshop-output.log 2>&1; then
+            cat workshop-output.log
+          else
+            cat workshop-output.log
+            python3 -c "from pathlib import Path; s=Path('workshop-output.log').read_text()[-3500:]; print('::error title=Firebase emulator output::'+s.replace('%','%25').replace('\\r','%0D').replace('\\n','%0A'))"
+            exit 1
+          fi
 
       - name: Run candidate workshop rules tests
-        run: npm run test:workshop-draft
+        shell: bash
+        run: |
+          if npm run test:workshop-draft > workshop-draft-output.log 2>&1; then
+            cat workshop-draft-output.log
+          else
+            cat workshop-draft-output.log
+            python3 -c "from pathlib import Path; s=Path('workshop-draft-output.log').read_text()[-3500:]; print('::error title=Firebase emulator output::'+s.replace('%','%25').replace('\\r','%0D').replace('\\n','%0A'))"
+            exit 1
+          fi
 
       - name: Test trusted-server workshop boundary
-        run: npm run test:workshop-server
+        shell: bash
+        run: |
+          if npm run test:workshop-server > workshop-server-output.log 2>&1; then
+            cat workshop-server-output.log
+          else
+            cat workshop-server-output.log
+            python3 -c "from pathlib import Path; s=Path('workshop-server-output.log').read_text()[-3500:]; print('::error title=Firebase emulator output::'+s.replace('%','%25').replace('\\r','%0D').replace('\\n','%0A'))"
+            exit 1
+          fi
 
       - name: Run four-player combined rules tests
         shell: bash
