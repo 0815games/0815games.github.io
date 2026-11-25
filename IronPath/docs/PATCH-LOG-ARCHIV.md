@@ -1,6 +1,6 @@
 # Iron Path – Patch-Log: Archiv
 
-Ältere Einträge IPL-0001 bis IPL-0114. Die neuesten 20 stehen in
+Ältere Einträge IPL-0001 bis IPL-0115. Die neuesten 20 stehen in
 [PATCH-LOG.md](PATCH-LOG.md); die Regeln für beide Dateien dort und in
 [`../../AGENTS.md`](../../AGENTS.md). Beim Verschieben wandert ein Eintrag immer
 vollständig einschließlich seiner Ereignis-Nachträge.
@@ -4652,4 +4652,19 @@ sie geprüft wurde.
   - `patch.mjs check --fast`: 0 Fehler. Gesamtsuite nach `git fetch --unshallow origin`: erste Fahrt 1298 Tests / 1 Fehler (`coach-highlight`-Allowlist kannte die neue Ankündigungs-Karte nicht – Test ergänzt, danach gezielt 6/6 grün); Schlussfahrt auf dem Commit-Stand: **1298 Tests, 1298 bestanden, 0 fehlgeschlagen, 0 übersprungen**.
 - **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet`. Commit, Push, PR `#376`, CI, Merge und Pages-Auslieferung werden als Ereignis-Nachtrag nachgetragen.
 - **Offen / nächster Schritt:** E5 Host-/Reconnect-Prüfung im Detail und menschliche Balance mit Block C (Betreiber testet ingame). Danach laut `AUSBAU-PLAN.md`: Regel-Zuwachsdeckel (Sicherheit).
+
+
+## IPL-0115 – Block E Scheibe 2: Host-/Reconnect-Prüfung im Detail (E5) und Balance-Nachmessung (keine Spieländerung, keine Cache-Welle)
+- **Zeit / Quelle:** 2026-11-23 UTC; Betreiber: „Und weiter" – Reihenfolge aus `docs/AUSBAU-PLAN.md` Punkt 1 (Block E fertigstellen) wird fortgesetzt.
+- **Block / Ziel:** E5-Prüfung der mit Scheibe 1 eingeführten Lebens-/Angriffs-/Reparaturzustände im Spieler-Host-Betrieb: Snapshot-/Checkpoint-Transport, Reconnect, Host-Restore, doppelte/verzögerte Befehle, Snapshot-Größe, Alt-Checkpoints. Dazu die automatisierte Balance-Nachmessung; die menschliche Balance mit Block C bleibt Betreiber-Prüfung im Spiel.
+- **Branch / Basis:** `arena/9f81c141-0815games-github-io` ab `667789684d3abf4b8bb928253c22edaae3278b34` (`main`, Merge PR `#376`).
+- **Änderungen / Dateien:**
+  - `IronPath/tests/block-e-host.test.mjs` (neu, 9 Fälle gegen `core/protocol.mjs`): (1) Snapshot trägt Soldatenleben/Schutz, Turmleben und die aktive Vorwarnung, als abgetrennter Klon; (2) doppelte Reparatur (gleiche Sequenz) zahlt exakt einmal, parallele Reparatur eines zweiten Spielers wird abgelehnt und kostet ihn nichts; (3) Checkpoint-Restore mitten in laufender Reparatur heilt exakt einmal in voller Höhe; (4) Restore mitten in der Vorwarnung landet den Schlag exakt einmal; (5) getrennter Soldat (`suspendPlayer` + `setPlayerActive(false)`) wird nicht getroffen und nicht anvisiert, nach Reconnect wieder anvisiert; (6) gefallener Soldat im Restore kehrt mit vollem Leben als Mitglied zurück (kein Disconnect-Ersatz); (7) Legacy-Checkpoint ohne E-Felder wird akzeptiert, ein unbeschädigter Alt-Turm gilt als heil statt als kaputt; (8) Restore-Versions-Gate bleibt, Kampf-Snapshot mit zwei Vorwarnungen < 32 KB; (9) Vierer-Koop-Snapshot zeigt allen dasselbe Turmleben.
+  - `IronPath/docs/PATCH-BLOECKE.md`: E5-Punkte 2–3 abgehakt (Transport-/Emulator-Ebene und menschliche Balance bleiben offen), veraltete Block-7-Übersichtszeile („5 %") nachgezogen (war im PR `#376` durch einen parallelen Edit an derselben Datei verloren gegangen).
+  - `IronPath/docs/AUSBAU-PLAN.md`: Punkt 1 fortgeschrieben (E2 + E5 erledigt, nur menschliche Balance offen).
+  - Log-Rotation `IPL-0095` ins Archiv (Haupt `IPL-0096…IPL-0115`, Archiv bis `IPL-0095`).
+- **Befund:** **Kein Codefehler gefunden.** Host, Protokoll und Simulation verhielten sich in allen neun Fällen bereits korrekt; die Zustände waren seit Scheibe 1 nur unbewiesen. Deshalb keine Spielcode-Änderung, keine Cache-Welle, keine Feldnotiz.
+- **Prüfungen:** `block-e-host` 9/9; `balance-suite` + `coop-balance` 18/18 (automatisierte Nachmessung, ~97 s); `patch.mjs check --fast` 0 Fehler (Log 115 Einträge lückenlos); Gesamtsuite 1307 Tests, 1306 bestanden, 1 übersprungen (bekannter `release-pages-site`-Flachklon-Skip; nach `git fetch --unshallow origin` gezielt 6/6 ohne Skip nachgeholt) – effektiv 1307/1307.
+- **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet`. Commit, Push, PR, CI und Merge werden nach tatsächlichem Ereignis nachgetragen. Da keine browsergeladene Datei ändert, ist keine Pages-Auslieferungsprüfung nötig; der Merge hält Tests und Doku auf `main` aktuell.
+- **Offen / nächster Schritt:** Menschliche Balance mit Block C (Betreiber im Spiel) und Emulator-Transportfälle für 2–4 Clients. Danach Punkt 2 der Reihenfolge: Sicherheit – Zuwachs-Deckel pro Schreibung in den Firebase-Fortschrittsregeln (additiver Kandidat + Publish-Datei, Betreiber veröffentlicht).
 
