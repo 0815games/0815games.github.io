@@ -25,7 +25,8 @@ test('solo reward receipt grows without clearing previously credited bits',async
 });
 test('wave credit transaction under candidate rules preserves workshop and existing progress',async()=>{
  const service=account();assert.equal((await service.initialize()).status,'saved');const r=ref(alice,'players/alice'),stop=await ready(r);
- try{const opts={kind:'solo',receiptId:id,mask:31};const credit=await runTransaction(r,current=>applyWorkshopWaveCredit(current,opts)??undefined,{applyLocally:false});assert.equal(credit.committed,true);const again=await runTransaction(r,current=>applyWorkshopWaveCredit(current,opts)??undefined,{applyLocally:false});assert.equal(again.committed,false);const p=(await get(r)).val();assert.equal(p.xp,1000);assert.equal(p.armory.scrap,170); // 100 start + 5 waves + wave-5 boss; the old wave-2 scope duplicate is gone (IPL-0138)assert.equal(decodeWorkshop(p.workshop).components,1);assert.equal(p.soloWorkshopReceipts[id],31);assert.equal(p.coopRewards[id],3);assert.equal(p.storyProgress,2);}finally{stop();}
+ try{const opts={kind:'solo',receiptId:id,mask:31};const credit=await runTransaction(r,current=>applyWorkshopWaveCredit(current,opts)??undefined,{applyLocally:false});assert.equal(credit.committed,true);const again=await runTransaction(r,current=>applyWorkshopWaveCredit(current,opts)??undefined,{applyLocally:false});assert.equal(again.committed,false);const p=(await get(r)).val();assert.equal(p.xp,1000);assert.equal(p.armory.scrap,170); // 100 start + 5 waves + wave-5 boss; no anchor duplicate (IPL-0138)
+ assert.equal(decodeWorkshop(p.workshop).components,1);assert.equal(p.soloWorkshopReceipts[id],31);assert.equal(p.coopRewards[id],3);assert.equal(p.storyProgress,2);}finally{stop();}
 });
 test('free-tier solo path initializes once and credits a run receipt under candidate rules',async()=>{
  const {applySoloWaveReward}=await import('../../workshop/workshop-solo-reward.mjs');
