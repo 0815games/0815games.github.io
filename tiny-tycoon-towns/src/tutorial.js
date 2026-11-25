@@ -20,12 +20,12 @@ export const TUTORIAL_STEPS = Object.freeze([
   },
   {
     title: 'Lager und Reserve',
-    text: 'Produkte landen im Lager. Unten links siehst du Lager und Geld. Von jeder Ressource bleiben 20 Einheiten als Reserve.',
+    text: 'Produkte landen im Lager. Unten links siehst du dein Inventar. Von jeder Ressource bleiben 20 Einheiten als Reserve.',
     target: '#stock-btn',
   },
   {
     title: 'Dein Rathaus verkauft',
-    text: 'Das Rathaus verkauft automatisch. Die Münzen siehst du unter Lager und Geld. Mehr Verkaufsleistung bringt der Marktplatz.',
+    text: 'Das Rathaus verkauft automatisch. Die Münzen siehst du im Inventar. Mehr Verkaufsleistung bringt der Marktplatz.',
     target: '#stock-btn',
   },
   {

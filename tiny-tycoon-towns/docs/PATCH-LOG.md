@@ -909,3 +909,39 @@ Ereignis ergänzt.
   `gstatic.com` nicht erreichbar sind und das Spiel dort nicht startet. Die Korrektur folgt aus dem Code, nicht aus
   einem Lauf im Spiel. Die Prüfung im Live-Spiel steht aus.
 - Kein Vercel verwendet (Nutzerwunsch). Keine Firebase-Regeländerung.
+
+### TTT-0054 – Handy-Zoom bis an die Gebäude (Welle `20261125-bal5`)
+
+- Auftrag des Nutzers: auf dem Handy so nah heranzoomen wie am Desktop.
+- Ursache: Die Grundgröße der Karte (`base = min(W/1400, H/880)`) ist auf schmalen Bildschirmen klein. Die Obergrenze
+  `K_MAX = 2,6` ergab dann nur einen Weltmaßstab von etwa 0,7. Die Detailansicht beginnt aber erst bei 0,75
+  (`DETAIL_MIN_ZOOM`), das Handy erreichte sie also nicht.
+- Änderung: `src/world/board.js`: `cameraMaxK(base)` rechnet die Obergrenze in Weltmaßstab. Der Desktop-Wert bleibt
+  (2,6), Handys erhalten dieselbe Nähe (Weltmaßstab 2,36). Gilt für Pinch, Mausrad und Tasten.
+- Neu: `tests/board-zoom.test.mjs` (4 Tests).
+- Cache-Welle `20261125-bal4` → `20261125-bal5`. Stadtchronik DE/EN.
+- Tests: `npm test` 151 Tests, 151 pass, 0 fail. `npm run check` ohne Fehler.
+- Grenzen: Nicht im Gerät geprüft. Die Firebase-Meldungen (permission_denied bei `profiles` und `sessions`) sind
+  **nicht** Teil dieses Patches. Die Regeln im Repo passen zu den geschriebenen Daten. Vermutlich läuft in der
+  Firebase-Konsole noch eine ältere Fassung. Prüfung ausstehend (siehe Antworttext). Keine Regeländerung in diesem Patch.
+
+### TTT-0055 – Startgebiet entschärfen und Inventar-Leiste (Welle `20261125-bal6`)
+
+- Auftrag des Nutzers: Der Nebel verdeckt den Anfang, weil im Startbereich zu viel Wasser, Wald und Berg liegt.
+  Option 2 gewählt (Startlayout entschärfen, kein Feldkauf). Zusätzlich: die orangene Leiste „Lager und Geld“ ist zu
+  grell. Sie soll ruhiger aussehen und anders heißen (Ressourcen oder Inventar).
+- Änderung Generator: `src/domain/terrain.js`. In der 6×6-Startfläche höchstens 4 Wasserkacheln (überzählige werden
+  Furt-Strand). Mindestens 12 Wiesenkacheln. Die Umwandlung betrifft nur Wald und Fels oberhalb der Mindestmengen
+  (Wald 4, Fels 2 bleiben). Berge werden nicht umgewandelt.
+- Messung (400 Seeds je Biom, nur die 36 Startfelder):
+  - Flusslande: Wasser Ø 4,0 (vorher Ø 5,8), Wiese Ø 22,5 (vorher Ø 23,5), Minimum Wiese 19.
+  - Tiefwald: Wasser Ø 3,7, Wiese Ø 12,9 (vorher Ø 12,5), Minimum Wiese 12.
+  - Hochland: Wasser 0, Wiese Ø 14,4, Minimum Wiese 11 (vorher nicht gemessen). Die Berge belegen Felder, die sich
+    nicht umwandeln lassen. Das Ziel „12“ gilt daher nicht in jedem Hochland-Start.
+  - Küste: Wasser Ø 1,8, Wiese Ø 20,2, Minimum Wiese 15.
+- Änderung Anzeige: `index.html` (Titel und Aria-Labels „Inventar“), `src/tutorial.js` (Texte), `style.css` (Leiste
+  hell, dünner Rahmen, Balken grau-braun, Rot nur bei vollem Lager). Die Logik der Leiste bleibt unverändert.
+- Cache-Welle `20261125-bal5` → `20261125-bal6`. Stadtchronik DE/EN.
+- Grenzen: Nicht im Browser oder Gerät geprüft. Das Biom-Gleichgewicht (Ertrag, XP) ist nicht neu gerechnet. Die
+  Startwerte ändern sich leicht, daher ist eine neue Simulationsrunde sinnvoll. Historische Einträge nennen weiter
+  „Lager und Geld“. Keine Firebase-Regeländerung.
