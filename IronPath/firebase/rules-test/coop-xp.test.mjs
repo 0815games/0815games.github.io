@@ -223,7 +223,10 @@ test('long-term progression stays backward compatible and validates new loadouts
 
 test('late-wave rewards unlock new equipment exactly once under progression rules',async()=>{
   await assertSucceeds(set(ref(alice,'players/alice'),{name:'Alice',gender:'female',xp:0,armory:{scrap:0,fortify:0,plating:0,owned:63,equipped:1}}));
-  const q=createCoopRewardQueue({db:alice,auth:{currentUser:{uid:'alice'}},sdk,partyId:party});q.observe(1<<13);
+  // IPL-0138: every wave rolls the find from the missing pool; a sure rng keeps
+  // the old expectation (wave 14 takes the first missing piece, bit 64) without
+  // leaving the rule test at the mercy of Math.random.
+  const q=createCoopRewardQueue({db:alice,auth:{currentUser:{uid:'alice'}},sdk,partyId:party,rng:()=>0});q.observe(1<<13);
   await until(async()=>((await get(ref(alice,'players/alice/armory/owned'))).val()&64)!==0);
   const first=(await get(ref(alice,'players/alice'))).val();assert.ok(first.xp>0);assert.equal(first.armory.scrap,10);assert.equal(first.armory.supply,0);
   const again=createCoopRewardQueue({db:alice,auth:{currentUser:{uid:'alice'}},sdk,partyId:party});again.observe(1<<13);await new Promise(r=>setTimeout(r,150));
