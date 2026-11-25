@@ -11,7 +11,7 @@
 // endless loop promotes roughly every few sessions, and Hauptmann at 15 is the
 // long-term goal rather than a ceiling. Everything at or beyond the last rank
 // stays there: no prestige cycles, no demotion, no storage.
-import {translateText as tr} from '../language.mjs?v=20261124-aim10';
+import {translateText as tr} from '../language.mjs?v=20261125-aim11';
 
 // Ordered lowest first; `min` is the level the rank is reached AT.
 export const RANKS=Object.freeze([

@@ -1,6 +1,6 @@
 # Iron Path – Patch-Log: Archiv
 
-Ältere Einträge IPL-0001 bis IPL-0112. Die neuesten 20 stehen in
+Ältere Einträge IPL-0001 bis IPL-0113. Die neuesten 20 stehen in
 [PATCH-LOG.md](PATCH-LOG.md); die Regeln für beide Dateien dort und in
 [`../../AGENTS.md`](../../AGENTS.md). Beim Verschieben wandert ein Eintrag immer
 vollständig einschließlich seiner Ereignis-Nachträge.
@@ -4620,4 +4620,18 @@ sie geprüft wurde.
 - **Prüfungen:** `node scripts/rules-publish-dry-run.mjs live-rules-20261123.json --candidate ENDLESS-LAST-RUN-TO-PUBLISH.json`: Live 200 Pfade, Kandidat 206 (6 neu), **Blocker 0, Prüfpunkte 0**, Exit 0, 16 Repo-Entwürfe quergeprüft. `node --test tests/endless-last-run-rules.test.mjs`: 2/2. Kein Cache-Stempel nötig (kein Client-Code); Gesamtsuite folgt im PR-Lauf.
 - **Git / PR / Release:** Wird mit PR-Nummer fortgeschrieben. Nach dem Merge stehen beide Dateien auf `main`; der GitHub-Link zur Publish-Datei geht an den Betreiber.
 - **Offen / nächster Schritt:** **Betreiber:** Publish-Datei in der Firebase Console einspielen (Backup liegt als Live-Export im Repo), danach eine Endlos-Runde beenden und `players/<uid>/endlessLastRun` in der Datenbank kontrollieren. Ab dann synchronisiert der bereits ausgelieferte Client (`20261123-endless5`) die letzte Runde auf alle Geräte. Block E Scheibe 2 bleibt eigenes Paket.
+
+
+## IPL-0113 – Boss-Kopfzeile entfernt, Sektor-Fallback als Funkbefehl, Lebensbalken immer sichtbar (Welle `20261123-life1`, PR `#375`)
+- **Zeit / Quelle:** 2026-11-23 UTC; Betreiber aus dem Spiel: „Alte kleine Boss meldung oben am Bildschirm rand kann entfernt werden inkl. der Lebensanzeige danach“, „Fallback Button nach ende der 10 Wellen … Spannende Funknachricht und kleine Animation … versetzungsnachricht und rückzug“, danach Schadensthema: „Anzeige beim Soldaten für Leben, Lebensbalken fehlt noch? Türme haben auch keine? Sollte schon werden.“
+- **Block / Ziel:** Aufräumen am Gefechtsbild plus erster Teilschritt von Block E Scheibe 2 (E2-Sichtbarkeit); dazu Ereignis-Nachtrag zu `IPL-0111`/`IPL-0112`: Der Betreiber meldete am 2026-11-23 „Rules published“ – die `endlessLastRun`-Regeln sind live, der Client schreibt die letzte Runde seitdem serverseitig.
+- **Branch / Basis:** `arena/adf6c2ff-0815games-github-io` ab `855b0643447fbe6ee7b91c5173095899297d5e51` (`main`, Merge PR `#374`). Commits `5d433c1` (Boss) und `2caa176` (Funk/Lebensbalken) gepusht, PR `#375` eröffnet; Cache-Welle `20261123-life1` mit Feldnotizen (`patch-notes.mjs`, `RELEASED_PATCHES[0]` = `life1`, PR `#375`).
+- **Änderungen / Dateien:**
+  - Boss: `#bossAlert` samt `#bossHealth`/`#bossHealthFill` aus `IronPath/index.html` entfernt; in `IronPath/game.js` der zugehörige DOM-Block gestrichen – das mittige Boss-Banner (`IPL-0104`) ist jetzt die einzige Boss-Ansage, Warnton bei Telegraphen-Wechsel und die Screenreader-Zeile `#bossAnnouncement` (eigenständiges `visually-hidden`-Element) bleiben. `.boss-alert`/`.boss-health`-Regeln aus `style.css` und drei Positionsregeln aus `field-command.css` entfernt. `tests/coop-ui.test.mjs` prüft jetzt Banner-Ansage, Warnungs-Ansage und die Abwesenheit des alten Alerts.
+  - Sektor-Fallback: `#sectorPanel` in `IronPath/index.html` neu inszeniert – Funk-Übertragung mit Porträt (`general-vance-portrait.jpg`), animierten Signalbalken, Kopfzeile „INCOMING TRANSMISSION · HQ“, Absender „GENERAL Vance · TRANSFER ORDER“ und Button „ACKNOWLEDGE · FALL BACK →“; Befehlstext in `game.js` als HQ-Befehl formuliert; Styles/Animationen (`sector-in`, `sector-signal`, `prefers-reduced-motion`-Ruhe) in `style.css`; deutsche Texte in `i18n/localization-de.mjs`. Mechanik (`advanceSector`, Erstattung, Panel-Logik) unverändert.
+  - Lebensbalken: `IronPath/core/cartoon-art.mjs` malt Soldaten- und Turm-Lebensbalken jetzt **immer** (vorher nur bei Schaden, daher im Spiel praktisch unsichtbar); volle Balken in Feldfarben grün/amber/rot wie bisher, ausgefallene Türme weiter dunkel mit Reparatur-Marke.
+  - Tests: `tests/menu-redesign.test.mjs` neuer Anker (kein `bossAlert`/`bossHealth` im Markup, Funk-Panel mit Signal/Porträt/Bestätigungs-Button, Animationen, kein `.boss-alert`-CSS).
+- **Prüfungen:** `coop-ui` 1/1 (großer Harness), `menu-redesign` 7/7, `cartoon-art`/`endless-retreat-viewport`/`language` 22/22 (echte Welle-10-Sektor-Fahrt inklusive). `patch.mjs check --fast`: 0 Fehler (2 Hinweise vor der Welle). Gesamtsuite und Browser-Fahrten folgen auf der Welle/in der CI; Sichtprüfung über die lokale Live-Vorschau.
+- **Git / PR / Release:** Wird mit Welle `20261123-life1` und PR-Nummer fortgeschrieben.
+- **Offen / nächster Schritt:** Aus Block E Scheibe 2 bleiben Treffer-Feedback im engeren Sinn und die Tutorial-Einführung (E2), die Host-/Reconnect-Prüfung im Detail (E5) und die menschliche Balance mit Block C. Geräteabnahmen erfolgen generell durch den Betreiber.
 

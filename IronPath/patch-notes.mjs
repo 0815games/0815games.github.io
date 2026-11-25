@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see docs/PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261124-aim10';
+import {getLanguage} from './language.mjs?v=20261125-aim11';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,17 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'aim11',build:'20261125-aim11',pr:454,
+    title:{en:'The Ground Joins the Ink · Toon Plates Along the Roads',de:'Der Boden kommt in die Tusche · Toon-Platten an den Wegen'},
+    shipped:[
+      {en:'The map floor is painted again in the units language: hard-edged ground plates with an ink seam instead of the soft oil-blend, flat colour fields per biome under a whisper of texture, the pale wash gone and the olive cast halved - so soldier, deco and road all stand on the same kind of ground.',de:'Der Kartenboden ist in der Sprache der Einheiten neu gemalt: hartkantige Bodenplatten mit Tusche-Naht statt weicher Ölfusion, flache Biome-Farbfelder unter einem Flüstern von Textur, der blasse Schleier raus und der Oliv-Cast halbiert - damit Soldat, Deko und Straße auf demselben Boden stehen.'},
+      {en:'Raised the cache wave to 20261125-aim11, because the whole field changed its floor: no device should fight with yesterdays eyes.',de:'Die Cache-Welle auf 20261125-aim11 erhöht, weil sich das ganze Feld seinen Boden änderte: Kein Gerät soll mit den Augen von gestern kämpfen.'},
+    ],
+    open:[
+      {en:'How the plate colours sit per biome is the operators call in the game - each theme palette is one table row and the seam weight one number.',de:'Wie die Plattenfarben pro Biom im Spiel sitzen, entscheidet der Betreiber - jede Theme-Palette ist eine Tabellenzeile und das Naht-Gewicht eine Zahl.'},
+    ]
+  },
   {
     id:'aim10',build:'20261124-aim10',pr:451,
     title:{en:'On the March · Units in the New Ink · Flags Along the Route',de:'Im Aufmarsch · Einheiten in der neuen Tusche · Fahnen am Weg'},
