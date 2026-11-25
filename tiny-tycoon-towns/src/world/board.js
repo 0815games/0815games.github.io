@@ -1,11 +1,22 @@
 // DOM-Brücke für die Weltansicht: Canvas, Kamera (Ziehen, Zoom), Tastatur, Animation.
 // Der Spielzustand kommt von außen (main.js). Diese Datei verändert ihn nie.
-import { toScreen } from './iso.js?v=20261125-bal4';
-import { renderWorld, pickTile, makeFx, stepFx, produceIcons, coinGain, dayFactor, GRID_SIZE, HALL } from './scene.js?v=20261125-bal4';
+import { toScreen } from './iso.js?v=20261125-bal5';
+import { renderWorld, pickTile, makeFx, stepFx, produceIcons, coinGain, dayFactor, GRID_SIZE, HALL } from './scene.js?v=20261125-bal5';
 
 const DRAG_PX = 6;
 const K_MIN = 0.45;
 const K_MAX = 2.6;
+// Größte Weltvergrößerung, die am Desktop (1280 × 800) erreichbar ist. Auf dem Handy ist die
+// Grundgröße (base) klein, deshalb würde K_MAX dort nur wenig vergrößern. Die Obergrenze wird
+// deshalb in Weltmaßstab gerechnet: gleiche Nähe wie am Desktop, auf jedem Gerät.
+const REF_BASE = Math.min(1280 / 1400, 800 / 880);
+const WORLD_ZOOM_MAX = REF_BASE * K_MAX;
+
+/** Größter Kamerafaktor k bei gegebener Grundgröße. Große Bildschirme behalten K_MAX. */
+export function cameraMaxK(base) {
+  if (!(base > 0)) return K_MAX;
+  return Math.max(K_MAX, WORLD_ZOOM_MAX / base);
+}
 
 /**
  * Baut die Weltansicht in `container` (das #board-Element).
@@ -93,7 +104,7 @@ export function createBoard(container, opts) {
     return Math.hypot(p.x - q.x, p.y - q.y);
   };
   const setZoom = (k) => {
-    cam.k = Math.min(K_MAX, Math.max(K_MIN, k));
+    cam.k = Math.min(cameraMaxK(base), Math.max(K_MIN, k));
     clampCam();
     dirty = true;
   };
@@ -172,7 +183,7 @@ export function createBoard(container, opts) {
     'wheel',
     (e) => {
       e.preventDefault();
-      cam.k = Math.min(K_MAX, Math.max(K_MIN, cam.k * Math.exp(-e.deltaY * 0.0012)));
+      cam.k = Math.min(cameraMaxK(base), Math.max(K_MIN, cam.k * Math.exp(-e.deltaY * 0.0012)));
       clampCam();
       dirty = true;
     },
@@ -193,7 +204,7 @@ export function createBoard(container, opts) {
       return;
     }
     if (e.key === '+' || e.key === '-') {
-      cam.k = Math.min(K_MAX, Math.max(K_MIN, cam.k * (e.key === '+' ? 1.2 : 1 / 1.2)));
+      cam.k = Math.min(cameraMaxK(base), Math.max(K_MIN, cam.k * (e.key === '+' ? 1.2 : 1 / 1.2)));
       clampCam();
       dirty = true;
     }

@@ -4,6 +4,16 @@
 
 export const RELEASED_PATCHES = [
   {
+    build: '20261125-bal5',
+    date: '2026-11-25',
+    items: [
+      {
+        de: 'Handy: Die Karte lässt sich jetzt so nah heranzoomen wie am Desktop, bis zu den Gebäuden.',
+        en: 'Phone: the map now zooms in as close as on desktop, down to the buildings.',
+      },
+    ],
+  },
+  {
     build: '20261125-bal4',
     date: '2026-11-25',
     items: [

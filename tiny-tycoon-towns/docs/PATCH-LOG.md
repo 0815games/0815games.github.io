@@ -909,3 +909,18 @@ Ereignis ergänzt.
   `gstatic.com` nicht erreichbar sind und das Spiel dort nicht startet. Die Korrektur folgt aus dem Code, nicht aus
   einem Lauf im Spiel. Die Prüfung im Live-Spiel steht aus.
 - Kein Vercel verwendet (Nutzerwunsch). Keine Firebase-Regeländerung.
+
+### TTT-0054 – Handy-Zoom bis an die Gebäude (Welle `20261125-bal5`)
+
+- Auftrag des Nutzers: auf dem Handy so nah heranzoomen wie am Desktop.
+- Ursache: Die Grundgröße der Karte (`base = min(W/1400, H/880)`) ist auf schmalen Bildschirmen klein. Die Obergrenze
+  `K_MAX = 2,6` ergab dann nur einen Weltmaßstab von etwa 0,7. Die Detailansicht beginnt aber erst bei 0,75
+  (`DETAIL_MIN_ZOOM`), das Handy erreichte sie also nicht.
+- Änderung: `src/world/board.js`: `cameraMaxK(base)` rechnet die Obergrenze in Weltmaßstab. Der Desktop-Wert bleibt
+  (2,6), Handys erhalten dieselbe Nähe (Weltmaßstab 2,36). Gilt für Pinch, Mausrad und Tasten.
+- Neu: `tests/board-zoom.test.mjs` (4 Tests).
+- Cache-Welle `20261125-bal4` → `20261125-bal5`. Stadtchronik DE/EN.
+- Tests: `npm test` 151 Tests, 151 pass, 0 fail. `npm run check` ohne Fehler.
+- Grenzen: Nicht im Gerät geprüft. Die Firebase-Meldungen (permission_denied bei `profiles` und `sessions`) sind
+  **nicht** Teil dieses Patches. Die Regeln im Repo passen zu den geschriebenen Daten. Vermutlich läuft in der
+  Firebase-Konsole noch eine ältere Fassung. Prüfung ausstehend (siehe Antworttext). Keine Regeländerung in diesem Patch.
