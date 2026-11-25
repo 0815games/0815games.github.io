@@ -945,3 +945,21 @@ Ereignis ergänzt.
 - Grenzen: Nicht im Browser oder Gerät geprüft. Das Biom-Gleichgewicht (Ertrag, XP) ist nicht neu gerechnet. Die
   Startwerte ändern sich leicht, daher ist eine neue Simulationsrunde sinnvoll. Historische Einträge nennen weiter
   „Lager und Geld“. Keine Firebase-Regeländerung.
+
+### TTT-0056 – Freundschaftsanfragen: Popup nachholen (Welle `20261125-bal7`)
+
+- Auftrag des Nutzers: Freundschaftsanfragen (Popup und Badge) prüfen und fertigstellen. Badge und Popup waren
+  bereits gebaut (`src/main.js`, `src/friend-requests.js`, `style.css`).
+- Lücken, die im Code gefunden wurden:
+  - Kam eine Anfrage, bevor die Stadt geladen war, blieb das Popup aus. Nachgeholt wurde es nie.
+  - Lief ein anderes Fenster (Freunde, Lager, Angebot), blieb das Popup aus. Nach dem Schließen kam es nicht wieder.
+- Änderung:
+  - `src/friend-requests.js`: `canShowRequestPopup(...)` als reine Prüfung (Stadt geladen, gleiches Konto, kein Fenster offen).
+  - `src/main.js`: Prüfung nutzt diese Funktion. Nachprüfung beim Schließen von `#dlg` und `#stock-sheet` sowie beim Spielstart (`startGame`).
+- Tests: `tests/friend-requests.test.mjs` +1 Test (fünf Fälle der Prüfung). Probe: ohne die Fensterbedingung wird der Test rot,
+  mit ihr grün. `npm test` 152/152 grün, `npm run check` ohne Fehler.
+- Cache-Welle `20261125-bal6` → `20261125-bal7`. Stadtchronik DE/EN.
+- Grenzen / offen:
+  - Der Zwei-Konten-Test auf zwei Geräten steht aus (Nutzer). Im Sandbox-Browser ist Firebase nicht erreichbar, daher keine Live-Prüfung.
+  - Die Regeln für `friendRequests` und `friends` sind unverändert. Sie passen zum Ablauf (Anfrage senden, annehmen, ablehnen).
+  - Keine Firebase-Regeländerung.

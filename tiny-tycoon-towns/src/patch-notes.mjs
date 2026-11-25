@@ -4,6 +4,16 @@
 
 export const RELEASED_PATCHES = [
   {
+    build: '20261125-bal7',
+    date: '2026-11-25',
+    items: [
+      {
+        de: 'Freundschaftsanfragen: Eine Anfrage erscheint als Popup, sobald du spielst. Kommt sie, während ein anderes Fenster offen ist, erscheint sie danach. Am Menü zeigt ein roter Punkt die Anzahl offener Anfragen.',
+        en: 'Friend requests: a request pops up while you play. If it arrives while another window is open, it shows once that window closes. A red badge on the menu shows how many requests are open.',
+      },
+    ],
+  },
+  {
     build: '20261125-bal6',
     date: '2026-11-25',
     items: [
