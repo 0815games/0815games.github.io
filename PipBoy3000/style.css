@@ -71,6 +71,15 @@
     -webkit-overflow-scrolling: touch; /* Flüssiges Scrollen auf iOS */
 }
 
+/* Die Weltkarte wird mit einem Finger gezogen, mit zwei Fingern gezoomt und per
+   Tippen markiert. Ohne touch-action: none wertet der Mobilbrowser das Antippen
+   in #view-container (overflow-y: auto) als Scrollgeste und bricht touchend ab. */
+#world-map-canvas {
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
 /* BURGER MENÜ FIX
    Liegt direkt in #main-content (unterhalb von #game-header) bei top:0 right:0
    und ragt mit max-height:100% nie aus dem Kartenbereich heraus. */

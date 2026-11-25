@@ -152,7 +152,10 @@ export function createUpdateUI({document, window, fetcher = window?.fetch?.bind(
       text.className = 'popup-text text-green-700';
       jetzt.hidden = true;
     }
-    if (spaeter) spaeter.hidden = zustand.art !== 'veraltet' && zustand.art !== 'unerreichbar';
+    if (spaeter) {
+      spaeter.hidden = zustand.art !== 'veraltet' && zustand.art !== 'unerreichbar' && zustand.art !== 'geladen';
+      spaeter.textContent = zustand.art === 'geladen' ? 'OK' : TEXTE.spaeter;
+    }
     if (jetzt) jetzt.textContent = TEXTE.jetzt;
   }
 
@@ -243,7 +246,11 @@ export function createUpdateUI({document, window, fetcher = window?.fetch?.bind(
   }
 
   if (jetzt) jetzt.onclick = () => { if (ziel) neuLaden(ziel); };
-  if (spaeter) spaeter.onclick = () => { balken.hidden = true; sperreAktualisieren(); };
+  if (spaeter) spaeter.onclick = () => {
+    if (zustand && zustand.art === 'geladen') zustand = null;
+    balken.hidden = true;
+    sperreAktualisieren();
+  };
 
   return Object.freeze({start, stop, pruefen, get build() { return build; }, get zustand() { return zustand; }});
 }

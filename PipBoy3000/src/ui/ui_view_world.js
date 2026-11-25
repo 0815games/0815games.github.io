@@ -34,17 +34,27 @@ Object.assign(UI, {
         // Buffer Init
         this.updateWorldBuffer();
 
+        // `this` in den Ereignis-Handlern ist die Leinwand, nicht UI. Deshalb
+        // hier einmal festhalten: sonst landet ein `this.mapState` aus einem
+        // alten Objekt im Nichts, und der zweite Klick tut nichts mehr.
+        const karte = this.mapState;
+
         cvs.onmousedown = (e) => {
             if(e.button !== 0) return;
+            // Auf Touchscreens feuern manche Browser trotz preventDefault noch
+            // synthetische Maus-Ereignisse kurz nach touchend. Die duerfen den
+            // frisch gesetzten Marker weder verschieben noch doppelt ausloesen.
+            if (karte.letzterTouch && Date.now() - karte.letzterTouch < 500) return;
             karte.isDragging = true;
             karte.lastX = e.clientX;
             karte.lastY = e.clientY;
-            // Wo und wann die Bewegung begann. Ohne Startpunkt laesst sich
-            // "getippt" nicht von "gezogen" unterscheiden - und die Karte
-            // wird mit genau dieser Bewegung bedient.
+            // Wo die Bewegung begann und wie weit maximal gezogen wurde. Ohne
+            // maximale Ziehstrecke wuerde ein Hin-und-zurueck-Ziehen als Klick
+            // durchgehen, waehrend eine feste 500-ms-Sperre jedes ruhige Zielen
+            // verwirft.
             karte.downX = e.clientX;
             karte.downY = e.clientY;
-            karte.downZeit = Date.now();
+            karte.maxBewegt = 0;
             cvs.style.cursor = "grabbing";
         };
         
@@ -56,26 +66,22 @@ Object.assign(UI, {
                 karte.offsetY += dy;
                 karte.lastX = e.clientX;
                 karte.lastY = e.clientY;
+                const dist = Math.hypot(e.clientX - (karte.downX ?? e.clientX), e.clientY - (karte.downY ?? e.clientY));
+                if (dist > (karte.maxBewegt || 0)) karte.maxBewegt = dist;
                 karte.needsRender = true;
             }
         };
 
-        // Ein Klick ist: kurz (unter 500 ms) und kaum bewegt (unter 8 px).
-        // Alles andere war Ziehen und darf keinen Marker setzen. `mouseleave`
-        // zaehlt nie als Klick - dort endet eine Bewegung, kein Tippen.
+        // Ein Klick ist jede Geste ohne nennenswerte Bewegung (<= 10 px), egal
+        // wie lange der Spieler beim Zielen die Taste gedrueckt haelt.
+        // `mouseleave` zaehlt nie als Klick - dort endet eine Bewegung.
         const klickPunkt = (e) => {
-            const dx = Math.abs(e.clientX - (karte.downX ?? -999));
-            const dy = Math.abs(e.clientY - (karte.downY ?? -999));
-            const dauer = Date.now() - (karte.downZeit || 0);
-            return dx < 8 && dy < 8 && dauer < 500;
+            const endDist = Math.hypot(e.clientX - (karte.downX ?? -9999), e.clientY - (karte.downY ?? -9999));
+            return Math.max(karte.maxBewegt || 0, endDist) <= 10;
         };
 
-        // `this` in den Ereignis-Handlern ist die Leinwand, nicht UI. Deshalb
-        // hier einmal festhalten: sonst landet ein `this.mapState` aus einem
-        // alten Objekt im Nichts, und der zweite Klick tut nichts mehr.
-        const karte = this.mapState;
-
         cvs.onmouseup = (e) => {
+            if (karte.letzterTouch && Date.now() - karte.letzterTouch < 500) return;
             const warKlick = karte.isDragging && klickPunkt(e);
             karte.isDragging = false;
             cvs.style.cursor = "move";
@@ -104,6 +110,8 @@ Object.assign(UI, {
         };
 
         cvs.ontouchstart = (e) => {
+            if (e.cancelable) e.preventDefault();
+            karte.letzterTouch = Date.now();
             if(e.touches.length === 1) {
                 karte.isDragging = true;
                 karte.isPinching = false;
@@ -111,7 +119,7 @@ Object.assign(UI, {
                 karte.lastY = e.touches[0].clientY;
                 karte.downX = e.touches[0].clientX;
                 karte.downY = e.touches[0].clientY;
-                karte.downZeit = Date.now();
+                karte.maxBewegt = 0;
                 // Ein zweiter Finger macht aus dem Tippen ein Zoomen. Das wird
                 // gemerkt, damit das Ende nicht als Klick durchgeht.
                 karte.pinchBeruehrt = false;
@@ -125,7 +133,8 @@ Object.assign(UI, {
         };
 
         cvs.ontouchmove = (e) => {
-            e.preventDefault();
+            if (e.cancelable) e.preventDefault();
+            karte.letzterTouch = Date.now();
             if(karte.isDragging && e.touches.length === 1) {
                 const dx = e.touches[0].clientX - karte.lastX;
                 const dy = e.touches[0].clientY - karte.lastY;
@@ -133,6 +142,11 @@ Object.assign(UI, {
                 karte.offsetY += dy;
                 karte.lastX = e.touches[0].clientX;
                 karte.lastY = e.touches[0].clientY;
+                const dist = Math.hypot(
+                    e.touches[0].clientX - (karte.downX ?? e.touches[0].clientX),
+                    e.touches[0].clientY - (karte.downY ?? e.touches[0].clientY)
+                );
+                if (dist > (karte.maxBewegt || 0)) karte.maxBewegt = dist;
                 karte.needsRender = true;
             } else if(karte.isPinching && e.touches.length === 2) {
                 const newDist = this.getTouchDistance(e.touches[0], e.touches[1]);
@@ -150,19 +164,30 @@ Object.assign(UI, {
         };
         
         cvs.ontouchend = (e) => {
+            // preventDefault unterbindet den synthetischen Ghost-Click, der
+            // sonst unmittelbar auf das frisch eingeblendete #nav-bestaetigung
+            // (z. B. VERWERFEN) faellt.
+            if (e.cancelable) e.preventDefault();
+            karte.letzterTouch = Date.now();
             const beruhrung = e.changedTouches && e.changedTouches[0];
+            const endDist = beruhrung
+                ? Math.hypot(beruhrung.clientX - (karte.downX ?? -9999), beruhrung.clientY - (karte.downY ?? -9999))
+                : 9999;
             const warTipp = karte.isDragging && !karte.pinchBeruehrt
                 && beruhrung
-                && Math.abs(beruhrung.clientX - (karte.downX ?? -999)) < 12
-                && Math.abs(beruhrung.clientY - (karte.downY ?? -999)) < 12
-                && Date.now() - (karte.downZeit || 0) < 600;
+                && Math.max(karte.maxBewegt || 0, endDist) <= 14;
             karte.isDragging = false;
             if(e.touches.length < 2) karte.isPinching = false;
             if(!warTipp) return;
             const rect = cvs.getBoundingClientRect();
             if (typeof Navigation !== 'undefined' && Navigation.markerSetzen) {
-                Navigation.markerSetzen(beruhrung.clientX - rect.left, beruhrung.clientY - rect.top);
+                Navigation.markerSetzen(beruhrung.clientX - rect.left, beruhrung.clientY - rect.top, karte);
             }
+        };
+
+        cvs.ontouchcancel = () => {
+            karte.isDragging = false;
+            karte.isPinching = false;
         };
     },
 
@@ -364,6 +389,25 @@ Object.assign(UI, {
         ctx.fillText("W", cx - r + 10, cy); ctx.fillText("O", cx + r - 10, cy);
         ctx.strokeStyle = "rgba(0, 255, 0, 0.3)"; ctx.beginPath(); ctx.moveTo(cx, cy - r + 15); ctx.lineTo(cx, cy + r - 15); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(cx - r + 15, cy); ctx.lineTo(cx + r - 15, cy); ctx.stroke();
+
+        // Ist ein Navigationsziel aktiv, dreht eine Zielnadel im Kompass mit.
+        const navInfo = (typeof Navigation !== 'undefined' && Navigation.richtung) ? Navigation.richtung() : null;
+        if (navInfo && !Navigation.angekommen()) {
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.rotate(navInfo.grad * Math.PI / 180);
+            ctx.fillStyle = "#39ff14";
+            ctx.strokeStyle = "#39ff14";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(0, -(r - 13));
+            ctx.lineTo(4.5, 3);
+            ctx.lineTo(0, 0);
+            ctx.lineTo(-4.5, 3);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+        }
         ctx.fillStyle = "#39ff14"; ctx.beginPath(); ctx.arc(cx, cy, 2, 0, Math.PI*2); ctx.fill();
     },
 
@@ -376,6 +420,17 @@ Object.assign(UI, {
                 let zoneName = Game.state.zone.split('(')[0].trim();
                 txt += ` // ${zoneName.toUpperCase()}`;
             } else { txt += " // UNBEKANNTES GEBIET"; }
+            if (typeof Navigation !== 'undefined' && Navigation.stand && Navigation.stand()) {
+                const ziel = Navigation.stand();
+                if (Navigation.angekommen && Navigation.angekommen()) {
+                    txt += ` // ZIEL [${ziel.x}, ${ziel.y}] ERREICHT`;
+                } else {
+                    const info = Navigation.richtung ? Navigation.richtung() : null;
+                    txt += info
+                        ? ` // ZIEL [${ziel.x}, ${ziel.y}] (${info.himmel} · ${info.felder} FELDER)`
+                        : ` // ZIEL [${ziel.x}, ${ziel.y}]`;
+                }
+            }
             el.innerText = txt;
             this._lastLocUpdate = Date.now();
         }

@@ -650,6 +650,15 @@ Object.assign(Game, {
             ctx.restore();
         }
 
+        // Aktive Zielfuehrung direkt am Spieler auf der Sektorkarte zeigen:
+        // nach der Dunkelheit gezeichnet, damit die grüne Pip-Boy-Peilung auch
+        // nachts klar sichtbar bleibt.
+        if (typeof Navigation !== 'undefined' && typeof Navigation.zeichneSpielerPfeil === 'function' && this.state && this.state.player) {
+            const navPx = (this.state.player.x * this.TILE + this.TILE / 2) - this.camera.x;
+            const navPy = (this.state.player.y * this.TILE + this.TILE / 2) - this.camera.y;
+            Navigation.zeichneSpielerPfeil(ctx, navPx, navPy);
+        }
+
         ctx.fillStyle = "rgba(0, 255, 0, 0.02)"; 
         for(let i=0; i<viewH; i+=4) { ctx.fillRect(0, i, viewW, 1); }
 
