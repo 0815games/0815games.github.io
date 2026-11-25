@@ -4,6 +4,20 @@
 
 export const RELEASED_PATCHES = [
   {
+    build: '20261125-eco1',
+    date: '2026-11-25',
+    items: [
+      {
+        de: 'Das Ökosystem wirkt jetzt: Wälder erschöpfen sich durch das Sägewerk und wachsen langsam nach. Fischbestände sinken durch die Fischerei und erholen sich. Felder laugen aus und lassen sich erneuern.',
+        en: 'The ecosystem now matters: forests get used up by the sawmill and slowly regrow. Fish stocks drop with fishing and recover. Fields wear out and can be renewed.',
+      },
+      {
+        de: 'Die Imkerei braucht Wald oder Wiese (Blüten) direkt daneben.',
+        en: 'The apiary needs forest or meadow (flowers) right next to it.',
+      },
+    ],
+  },
+  {
     build: '20261125-zoom3',
     date: '2026-11-25',
     items: [

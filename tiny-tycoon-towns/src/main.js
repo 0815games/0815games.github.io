@@ -3,36 +3,37 @@
 import {
   createTown, newSeed, chooseBiome, placeBuilding, upgradeBuilding,
   toggleSell, buyOffer, advance, hydrateTown, setTutorialStep, settleConvoyAction,
-  plantField, removeField,
-} from './domain/engine.js?v=20261125-zoom3';
+  plantField, removeField, renewField,
+} from './domain/engine.js?v=20261125-eco1';
+import { forestHealth, fishStock, fishingGround, soilOf, FULL } from './domain/economy.js?v=20261125-eco1';
 import {
   checkPlacement, placementHint, fieldsOf, plantableNeighbours, fieldSlots,
-} from './domain/placement.js?v=20261125-zoom3';
-import { startConvoy } from './domain/convoys.js?v=20261125-zoom3';
-import { tradeFormHtml, convoyListHtml, previewFor } from './trade-ui.js?v=20261125-zoom3';
+} from './domain/placement.js?v=20261125-eco1';
+import { startConvoy } from './domain/convoys.js?v=20261125-eco1';
+import { tradeFormHtml, convoyListHtml, previewFor } from './trade-ui.js?v=20261125-eco1';
 import {
   productionMultiplier, ratePerMin, buildCost, storageCap, classOf,
-} from './domain/economy.js?v=20261125-zoom3';
-import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261125-zoom3';
-import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261125-zoom3';
-import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261125-zoom3';
+} from './domain/economy.js?v=20261125-eco1';
+import { GRID, keyOf, isUnlocked, gridSize } from './domain/grid.js?v=20261125-eco1';
+import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261125-eco1';
+import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261125-eco1';
 import {
   PERKS, canFoundCharter, grantCharters, buyPerk, perkEffect, perkLevel, availableCharters, emptyCharter,
   applyCharterToData, reconcileCrowns,
-} from './domain/charters.js?v=20261125-zoom3';
+} from './domain/charters.js?v=20261125-eco1';
 const SEEN_NOTES_KEY = 'ttt:notes-seen';
-import { withTimeout } from './async-util.js?v=20261125-zoom3';
-import { checkTownName } from './town-names.js?v=20261125-zoom3';
-import { friendsShell, mountFriends } from './friends-ui.js?v=20261125-zoom3';
-import { createBoard } from './world/board.js?v=20261125-zoom3';
-import { createLoginScene } from './world/login-scene.js?v=20261125-zoom3';
-import { TUTORIAL_STEPS, HELP_SECTIONS } from './tutorial.js?v=20261125-zoom3';
-import { createVersionUI } from './version-ui.mjs?v=20261125-zoom3';
-import { startAfkWatch, showAfkOverlay } from './afk.js?v=20261125-zoom3';
-import { fullResources, fillPercent } from './stock-dock.js?v=20261125-zoom3';
-import { nextRequestToShow, requestBadgeLabel } from './friend-requests.js?v=20261125-zoom3';
+import { withTimeout } from './async-util.js?v=20261125-eco1';
+import { checkTownName } from './town-names.js?v=20261125-eco1';
+import { friendsShell, mountFriends } from './friends-ui.js?v=20261125-eco1';
+import { createBoard } from './world/board.js?v=20261125-eco1';
+import { createLoginScene } from './world/login-scene.js?v=20261125-eco1';
+import { TUTORIAL_STEPS, HELP_SECTIONS } from './tutorial.js?v=20261125-eco1';
+import { createVersionUI } from './version-ui.mjs?v=20261125-eco1';
+import { startAfkWatch, showAfkOverlay } from './afk.js?v=20261125-eco1';
+import { fullResources, fillPercent } from './stock-dock.js?v=20261125-eco1';
+import { nextRequestToShow, requestBadgeLabel } from './friend-requests.js?v=20261125-eco1';
 
-const BUILD = '20261125-zoom3';
+const BUILD = '20261125-eco1';
 console.info(`Tiny Tycoon Towns ${BUILD}`);
 const LAST_BIOME_KEY = 'ttt.lastBiome';
 const LOCAL_KEY = (uid) => `ttt.save.v1.${uid}`;
@@ -78,6 +79,7 @@ const ERR_DE = {
   noFieldSlot: 'Der Hof hat keinen freien Feldplatz. Mehr Plätze gibt es mit einer höheren Stufe.',
   noFarm: 'Hier steht kein Hof.',
   noField: 'Hier liegt kein Feld.',
+  soilFine: 'Der Boden ist noch in Ordnung.',
 };
 
 const $ = (sel) => document.querySelector(sel);
@@ -120,7 +122,7 @@ const REMOTE_TIMEOUT_MS = 10_000;
 async function loadData() {
   const names = ['resources', 'biomes', 'buildings', 'economy', 'merchant', 'npcs'];
   const parts = await Promise.all(names.map((n) =>
-    fetch(`data/${n}.json?v=20261125-zoom3`).then((r) => {
+    fetch(`data/${n}.json?v=20261125-eco1`).then((r) => {
       if (!r.ok) throw new Error(`data/${n}.json: HTTP ${r.status}`);
       return r.json();
     })));
@@ -166,7 +168,7 @@ async function boot() {
   window.addEventListener('offline', updateSync);
 
   try {
-    cloud = await import('./cloud.js?v=20261125-zoom3');
+    cloud = await import('./cloud.js?v=20261125-eco1');
   } catch {
     showFatal('Das Konto-System konnte nicht geladen werden. Ohne Anmeldung lässt sich nicht spielen. Bitte Verbindung prüfen und neu laden.');
     return;
@@ -673,6 +675,7 @@ function onPanelClick(e) {
     dispatch(plantField(state, { fx: x, fy: y, x: Number(btn.dataset.tx), y: Number(btn.dataset.ty) }, ctx()), 'Feld angelegt.');
   }
   if (action === 'unfield') dispatch(removeField(state, { x: Number(btn.dataset.tx), y: Number(btn.dataset.ty) }), 'Feld entfernt.');
+  if (action === 'renew') dispatch(renewField(state, { x: Number(btn.dataset.tx), y: Number(btn.dataset.ty) }, ctx()), 'Feld erneuert.');
   if (action === 'buy') dispatch(buyOffer(state, { index: Number(index) }, ctx()), 'Gekauft. Eberhard nickt zufrieden.');
   if (action === 'close') {
     popupOpen = false;
@@ -1018,6 +1021,15 @@ function buildingDetails(b, x, y) {
   if (def.modes && b.mode) {
     html += `<p class="small">Betriebsart: <strong>${esc(def.modes[b.mode].name.de)}</strong></p>`;
   }
+  if (b.id === 'sawmill') {
+    const h = Math.round(forestHealth(state, x, y));
+    html += `<p class="small">Waldbestand: <strong>${h} %</strong>${h < 40 ? ' · Der Wald wird knapp. Er wächst langsam nach.' : ''}</p>`;
+  }
+  if (b.id === 'fishery') {
+    const g = fishingGround(state, x, y);
+    const f = g ? Math.round(fishStock(state, g[0], g[1])) : 0;
+    html += `<p class="small">Fischbestand am Fangplatz: <strong>${f} %</strong>${f < 40 ? ' · Der Bestand sinkt. Er erholt sich langsam.' : ''}</p>`;
+  }
   if (def.resource) {
     const rate = ratePerMin(state, x, y, data);
     html += `<p>Produktion: <strong>${fmtRate(rate)} ${esc(data.resources[def.resource].name.de)} / min</strong></p>`;
@@ -1047,12 +1059,18 @@ function farmFieldsHtml(b, x, y) {
   const coinsOk = state.coins >= cost.coins;
   const woodOk = (state.stock[cost.material.resource] ?? 0) >= cost.material.amount;
   const fieldLabel = (k) => k.split(',').map((v) => Number(v) + 1).join(', ');
+  const tired = owned.filter((k) => soilOf(state.tiles[k]) < data.economy.ecology.soil.renewBelow).length;
   let html = `<p>Felder: <strong>${owned.length} / ${slots}</strong> <span class="small muted">(eines je Stufe, nur direkt daneben)</span></p>`;
+  if (tired) html += `<p class="small warn">${tired} Feld(er) sind ausgelaugt. Erneuern bringt den Boden zurück.</p>`;
   if (owned.length) {
     html += '<div class="field-list">';
     for (const k of owned) {
       const [tx, ty] = k.split(',');
-      html += `<span class="field-chip">Feld ${fieldLabel(k)} <button type="button" class="ghost small" data-action="unfield" data-tx="${tx}" data-ty="${ty}">Entfernen</button></span>`;
+      const soil = Math.round(soilOf(state.tiles[k]));
+      const renew = soil < FULL
+        ? ` <button type="button" class="ghost small" data-action="renew" data-tx="${tx}" data-ty="${ty}">Erneuern</button>`
+        : '';
+      html += `<span class="field-chip">Feld ${fieldLabel(k)} · Boden ${soil} %${renew} <button type="button" class="ghost small" data-action="unfield" data-tx="${tx}" data-ty="${ty}">Entfernen</button></span>`;
     }
     html += '</div>';
   }

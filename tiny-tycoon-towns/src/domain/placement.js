@@ -1,6 +1,6 @@
 // Platzierungsregeln: Welches Gelände ein Gebäude braucht, und wie Felder der Farm funktionieren.
 // Reine Funktionen ohne Zustandsänderung. Alle Regeln stehen in data/buildings.json („placement“).
-import { inBounds, keyOf, isUnlocked } from './grid.js?v=20261125-zoom3';
+import { inBounds, keyOf, isUnlocked } from './grid.js?v=20261125-eco1';
 
 const N4 = [[1, 0], [-1, 0], [0, 1], [0, -1]];
 const N8 = [...N4, [1, 1], [1, -1], [-1, 1], [-1, -1]];
@@ -61,8 +61,9 @@ export function checkPlacement(state, x, y, buildingId, data) {
   }
 
   if (rules.near) {
-    const near = N8.some(([dx, dy]) => terrainAt(state, x + dx, y + dy) === rules.near.terrain);
-    if (!near) return { ok: false, reason: 'near', need: `${TERRAIN_NAMES_DE[rules.near.terrain]} direkt daneben` };
+    const wanted = [].concat(rules.near.terrain);
+    const near = N8.some(([dx, dy]) => wanted.includes(terrainAt(state, x + dx, y + dy)));
+    if (!near) return { ok: false, reason: 'near', need: `${wanted.map((t) => TERRAIN_NAMES_DE[t]).join(' oder ')} direkt daneben` };
   }
   return mode ? { ok: true, mode } : { ok: true };
 }

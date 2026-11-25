@@ -106,16 +106,29 @@ test('fishery modes change the yield', () => {
   assert.ok(rb > rs, `boot ${rb} must beat steg ${rs}`);
 });
 
-test('pearl hut only on water, apiary needs forest next to it', () => {
+test('pearl hut only on water, apiary needs forest or meadow next to it', () => {
   const t = flatTown();
   assert.equal(placeBuilding(t, { x: 2, y: 2, buildingId: 'pearlHut' }, ctx()).error, 'terrain');
   set(t, 2, 2, 'water');
   assert.equal(placeBuilding(t, { x: 2, y: 2, buildingId: 'pearlHut' }, ctx()).error, undefined);
 
   const a = flatTown();
+  for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]]) set(a, 5 + dx, 5 + dy, 'rock');
   assert.equal(placeBuilding(a, { x: 5, y: 5, buildingId: 'apiary' }, ctx()).error, 'near');
   set(a, 6, 5, 'forest');
   assert.equal(placeBuilding(a, { x: 5, y: 5, buildingId: 'apiary' }, ctx()).error, undefined);
+});
+
+test('apiary: forest or meadow (flowers) next to it, not rock alone', () => {
+  const b = flatTown();
+  for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]]) set(b, 5 + dx, 5 + dy, 'rock');
+  assert.equal(placeBuilding(b, { x: 5, y: 5, buildingId: 'apiary' }, ctx()).error, 'near');
+  set(b, 6, 5, 'meadow');
+  assert.equal(placeBuilding(b, { x: 5, y: 5, buildingId: 'apiary' }, ctx()).error, undefined);
+  const c = flatTown();
+  for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]]) set(c, 5 + dx, 5 + dy, 'sand');
+  set(c, 6, 5, 'forest');
+  assert.equal(placeBuilding(c, { x: 5, y: 5, buildingId: 'apiary' }, ctx()).error, undefined);
 });
 
 test('warehouse and market on any land, never on water', () => {

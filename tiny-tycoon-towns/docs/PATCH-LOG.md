@@ -780,3 +780,33 @@ Ereignis ergänzt.
   - Balance: Level 5 zu früh, Level 10 zu spät bzw. nicht erreicht. Entscheidung nötig: Feldplätze, XP oder Kartenform anpassen.
   - Wald-Regeneration und Fischbestände (Ökosystem im engeren Sinn) sind noch nicht umgesetzt.
   - Browser-Prüfung der neuen Oberfläche.
+
+### TTT-0049 – Ökosystem wirkt: Wald, Fisch, Boden; Imkerei mit Blüten (Welle `20261125-eco1`)
+
+- Ziel: Ökosystem aus TTT-0048 in der Engine verdrahten (Erschöpfung und Erholung), Felder erneuerbar machen,
+  Imkerei nach Vorgabe „Wald oder Blüten“ (Blüten = Wiese).
+- Dateien:
+  - `src/domain/engine.js`: `depleteFor` (Sägewerk senkt Waldbestand, Fischerei senkt Fischbestand der Fangkachel,
+    Farm senkt Bodenfruchtbarkeit der Felder), `regrow` (Erholung je Minute), neu `renewField`.
+  - `data/economy.json`: `ecology.forest.wearPerUnit` 0,05 → 0,1; `ecology.fish.wearPerUnit` 0,05 → 0,08
+    (bei 0,05 blieb der Bestand bei 100 %, Verbrauch < Erholung).
+  - `data/buildings.json`: Imkerei `near.terrain` = `["forest", "meadow"]`.
+  - `src/domain/placement.js`: `near` akzeptiert eine Liste.
+  - `src/main.js`: Gebäudeansicht zeigt Waldbestand und Fischbestand; Felder zeigen Boden und Button „Erneuern“.
+  - `scripts/simulate-balance.mjs`: Bot erneuert ausgelaugte Felder.
+  - `src/patch-notes.mjs`: Stadtchronik `20261125-eco1` (DE/EN).
+  - `tests/placement.test.mjs`: neuer Test Imkerei Wald/Wiese; Pearl-Test angepasst.
+  - Cache-Welle `20261125-zoom3` → `20261125-eco1` (20 Dateien, 64 Vorkommen).
+- Tests (lokal, Node 22.22.3):
+  - `npm test`: 147 Tests, 147 pass, 0 fail.
+  - `npm run check`: kein Fehler, 3 Hinweise. `patch.mjs check --fast` ohne Fehler.
+  - Ökosystem-Probe: Sägewerk auf einer Waldkachel senkt den Bestand in einer Stunde auf ca. 12 %; danach stabil.
+    (Vor der Verbrauchsanpassung blieb der Bestand bei 100 %.)
+  - `npm run simulate` (30 Tage, Bot): Tiefwald Stadtlevel 10 nach 13,5 h; Hochland Level 10 erreicht (vorher 9);
+    Küste Level 9; Riverlands Level 8.
+- Grenzen / offen:
+  - **Balance nicht im Korridor.** Stadtlevel 5 zu früh (2,6 bis 3,6 h, Ziel 4 bis 8 h). Stadtlevel 10 in
+    Küste und Riverlands nicht erreicht. Korridor unverändert gelassen. Entscheidung nötig.
+  - Browser-/Vercel-Prüfung der neuen Oberfläche noch nicht erfolgt.
+  - Keine Firebase-Regeländerung in diesem Schritt.
+  - Vor dem Merge keine Geräteabnahme; Commit, PR und Merge erfolgen nach diesem Eintrag.

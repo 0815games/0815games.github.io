@@ -33,7 +33,7 @@
     "name": { "de": "Imkerei", "en": "Apiary" }, "icon": "🐝", "resource": "honey",
     "baseCoins": 150, "baseMaterial": { "resource": "grain", "amount": 5 },
     "baseRatePerMin": 2, "maxLevel": 30, "unlockTownLevel": 2,
-    "placement": { "on": ["land"], "near": { "terrain": "forest" }, "hint": "Auf Land mit Wald direkt daneben (Bienen brauchen Blüten)." },
+    "placement": { "on": ["land"], "near": { "terrain": ["forest", "meadow"] }, "hint": "Auf Land mit Wald oder Wiese (Blüten) direkt daneben." },
     "terrainBonus": null, "adjacencyBonus": { "adjacentTo": { "building": "farm" }, "multiplier": 1.15 }
   },
   "fishery": {

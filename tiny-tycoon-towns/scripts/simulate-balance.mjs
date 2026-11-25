@@ -12,9 +12,10 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { createTown, advance, placeBuilding, upgradeBuilding, plantField, BIOMES } from '../src/domain/engine.js';
+import { createTown, advance, placeBuilding, upgradeBuilding, plantField, renewField, BIOMES } from '../src/domain/engine.js';
 import { checkPlacement, fieldsOf, plantableNeighbours, fieldSlots } from '../src/domain/placement.js';
-import { buildCost, productionMultiplier, storageCap } from '../src/domain/economy.js';
+import { soilOf } from '../src/domain/economy.js';
+import { buildCost, productionMultiplier, storageCap, soilFactor as soilFactorOf } from '../src/domain/economy.js';
 import { GRID, keyOf, isUnlocked } from '../src/domain/grid.js';
 import { charterGain } from '../src/domain/charters.js';
 
@@ -56,7 +57,9 @@ function botAct(state, ctx) {
       ? placeBuilding(s, { x: best.x, y: best.y, buildingId: best.id }, ctx)
       : best.kind === 'field'
         ? plantField(s, { fx: best.fx, fy: best.fy, x: best.x, y: best.y }, ctx)
-        : upgradeBuilding(s, { x: best.x, y: best.y }, ctx);
+        : best.kind === 'renew'
+          ? renewField(s, { x: best.x, y: best.y }, ctx)
+          : upgradeBuilding(s, { x: best.x, y: best.y }, ctx);
     if (r.error) break;
     s = r.state;
   }
@@ -109,6 +112,20 @@ function bestAction(s, ctx) {
         const [fx2, fy2] = k.split(',').map(Number);
         consider(producerScore(s, d, d.buildings.farm, rate, { coins: fieldCost.coins }), { kind: 'field', fx: x, fy: y, x: fx2, y: fy2 });
       }
+    }
+  }
+
+  // Ausgelaugte Felder erneuern, wenn der Boden unter die Schwelle fällt.
+  const renewBelow = d.economy.ecology.soil.renewBelow;
+  if (s.coins >= fieldCost.coins && (s.stock[fieldCost.material.resource] ?? 0) >= fieldCost.material.amount) {
+    for (let y = 0; y < GRID; y++) for (let x = 0; x < GRID; x++) {
+      const t = s.tiles[keyOf(x, y)];
+      if (!t?.field || soilOf(t) >= renewBelow) continue;
+      const farm = t.field.owner.split(',').map(Number);
+      const b = s.tiles[t.field.owner]?.building;
+      if (!b) continue;
+      const lost = d.buildings.farm.baseRatePerMin * productionMultiplier(s, farm[0], farm[1], 'farm', d) * (1 - soilFactorOf(t, d));
+      consider(producerScore(s, d, d.buildings.farm, lost, { coins: fieldCost.coins }), { kind: 'renew', x, y });
     }
   }
 
