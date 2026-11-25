@@ -1023,8 +1023,7 @@ Ereignis ergänzt.
   - Fehlertexte für die neuen Fehler (`tooFar`, `noRoom`, `notHouse`, `notProducer`, `badAmount`).
   - `src/domain/engine.js`: `staffing(state, data)` als Lesezugriff für die Anzeige.
   - `src/main.js`: Aktion `worker` ruft `setWorkerAssignment` über die übliche `dispatch`-Schiene auf.
-- Tests: `tests/settlement.test.mjs` 14 Tests (eins neu für `staffing`). `npm test` 165/165 grün (Zählung nach dem
-  neuen Test: siehe Lauf unten). `npm run check` ohne Fehler.
+- Tests: `tests/settlement.test.mjs` 14 Tests (eins neu für `staffing`). `npm test` 166/166 grün. `npm run check` ohne Fehler.
 - Grenzen / offen:
   - Die Anzeige ist nicht im Browser geprüft. Firebase ist in der Sandbox nicht erreichbar, das Spiel startet dort
     nicht. Die Logik ist mit Tests belegt, das Aussehen nicht.
