@@ -97,14 +97,16 @@ export function mountFriends(dlg, ctx) {
       <button type="button" class="primary" id="send-req">Anfrage senden</button>
     </div>`;
     $('#send-req').addEventListener('click', async (ev) => {
-      ev.currentTarget.disabled = true;
+      // currentTarget ist nach dem await null, deshalb vorher merken.
+      const btn = ev.currentTarget;
+      btn.disabled = true;
       try {
         await cloud.sendFriendRequest(ctx.me, ctx.myName(), hit.uid);
         ctx.toast('Anfrage gesendet.');
         $('#invite-result').innerHTML = '';
         $('#invite-q').value = '';
       } catch (err) {
-        ev.currentTarget.disabled = false;
+        btn.disabled = false;
         showMsg(cloud.dbErrorDe(err));
       }
     });
