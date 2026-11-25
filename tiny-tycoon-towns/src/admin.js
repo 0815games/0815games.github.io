@@ -230,7 +230,7 @@ function renderEditor() {
         <label>Münzen <input type="number" name="coins" min="0" step="1" value="${Number(draft.coins) || 0}"></label>
         <label>Stadtlevel <input type="number" name="townLevel" min="1" max="12" step="1" value="${draft.townLevel}"></label>
         <label>Erfahrung <input type="number" name="townXp" min="0" step="1" value="${Number(draft.townXp) || 0}"></label>
-        <label>Tutorial-Schritt <input type="number" name="tutorialStep" min="0" max="99" step="1" value="${Number(draft.tutorialStep) || 0}"></label>
+        <label>Tutorial-Schritt <input type="number" name="tutorialStep" min="0" max="199" step="1" value="${Number(draft.tutorialStep) || 0}"></label>
       </div>
     </fieldset>
 
@@ -287,7 +287,7 @@ $('#admin-editor').addEventListener('change', (e) => {
   } else if (name === 'coins') draft.coins = num(0, 1e12);
   else if (name === 'townLevel') draft.townLevel = num(1, 12);
   else if (name === 'townXp') draft.townXp = num(0, 1e12);
-  else if (name === 'tutorialStep') draft.tutorialStep = num(0, 99);
+  else if (name === 'tutorialStep') draft.tutorialStep = num(0, 199);
   else if (name.startsWith('stock:')) draft.stock[name.slice(6)] = num(0, 1000000);
   else if (name.startsWith('sell:')) draft.sellEnabled[name.slice(5)] = el.checked;
   else if (name === 'level' || name === 'building') return; // wird mit „Feld übernehmen“ gesetzt

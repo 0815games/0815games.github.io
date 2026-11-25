@@ -726,3 +726,9 @@ button.danger { background: #E4837A; border-color: var(--ink); }
   .menu-btn.has-requests .menu-badge { animation: req-pulse 1.6s ease-in-out infinite; }
 }
 @keyframes req-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+
+.tut-hint { color: var(--ink); opacity: 0.75; }
+.tut-hint.done { opacity: 1; font-weight: 700; }
+.tut-check { list-style: none; padding: 0; margin: 4px 0 8px; }
+.tut-check li { padding: 2px 0; opacity: 0.6; }
+.tut-check li.done { opacity: 1; font-weight: 700; }

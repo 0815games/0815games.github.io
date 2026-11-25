@@ -1103,3 +1103,62 @@ Ereignis ergänzt.
 - Grenzen / offen:
   - Nicht im Browser angesehen. Ob die Kopie bei Stufe 4 das Gebäude verdeckt oder über die Kachel hinausragt, ist am Gerät zu prüfen.
   - Keine Welle, keine Veröffentlichung, keine Firebase-Regeländerung.
+
+### TTT-0065 – Tutorial: Siedlungen zum Ausprobieren (lokal, nicht veröffentlicht)
+
+- Auftrag des Nutzers: Das Tutorial soll die Siedlungen interaktiv erklären. Man soll es selbst machen, damit man es versteht.
+- Neu:
+  - `src/tutorial.js`: drei Schritte am Ende. „Wohnhaus bauen“ (Aufgabe `house`), „Arbeit und Lohn“ (Aufgabe `worker`),
+    „Stufen der Gebäude“ (ohne Aufgabe). Hilfe-Abschnitt „Siedlungen“.
+  - `src/domain/settlement.js`: `tutorialTaskDone(state, task)`, reine Prüfung des Zustands.
+  - `src/main.js`: Bei einem Aufgaben-Schritt zeigt die Karte einen Hinweis. Nach jeder Aktion (`dispatch`) wird er
+    aktualisiert: „Gut gemacht“ und der Knopf heißt „Weiter“. Vorher heißt er „Später“, damit niemand hängen bleibt
+    (zum Beispiel vor Stadtlevel 2).
+  - `style.css`: Stil für den Hinweis.
+- Tests: `tests/settlement.test.mjs` prüft `tutorialTaskDone` (Haus, Arbeiter, leerer Zustand, unbekannte Aufgabe).
+  `npm test` 173/173 grün. `npm run check` ohne Fehler.
+- Grenzen / offen:
+  - Bestehende Konten mit abgeschlossenem Tutorial (gespeichert als 8 Schritte) sehen die drei neuen Schritte beim
+    nächsten Start, weil `maybeStartTutorial` nur bis zur Länge vergleicht. Das ist gewollt als Hinweis auf das Neue,
+    kann aber auch als lästig empfunden werden. Entscheidung offen.
+  - Nicht im Browser geprüft.
+
+### TTT-0066 – Tutorial: einmal anbieten, Schritt für Schritt prüfen (lokal, nicht veröffentlicht)
+
+- Auftrag des Nutzers: Das Tutorial soll bei Start einer Stadt einmal angeboten werden. Dann von Anfang bis Ende
+  durchgeführt werden, mit Gegencheck, ob alles gebaut wurde.
+- Angebot: Beim Start erscheint für jeden Stand ohne Angebot (0, und 8 bei alten abgeschlossenen Konten) einmal ein Dialog
+  „Anleitung starten“ oder „Nein danke“. Er kommt vor den Neuerungen. Wer den Dialog nur schließt, wird nicht noch
+  einmal gefragt. Über Hilfe („Anleitung noch einmal“) geht es jederzeit.
+- Aufgaben: „Gebäude bauen“ (Aufgabe `build`), „Wohnhaus bauen“ (`house`), „Arbeit und Lohn“ (`worker`).
+  Jede Aufgabe wartet auf die Aktion. „Später“ bleibt immer möglich.
+- Check am Ende: Liste mit ✓ und ○ für Gebäude, Wohnhaus und Arbeiter. Die Häkchen aktualisieren sich nach jeder Aktion.
+- Gespeicherter Stand (`state.tutorialStep`, Firebase-Regel: beliebige Zahl):
+  0 und 8 Angebot noch offen (8 = alte, abgeschlossene Konten), 1 bis 7 alter Lauf, 100 + Schritt neuer Lauf.
+  Engine und Admin nehmen jetzt bis 199 statt 99.
+- Tests: `tests/tutorial.test.mjs` 3 neue Tests (Zuordnung der Werte, Bereich 199, Bezeichnungen der Check-Liste).
+  `tests/settlement.test.mjs`: Aufgabe `build`. `npm test` 176/176 grün. `npm run check` ohne Fehler.
+- Grenzen / offen:
+  - Die Schritte Spielfeld, Lager, Verkauf, Stadtlevel, Händler und Hilfe sind weiterhin Text. Nur die Bau- und Zuweisungs-
+    schritte prüfen die Aktion.
+  - Nicht im Browser geprüft.
+
+### TTT-0067 – Tutorial vollständig interaktiv (lokal, nicht veröffentlicht)
+
+- Auftrag des Nutzers: Das Tutorial soll zu 100 Prozent fertig sein, mit allem, was bis jetzt implementiert ist.
+- Schritte mit Aufgabe (der Schritt wartet, „Später“ bleibt möglich):
+  Feld antippen (`tap`) · Gebäude bauen (`build`) · Inventar öffnen (`stock`) · Verkauf umschalten (`sell`) ·
+  Erfahrungsleiste antippen (`xp`) · Eberhards Bereich antippen (`merchant`) · Hilfe öffnen (`help`) ·
+  Wohnhaus bauen (`house`) · Arbeiter zuweisen (`worker`) · Gebäude auf Stufe 2 ausbauen (`upgrade`).
+- Nur Text: Willkommen, Stufen der Gebäude, Check (am Ende).
+- Check am Ende: alle zehn Aufgaben mit ✓ oder ○.
+- Aufgaben aus dem Spielstand (`build`, `house`, `worker`, `upgrade`) prüft `tutorialTaskDone` in `settlement.js`.
+  Die übrigen (`tap`, `stock`, `sell`, `xp`, `merchant`, `help`) merkt sich der Browser pro Konto
+  (`localStorage`, Schlüssel `ttt-tut-tasks-<Stadt-ID>`). Sie gehen so nicht verloren, wenn die Seite neu lädt.
+- Hooks in `main.js`: `selectTile`, `openStock`, Verkaufsschalter, `#xp-bar`, `#merchant`, `showHelp`.
+- Tests: `tests/tutorial.test.mjs` prüft, dass jede Aufgabe eine Bezeichnung hat und der Check alle gefragten Aufgaben
+  enthält. `tests/settlement.test.mjs`: Aufgabe `upgrade` (Stufe 2, Rathaus zählt nicht).
+  `npm test` 178/178 grün. `npm run check` ohne Fehler.
+- Grenzen / offen:
+  - Die Browser-Aufgaben gelten pro Gerät. Auf einem anderen Gerät muss man sie noch einmal machen.
+  - Nicht im Browser geprüft.
