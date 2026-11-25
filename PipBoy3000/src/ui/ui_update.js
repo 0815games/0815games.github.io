@@ -73,14 +73,14 @@ export function updateBlockers() {
 }
 
 const TEXTE = {
-  verfuegbar: 'NEUE VERSION {build} VERFUEGBAR',
+  verfuegbar: 'NEUE VERSION {build} VERFÜGBAR',
   wartet: 'NEUE VERSION BEREIT - {grund}',
   laedt: 'NEUE VERSION WIRD GELADEN...',
   aktuell: 'AKTUELLE VERSION',
-  unerreichbar: 'VERSIONSPRUEFUNG NICHT ERREICHBAR',
+  unerreichbar: 'VERSIONSPRÜFUNG NICHT ERREICHBAR',
   geladen: 'NEUE VERSION {build} GELADEN',
   jetzt: 'JETZT LADEN',
-  spaeter: 'SPAETER'
+  spaeter: 'SPÄTER'
 };
 
 const GRUND = {
@@ -109,11 +109,22 @@ export function createUpdateUI({document, window, fetcher = window?.fetch?.bind(
   const sagen = (schluessel, werte = {}) => Object.entries(werte)
     .reduce((satz, [name, wert]) => satz.replace(`{${name}}`, String(wert)), TEXTE[schluessel] || '');
 
+  // Der Hintergrund ist gesperrt, solange ein Fenster steht. Das AFK-Fenster
+  // macht dasselbe (body.fenster-offen); es darf die Klasse nicht loeschen,
+  // wenn es selbst noch offen ist - deshalb hier nachsehen statt blind setzen.
+  function sperreAktualisieren() {
+    if (!document.body) return;
+    const afk = document.getElementById('afk-popup');
+    const offen = !balken.hidden || (afk && !afk.hidden);
+    document.body.classList.toggle('fenster-offen', Boolean(offen));
+  }
+
   function zeichnen() {
     const stand = document.getElementById('update-banner-stand');
     if (stand) stand.textContent = `AKTUELL ${build}`;
-    if (!zustand) { balken.hidden = true; return; }
+    if (!zustand) { balken.hidden = true; sperreAktualisieren(); return; }
     balken.hidden = false;
+    sperreAktualisieren();
     if (zustand.art === 'veraltet') {
       const gruende = zustand.blocker || [];
       text.textContent = gruende.length
@@ -131,6 +142,7 @@ export function createUpdateUI({document, window, fetcher = window?.fetch?.bind(
       jetzt.hidden = true;
     } else if (zustand.art === 'aktuell') {
       balken.hidden = true;
+      sperreAktualisieren();
       return;
     } else {
       // Nicht erreichbar: sichtbar, aber gedeckt - und ohne Knopf. Ein stiller
@@ -231,7 +243,7 @@ export function createUpdateUI({document, window, fetcher = window?.fetch?.bind(
   }
 
   if (jetzt) jetzt.onclick = () => { if (ziel) neuLaden(ziel); };
-  if (spaeter) spaeter.onclick = () => { balken.hidden = true; };
+  if (spaeter) spaeter.onclick = () => { balken.hidden = true; sperreAktualisieren(); };
 
   return Object.freeze({start, stop, pruefen, get build() { return build; }, get zustand() { return zustand; }});
 }

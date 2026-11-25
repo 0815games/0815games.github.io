@@ -70,8 +70,10 @@ test('der Countdown zaehlt herunter und der Balken schrumpft', () => {
   const breit = parseFloat(balken.style.width);
   assert.ok(breit > 90 && breit <= 100, `Balken startet bei ${breit}%`);
 
-  // 40 Sekunden spaeter
-  w.eval('UI.lastInputTime = Date.now() - 5*60*1000 - 40000; AFK.pruefen();');
+  // 40 Sekunden spaeter. Das Fenster rechnet seit dem Einrasten an einer
+  // festen Endzeit - die Uhr des Spielers kann ruhig weiterlaufen, der
+  // Zaehler folgt der Endzeit und nicht der Stille.
+  w.eval('AFK.fristEnde -= 40000; AFK.pruefen();');
   const spaeter = zaehler.textContent;
   const schmal = parseFloat(balken.style.width);
   assert.notEqual(spaeter, erst, 'Der Zaehler steht still');
@@ -96,17 +98,28 @@ test('ein Klick holt zurueck und schliesst das Fenster', () => {
 test('erst nach der Nachfrist wird ausgeloggt', () => {
   const {w} = mitAfk();
   w.eval('AFK.start();');
-  // 5:30 - Fenster steht, noch kein Logout
+  // 5:30 - Fenster steht, noch kein Logout. Die Nachfrist laeuft ab hier.
   w.eval('UI.lastInputTime = Date.now() - (5*60+30)*1000; AFK.pruefen();');
   assert.equal(w.eval('UI.logoutGrund'), null, 'Nach 5:30 wurde schon ausgeloggt');
   assert.equal(w.eval('AFK.fensterOffen'), true);
 
-  // 6:01 - jetzt
-  w.eval('UI.lastInputTime = Date.now() - (6*60+1)*1000; AFK.pruefen();');
-  assert.equal(w.eval('UI.logoutGrund'), 'AFK: ZEITUEBERSCHREITUNG',
+  // 6:01 - die 30 s Nachfrist sind um
+  w.eval('AFK.fristEnde -= 31000; AFK.pruefen();');
+  assert.equal(w.eval('UI.logoutGrund'), 'AFK: ZEITÜBERSCHREITUNG',
     `Logout-Grund unerwartet: ${w.eval('UI.logoutGrund')}`);
   // Und das Fenster ist danach zu - ein Logout mit offenem Popup waere Unsinn.
   assert.equal(w.eval('AFK.fensterOffen'), false);
+});
+
+test('das Fenster laeuft auch ab, wenn die Nachfrist in einem Zug vergeht', () => {
+  // Ein schlafender Tab haelt Timer an. Die Pruefung kommt dann erst nach
+  // Minuten wieder - sie muss trotzdem sofort abmelden, statt noch eine
+  // volle Minute herunterzuzaehlen.
+  const {w} = mitAfk();
+  w.eval('AFK.start(); UI.lastInputTime = Date.now() - 5*60*1000; AFK.pruefen();');
+  assert.equal(w.eval('AFK.fensterOffen'), true);
+  w.eval('AFK.fristEnde = Date.now() - 1; AFK.pruefen();');
+  assert.equal(w.eval('UI.logoutGrund'), 'AFK: ZEITÜBERSCHREITUNG');
 });
 
 test('auf dem Login-Bildschirm schweigt der Schutz', () => {
@@ -114,6 +127,36 @@ test('auf dem Login-Bildschirm schweigt der Schutz', () => {
   w.eval('AFK.start(); UI.lastInputTime = Date.now() - 10*60*1000; AFK.pruefen();');
   assert.equal(w.eval('AFK.fensterOffen'), false, 'Fenster auf dem Login-Bildschirm');
   assert.equal(w.eval('UI.logoutGrund'), null, 'Logout auf dem Login-Bildschirm');
+});
+
+test('solange das Fenster steht, ist der Hintergrund gesperrt', () => {
+  // "Modal" im HTML heisst auch: der Hintergrund ist nicht bedienbar. Vorher
+  // war er nur abgedunkelt - ein Klick auf die Karte bewegte den Spieler unter
+  // dem Fenster weg, und ein Screenreader las weiter.
+  const {w, document} = mitAfk();
+  w.eval('AFK.start(); UI.lastInputTime = Date.now() - 5*60*1000; AFK.pruefen();');
+  assert.equal(document.body.classList.contains('fenster-offen'), true,
+    'Der Hintergrund ist nicht gesperrt');
+  const css = readFileSync(join(ROOT, 'shell', 'style.css'), 'utf8');
+  assert.match(css, /body\.fenster-offen\s+#game-screen\s*\{[^}]*pointer-events:\s*none/);
+  // Klick holt zurueck - und gibt den Hintergrund wieder frei.
+  document.querySelector('[data-afk-bleiben]').click();
+  assert.equal(document.body.classList.contains('fenster-offen'), false,
+    'Der Hintergrund bleibt nach dem Schliessen gesperrt');
+});
+
+test('das Fenster entsperrt nicht, wenn das Update-Fenster noch offen ist', () => {
+  const {w, document} = mitAfk();
+  // Ein offenes Update-Fenster im DOM
+  const upd = document.createElement('div');
+  upd.id = 'update-banner';
+  upd.hidden = false;
+  document.body.appendChild(upd);
+  w.eval('AFK.start(); UI.lastInputTime = Date.now() - 5*60*1000; AFK.pruefen();');
+  assert.equal(document.body.classList.contains('fenster-offen'), true);
+  document.querySelector('[data-afk-bleiben]').click();
+  assert.equal(document.body.classList.contains('fenster-offen'), true,
+    'Das AFK-Fenster hat den Hintergrund freigegeben, obwohl das Update-Fenster noch steht');
 });
 
 test('das Fenster entsteht nur einmal', () => {

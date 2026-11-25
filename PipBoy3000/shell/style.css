@@ -231,6 +231,20 @@ canvas { image-rendering: pixelated; image-rendering: crisp-edges; display: bloc
 }
 .popup-mitte[hidden] { display: none; }
 
+/* Ein Fenster, das "Modal" sagt, muss auch modal sein. Vorher war der
+   Hintergrund nur abgedunkelt und weiter bedienbar - Screenreader lesen dann
+   munter weiter, und ein Klick auf die Karte bewegte den Spieler unter dem
+   Fenster weg. body.fenster-offen setzen beide Fenster, solange eins offen
+   ist (ui_afk.js, ui_update.js). */
+body.fenster-offen #game-screen {
+    pointer-events: none;
+    user-select: none;
+}
+body.fenster-offen #game-screen * {
+    /* auch Kinder: sonst faengt ein inneres Element die Klicks wieder ab */
+    pointer-events: none;
+}
+
 .popup-feld {
     position: relative;
     width: 100%;

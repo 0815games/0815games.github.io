@@ -201,6 +201,14 @@ Object.assign(UI, {
 
         // Klick-Logik für Maps & Container-Exits
         document.addEventListener('click', (e) => {
+            // Fenster und Blasen liegen absichtlich ausserhalb der Ansicht.
+            // Ohne diese Ausnahme gilt jeder Klick darauf als "daneben" und
+            // wirft den Spieler aus dem Inventar zurueck auf die Karte:
+            //   #update-banner  - "SPAETER" und "JETZT LADEN" loesten das aus
+            //   #afk-popup      - "ICH BIN DA" ebenfalls
+            //   #tutorial-feld  - die Sprechblase (kommt mit dem Tutorial)
+            if (e.target && e.target.closest &&
+                e.target.closest('#update-banner, #afk-popup, #tutorial-feld, #tutorial-zeiger')) return;
             if(this.els.navMenu && !this.els.navMenu.classList.contains('hidden')) {
                 if (!this.els.navMenu.contains(e.target) && e.target !== this.els.btnMenu) {
                     this.toggleMenu();

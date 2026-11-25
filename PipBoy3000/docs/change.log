@@ -1,5 +1,22 @@
 # CHANGELOG
 
+## v14.0.19 (Durchsicht der Fenster, 2026-11-24)
+Kein neues Feature - nachgesehen, ob das Ausgelieferte wirklich haelt.
+
+- [FIX] "Modal" war nur ein Wort: `.popup-mitte` dunkelte den Hintergrund ab,
+  sperrte ihn aber nicht. Klick auf die Karte bewegte den Spieler unter dem
+  Fenster weg. Jetzt sperrt `body.fenster-offen` die Zeigerereignisse fuer
+  `#game-screen`, solange ein Fenster steht.
+- [FIX] Das Update-Fenster lag IN `#game-screen` - mit der neuen Sperre waeren
+  seine eigenen Knoepfe tot gewesen. Es steht jetzt bei den Overlays.
+- [FIX] Ein Klick auf das Update- oder AFK-Fenster galt im Klick-Verteiler
+  (`ui_input.js`) als "daneben" und warf den Spieler auf die Karte zurueck.
+- [FIX] AFK-Countdown rechnet mit fester Endzeit statt bei jeder Pruefung neu
+  ab jetzt; ein spaeter Tick laesst den Balken nicht mehr springen.
+- [FIX] Sichtbare Texte mit Umlauten (fünf, ZEITÜBERSCHREITUNG, VERFÜGBAR).
+- [NEU] Tests: Hintergrundsperre, Entsperren bei zwei Fenstern, Lage des
+  Fensters ausserhalb des gesperrten Bereichs, Klick-Ausnahme. 215 gesamt.
+
 ## v14.0.18 (Vault-Tuer als Icon, AFK- und Update-Fenster, 2026-11-24)
 Drei Auftraege in einer Runde:
 

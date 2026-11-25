@@ -6136,6 +6136,7 @@
         };
       }
       document.addEventListener("click", (e) => {
+        if (e.target && e.target.closest && e.target.closest("#update-banner, #afk-popup, #tutorial-feld, #tutorial-zeiger")) return;
         if (this.els.navMenu && !this.els.navMenu.classList.contains("hidden")) {
           if (!this.els.navMenu.contains(e.target) && e.target !== this.els.btnMenu) {
             this.toggleMenu();
@@ -10353,6 +10354,24 @@
   ];
   window.GameData.RELEASED_PATCHES = [
     {
+      version: "14.0.19",
+      datum: "2026-11-24",
+      title: "Durchsicht: Fenster sperren jetzt richtig, und ein Klick wirft nicht mehr raus",
+      punkte: [
+        'Das AFK- und das Update-Fenster sagen "modal", sperrten aber nichts. Der Hintergrund war nur abgedunkelt: ein Klick auf die Karte bewegte den Spieler unter dem Fenster weg, und ein Screenreader las weiter.',
+        "Jetzt ist der Hintergrund gesperrt, solange ein Fenster steht - und danach sofort wieder frei.",
+        "Dabei fiel auf: das Update-Fenster lag in der gesperrten Flaeche. Mit der neuen Sperre waeren seine eigenen Knoepfe tot gewesen. Es steht jetzt bei den Overlays, ausserhalb.",
+        'Ein Klick auf "SPAETER" oder "JETZT LADEN" warf den Spieler aus dem Inventar zurueck auf die Karte. Derselbe Fehler traf "ICH BIN DA" im AFK-Fenster. Beides ist behoben.',
+        'Der AFK-Countdown rechnet jetzt mit einer festen Endzeit. Vorher hat jede Pruefung neu ab "jetzt" gezaehlt - der Balken konnte springen, wenn die Schleife spaeter kam.',
+        'Kleine Texte mit Umlauten: "seit fünf Minuten", "AFK: ZEITÜBERSCHREITUNG", "VERFÜGBAR", "SPÄTER". Vorher stand da "fuenf" und "ZEITUEBERSCHREITUNG" - im Login lesbar.',
+        "Geprueft am ausgelieferten Spiel: Fenster mittig, Text, Zaehler, Sperre, Knoepfe erreichbar, Ansicht bleibt stehen."
+      ],
+      offen: [
+        "Die ICO-Datei ist 0,9 kB klein. Das ist kein Fehler, sondern Absicht: drei PNG-Eintraege, schlichte Farbflaechen, gut komprimierbar.",
+        "Auf einem echten Geraet (Finger, echter Bildschirm) steht die Sichtpruefung der Fenster noch aus."
+      ]
+    },
+    {
       version: "14.0.18",
       datum: "2026-11-24",
       title: "Vault-Tuer als Icon · AFK-Fenster · Update-Fenster mittig",
@@ -10550,14 +10569,14 @@
     return gruende;
   }
   var TEXTE = {
-    verfuegbar: "NEUE VERSION {build} VERFUEGBAR",
+    verfuegbar: "NEUE VERSION {build} VERFÜGBAR",
     wartet: "NEUE VERSION BEREIT - {grund}",
     laedt: "NEUE VERSION WIRD GELADEN...",
     aktuell: "AKTUELLE VERSION",
-    unerreichbar: "VERSIONSPRUEFUNG NICHT ERREICHBAR",
+    unerreichbar: "VERSIONSPRÜFUNG NICHT ERREICHBAR",
     geladen: "NEUE VERSION {build} GELADEN",
     jetzt: "JETZT LADEN",
-    spaeter: "SPAETER"
+    spaeter: "SPÄTER"
   };
   var GRUND = {
     dialog: "Dialog offen",
@@ -10578,14 +10597,22 @@
     let timer = null;
     let ziel = null;
     const sagen = (schluessel, werte = {}) => Object.entries(werte).reduce((satz, [name, wert]) => satz.replace(`{${name}}`, String(wert)), TEXTE[schluessel] || "");
+    function sperreAktualisieren() {
+      if (!document2.body) return;
+      const afk = document2.getElementById("afk-popup");
+      const offen = !balken.hidden || afk && !afk.hidden;
+      document2.body.classList.toggle("fenster-offen", Boolean(offen));
+    }
     function zeichnen() {
       const stand = document2.getElementById("update-banner-stand");
       if (stand) stand.textContent = `AKTUELL ${build}`;
       if (!zustand) {
         balken.hidden = true;
+        sperreAktualisieren();
         return;
       }
       balken.hidden = false;
+      sperreAktualisieren();
       if (zustand.art === "veraltet") {
         const gruende = zustand.blocker || [];
         text.textContent = gruende.length ? sagen("wartet", { grund: gruende.map((g) => GRUND[g] || g).join(", ") }) : sagen("verfuegbar", { build: zustand.build });
@@ -10601,6 +10628,7 @@
         jetzt.hidden = true;
       } else if (zustand.art === "aktuell") {
         balken.hidden = true;
+        sperreAktualisieren();
         return;
       } else {
         text.textContent = sagen("unerreichbar");
@@ -10691,6 +10719,7 @@
     };
     if (spaeter) spaeter.onclick = () => {
       balken.hidden = true;
+      sperreAktualisieren();
     };
     return Object.freeze({ start, stop, pruefen, get build() {
       return build;
@@ -10767,10 +10796,17 @@
       const letzte = typeof UI !== "undefined" && UI.lastInputTime || this.uhrStart || Date.now();
       return Math.max(0, Date.now() - letzte);
     },
+    // Bricht der Spieler das Fenster angetippt und die Zeit laeuft weiter?
+    // Das Fenster rechnet mit einer festen Endzeit, damit Zaehler und Ablauf
+    // nicht auseinanderlaufen, wenn die Pruefung mal spaeter kommt.
     pruefen: function() {
       if (typeof document === "undefined") return;
       if (!this.laeuft()) {
         if (this.fensterOffen) this.fensterSchliessen();
+        return;
+      }
+      if (this.fensterOffen) {
+        this.fensterTick();
         return;
       }
       const stille = this.stille();
@@ -10782,10 +10818,15 @@
         this.fensterZeigen(AFK_GRENZE + AFK_NACHLauf - stille);
       }
     },
+    // Ende der Nachfrist, in Millisekunden seit der Epoche. Einmal gesetzt,
+    // aendert es sich nicht - sonst wuerde der Balken bei jeder Pruefung
+    // springen, weil jede Pruefung die Stille neu misst.
     fensterZeigen: function(restMs) {
       const feld = this.feld();
       if (!feld) return;
+      if (!this.fensterOffen) this.fristEnde = Date.now() + Math.max(0, restMs);
       this.fensterOffen = true;
+      if (document.body) document.body.classList.add("fenster-offen");
       feld.hidden = false;
       const feldInnen = feld.querySelector(".popup-feld");
       if (feldInnen) {
@@ -10796,6 +10837,12 @@
       this.zaehlerZeichnen(restMs);
       const knopf = feld.querySelector("[data-afk-bleiben]");
       if (knopf && document.activeElement !== knopf) knopf.focus();
+    },
+    // Ein Takt des offenen Fensters: Zaehler und Balken nach der Endzeit.
+    fensterTick: function() {
+      const rest = Math.max(0, (this.fristEnde || 0) - Date.now());
+      this.zaehlerZeichnen(rest);
+      if (rest <= 0) this.ausloggen();
     },
     zaehlerZeichnen: function(restMs) {
       const feld = this.feld();
@@ -10810,13 +10857,18 @@
       const feld = this.feld();
       if (feld) feld.hidden = true;
       this.fensterOffen = false;
+      this.fristEnde = null;
+      const update = document.getElementById("update-banner");
+      if (document.body && !(update && !update.hidden)) {
+        document.body.classList.remove("fenster-offen");
+      }
     },
     ausloggen: function() {
       this.fensterSchliessen();
       if (this.ticker) clearInterval(this.ticker);
       this.ticker = null;
       if (typeof UI !== "undefined" && typeof UI.logout === "function") {
-        UI.logout("AFK: ZEITUEBERSCHREITUNG");
+        UI.logout("AFK: ZEITÜBERSCHREITUNG");
       }
     },
     // Das Fenster entsteht beim ersten Bedarf und bleibt danach im DOM.
@@ -10835,7 +10887,7 @@
       el.innerHTML = `
             <div class="popup-feld">
                 <div class="popup-titel" id="afk-popup-titel">BIST DU NOCH DA?</div>
-                <div class="popup-text">Keine Eingabe seit fuenf Minuten.</div>
+                <div class="popup-text">Keine Eingabe seit fünf Minuten.</div>
                 <div class="popup-text" style="margin-top:.35rem">
                     In <span data-afk-zaehler class="text-yellow-400">1:00</span> wirst du abgemeldet.
                 </div>

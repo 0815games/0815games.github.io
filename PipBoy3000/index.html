@@ -40,10 +40,10 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js" crossorigin="anonymous"
             onerror="window.scriptLoadError='firebase-database.js';"></script>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
-    <meta name="pipboy-build" content="14.0.18">
+    <meta name="pipboy-build" content="14.0.19">
     
-    <link rel="stylesheet" href="app.css?v=14.0.18">
-    <link rel="stylesheet" href="style.css?v=14.0.18">
+    <link rel="stylesheet" href="app.css?v=14.0.19">
+    <link rel="stylesheet" href="style.css?v=14.0.19">
     
     <style>
         @keyframes spin-reverse { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
@@ -372,6 +372,30 @@ ${window.logBuffer.slice(-10).join('\n') || '(leer - Fehler trat vor dem ersten 
  
     <div id="player-list-overlay"><div class="font-bold border-b border-green-500 mb-2 pb-1 text-center">SIGNALE</div><div id="player-list-content" class="text-sm space-y-1"></div><button class="action-button w-full mt-2 text-xs" onclick="UI.togglePlayerList()">SCHLIESSEN</button></div>
 
+    <!-- Update-Fenster, mittig wie der AFK-Schutz. Vorher war das ein Balken
+         unten am Rand - leicht zu uebersehen und auf dem Handy hinter der
+         Daumenleiste. Die Kennungen (#update-banner, -text, -now, -later)
+         bleiben, weil ui_update.js und die Tests sie beim Namen nennen.
+
+         WICHTIG: es steht hier bei den Overlays und NICHT in #game-screen.
+         Solange ein Fenster offen ist, sperrt body.fenster-offen die Zeiger-
+         ereignisse fuer #game-screen samt Kindern - ein Fenster darin wuerde
+         seine eigenen Knoepfe lahmlegen. Das AFK-Fenster haengt aus demselben
+         Grund direkt am body. -->
+    <div id="update-banner" hidden class="popup-mitte" role="dialog" aria-modal="true" aria-labelledby="update-banner-titel">
+        <div class="popup-feld">
+            <div class="popup-titel" id="update-banner-titel">SYSTEMUPDATE</div>
+            <div id="update-banner-text" class="popup-text text-yellow-400 tracking-wider"></div>
+            <div class="popup-knoepfe">
+                <button id="update-banner-now" class="action-button border-yellow-500 text-yellow-400" hidden>JETZT LADEN</button>
+                <button id="update-banner-later" class="action-button border-green-700 text-green-600">SPÄTER</button>
+            </div>
+            <div class="popup-zeile" style="margin-top:.7rem">
+                <span>ROBCO // VERSIONSKANAL</span><span id="update-banner-stand"></span>
+            </div>
+        </div>
+    </div>
+
     <div id="game-screen" class="hidden opacity-0 transition-opacity duration-1000 bg-[#000]">
         <header class="flex flex-col w-full z-30 shrink-0 relative bg-[#001100] border-b-2 border-[#39ff14]">
             <div class="flex items-center justify-between p-2 gap-2 h-16 w-full">
@@ -417,28 +441,6 @@ ${window.logBuffer.slice(-10).join('\n') || '(leer - Fehler trat vor dem ersten 
             </div>
         </div>
         
-        <!-- Update-Hinweis: erscheint nur, wenn der Server eine andere Version
-             hat als die geladene (src/ui/ui_update.js). Bewusst unten und
-             schmal - er soll nicht im Weg stehen, waehrend gespielt wird. -->
-        <!-- Update-Fenster, mittig wie der AFK-Schutz. Vorher war das ein Balken
-             unten am Rand - leicht zu uebersehen und auf dem Handy hinter der
-             Daumenleiste. Die Kennungen (#update-banner, -text, -now, -later)
-             bleiben, weil ui_update.js und die Tests sie beim Namen nennen;
-             nur die Form ist neu. -->
-        <div id="update-banner" hidden class="popup-mitte" role="dialog" aria-modal="true" aria-labelledby="update-banner-titel">
-            <div class="popup-feld">
-                <div class="popup-titel" id="update-banner-titel">SYSTEMUPDATE</div>
-                <div id="update-banner-text" class="popup-text text-yellow-400 tracking-wider"></div>
-                <div class="popup-knoepfe">
-                    <button id="update-banner-now" class="action-button border-yellow-500 text-yellow-400" hidden>JETZT LADEN</button>
-                    <button id="update-banner-later" class="action-button border-green-700 text-green-600">SPÄTER</button>
-                </div>
-                <div class="popup-zeile" style="margin-top:.7rem">
-                    <span>ROBCO // VERSIONSKANAL</span><span id="update-banner-stand"></span>
-                </div>
-            </div>
-        </div>
-
         <div id="main-content">
             <div id="main-panel">
                 <div id="view-container" class="crt-effect-container w-full h-full relative">
@@ -619,6 +621,6 @@ ${window.logBuffer.slice(-10).join('\n') || '(leer - Fehler trat vor dem ersten 
     };
 </script>
 
-    <script src="app.js?v=14.0.18"></script>
+    <script src="app.js?v=14.0.19"></script>
 </body>
 </html>
