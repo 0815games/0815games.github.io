@@ -18,6 +18,7 @@ import { soilOf } from '../src/domain/economy.js';
 import { buildCost, productionMultiplier, storageCap, soilFactor as soilFactorOf } from '../src/domain/economy.js';
 import { GRID, keyOf, isUnlocked } from '../src/domain/grid.js';
 import { charterGain } from '../src/domain/charters.js';
+import { houseCapacity } from '../src/domain/settlement.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, '..');
@@ -38,6 +39,13 @@ const SESSIONS = [540, 1140];
 const SESSION_MIN = 15;
 // Aktionen je aktiver Minute. Ein Mensch tippt nicht so schnell wie ein Bot. Annahme, ändert die Zeiten stark.
 const ACTIONS_PER_MINUTE = 2;
+// Siedlungen: Der Bot baut Wohnhäuser, sobald die Bewohner weniger als diesen Anteil der Arbeitsplätze decken.
+const HOUSE_NEED = 0.6;
+// Der Bot baut Wohnhäuser erst ab Stadtlevel 5 (Wirtschaft läuft), mit Mindestzahl Produzenten und Landreserve.
+// Ohne diese Schwelle verdrängen Häuser die Produktion (Küste: 7 von 49 Feldern frei), siehe PATCH-LOG TTT-0062.
+const HOUSE_MIN_PRODUCERS = 8;
+const HOUSE_LAND_RESERVE = 10;
+const HOUSE_MIN_LEVEL = 5;
 
 // Korridore aus GAME_PLAN 4.17 (kumuliert). Die Einheit steht bei jedem Meilenstein.
 const CORRIDOR = {
@@ -98,6 +106,35 @@ function bestAction(s, ctx) {
       // Farm: Wert einer Farm = Grundrate eines Feldes (die Felder kommen unten dazu).
       const rate = def.baseRatePerMin * previewMultiplier(s, x, y, id, place.mode, d);
       consider(producerScore(s, d, def, rate, cost), { kind: 'build', id, x, y });
+    }
+  }
+
+  // Wohnhäuser (Siedlungen): Bewohner für die Arbeitsplätze. Volle Häuser werden ausgebaut.
+  const sett = d.economy.settlements;
+  if (level >= d.buildings.house.unlockTownLevel && level >= HOUSE_MIN_LEVEL) {
+    const hcost = buildCost('house', 0, d);
+    const hAfford = s.coins >= hcost.coins && (s.stock[hcost.material.resource] ?? 0) >= hcost.material.amount;
+    const houses = Object.values(s.tiles).filter((t) => t.building?.id === 'house');
+    const slots = Object.values(s.tiles).filter((t) => t.building && d.buildings[t.building.id].resource && d.buildings[t.building.id].baseRatePerMin > 0).length * sett.workSlots;
+    const residents = houses.reduce((a, t) => a + (t.building.pop ?? sett.startPop), 0);
+    const producers = slots / sett.workSlots;
+    const freeLand = Object.entries(s.tiles).filter(([k, t]) => !t.building && isUnlocked(...k.split(',').map(Number), level, d)).length;
+    if (hAfford && producers >= HOUSE_MIN_PRODUCERS && freeLand > HOUSE_LAND_RESERVE && residents < slots * HOUSE_NEED) {
+      for (let y = 0; y < GRID; y++) for (let x = 0; x < GRID; x++) {
+        if (!isUnlocked(x, y, level, d) || s.tiles[keyOf(x, y)]?.building) continue;
+        if (!checkPlacement(s, x, y, 'house', d).ok) continue;
+        return { kind: 'build', id: 'house', x, y, score: 0.5 };
+      }
+    }
+    for (const [k, t] of Object.entries(s.tiles)) {
+      if (t.building?.id !== 'house') continue;
+      const cap = houseCapacity(t.building.level, sett);
+      if ((t.building.pop ?? sett.startPop) < cap || t.building.level >= d.buildings.house.maxLevel) continue;
+      const uc = buildCost('house', t.building.level, d);
+      if (s.coins >= uc.coins && (s.stock[uc.material.resource] ?? 0) >= uc.material.amount) {
+        const [x, y] = k.split(',').map(Number);
+        return { kind: 'upgrade', x, y, score: 0.5 };
+      }
     }
   }
 

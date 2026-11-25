@@ -1051,3 +1051,26 @@ Ereignis ergänzt.
   - Die Stufenteile sind bei allen Gebäuden gleich (Fahne, Zaun, Schornstein, Gold). Gebäudespezifische Gestalten
     pro Stufe sind nicht umgesetzt.
   - Keine Welle, keine Veröffentlichung, keine Firebase-Regeländerung.
+
+### TTT-0062 – Balance-Simulation: Bot baut Wohnhäuser (lokal, nicht veröffentlicht)
+
+- Auftrag des Nutzers: Balance-Simulation um Siedlungen erweitern, Korridore einhalten.
+- Befund: Ohne Schwelle verdrängen Wohnhäuser die Produktion. Küste hatte am Ende nur 7 von 49 freigeschalteten Feldern frei
+  und blieb bei Stadtlevel 4. Hauskosten, Wachstum, Lohn und Bedarfsanteil allein bringen keine Lösung für alle Biome.
+- Geändert: nur `scripts/simulate-balance.mjs`. Der Bot baut Wohnhäuser nur
+  - ab Stadtlevel 5 (`HOUSE_MIN_LEVEL`),
+  - ab 8 Produzenten (`HOUSE_MIN_PRODUCERS`),
+  - solange mindestens 10 freie Landfelder übrig bleiben (`HOUSE_LAND_RESERVE`),
+  - und solange die Bewohner unter 60 % der Arbeitsplätze liegen (`HOUSE_NEED`).
+  Volle Häuser werden ausgebaut, wenn Münzen und Holz reichen.
+- Wichtig: Das ist eine Regel des Bots, keine Spielregel. Spielerinnen können Wohnhäuser weiter ab Stadtlevel 2 bauen.
+  Die Schwelle 5 wurde gewählt, weil sie alle Korridore hält. Sie ist nicht aus einer Spielerbeobachtung abgeleitet.
+- Messung (`npm run simulate`, 30 Tage): alle Meilensteine in allen vier Biomen im Korridor.
+  Stadtlevel 5 zwischen 5,8 und 6,0 h, Stadtlevel 10 zwischen 12,0 und 13,0 h aktiver Zeit.
+- Verworfene Versuche (nicht wieder versuchen): Hauskosten 60 oder Wachstum 0,1 allein; Lohn 0; Bedarfsanteil 0,3, 0,15, 0,08;
+  Hausbau nur auf Wiese mit Reserve; Hausbau auf dem Gelände mit den meisten freien Feldern.
+- Tests: `npm test` 170/170 grün. `npm run check` ohne Fehler.
+- Grenzen / offen:
+  - Die Testsuite prüft die Korridore nicht, nur Invarianten. Deshalb hier die Messung im Eintrag.
+  - Balance-Werte in `data/` unverändert.
+  - Keine Welle, keine Veröffentlichung, keine Firebase-Regeländerung.
