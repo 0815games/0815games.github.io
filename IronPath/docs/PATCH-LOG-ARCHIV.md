@@ -1,6 +1,6 @@
 # Iron Path – Patch-Log: Archiv
 
-Ältere Einträge IPL-0001 bis IPL-0116. Die neuesten 20 stehen in
+Ältere Einträge IPL-0001 bis IPL-0117. Die neuesten 20 stehen in
 [PATCH-LOG.md](PATCH-LOG.md); die Regeln für beide Dateien dort und in
 [`../../AGENTS.md`](../../AGENTS.md). Beim Verschieben wandert ein Eintrag immer
 vollständig einschließlich seiner Ereignis-Nachträge.
@@ -4685,3 +4685,17 @@ sie geprüft wurde.
 - **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet`. Commit, Push, PR, CI und Merge werden nach tatsächlichem Ereignis nachgetragen. **Die Regeln selbst veröffentlicht der Betreiber** (Datei + Anleitung oben); erst seine Meldung macht den Schutz live.
 - **Offen / nächster Schritt:** Betreiber-Publish der Delta-Datei. Danach Punkt 3: Sektor-Modifikatoren für Endlos-Identität.
 
+
+## IPL-0117 – Sektor-Modifikatoren: Panzerkolonne, Luftherrschaft, Eisensturm (Welle `20261123-sector1`, PR `#379`)
+- **Zeit / Quelle:** 2026-11-23 UTC; Betreiber: „Regeln published, weiter geht's" – die Zuwachs-Deckel aus `IPL-0116` sind damit live (in `AUSBAU-PLAN.md` abgehakt), danach Punkt 3 der Reihenfolge.
+- **Block / Ziel:** Endlos-Identität. Rückzugs-Sektoren unterschieden sich bisher nur über Kartengröße und Zahlen-Skalierung (+12 % Leben/+5 % Tempo je Stufe); jetzt hat jede Stufe einen erkennbaren Gegner-Schwerpunkt, auf den man sich beim Wiederaufbau einstellt.
+- **Branch / Basis:** `arena/8b777781-0815games-github-io` ab `e627363b7949807ed28e47faa4509caae1b09552` (`main`, Merge PR `#378`).
+- **Änderungen / Dateien:**
+  - `IronPath/core/combat.mjs`: `SECTOR_MODIFIERS` (Sektor 2 `armor` „Armor Column", Sektor 3 `air` „Air Superiority", Sektor 4 `storm` „Iron Storm", jeweils mit Aufklärungs-Satz) und `sectorFormation(formation, sector)`: reine Ableitung aus der Sektorstufe – jede dritte leichte Einheit (Infanterie/Scout) wird zum Panzer (S2), jede dritte Bodeneinheit zum Flugzeug (S3), im Eisensturm abwechselnd Panzer/Flugzeug (S4). Bosse werden nie umgewandelt, Wellenlänge bleibt, Sektor 1 und alle Nicht-Sektor-Felder unverändert.
+  - `IronPath/core/simulation.mjs`: Die Spawn-Formation läuft durch `sectorFormation`, aber nur im Solo-Feld (bei `individualSupplies`/`hostId` gilt Sektor 0) – Koop-/Versus-Balance bleibt unangetastet, die Sektor-Kette des Solo-Endlos trägt die Identität.
+  - `IronPath/game.js` + `i18n/localization-battle-de.mjs`: Die Funk-Übertragung beim Sektor-Rückzug nennt jetzt den nächsten Sektor und die Gegenmaßnahme („Intel on the next sector: …"), DE vollständig.
+  - `IronPath/tests/sector-modifiers.test.mjs` (neu, 4 Tests): Modifikator-Tabelle, Umwandlungsregeln (Boss/Länge unverändert), echte Spawn-Probe Sektor 1 vs. 2 (gleiche Wellengröße, mehr Panzer), Funk-Anker in `game.js`.
+  - Cache-Welle `20261123-sector1` (79 Dateien), Feldnotizen `sector1` in `patch-notes.mjs`; Log-Rotation `IPL-0097` ins Archiv (Haupt `IPL-0098…IPL-0117`, Archiv bis `IPL-0097`).
+- **Prüfungen:** `sector-modifiers` 4/4; Balance-Gegenprobe `balance-suite` + `coop-balance` + `endless` + `combat` 20/20 (die neuen Formationen kippen keine gesetzte Marke). `patch.mjs check --fast`: 0 Fehler. Gesamtsuite 1314 Tests, 1313 bestanden + 1 bekannter Flachklon-Skip (`release-pages-site` nach Unshallow 6/6) – effektiv 1314/1314.
+- **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet`. Commit, Push, PR `#379`, CI, Merge und Pages-Auslieferung werden als Ereignis nachgetragen.
+- **Offen / nächster Schritt:** Punkt 4 der Reihenfolge: Scrap-Senke fürs Spätspiel und Kampagnen-NG+ über das vorhandene Druck-System.

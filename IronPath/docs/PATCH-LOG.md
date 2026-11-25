@@ -57,20 +57,6 @@ jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderl
 
 
 
-## IPL-0117 – Sektor-Modifikatoren: Panzerkolonne, Luftherrschaft, Eisensturm (Welle `20261123-sector1`, PR `#379`)
-- **Zeit / Quelle:** 2026-11-23 UTC; Betreiber: „Regeln published, weiter geht's" – die Zuwachs-Deckel aus `IPL-0116` sind damit live (in `AUSBAU-PLAN.md` abgehakt), danach Punkt 3 der Reihenfolge.
-- **Block / Ziel:** Endlos-Identität. Rückzugs-Sektoren unterschieden sich bisher nur über Kartengröße und Zahlen-Skalierung (+12 % Leben/+5 % Tempo je Stufe); jetzt hat jede Stufe einen erkennbaren Gegner-Schwerpunkt, auf den man sich beim Wiederaufbau einstellt.
-- **Branch / Basis:** `arena/8b777781-0815games-github-io` ab `e627363b7949807ed28e47faa4509caae1b09552` (`main`, Merge PR `#378`).
-- **Änderungen / Dateien:**
-  - `IronPath/core/combat.mjs`: `SECTOR_MODIFIERS` (Sektor 2 `armor` „Armor Column", Sektor 3 `air` „Air Superiority", Sektor 4 `storm` „Iron Storm", jeweils mit Aufklärungs-Satz) und `sectorFormation(formation, sector)`: reine Ableitung aus der Sektorstufe – jede dritte leichte Einheit (Infanterie/Scout) wird zum Panzer (S2), jede dritte Bodeneinheit zum Flugzeug (S3), im Eisensturm abwechselnd Panzer/Flugzeug (S4). Bosse werden nie umgewandelt, Wellenlänge bleibt, Sektor 1 und alle Nicht-Sektor-Felder unverändert.
-  - `IronPath/core/simulation.mjs`: Die Spawn-Formation läuft durch `sectorFormation`, aber nur im Solo-Feld (bei `individualSupplies`/`hostId` gilt Sektor 0) – Koop-/Versus-Balance bleibt unangetastet, die Sektor-Kette des Solo-Endlos trägt die Identität.
-  - `IronPath/game.js` + `i18n/localization-battle-de.mjs`: Die Funk-Übertragung beim Sektor-Rückzug nennt jetzt den nächsten Sektor und die Gegenmaßnahme („Intel on the next sector: …"), DE vollständig.
-  - `IronPath/tests/sector-modifiers.test.mjs` (neu, 4 Tests): Modifikator-Tabelle, Umwandlungsregeln (Boss/Länge unverändert), echte Spawn-Probe Sektor 1 vs. 2 (gleiche Wellengröße, mehr Panzer), Funk-Anker in `game.js`.
-  - Cache-Welle `20261123-sector1` (79 Dateien), Feldnotizen `sector1` in `patch-notes.mjs`; Log-Rotation `IPL-0097` ins Archiv (Haupt `IPL-0098…IPL-0117`, Archiv bis `IPL-0097`).
-- **Prüfungen:** `sector-modifiers` 4/4; Balance-Gegenprobe `balance-suite` + `coop-balance` + `endless` + `combat` 20/20 (die neuen Formationen kippen keine gesetzte Marke). `patch.mjs check --fast`: 0 Fehler. Gesamtsuite 1314 Tests, 1313 bestanden + 1 bekannter Flachklon-Skip (`release-pages-site` nach Unshallow 6/6) – effektiv 1314/1314.
-- **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet`. Commit, Push, PR `#379`, CI, Merge und Pages-Auslieferung werden als Ereignis nachgetragen.
-- **Offen / nächster Schritt:** Punkt 4 der Reihenfolge: Scrap-Senke fürs Spätspiel und Kampagnen-NG+ über das vorhandene Druck-System.
-
 ## IPL-0118 – Scrap-Senke „Kriegsanstrengung" + Kampagnen-NG+ „Prestige" (Welle `20261123-prestige1`, PR `#380`)
 - **Zeit / Quelle:** 2026-11-23 UTC; Betreiber: „Weiter" – Punkt 4 der Reihenfolge in `AUSBAU-PLAN.md` (4a + 4b in einem Paket, weil beide dieselbe Regel-Veröffentlichung teilen).
 - **Block / Ziel:** Langzeit-Fortschritt. (4a) Veteranen-Scrap wuchs nach 6×3 Armory-Rängen und vier Werkstatt-Rezepten nutzlos weiter; (4b) die Kampagne war nach dem Durchspielen nur noch unveränderte Wiederholung. Jetzt: Scrap als gespeichertes Spenden-Ziel mit Logistik-Belohnung, und abgeschlossene Missionen als Prestige-Wiederholung auf dem vorhandenen Bedrohungs-/Druck-System — ohne neue Währung.
@@ -329,3 +315,22 @@ Nur Darstellung, kein Sim-State, kein Wire-Format, statisch im Terrain-Cache (Re
 
 **Git / PR / Release:** Commits auf dem genannten Branch (index.html, soldier-screen.css, soldier-screen.mjs, account.js, workshop-model, localization-de, Tests, Smoke), Push, PR `#479`; zweiter Commit: Doku (dieser Eintrag, Archiv-Schiebung `IPL-0116`, AUSBAU-Zeile 21, Feldnotizen `aim14` mit `pr: 479`) und Cache-Welle `20261125-aim14` (`bump ... --from 20261125-aim13 --apply`). CI, Merge und Pages werden als Ereignis nachgetragen.
 
+## IPL-0137 – Alles gleichzeitig: equipped wird die Taken-Liste, kein Slot-Wettbewerb mehr (Welle `20261125-aim15`, PR `#483`)
+
+**Auftrag (Betreiber-Rückfrage `slot-system` = „alles gleichzeitig", verbindlich):** Jedes angelegte Stück zählt gleichzeitig; nichts assert etwas (Weste + Schuhe + Radio + Waffe parallel), Boni stapeln. Toggle (an/aus) bleibt; kein Slot-Ersatz mehr. Auslöser: Betreiber meldete „Veste legt Schuhe ab" – Analyse zeigte Slot-Konkurrenz (legacySlots teilen `gear`), keinen Defekt.
+
+**Änderungen:**
+- **`workshop-model` v2:** `equipped` ist die Taken-Liste (Array). `migrateWorkshop` zieht beim Erst-Read alles, was das Konto besitzt; `craftWorkshop` nimmt Frisch-Crafts sofort; `toggleEquipped` ersetzt den Slot-Equip (Slot-Argument wird ignoriert, alte Aufrufer harmlos); `unlockPrestige` ergänzt owned+equipped.
+- **`workshop-wire` v2:** encodet `[2,components,owned,taken,mods]`, liest das alte Drei-Slot-v1 weiter und migriert es zu „alles anziehen"; Profil-Reducer behalten ihre Signaturen; `meltWorkshop`/`meltPrestige`/`completeStoryMission` laufen auf der Liste; Match-Loadout-Encoder/Decoder bei `protocol` 2.
+- **Effects/Coop:** `captureWorkshopLoadout`/`workshopEffects` akzeptieren beliebige, eindeutige Item-Mengen `{id,mod}` (kein Slot-Feld mehr); `workshop-multiplayer` `protocol=2`, Lock/Verify wie gehabt.
+- **UI:** Dossier-Picker und Armory-Werkstatt sind TAKE/TAKEN/TAKE-OFF-Toggles (Command `{type:'equip',item}`); die Figurenkarten zeigen jedes getragene Stück ihrer Kategorie (`NOTHING TAKEN` ohne); Armory-Sektion „Taken right now" statt Slot-Karten; neue DE-Strings.
+- **Profil-Stats:** `core/soldier-profile.mjs` und die HERO-DAMAGE-Zeilen in `account.js` lesen die Taken-Liste über dieselben `workshopEffects` wie der Match (Fallback: alter Ein-Slot-Index), die Collection-Flags folgen der Liste.
+- **Cache-Welle** `20261125-aim15` (`patch.mjs bump ... --from 20261125-aim14 --apply`,79 Dateien); patch-notes-Welle `aim15` (`pr: 483`).
+
+**Verträge:** `workshop-{model,wire,effects,multiplayer,solo,view,account,transactions}` und `prestige-campaign`, `relics`, `balance-suite`, `soldier-*`, `solo-deployment`, `progression-service` auf v2 umgeschrieben; Emulator-Regeltests `workshop-storage`/`workshop-draft` folgen der Taken-Liste (auto-take + Toggle); Smoke `command-center.cjs` pinnt `NOTHING TAKEN` und den TAKEN-Toggle der Werkstatt.
+
+**Prüfungen:** Suite **1365 pass / 1366, 0 fail**; `schnelltor` „Kein Fehler, 2 Hinweis(e)" ohne Zugangsdaten-Muster; Stress grün; alle 11 IronPath-Checks grün (der externe `Vercel – pipboy3003`-Check failt unabhängig).
+
+**Git / PR / Release:** Branch `arena/4f288910-0815games-github-io` ab `cf1d0ca`; Commits `cd8a8c9` (Kern+Tests), `f544854` (patch-notes pr:483), `eaf8d5c`/`fefbdbc` (Emulator-Regeltests); Push, PR `#483`. Während der CI-Phase war GitHub-API-instabil (502/500 auf Mutationen, tote Push-Events); Close/Reopen brachte PR-Head und Checks auf den finalen Commit. CI: 11/11 grün, Merge `3c33b982` (2026-11-25 16:30:54Z). Pages und Betreiber-Kommentar werden als Ereignis nachgetragen.
+
+**Offen / nächster Schritt:** Pages-Lauf + Kommentar nachtragen; dann Welle B (Fund-System „FOUND"), danach Welle C (Armory-Optik).
