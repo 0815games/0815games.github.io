@@ -1,12 +1,12 @@
 // Weltansicht: Insel im Meer, Kamera, Eingabe, Partikel und Tag-Nacht.
 // renderWorld() zeichnet nur auf einen Kontext und ist deshalb auch ohne Browser prüfbar.
 // createScene() verbindet sie mit einem <canvas> im DOM.
-import { HW, HH, toScreen, toTile, hash } from './iso.js?v=20261125-zoom1';
-import { drawTile, drawBuilding, fillPoly, shade, mix, P } from './art.js?v=20261125-zoom1';
+import { HW, HH, toScreen, toTile, hash } from './iso.js?v=20261125-zoom2';
+import { drawTile, drawBuilding, fillPoly, shade, mix, P } from './art.js?v=20261125-zoom2';
 
 export const GRID_SIZE = 10;     // spielbares Raster (siehe src/domain/grid.js)
 export const HALL = { x: 4, y: 4 };
-export const WAVE_MIN_ZOOM = 0.75; // darunter keine Wellen auf dem Wasser
+export const DETAIL_MIN_ZOOM = 0.75; // darunter keine kleinen Details (Gras, Blumen, Wellen, Zweitbäume)
 export const PAD = 9;            // Land und Meer außerhalb des Rasters, in Kacheln
 const ISLAND_CENTER = 4.5;
 const ISLAND_RADIUS = 11.5;
@@ -172,8 +172,9 @@ export function renderWorld(ctx, { W, H, view, model, time, day, fx, hover }) {
         sideS: terrain !== 'water' && isWater(x, y + 1, model),
         sideE: terrain !== 'water' && isWater(x + 1, y, model),
         locked,
-        // Außerhalb des Rasters und bei niedrigem Zoom keine Wellenlinien (Performance).
-        waves: inGrid(x, y) && view.zoom >= WAVE_MIN_ZOOM,
+        // Bei niedrigem Zoom weniger Kleinkram (Performance). Wellen nur auf dem Raster.
+        detail: view.zoom >= DETAIL_MIN_ZOOM,
+        waves: inGrid(x, y) && view.zoom >= DETAIL_MIN_ZOOM,
       });
       const tile = inGrid(x, y) ? model.state?.tiles?.[`${x},${y}`] : null;
       if (tile?.building && !locked) {

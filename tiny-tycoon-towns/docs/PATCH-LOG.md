@@ -718,3 +718,24 @@ Ereignis ergänzt.
 - Git / PR / Veröffentlichung: Commit folgt. Nicht veröffentlicht.
 - Offen / nächster Schritt: Nutzer testet die Vorschau (Herauszoomen auf Handy und Desktop).
   Weitere Kosten sind möglich: ein Offscreen-Cache für die statischen Kacheln wäre der nächste Schritt.
+
+### TTT-0047 – Mindestzoomstufe für kleine Details (Welle `20261125-zoom2`)
+
+- Zeit / Quelle: Sitzung 2026-11-25 (UTC). Folgeschritt zu TTT-0046, Nutzerwunsch: Mindestzoomstufe.
+- Branch / Basis: `arena/84679235-0815games-github-io`, Basis `72cba04` (`main`, enthält TTT-0046).
+- Änderungen / Dateien:
+  - `src/world/scene.js`: `DETAIL_MIN_ZOOM` = 0,75. Unterhalb davon `env.detail = false`. Wellen gelten weiter nur auf dem Raster.
+  - `src/world/art.js`: `drawTile` zeichnet Gras, Blumen, Sandlinien, Zweitbäume und Zweitfelsen nur mit `detail`. Gebäude, Hauptbaum und Hauptfelsen bleiben immer.
+  - `src/patch-notes.mjs`: Stadtchronik `20261125-zoom2` (DE/EN).
+  - Cache-Welle `20261125-zoom2` (`?v=`, `index.html`, `src/main.js`, `release-version.json`).
+- Messung (lokal, `@napi-rs/canvas` als Ersatz für Browser-Canvas, 60 Durchläufe, zwei Läufe, Vergleich mit `HEAD` = TTT-0046):
+  - Zoom 0,41 (k=0,45): 23,2–23,5 ms → 15,3–16,7 ms pro Frame.
+  - Zoom 0,63 (k=0,70): 24,0–24,6 ms → 15,5–15,6 ms.
+  - Zoom 0,90 (k=1,00): unverändert ~25 ms (Details aktiv).
+  - Zoom 2,34 (k=2,60): unverändert ~14 ms.
+- Prüfungen (lokal, Node 22.22.3):
+  - `npm test`: 129 Tests, 129 pass, 0 fail.
+  - `npm run check`: kein Fehler, 3 Hinweise.
+  - Nicht geprüft: Darstellung im Browser und auf dem Handy. Ob die Details bei 0,75 optisch stören, muss der Nutzer sehen.
+- Git / PR / Veröffentlichung: Commit folgt. Nicht veröffentlicht.
+- Offen / nächster Schritt: Bei Standardzoom kostet das Zeichnen weiter ~25 ms in der Messung. Ein Zwischenspeicher für die statischen Kacheln wäre dafür der nächste Schritt, falls das Ruckeln bleibt.

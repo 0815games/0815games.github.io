@@ -1,7 +1,7 @@
 // Zeichnung der Weltansicht: Gelände, Wasser, Bäume, Gebäude und Animationen.
 // Reine Canvas-2D-Funktionen ohne DOM-Zugriff. Jede Funktion bekommt den Kontext,
 // den Mittelpunkt einer Kachel auf dem Bildschirm und die Zeit in Sekunden.
-import { HW, HH, toScreen, hash } from './iso.js?v=20261125-zoom1';
+import { HW, HH, toScreen, hash } from './iso.js?v=20261125-zoom2';
 
 // ---------- Farbe ----------
 
@@ -177,20 +177,24 @@ export function drawTile(ctx, x, y, terrain, t, env) {
     if (env.waves !== false) waves(ctx, c, x, y, t, env.day);
     return;
   }
+  // Kleine Details (Gras, Blumen, Sandlinien, Zweitbäume und -felsen) nur bei ausreichendem Zoom.
+  const detail = env.detail !== false;
   if (terrain === 'sand') {
-    ctx.strokeStyle = 'rgba(180,140,80,0.25)';
-    ctx.lineWidth = 1;
-    const p = P(c, (hash(x, y, 90) - 0.5) * 0.4, (hash(x, y, 91) - 0.5) * 0.4, 0);
-    ctx.beginPath();
-    ctx.ellipse(p.x, p.y, 8, 3, 0, 0, Math.PI);
-    ctx.stroke();
+    if (detail) {
+      ctx.strokeStyle = 'rgba(180,140,80,0.25)';
+      ctx.lineWidth = 1;
+      const p = P(c, (hash(x, y, 90) - 0.5) * 0.4, (hash(x, y, 91) - 0.5) * 0.4, 0);
+      ctx.beginPath();
+      ctx.ellipse(p.x, p.y, 8, 3, 0, 0, Math.PI);
+      ctx.stroke();
+    }
   } else if (terrain === 'rock') {
     boulder(ctx, P(c, -0.15, 0.1), 1.1, base);
-    if (hash(x, y, 92) > 0.5) boulder(ctx, P(c, 0.22, -0.18), 0.7, base);
+    if (detail && hash(x, y, 92) > 0.5) boulder(ctx, P(c, 0.22, -0.18), 0.7, base);
   } else if (terrain === 'forest') {
     tree(ctx, P(c, -0.18, 0.12), 1, t, hash(x, y, 93) * 6);
-    if (hash(x, y, 94) > 0.45) tree(ctx, P(c, 0.2, -0.16), 0.8, t, hash(x, y, 95) * 6, true);
-  } else {
+    if (detail && hash(x, y, 94) > 0.45) tree(ctx, P(c, 0.2, -0.16), 0.8, t, hash(x, y, 95) * 6, true);
+  } else if (detail) {
     for (let i = 0; i < 3; i++) if (hash(x, y, 100 + i) > 0.35) tuft(ctx, c, t, hash(x, y, 110 + i) * 10);
     if (hash(x, y, 120) > 0.72) flowers(ctx, c, x, y);
   }

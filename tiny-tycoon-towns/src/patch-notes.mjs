@@ -4,6 +4,16 @@
 
 export const RELEASED_PATCHES = [
   {
+    build: '20261125-zoom2',
+    date: '2026-11-25',
+    items: [
+      {
+        de: 'Beim Herauszoomen fallen kleine Details wie Gras, Blumen und Zweitbäume weg. Das Spiel läuft dadurch flüssiger. Gebäude, Hauptbäume und Felsen bleiben sichtbar.',
+        en: 'When zoomed out, small details such as grass, flowers and secondary trees are hidden. The game runs more smoothly. Buildings, main trees and rocks stay visible.',
+      },
+    ],
+  },
+  {
     build: '20261125-zoom1',
     date: '2026-11-25',
     items: [
