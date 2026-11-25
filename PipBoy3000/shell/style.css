@@ -210,22 +210,6 @@ canvas { image-rendering: pixelated; image-rendering: crisp-edges; display: bloc
     overflow-y: auto; 
 }
 
-/* Das Logo auf dem Boot-Screen. Das Bild ist die Vault-Tuer aus icon.svg;
-   der Schein kommt aus dem CSS, damit das SVG ein SVG bleibt und in jeder
-   Groesse scharf ist. Kein Farbwechsel - #39ff14 ist das Leuchtgruen der
-   Oberflaeche. */
-.vaulttor-glow {
-    filter: drop-shadow(0 0 6px rgba(57, 255, 20, 0.55)) drop-shadow(0 0 18px rgba(57, 255, 20, 0.22));
-    animation: vaulttor-puls 3.2s ease-in-out infinite;
-}
-@keyframes vaulttor-puls {
-    0%, 100% { opacity: 0.92; }
-    50% { opacity: 1; }
-}
-@media (prefers-reduced-motion: reduce) {
-    .vaulttor-glow, .animate-spin { animation: none; }
-}
-
 /* Spezieller Fix für Boot-Sequenz, damit sie nicht oben klebt */
 #boot-sequence {
     flex-grow: 1;

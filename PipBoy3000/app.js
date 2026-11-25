@@ -10371,20 +10371,19 @@
   ];
   window.GameData.RELEASED_PATCHES = [
     {
-      version: "14.0.16",
+      version: "14.0.17",
       datum: "2026-11-24",
-      title: "Neues Logo · Vault-Tuer statt Zielscheibe",
+      title: "App-Icon · der Kreisel vom Ladebildschirm",
       punkte: [
-        "Das Logo ist jetzt eine Vault-Tuer: acht Verriegelungsbolzen am Rand, drei massive Speichen, Nabe mit Kernloch.",
-        "Vorher war es eine Zielscheibe - gleichmaessige Ringe und ein Punkt in der Mitte. Das war ein Visier, kein Vault.",
-        "Dasselbe Motiv an drei Stellen, aus einer Datei: App-Icon, Favicon (16/32/48) und das grosse Logo im Boot-Screen. Kein zweites Bild, das auseinanderlaufen kann.",
-        "Am Boot-Screen steht das Logo jetzt als Bild statt als zusammengesteckte Tailwind-Ringe mit einem gelben Kasten darin.",
-        "Bei 16 px im Browser-Tab bleibt es erkennbar: die Speichen sind dort absichtlich dicker als in der grossen Fassung, die Bolzen breiter. Ein Icon in Originalproportionen waere bei 16 px ein gruener Punkt.",
-        "Die Tuer hat Luft zum Rand (Motiv auf 92 % eingezogen, Bolzen bis r=47). Ohne das klebte sie am Bildrand - im Test aufgefallen."
+        "Korrektur zu 14.0.16: Der Ladebildschirm bleibt, wie er war. Der Kreisel war richtig und wird nicht angefasst.",
+        "Das App-Icon zeigt jetzt genau dieses Motiv: zwei gruene Boegen oben und unten, der gelbe Ring innen, in der Mitte der Reaktor mit Kern.",
+        "Zwei Fassungen, weil ein Motiv nicht in jeder Groesse traegt. Ab 64 px mit zwoelf gelben Punkten, darunter mit dickeren Boegen und einem vollen gelben Ring - zwoelf Punkte auf 32 px waeren zwoelf einzelne Pixel und damit ein grauer Ring.",
+        "Bei 16 px im Browser-Tab bleibt der Kreisel erkennbar: Kern in der Mitte, gelber Ring, Boegen oben und unten, offen links und rechts. Der Test misst genau diese drei Merkmale am Favicon.",
+        "Das Favicon hat jetzt vier Farben statt zwei (Leuchtgruen, Gelb, das dunkle Gruen der Scheibe, Schwarz). Der Test prueft, dass es genau diese vier sind und keine Zwischentoene - Zwischentoene heisst weichgezeichnet."
       ],
       offen: [
-        "Die Form ist von Hand gezeichnet, nicht aus einer Vault-Vorlage abgemalt. Die Merkmale stimmen (Bolzenkranz, drei Speichen, Kernloch), die genauen Winkel sind eigene Zahlen.",
-        "Das Logo im Boot-Screen dreht sich nicht selbst - nur der gestrichelte Ring aussen laeuft. Eine sich drehende Tuer waere ein eigenes Verhalten, kein Bild."
+        "Bei 16 px kippt der gelbe Ring optisch in ein Kreuz - das ist bei 8x8 Pixeln nicht zu vermeiden. Der Kreisel ist dort trotzdem erkennbar, die Tuer waere es nicht.",
+        "Das Icon ist aus denselben Formen nachgebaut wie der CSS-Kreisel, nicht daraus exportiert. Die Maeße stimmen ueberein, ein Pixel-fuer-Pixel-Abzug ist es nicht."
       ]
     },
     {

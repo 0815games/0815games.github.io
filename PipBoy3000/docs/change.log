@@ -1,5 +1,34 @@
 # CHANGELOG
 
+## v14.0.17 (App-Icon: der Kreisel vom Ladebildschirm, 2026-11-24)
+Korrektur zu 14.0.16. Auftrag: "Nicht das Logo beim Laden, das war Gold wert.
+Aber das App Icon, dann gerne so wie das alte Lade Logo."
+
+14.0.16 hat das falsche angefasst: es hat den Kreisel auf dem Startbildschirm
+durch die Vault-Tuer ersetzt. Der Kreisel war richtig. Zurueckgebaut, und das
+App-Icon traegt jetzt sein Motiv.
+
+- [FIX] **Boot-Screen zurueck auf den Kreisel.** Zwei gegenlaeufig drehende
+  Ringe, Reaktor mit Scanlinie, alles wie vorher. Das `vaulttor-glow` aus
+  14.0.16 ist weg, das `<img>` auch - der Kreisel ist CSS, kein Bild.
+- [NEU] **App-Icon = Kreisel.** Zwei gruene Boegen oben und unten, gelber
+  Punktkranz innen, Reaktor mit Scheibe, Ring und Kern. Quelle bleibt
+  `docs/muster/app-icon.svg`, aus der `tools/app-icon.mjs` alle Groessen
+  rastert.
+- [NEU] **Zwei Fassungen.** Ab 64 px mit zwoelf gelben Punkten; darunter ohne
+  Punkte, dafuer dickere Boegen und ein voller gelber Ring. Zwoelf Punkte auf
+  32 px waeren zwoelf einzelne Pixel - also ein grauer Ring statt eines
+  Kreisels.
+- [FIX] **Das Favicon hat jetzt vier Farben.** Leuchtgruen, Gelb, das dunkle
+  Gruen der Scheibe und Schwarz. Die Pixelformel zeichnet sie ohne
+  Antialiasing, damit bei 16 px keine Zwischentoene entstehen.
+- [TEST] **Die Icon-Tests pruefen den Kreisel.** Bei 16 px: Kern in der Mitte
+  hell, Gelb zwischen Kern und Rand, oben und unten ein Bogen, links und rechts
+  offen (das ist der Unterschied zwischen Kreisel und geschlossenem Ring). Der
+  Geometrie-Test haelt Bogenradius, Bogenbreite, zwei Boegen und den gelben
+  Ring zwischen SVG und Werkzeug zusammen. Der Farbtest nennt jetzt die vier
+  erlaubten Farben beim Namen statt "hoechstens vier".
+
 ## v14.0.16 (Neues Logo: Vault-Tuer, 2026-11-24)
 Auftrag: "Das Logo ist haesslich - bau ne vaulttuer als Logo."
 
