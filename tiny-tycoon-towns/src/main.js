@@ -27,7 +27,7 @@ import { checkTownName } from './town-names.js?v=20261125-bal7';
 import { friendsShell, mountFriends } from './friends-ui.js?v=20261125-bal7';
 import { createBoard } from './world/board.js?v=20261125-bal7';
 import { createLoginScene } from './world/login-scene.js?v=20261125-bal7';
-import { TUTORIAL_STEPS, HELP_SECTIONS, CHECK_LABELS, tutorialResume, tutorialStored } from './tutorial.js?v=20261125-bal7';
+import { TUTORIAL_STEPS, HELP_SECTIONS, CHECK_LABELS, STATE_TASKS, tutorialResume, tutorialStored } from './tutorial.js?v=20261125-bal7';
 import { createVersionUI } from './version-ui.mjs?v=20261125-bal7';
 import { startAfkWatch, showAfkOverlay } from './afk.js?v=20261125-bal7';
 import { fullResources, fillPercent } from './stock-dock.js?v=20261125-bal7';
@@ -554,6 +554,7 @@ for (const type of ['gesturestart', 'gesturechange', 'gestureend']) {
 document.addEventListener('dblclick', (e) => { if (!e.target.closest?.('.board, .visit-board')) e.preventDefault(); }, { passive: false });
 
 function selectTile({ x, y }) {
+  markTutorial('tap');
   const key = `${x},${y}`;
   if (key !== lastSelKey) {
     lastSelKey = key;
@@ -612,6 +613,8 @@ function bindStatic() {
   });
   $('#panel').addEventListener('click', onPanelClick);
   $('#stock-btn').addEventListener('click', openStock);
+  $('#xp-bar')?.addEventListener('click', () => markTutorial('xp'));
+  $('#merchant')?.addEventListener('click', () => markTutorial('merchant'));
   $('#dock-toggle').addEventListener('click', () => setDockOpen($('#dock-body').hidden));
   setDockOpen(window.matchMedia?.('(min-width: 900px)').matches ?? false); // Desktop offen, Mobile eingeklappt
   $('#stock-close').addEventListener('click', () => $('#stock-sheet').close());
@@ -632,6 +635,7 @@ function bindStatic() {
   $('#stock').addEventListener('click', (e) => {
     const btn = e.target.closest('[data-sell]');
     if (!btn || !state) return;
+    markTutorial('sell');
     dispatch(toggleSell(state, { resource: btn.dataset.sell }));
   });
   $('#feld-btn').addEventListener('click', showFieldNotes);
@@ -703,6 +707,7 @@ function onPanelClick(e) {
 }
 
 function openStock() {
+  markTutorial('stock');
   renderStock();
   const sheet = $('#stock-sheet');
   if (!sheet.open) sheet.showModal();
@@ -786,6 +791,34 @@ function saveTutorialStep(step) {
   dispatch(setTutorialStep(state, tutorialStored(Math.min(step, TUTORIAL_STEPS.length))));
 }
 
+/** Im Browser gemerkte Aufgaben dieses Kontos (Feld angetippt, Inventar geöffnet, …). */
+function tutorialBrowserTasks() {
+  if (!state) return new Set();
+  try {
+    return new Set(JSON.parse(localStorage.getItem(`ttt-tut-tasks-${state.id}`) || '[]'));
+  } catch {
+    return new Set();
+  }
+}
+
+/** Erledigt, egal ob im Spielstand oder im Browser gemerkt. */
+function tutorialTaskIsDone(task) {
+  if (STATE_TASKS.includes(task)) return tutorialTaskDone(state, task);
+  return tutorialBrowserTasks().has(task);
+}
+
+/** Merkt eine Aufgabe, die nicht im Spielstand steht, und aktualisiert den offenen Schritt. */
+function markTutorial(task) {
+  if (!state || STATE_TASKS.includes(task)) return;
+  const set = tutorialBrowserTasks();
+  if (set.has(task)) return;
+  set.add(task);
+  try {
+    localStorage.setItem(`ttt-tut-tasks-${state.id}`, JSON.stringify([...set]));
+  } catch { /* ohne Speicher gilt die Aufgabe nur für diese Sitzung nicht; der Schritt bleibt offen */ }
+  refreshTutorialTask();
+}
+
 /** Hinweis, Häkchen und Knopf im offenen Schritt nachziehen, sobald eine Aufgabe erledigt ist. */
 function refreshTutorialTask() {
   if (tutorialIndex === null) return;
@@ -795,7 +828,7 @@ function refreshTutorialTask() {
     for (const t of step.checklist) {
       const el = $(`#tut-check-${t}`);
       if (!el) continue;
-      const done = tutorialTaskDone(state, t);
+      const done = tutorialTaskIsDone(t);
       el.textContent = `${done ? '✓' : '○'} ${CHECK_LABELS[t]}`;
       el.classList.toggle('done', done);
     }
@@ -804,7 +837,7 @@ function refreshTutorialTask() {
     return;
   }
   if (!step?.task) return;
-  const done = tutorialTaskDone(state, step.task);
+  const done = tutorialTaskIsDone(step.task);
   const hint = $('#tut-hint');
   if (hint) {
     hint.textContent = done ? 'Gut gemacht, du hast es ausprobiert.' : 'Probier es direkt aus. Oder wähle Später.';
@@ -853,6 +886,7 @@ function showTutorialStep(index) {
 
 /** Hilfe-Übersicht: alle Abschnitte, jederzeit über den Hilfe-Knopf. */
 function showHelp() {
+  markTutorial('help');
   const sections = HELP_SECTIONS.map((sec) => `<section>
       <h3>${esc(sec.title)}</h3>
       ${sec.paragraphs.map((p) => `<p>${esc(p)}</p>`).join('')}

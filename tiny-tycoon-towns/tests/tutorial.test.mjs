@@ -52,6 +52,13 @@ test('setTutorialStep accepts the stored values of the new run', () => {
 test('every checklist item has a label, and every task step has a known task', () => {
   for (const step of TUTORIAL_STEPS) {
     for (const t of step.checklist ?? []) assert.ok(CHECK_LABELS[t], `Bezeichnung für ${t}`);
-    if (step.task) assert.ok(['build', 'house', 'worker'].includes(step.task), step.task);
+    if (step.task) assert.ok(Object.keys(CHECK_LABELS).includes(step.task), step.task);
   }
+});
+
+test('the check at the end lists every task that the steps ask for', () => {
+  const asked = TUTORIAL_STEPS.filter((s) => s.task).map((s) => s.task);
+  const check = TUTORIAL_STEPS.find((s) => s.checklist).checklist;
+  for (const t of asked) assert.ok(check.includes(t), `Check fehlt ${t}`);
+  assert.equal(TUTORIAL_STEPS[TUTORIAL_STEPS.length - 1].checklist !== undefined, true, 'Check ist der letzte Schritt');
 });

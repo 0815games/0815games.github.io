@@ -206,3 +206,12 @@ test('tutorial tasks: house and worker are only done when the player did them', 
   assert.equal(tutorialTaskDone(worked, 'unknown'), false);
   assert.equal(tutorialTaskDone(null, 'house'), false);
 });
+
+test('tutorial task upgrade: a building on level 2 or higher', () => {
+  const lvl1 = { tiles: { '2,2': { terrain: 'meadow', building: { id: 'farm', level: 1 } } } };
+  const lvl2 = { tiles: { '2,2': { terrain: 'meadow', building: { id: 'farm', level: 2 } } } };
+  const hall = { tiles: { '1,1': { terrain: 'meadow', building: { id: 'townHall', level: 5 } } } };
+  assert.equal(tutorialTaskDone(lvl1, 'upgrade'), false);
+  assert.equal(tutorialTaskDone(lvl2, 'upgrade'), true);
+  assert.equal(tutorialTaskDone(hall, 'upgrade'), false, 'Rathaus zählt nicht');
+});

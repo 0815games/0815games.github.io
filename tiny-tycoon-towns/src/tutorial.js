@@ -5,44 +5,50 @@
 export const TUTORIAL_STEPS = Object.freeze([
   {
     title: 'Willkommen in deiner Stadt',
-    text: 'Deine Stadt arbeitet auch dann weiter, wenn du nicht hinsiehst. In wenigen Schritten zeige ich dir, wie sie läuft.',
+    text: 'Deine Stadt arbeitet auch dann weiter, wenn du nicht hinsiehst. In wenigen Schritten gehst du alles einmal durch. Jeder Schritt wartet auf deine Aktion. Mit „Später“ gehst du weiter.',
     target: null,
   },
   {
     title: 'Das Spielfeld',
-    text: 'Tippe auf ein Feld, dann öffnet sich ein Fenster. Ziehen verschiebt die Karte, das Mausrad oder zwei Finger zoomen. Mit den Pfeiltasten wanderst du über das Raster.',
+    text: 'Tippe auf ein Feld. Dann öffnet sich das Feld-Fenster. Ziehen verschiebt die Karte, Mausrad oder zwei Finger zoomen. Mit den Pfeiltasten wanderst du über das Raster.',
     target: '#board',
+    task: 'tap',
   },
   {
     title: 'Gebäude bauen',
-    text: 'Im Feld-Fenster baust du Gebäude. Mit den Pfeilen wählst du die Option. Jedes Gebäude braucht Münzen und Material. Probier es aus: Tippe auf ein freies Feld und baue ein Gebäude.',
+    text: 'Im Feld-Fenster baust du Gebäude. Mit den Pfeilen wählst du die Option. Jedes Gebäude braucht Münzen und Material. Tippe auf ein freies Feld und baue ein Gebäude.',
     target: '#board',
     task: 'build',
   },
   {
     title: 'Lager und Reserve',
-    text: 'Produkte landen im Lager. Unten links siehst du dein Inventar. Von jeder Ressource bleiben 20 Einheiten als Reserve.',
+    text: 'Produkte landen im Lager. Unten links siehst du dein Inventar. Von jeder Ressource bleiben 20 Einheiten als Reserve. Öffne das Inventar einmal.',
     target: '#stock-btn',
+    task: 'stock',
   },
   {
-    title: 'Dein Rathaus verkauft',
-    text: 'Das Rathaus verkauft automatisch. Die Münzen siehst du im Inventar. Mehr Verkaufsleistung bringt der Marktplatz.',
+    title: 'Verkauf',
+    text: 'Das Rathaus verkauft automatisch. Du kannst den Verkauf je Ressource ein- oder ausschalten. Öffne das Inventar und tippe auf einen Schalter.',
     target: '#stock-btn',
+    task: 'sell',
   },
   {
     title: 'Stadtlevel',
-    text: 'Mit Münzen und Erfahrung steigt dein Stadtlevel. Dann wächst das Raster, und neue Felder und Gebäude werden frei.',
+    text: 'Mit Münzen und Erfahrung steigt dein Stadtlevel. Dann wächst das Raster, und neue Felder und Gebäude werden frei. Tippe auf die Erfahrungsleiste.',
     target: '#xp-bar',
+    task: 'xp',
   },
   {
     title: 'Händler Eberhard',
-    text: 'Wanderhändler Eberhard hat jeden Tag neue Angebote, auch für seltene Ressourcen. Schau regelmäßig bei ihm vorbei.',
-    target: null,
+    text: 'Wanderhändler Eberhard hat jeden Tag neue Angebote, auch für seltene Ressourcen. Öffne das Inventar und tippe in Eberhards Bereich.',
+    target: '#stock-btn',
+    task: 'merchant',
   },
   {
     title: 'Hilfe und Konto',
-    text: 'Alles Wichtige findest du jederzeit im Menü unter Hilfe. Dein Stand wird lokal und in der Cloud gespeichert.',
+    text: 'Alles Wichtige findest du im Menü unter Hilfe. Dein Stand wird lokal und in der Cloud gespeichert. Öffne die Hilfe einmal.',
     target: '#menu-btn',
+    task: 'help',
   },
   {
     title: 'Wohnhaus bauen',
@@ -57,15 +63,21 @@ export const TUTORIAL_STEPS = Object.freeze([
     task: 'worker',
   },
   {
+    title: 'Gebäude ausbauen',
+    text: 'Mit dem Ausbau steigt der Ertrag, und das Gebäude zeigt die nächste Stufe. Tippe auf ein Gebäude und baue es auf Stufe 2 aus. Das kostet Münzen und Material.',
+    target: '#board',
+    task: 'upgrade',
+  },
+  {
     title: 'Stufen der Gebäude',
     text: 'Gebäude und Wohnhäuser haben fünf sichtbare Stufen. Du erkennst sie am Bild. Die Bewohner wachsen langsam nach, bis zur Kapazität des Hauses.',
     target: null,
   },
   {
     title: 'Dein Check',
-    text: 'Hier siehst du, was du in diesem Tutorial gebaut und zugewiesen hast. Fehlt etwas, holst du es am Feld nach. Die Anleitung findest du jederzeit unter Hilfe.',
+    text: 'Hier siehst du, was du in diesem Tutorial ausprobiert hast. Fehlt etwas, holst du es am Feld nach. Die Anleitung findest du jederzeit unter Hilfe.',
     target: null,
-    checklist: ['build', 'house', 'worker'],
+    checklist: ['tap', 'build', 'stock', 'sell', 'xp', 'merchant', 'help', 'house', 'worker', 'upgrade'],
   },
 ]);
 
@@ -75,10 +87,20 @@ export const TUTORIAL_STEPS = Object.freeze([
 export const TUTORIAL_STORE_OFFSET = 100;
 
 export const CHECK_LABELS = Object.freeze({
+  tap: 'Ein Feld angetippt',
   build: 'Ein Gebäude gebaut',
+  stock: 'Das Inventar geöffnet',
+  sell: 'Den Verkauf einer Ressource umgeschaltet',
+  xp: 'Die Erfahrungsleiste angesehen',
+  merchant: 'Eberhards Angebote angesehen',
+  help: 'Die Hilfe geöffnet',
   house: 'Ein Wohnhaus gebaut',
   worker: 'Einen Arbeiter zugewiesen',
+  upgrade: 'Ein Gebäude ausgebaut',
 });
+
+/** Aufgaben, die der Spielstand selbst festhält. Die übrigen merkt sich der Browser (pro Konto). */
+export const STATE_TASKS = Object.freeze(['build', 'house', 'worker', 'upgrade']);
 
 /** Was beim Start passiert: 'offer' (Angebot zeigen), eine Schrittnummer oder null (nichts mehr). */
 export function tutorialResume(stored) {

@@ -1142,3 +1142,23 @@ Ereignis ergänzt.
   - Die Schritte Spielfeld, Lager, Verkauf, Stadtlevel, Händler und Hilfe sind weiterhin Text. Nur die Bau- und Zuweisungs-
     schritte prüfen die Aktion.
   - Nicht im Browser geprüft.
+
+### TTT-0067 – Tutorial vollständig interaktiv (lokal, nicht veröffentlicht)
+
+- Auftrag des Nutzers: Das Tutorial soll zu 100 Prozent fertig sein, mit allem, was bis jetzt implementiert ist.
+- Schritte mit Aufgabe (der Schritt wartet, „Später“ bleibt möglich):
+  Feld antippen (`tap`) · Gebäude bauen (`build`) · Inventar öffnen (`stock`) · Verkauf umschalten (`sell`) ·
+  Erfahrungsleiste antippen (`xp`) · Eberhards Bereich antippen (`merchant`) · Hilfe öffnen (`help`) ·
+  Wohnhaus bauen (`house`) · Arbeiter zuweisen (`worker`) · Gebäude auf Stufe 2 ausbauen (`upgrade`).
+- Nur Text: Willkommen, Stufen der Gebäude, Check (am Ende).
+- Check am Ende: alle zehn Aufgaben mit ✓ oder ○.
+- Aufgaben aus dem Spielstand (`build`, `house`, `worker`, `upgrade`) prüft `tutorialTaskDone` in `settlement.js`.
+  Die übrigen (`tap`, `stock`, `sell`, `xp`, `merchant`, `help`) merkt sich der Browser pro Konto
+  (`localStorage`, Schlüssel `ttt-tut-tasks-<Stadt-ID>`). Sie gehen so nicht verloren, wenn die Seite neu lädt.
+- Hooks in `main.js`: `selectTile`, `openStock`, Verkaufsschalter, `#xp-bar`, `#merchant`, `showHelp`.
+- Tests: `tests/tutorial.test.mjs` prüft, dass jede Aufgabe eine Bezeichnung hat und der Check alle gefragten Aufgaben
+  enthält. `tests/settlement.test.mjs`: Aufgabe `upgrade` (Stufe 2, Rathaus zählt nicht).
+  `npm test` 178/178 grün. `npm run check` ohne Fehler.
+- Grenzen / offen:
+  - Die Browser-Aufgaben gelten pro Gerät. Auf einem anderen Gerät muss man sie noch einmal machen.
+  - Nicht im Browser geprüft.
