@@ -924,3 +924,24 @@ Ereignis ergänzt.
 - Grenzen: Nicht im Gerät geprüft. Die Firebase-Meldungen (permission_denied bei `profiles` und `sessions`) sind
   **nicht** Teil dieses Patches. Die Regeln im Repo passen zu den geschriebenen Daten. Vermutlich läuft in der
   Firebase-Konsole noch eine ältere Fassung. Prüfung ausstehend (siehe Antworttext). Keine Regeländerung in diesem Patch.
+
+### TTT-0055 – Startgebiet entschärfen und Inventar-Leiste (Welle `20261125-bal6`)
+
+- Auftrag des Nutzers: Der Nebel verdeckt den Anfang, weil im Startbereich zu viel Wasser, Wald und Berg liegt.
+  Option 2 gewählt (Startlayout entschärfen, kein Feldkauf). Zusätzlich: die orangene Leiste „Lager und Geld“ ist zu
+  grell. Sie soll ruhiger aussehen und anders heißen (Ressourcen oder Inventar).
+- Änderung Generator: `src/domain/terrain.js`. In der 6×6-Startfläche höchstens 4 Wasserkacheln (überzählige werden
+  Furt-Strand). Mindestens 12 Wiesenkacheln. Die Umwandlung betrifft nur Wald und Fels oberhalb der Mindestmengen
+  (Wald 4, Fels 2 bleiben). Berge werden nicht umgewandelt.
+- Messung (400 Seeds je Biom, nur die 36 Startfelder):
+  - Flusslande: Wasser Ø 4,0 (vorher Ø 5,8), Wiese Ø 22,5 (vorher Ø 23,5), Minimum Wiese 19.
+  - Tiefwald: Wasser Ø 3,7, Wiese Ø 12,9 (vorher Ø 12,5), Minimum Wiese 12.
+  - Hochland: Wasser 0, Wiese Ø 14,4, Minimum Wiese 11 (vorher nicht gemessen). Die Berge belegen Felder, die sich
+    nicht umwandeln lassen. Das Ziel „12“ gilt daher nicht in jedem Hochland-Start.
+  - Küste: Wasser Ø 1,8, Wiese Ø 20,2, Minimum Wiese 15.
+- Änderung Anzeige: `index.html` (Titel und Aria-Labels „Inventar“), `src/tutorial.js` (Texte), `style.css` (Leiste
+  hell, dünner Rahmen, Balken grau-braun, Rot nur bei vollem Lager). Die Logik der Leiste bleibt unverändert.
+- Cache-Welle `20261125-bal5` → `20261125-bal6`. Stadtchronik DE/EN.
+- Grenzen: Nicht im Browser oder Gerät geprüft. Das Biom-Gleichgewicht (Ertrag, XP) ist nicht neu gerechnet. Die
+  Startwerte ändern sich leicht, daher ist eine neue Simulationsrunde sinnvoll. Historische Einträge nennen weiter
+  „Lager und Geld“. Keine Firebase-Regeländerung.

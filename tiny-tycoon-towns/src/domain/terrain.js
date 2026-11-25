@@ -1,5 +1,5 @@
-import { mulberry32 } from './rng.js?v=20261125-bal5';
-import { GRID, HALL } from './grid.js?v=20261125-bal5';
+import { mulberry32 } from './rng.js?v=20261125-bal6';
+import { GRID, HALL } from './grid.js?v=20261125-bal6';
 
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 
@@ -59,6 +59,9 @@ export function generateTerrain(biome, seed) {
   // Startfläche: mindestens Wald (Holz für fast alles) und ein wenig Fels (Steinbruch).
   ensureStart(g, rnd, 'forest', 4);
   ensureStart(g, rnd, 'rock', 2);
+  // Startlayout entschärfen: nicht zu viel Wasser, genug Wiese für Farmen.
+  limitStartWater(g, 4);
+  ensureStartMeadow(g, 12);
 
   g[HALL.y][HALL.x] = 'meadow';
   return g;
@@ -108,4 +111,41 @@ function ensureStart(g, rnd, terrain, count) {
     g[y][x] = terrain;
     need--;
   }
+}
+
+/** Die Startfläche (6×6 in der Mitte) hat höchstens `max` Wasserkacheln. Überzählige werden Furt-Strand. */
+function limitStartWater(g, max) {
+  const cells = startCells();
+  const water = cells.filter(([x, y]) => g[y][x] === 'water');
+  for (const [x, y] of water.slice(0, Math.max(0, water.length - max))) g[y][x] = 'sand';
+}
+
+/**
+ * Die Startfläche hat mindestens `min` Wiesenkacheln (Farmen brauchen Wiese). Es wird nur Wald und Fels
+ * oberhalb der Mindestmengen umgewandelt, damit Holz und Stein für den Start bleiben.
+ */
+function ensureStartMeadow(g, min) {
+  const cells = startCells();
+  const count = (t) => cells.filter(([x, y]) => g[y][x] === t).length;
+  const keep = { forest: 4, rock: 2 };
+  for (const t of ['forest', 'rock']) {
+    let need = min - count('meadow');
+    for (const [x, y] of cells) {
+      if (need <= 0) break;
+      if (g[y][x] !== t) continue;
+      const surplus = count(t) - keep[t];
+      if (surplus <= 0) break;
+      g[y][x] = 'meadow';
+      need--;
+    }
+  }
+}
+
+function startCells() {
+  const cells = [];
+  for (let y = 2; y <= 7; y++) for (let x = 2; x <= 7; x++) {
+    if (x === HALL.x && y === HALL.y) continue;
+    cells.push([x, y]);
+  }
+  return cells;
 }

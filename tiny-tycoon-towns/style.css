@@ -672,28 +672,28 @@ button.danger { background: #E4837A; border-color: var(--ink); }
 /* ---------- Lager unten links: Leiste, Mobile eingeklappt, Desktop mit allen Angaben ---------- */
 .stock-dock {
   position: fixed; left: 12px; bottom: 12px; z-index: 40;
-  width: min(92vw, 250px); background: var(--gold); color: var(--ink);
-  border: 2px solid var(--ink); border-radius: 14px; overflow: hidden;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+  width: min(92vw, 230px); background: var(--paper); color: var(--ink);
+  border: 1px solid #8c7a66; border-radius: 10px; overflow: hidden;
+  box-shadow: 0 2px 8px rgba(59, 47, 47, 0.18);
 }
 .stock-dock.is-full { background: #b8322c; color: #fff; border-color: #6e1b17; }
 .dock-head { display: flex; align-items: stretch; }
 .dock-open {
   flex: 1; display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 8px 12px;
-  background: transparent; border: 0; color: inherit; font: inherit; font-weight: 700;
+  background: transparent; border: 0; color: inherit; font: inherit; font-weight: 600;
   text-align: left; cursor: pointer;
 }
 .dock-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dock-toggle {
   min-width: 44px; background: transparent; color: inherit; border: 0;
-  border-left: 2px solid currentColor; font-size: 16px; cursor: pointer;
+  border-left: 1px solid #8c7a66; font-size: 16px; cursor: pointer;
 }
 .dock-alert {
   margin-left: auto; flex: none; display: inline-grid; place-items: center;
   width: 20px; height: 20px; border-radius: 50%; background: #fff; color: #b8322c;
   font-size: 13px; font-weight: 800; line-height: 1;
 }
-.dock-body { border-top: 2px solid currentColor; background: var(--paper-2); color: var(--ink); max-height: 45vh; overflow: auto; padding: 8px 10px; }
+.dock-body { border-top: 1px solid #8c7a66; background: var(--paper-2); color: var(--ink); max-height: 45vh; overflow: auto; padding: 8px 10px; }
 .dock-body[hidden] { display: none; }
 .dock-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
 .dock-list li { display: grid; grid-template-columns: 1fr auto; gap: 3px 8px; align-items: center; font-size: 13px; }
@@ -702,8 +702,8 @@ button.danger { background: #E4837A; border-color: var(--ink); }
 .dock-amount { white-space: nowrap; }
 .dock-full { color: #b8322c; font-weight: 800; }
 .dock-list li.is-full .dock-amount { color: #b8322c; }
-.dock-bar { grid-column: 1 / -1; height: 8px; background: #fff; border: 1px solid var(--ink); border-radius: 5px; overflow: hidden; }
-.dock-bar > span { display: block; height: 100%; background: var(--gold); }
+.dock-bar { grid-column: 1 / -1; height: 8px; background: #fff; border: 1px solid #8c7a66; border-radius: 5px; overflow: hidden; }
+.dock-bar > span { display: block; height: 100%; background: #8c7a66; }
 .dock-list li.is-full .dock-bar > span { background: #b8322c; }
 @media (min-width: 900px) {
   .stock-dock { width: 320px; }

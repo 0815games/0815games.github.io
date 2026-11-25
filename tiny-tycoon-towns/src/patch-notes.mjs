@@ -4,6 +4,20 @@
 
 export const RELEASED_PATCHES = [
   {
+    build: '20261125-bal6',
+    date: '2026-11-25',
+    items: [
+      {
+        de: 'Startgebiet: Es gibt weniger Wasser im Startbereich, und die Startfläche hat mehr Wiese für Farmen. Das Gelände bleibt je Biom erkennbar.',
+        en: 'Start area: fewer water tiles in the starting zone, and more meadow for farms. Each biome keeps its character.',
+      },
+      {
+        de: 'Inventar: Die Leiste unten links heißt jetzt „Inventar“ und ist in ruhigeren Farben gehalten. Bei vollem Lager bleibt sie rot.',
+        en: 'Inventory: the bar at the bottom left is now called "Inventar" and uses calmer colours. It still turns red when storage is full.',
+      },
+    ],
+  },
+  {
     build: '20261125-bal5',
     date: '2026-11-25',
     items: [
