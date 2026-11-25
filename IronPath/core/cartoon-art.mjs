@@ -1225,8 +1225,14 @@ function drawDeco(ctx,deco,theme,notify,scale=1){
       // On top of that a two-step silhouette shadow (reported: the whole
       // field reads flat, buildings "go under" the ground) - it follows the
       // ink outline, so every piece separates from the busy tile mosaic.
-      // The terrain layer caches this once; no per-frame cost.
+      // The terrain layer caches this once; no per-frame cost. Canvas
+      // shadow properties instead of ctx.filter - identical silhouette
+      // shadow, but stable across browsers (filter broke the party
+      // browser checks in CI).
+      ctx.shadowColor='rgba(8,12,8,.42)';
+      ctx.shadowOffsetX=1; ctx.shadowOffsetY=3; ctx.shadowBlur=3;
       ctx.drawImage(artwork,-w/2,13-h,w,h);
+      ctx.shadowColor='transparent'; ctx.shadowOffsetX=0; ctx.shadowOffsetY=0; ctx.shadowBlur=0;
       ctx.restore();continue;
     }
     ctx.save();ctx.translate(d.x,d.y);if(d.rot)ctx.rotate(Math.PI/2);
