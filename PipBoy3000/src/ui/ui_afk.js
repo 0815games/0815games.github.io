@@ -68,12 +68,19 @@ const UI_AFK = {
         return Math.max(0, Date.now() - letzte);
     },
 
+    // Bricht der Spieler das Fenster angetippt und die Zeit laeuft weiter?
+    // Das Fenster rechnet mit einer festen Endzeit, damit Zaehler und Ablauf
+    // nicht auseinanderlaufen, wenn die Pruefung mal spaeter kommt.
     pruefen: function () {
         if (typeof document === 'undefined') return;
         if (!this.laeuft()) {
             // Auf dem Login-Bildschirm gibt es nichts zu bewachen. Das Fenster
             // darf dort auch nicht stehenbleiben.
             if (this.fensterOffen) this.fensterSchliessen();
+            return;
+        }
+        if (this.fensterOffen) {
+            this.fensterTick();
             return;
         }
         const stille = this.stille();
@@ -86,10 +93,17 @@ const UI_AFK = {
         }
     },
 
+    // Ende der Nachfrist, in Millisekunden seit der Epoche. Einmal gesetzt,
+    // aendert es sich nicht - sonst wuerde der Balken bei jeder Pruefung
+    // springen, weil jede Pruefung die Stille neu misst.
     fensterZeigen: function (restMs) {
         const feld = this.feld();
         if (!feld) return;
+        if (!this.fensterOffen) this.fristEnde = Date.now() + Math.max(0, restMs);
         this.fensterOffen = true;
+        // Der Hintergrund ist gesperrt, solange das Fenster steht - sonst
+        // laeuft der Spieler unter dem Schein weiter.
+        if (document.body) document.body.classList.add('fenster-offen');
         feld.hidden = false;
         // Die Animation jedes Mal neu anstossen - sonst rastet das Feld beim
         // zweiten Mal nicht mehr ein.
@@ -102,6 +116,13 @@ const UI_AFK = {
         this.zaehlerZeichnen(restMs);
         const knopf = feld.querySelector('[data-afk-bleiben]');
         if (knopf && document.activeElement !== knopf) knopf.focus();
+    },
+
+    // Ein Takt des offenen Fensters: Zaehler und Balken nach der Endzeit.
+    fensterTick: function () {
+        const rest = Math.max(0, (this.fristEnde || 0) - Date.now());
+        this.zaehlerZeichnen(rest);
+        if (rest <= 0) this.ausloggen();
     },
 
     zaehlerZeichnen: function (restMs) {
@@ -118,6 +139,12 @@ const UI_AFK = {
         const feld = this.feld();
         if (feld) feld.hidden = true;
         this.fensterOffen = false;
+        this.fristEnde = null;
+        // Nur freigeben, wenn nicht inzwischen das Update-Fenster offen ist.
+        const update = document.getElementById('update-banner');
+        if (document.body && !(update && !update.hidden)) {
+            document.body.classList.remove('fenster-offen');
+        }
     },
 
     ausloggen: function () {
@@ -125,7 +152,7 @@ const UI_AFK = {
         if (this.ticker) clearInterval(this.ticker);
         this.ticker = null;
         if (typeof UI !== 'undefined' && typeof UI.logout === 'function') {
-            UI.logout('AFK: ZEITUEBERSCHREITUNG');
+            UI.logout('AFK: ZEITÜBERSCHREITUNG');
         }
     },
 
@@ -145,7 +172,7 @@ const UI_AFK = {
         el.innerHTML = `
             <div class="popup-feld">
                 <div class="popup-titel" id="afk-popup-titel">BIST DU NOCH DA?</div>
-                <div class="popup-text">Keine Eingabe seit fuenf Minuten.</div>
+                <div class="popup-text">Keine Eingabe seit fünf Minuten.</div>
                 <div class="popup-text" style="margin-top:.35rem">
                     In <span data-afk-zaehler class="text-yellow-400">1:00</span> wirst du abgemeldet.
                 </div>

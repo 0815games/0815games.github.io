@@ -35,6 +35,24 @@ window.GameData.offenePunkte = [
 // nicht mit dem, was geplant war.
 window.GameData.RELEASED_PATCHES = [
   {
+    version: '14.0.19',
+    datum: '2026-11-24',
+    title: 'Durchsicht: Fenster sperren jetzt richtig, und ein Klick wirft nicht mehr raus',
+    punkte: [
+      'Das AFK- und das Update-Fenster sagen "modal", sperrten aber nichts. Der Hintergrund war nur abgedunkelt: ein Klick auf die Karte bewegte den Spieler unter dem Fenster weg, und ein Screenreader las weiter.',
+      'Jetzt ist der Hintergrund gesperrt, solange ein Fenster steht - und danach sofort wieder frei.',
+      'Dabei fiel auf: das Update-Fenster lag in der gesperrten Flaeche. Mit der neuen Sperre waeren seine eigenen Knoepfe tot gewesen. Es steht jetzt bei den Overlays, ausserhalb.',
+      'Ein Klick auf "SPAETER" oder "JETZT LADEN" warf den Spieler aus dem Inventar zurueck auf die Karte. Derselbe Fehler traf "ICH BIN DA" im AFK-Fenster. Beides ist behoben.',
+      'Der AFK-Countdown rechnet jetzt mit einer festen Endzeit. Vorher hat jede Pruefung neu ab "jetzt" gezaehlt - der Balken konnte springen, wenn die Schleife spaeter kam.',
+      'Kleine Texte mit Umlauten: "seit fünf Minuten", "AFK: ZEITÜBERSCHREITUNG", "VERFÜGBAR", "SPÄTER". Vorher stand da "fuenf" und "ZEITUEBERSCHREITUNG" - im Login lesbar.',
+      'Geprueft am ausgelieferten Spiel: Fenster mittig, Text, Zaehler, Sperre, Knoepfe erreichbar, Ansicht bleibt stehen.'
+    ],
+    offen: [
+      'Die ICO-Datei ist 0,9 kB klein. Das ist kein Fehler, sondern Absicht: drei PNG-Eintraege, schlichte Farbflaechen, gut komprimierbar.',
+      'Auf einem echten Geraet (Finger, echter Bildschirm) steht die Sichtpruefung der Fenster noch aus.'
+    ]
+  },
+  {
     version: '14.0.18',
     datum: '2026-11-24',
     title: 'Vault-Tuer als Icon · AFK-Fenster · Update-Fenster mittig',

@@ -233,6 +233,33 @@ test('die Update-Pruefung laedt bei einem offenen Dialog nicht neu', async () =>
     'Der JETZT-LADEN-Knopf darf bei offenem Dialog nicht angeboten werden');
 });
 
+test('ein Klick auf das Update-Fenster wirft den Spieler nicht aus der Ansicht', () => {
+  // ui_input.js schaltet bei jedem Klick ausserhalb der Ansicht auf die Karte
+  // zurueck. Ohne Ausnahme sprang die Ansicht, sobald man "SPAETER" oder
+  // "JETZT LADEN" traf - mitten aus dem Inventar heraus.
+  const quelle = readFileSync(join(ROOT, 'src/ui/ui_input.js'), 'utf8');
+  const zeile = quelle.split('\n').find(z => z.includes("closest('#update-banner"));
+  assert.ok(zeile, 'Die Ausnahme fuer das Update-Fenster fehlt im Klick-Verteiler');
+  // Auch das AFK-Fenster: "ICH BIN DA" darf nicht die Ansicht wechseln.
+  assert.match(zeile, /#afk-popup/, 'Das AFK-Fenster fehlt in der Ausnahme');
+});
+
+test('das Update-Fenster liegt ausserhalb des gesperrten Bereichs', () => {
+  // Solange ein Fenster offen ist, sperrt body.fenster-offen die
+  // Zeigerereignisse fuer #game-screen samt Kindern. Ein Fenster darin wuerde
+  // seine eigenen Knoepfe lahmlegen - "JETZT LADEN" und "SPAETER" waeren tot,
+  // und niemand saehe warum.
+  const html = readFileSync(join(ROOT, 'shell/index.html'), 'utf8');
+  const echt = new JSDOM(html).window.document;
+  const feld = echt.getElementById('update-banner');
+  assert.ok(feld, 'Das Update-Fenster fehlt');
+  assert.equal(Boolean(feld.closest('#game-screen')), false,
+    'Das Update-Fenster liegt in #game-screen - dort sind Klicks gesperrt');
+  // Und die Sperre selbst steht im Stylesheet.
+  const css = readFileSync(join(ROOT, 'shell', 'style.css'), 'utf8');
+  assert.match(css, /body\.fenster-offen\s+#game-screen\s*\{[^}]*pointer-events:\s*none/);
+});
+
 test('das Update-Fenster ist mittig und behaelt seine Kennungen', () => {
   // Vorher war das ein Balken unten (fixed bottom-0). Uebersehen war da fast
   // unvermeidlich - und auf dem Handy lag er hinter der Daumenleiste. Jetzt
