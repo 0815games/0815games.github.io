@@ -2,7 +2,7 @@ import {equipmentForPlayer} from '../workshop/workshop-combat.mjs?v=20261121-fun
 import {reserveBuildPad,releaseBuildPad,releaseBuildReservations} from './build-reservations.mjs?v=20261104-buildreservation1';
 import {getMap,createRandomMapId,sectorOf} from './maps.mjs?v=20261121-fund1';
 import {activateCombos} from './skill-combos.mjs?v=20261121-fund1';
-import {parseLoadout} from './armory.mjs?v=20261112-tagless1';
+import {parseLoadout} from './armory.mjs?v=20261121-fund1';
 import {parseBuild,abilityName,webBonuses,specialistUnlocked} from './skills.mjs?v=20261121-fund1';
 import {classUpgradeState,classPathConfig,classPathInvested} from './tower-class-paths.mjs?v=20261121-fund1';
 // Shared command rules. These functions have no DOM, Firebase or network dependency.

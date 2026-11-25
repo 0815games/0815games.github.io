@@ -1,5 +1,5 @@
 import {characterProgress} from './progression.mjs?v=20261105-prestige1';
-import {readArmory,ITEMS} from './armory.mjs?v=20261112-tagless1';
+import {readArmory,ITEMS} from './armory.mjs?v=20261121-fund1';
 import {parseBuild,webBonuses,abilityName,specialistUnlocked,SKILL_PATH_MAP} from './skills.mjs?v=20261121-fund1';
 import {decodeWorkshop} from '../workshop/workshop-wire.mjs?v=20261121-fund1';
 import {captureWorkshopLoadout,workshopEffects} from '../workshop/workshop-effects.mjs?v=20261121-fund1';

@@ -6,7 +6,7 @@ import {decodeWorkshop} from '../workshop/workshop-wire.mjs?v=20261121-fund1';
 import {slotOf} from '../workshop/workshop-model.mjs?v=20261121-fund1';
 import {WORKSHOP_CATALOG} from '../workshop/workshop-catalog.mjs?v=20261108-balance2';
 import {PRESTIGE,isPrestige} from '../core/prestige.mjs?v=20261112-pressure1';
-import {readArmory,ITEMS} from '../core/armory.mjs?v=20261112-tagless1';
+import {readArmory,ITEMS} from '../core/armory.mjs?v=20261121-fund1';
 // The Field Dossier is the character hub: the soldier stands between her
 // three loadout slots (paper doll), each card names what she wears and opens
 // an inline picker. Every change goes through the account workshop service -
