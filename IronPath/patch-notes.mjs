@@ -45,7 +45,7 @@ export const PATCH_LABELS=Object.freeze({
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
   {
-    id:'aim15',build:'20261125-aim15',pr:0,
+    id:'aim15',build:'20261125-aim15',pr:483,
     title:{en:'Everything at Once · The Soldier Wears Her Whole Locker',de:'Alles auf einmal · Der Soldat trägt den ganzen Schrank'},
     shipped:[
       {en:'Equipment no longer competes for slots: every piece you own counts at once - vest, boots, radio and weapon together, with their modifications stacked. Taking one piece on never puts another one down.',de:'Ausrüstung kämpft nicht mehr um Slots: Alles, was du besitzt, zählt gleichzeitig - Weste, Schuhe, Radio und Waffe zusammen, mit ihren Modifikationen gestapelt. Ein Stück anzuziehen legt nie ein anderes ab.'},
