@@ -45,7 +45,7 @@ export const PATCH_LABELS=Object.freeze({
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
   {
-    id:'dossier1',build:'20261121-dossier1',pr:0,
+    id:'dossier1',build:'20261121-dossier1',pr:491,
     title:{en:'Places & Paint · The Dossier Wears Its Gear',de:'Plätze & Pinsel · Das Dossier trägt seine Ausrüstung'},
     shipped:[
       {en:'The field dossier arranges the loadout on RPG places around the figure — weapon in her hand, vest on her chest, boots at her feet, spare gear at the hip, gadgets on the belt. Every worn piece shows its own artwork on its place; the picker and the collection list carry it too.',de:'Das Feld-Dossier ordnet das Ladeout auf RPG-Plätzen um die Figur – Waffe in der Hand, Weste auf der Brust, Schuhe an den Füßen, Rest-Ausrüstung an der Hüfte, Gadgets am Gurt. Jedes getragene Stück zeigt auf seinem Platz sein eigenes Artwork; Picker und Sammlungsliste führen es ebenfalls.'},
