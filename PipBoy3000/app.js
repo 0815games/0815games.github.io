@@ -1540,27 +1540,124 @@
       if (this.els.btnInv) this.els.btnInv.classList.remove("alert-glow-yellow");
       if (this.els.btnMenu) this.els.btnMenu.classList.remove("alert-glow-yellow");
     },
+    // Prueft, ob der Spielschirm aktiv ist. Nur dann gibt es oben den Header
+    // mit TP/KK/MUN, unter dem sich jedes Burger-Fenster oeffnen muss.
+    imSpielSichtbar: function() {
+      const gs = document.getElementById("game-screen");
+      const mc = document.getElementById("main-content");
+      if (!gs || !mc) return false;
+      if (gs.classList.contains("hidden")) return false;
+      if (gs.style && gs.style.display === "none") return false;
+      return true;
+    },
+    // Zielcontainer fuer Fenster: im Spiel immer #main-content (unter dem
+    // Header, quasi im Kartenbereich), auf dem Login-Schirm #pipboy-case.
+    spielFensterZiel: function() {
+      if (this.imSpielSichtbar()) return document.getElementById("main-content");
+      return document.getElementById("pipboy-case") || document.body;
+    },
+    haengeFensterEin: function(el) {
+      if (!el) return;
+      const ziel = this.spielFensterZiel();
+      if (ziel && el.parentElement !== ziel) ziel.appendChild(el);
+    },
+    schliesseMenue: function() {
+      const nav = this.els && this.els.navMenu || document.getElementById("main-nav");
+      if (nav) {
+        nav.classList.add("hidden");
+        nav.style.display = "none";
+      }
+    },
+    schliesseHandbuch: function() {
+      const manual = document.getElementById("manual-overlay");
+      if (manual) {
+        manual.classList.add("hidden");
+        manual.style.display = "none";
+      }
+      if (typeof Game !== "undefined" && Game.state) Game.state.inDialog = false;
+    },
+    schliesseBugModal: function() {
+      const bug = document.getElementById("bug-report-overlay");
+      if (bug) bug.remove();
+      if (typeof Game !== "undefined" && Game.state) Game.state.inDialog = false;
+    },
+    // Schliesst offene Burger-Unterfenster, damit beim Wechsel ueber den
+    // sichtbar bleibenden Header nie zwei Fenster uebereinander stehen.
+    schliesseUnterfenster: function(ausnahmeId) {
+      if (ausnahmeId !== "manual-overlay") {
+        const manual = document.getElementById("manual-overlay");
+        if (manual && !manual.classList.contains("hidden")) this.schliesseHandbuch();
+      }
+      if (ausnahmeId !== "patch-notes-overlay") {
+        const patch = document.getElementById("patch-notes-overlay");
+        if (patch && !patch.classList.contains("hidden")) {
+          if (typeof this.hidePatchNotes === "function") this.hidePatchNotes();
+          else {
+            patch.classList.add("hidden");
+            patch.style.display = "none";
+          }
+        }
+      }
+      if (ausnahmeId !== "nav-eingabe") {
+        const nav = document.getElementById("nav-eingabe");
+        if (nav && (!nav.classList.contains("hidden") || nav.style.display === "flex")) {
+          if (typeof this.schliesseNavigation === "function") this.schliesseNavigation();
+          else {
+            nav.classList.add("hidden");
+            nav.style.display = "none";
+          }
+        }
+      }
+      if (ausnahmeId !== "player-list-overlay") {
+        const pl = document.getElementById("player-list-overlay");
+        if (pl) {
+          pl.classList.add("hidden");
+          pl.style.display = "none";
+        }
+      }
+      if (ausnahmeId !== "bug-report-overlay") {
+        const bug = document.getElementById("bug-report-overlay");
+        if (bug) this.schliesseBugModal();
+      }
+      if (ausnahmeId !== "ui-dialog-overlay") {
+        const dlg = document.getElementById("ui-dialog-overlay");
+        if (dlg && dlg.style.display && dlg.style.display !== "none") {
+          dlg.style.display = "none";
+          dlg.innerHTML = "";
+          if (typeof Game !== "undefined" && Game.state) Game.state.inDialog = false;
+        }
+      }
+    },
+    schliesseMenueUndUnterfenster: function(ausnahmeId) {
+      this.schliesseMenue();
+      this.schliesseUnterfenster(ausnahmeId);
+    },
     openBugModal: function(autoErrorMsg = null) {
       if (document.getElementById("bug-report-overlay")) return;
-      if (this.els.navMenu) this.els.navMenu.classList.add("hidden");
-      const title = autoErrorMsg ? "⚠️ SYSTEMFEHLER ERKANNT" : "🐞 BUG MELDEN";
+      this.schliesseMenueUndUnterfenster("bug-report-overlay");
+      if (typeof Game !== "undefined" && Game.state) Game.state.inDialog = true;
+      if (typeof this._trapEigeneOverlays === "function") this._trapEigeneOverlays();
+      const title = autoErrorMsg ? "SYSTEMFEHLER ERKANNT" : "BUG MELDEN";
       const subText = autoErrorMsg ? `CODE: "${autoErrorMsg}"` : "Fehler gefunden? Beschreibe ihn kurz:";
       const overlay = document.createElement("div");
       overlay.id = "bug-report-overlay";
-      overlay.className = "fixed inset-0 z-[9999] bg-black/90 flex flex-col items-center justify-center p-4";
+      overlay.className = "unter-header-fenster";
+      overlay.onclick = (e) => {
+        if (e.target === overlay) this.schliesseBugModal();
+      };
       overlay.innerHTML = `
-            <div class="bg-[#051105] border-2 border-red-600 p-6 rounded shadow-[0_0_30px_red] max-w-md w-full relative">
+            <div class="bg-[#051105] border-2 border-red-600 p-6 rounded shadow-[0_0_30px_red] max-w-md w-full max-h-full overflow-y-auto relative">
                 <h2 class="text-2xl text-red-500 font-bold mb-2 font-vt323 tracking-widest">${title}</h2>
                 <div class="text-red-300 text-sm font-mono mb-4 border-b border-red-900 pb-2">${subText}</div>
                 <label class="block text-green-500 text-sm mb-1 uppercase tracking-wider">Beschreibung</label>
                 <textarea id="bug-desc" class="w-full bg-black border border-green-700 text-green-400 p-2 font-mono text-sm h-24 focus:border-green-400 outline-none mb-4" placeholder="Was ist passiert?"></textarea>
                 <div class="flex gap-2">
-                    <button id="btn-bug-send" class="flex-1 bg-red-900/30 border border-red-500 text-red-400 py-2 font-bold hover:bg-red-500 hover:text-black transition-all uppercase">REPORT SENDEN</button>
-                    <button id="btn-bug-close" class="px-4 border border-gray-600 text-gray-500 hover:text-black transition-all uppercase">ABBRECHEN</button>
+                    <button id="btn-bug-send" class="action-button flex-1 border-red-500 text-red-400 py-2 font-bold">REPORT SENDEN</button>
+                    <button id="btn-bug-close" class="action-button px-4 border-green-800 text-green-600">ABBRECHEN</button>
                 </div>
             </div>
         `;
-      document.body.appendChild(overlay);
+      this.spielFensterZiel().appendChild(overlay);
       const textArea = document.getElementById("bug-desc");
       if (textArea) {
         textArea.focus();
@@ -1569,12 +1666,12 @@
         textArea.addEventListener("keyup", stopPropagation);
         textArea.addEventListener("keypress", stopPropagation);
       }
-      document.getElementById("btn-bug-close").onclick = () => overlay.remove();
+      document.getElementById("btn-bug-close").onclick = () => this.schliesseBugModal();
       document.getElementById("btn-bug-send").onclick = () => {
         const desc = document.getElementById("bug-desc").value;
         const errorType = autoErrorMsg || "Manuelle Meldung";
         this.saveBugReport(errorType, desc);
-        overlay.remove();
+        this.schliesseBugModal();
       };
     },
     saveBugReport: async function(errorMsg, userDesc) {
@@ -1766,11 +1863,11 @@
       this.els.loginStatus.textContent = msg || "AUSGELOGGT";
       this.els.loginStatus.className = "mt-4 text-yellow-400";
       this.els.inputPass.value = "";
-      if (this.els.navMenu) {
-        this.els.navMenu.classList.add("hidden");
-        this.els.navMenu.style.display = "none";
-      }
-      if (this.els.playerList) this.els.playerList.style.display = "none";
+      this.schliesseMenueUndUnterfenster();
+      const tutFeld = document.getElementById("tutorial-feld");
+      if (tutFeld) tutFeld.hidden = true;
+      const tutZeiger = document.getElementById("tutorial-zeiger");
+      if (tutZeiger) tutZeiger.remove();
     },
     // Startet das Spiel ohne Firebase.
     //
@@ -6141,6 +6238,7 @@
         };
       }
       document.addEventListener("click", (e) => {
+        if (!e.target || !document.contains(e.target)) return;
         if (e.target && e.target.closest && e.target.closest("#update-banner, #afk-popup, #tutorial-feld, #tutorial-zeiger")) return;
         if (this.els.navMenu && !this.els.navMenu.classList.contains("hidden")) {
           if (!this.els.navMenu.contains(e.target) && e.target !== this.els.btnMenu) {
@@ -6148,8 +6246,11 @@
           }
         }
         if (Game.state && !["map", "combat", "city", "hacking", "lockpicking"].includes(Game.state.view) && !Game.state.view.includes("shop") && !Game.state.view.includes("crafting") && !Game.state.view.includes("clinic") && !Game.state.view.includes("vault")) {
+          const inUnterfenster = e.target && e.target.closest && e.target.closest(
+            "#game-header, #main-nav, .unter-header-fenster, #ui-dialog-overlay, #manual-overlay, #patch-notes-overlay, #nav-eingabe, #bug-report-overlay, #player-list-overlay"
+          );
           const viewContainer = document.getElementById("view-container");
-          if (viewContainer && !viewContainer.contains(e.target)) this.switchView("map");
+          if (!inUnterfenster && viewContainer && !viewContainer.contains(e.target)) this.switchView("map");
         }
       });
       if (this.els.log && this.els.log.parentElement) {
@@ -8296,11 +8397,15 @@
     switchView: async function(name) {
       this.stopJoystick();
       this.focusIndex = -1;
-      if (this.els.navMenu) {
-        this.els.navMenu.classList.add("hidden");
-        this.els.navMenu.style.display = "none";
+      if (typeof this.schliesseMenueUndUnterfenster === "function") {
+        this.schliesseMenueUndUnterfenster();
+      } else {
+        if (this.els.navMenu) {
+          this.els.navMenu.classList.add("hidden");
+          this.els.navMenu.style.display = "none";
+        }
+        if (this.els.playerList) this.els.playerList.style.display = "none";
       }
-      if (this.els.playerList) this.els.playerList.style.display = "none";
       const verDisplay = document.getElementById("version-display");
       const ver = verDisplay ? verDisplay.textContent.trim() : Date.now();
       if (name === "map") {
@@ -8408,7 +8513,8 @@
                     <div class="text-xs text-[#39ff14] animate-pulse font-bold bg-[#39ff14]/20 py-2 rounded">> TIPPEN ZUM STARTEN <</div>
                 </div>
             </div>`;
-      document.body.insertAdjacentHTML("beforeend", hintHTML);
+      const ziel = document.getElementById("main-content") || document.body;
+      ziel.insertAdjacentHTML("beforeend", hintHTML);
       setTimeout(() => {
         const el = document.getElementById("mobile-hint");
         if (el) el.classList.remove("opacity-0");
@@ -8434,9 +8540,19 @@
     },
     togglePlayerList: function() {
       if (!this.els.playerList) return;
-      if (this.els.playerList.style.display === "flex") {
+      const offen = !this.els.playerList.classList.contains("hidden") && this.els.playerList.style.display === "flex";
+      if (offen) {
+        this.els.playerList.classList.add("hidden");
         this.els.playerList.style.display = "none";
       } else {
+        if (typeof this.schliesseMenueUndUnterfenster === "function") {
+          this.schliesseMenueUndUnterfenster("player-list-overlay");
+        }
+        if (typeof this.haengeFensterEin === "function") {
+          this.haengeFensterEin(this.els.playerList);
+        }
+        if (typeof this._trapEigeneOverlays === "function") this._trapEigeneOverlays();
+        this.els.playerList.classList.remove("hidden");
         this.els.playerList.style.display = "flex";
         this.updatePlayerList();
       }
@@ -9450,11 +9566,16 @@
   Object.assign(UI, {
     restoreOverlay: function() {
       let overlay = document.getElementById("ui-dialog-overlay");
+      const ziel = document.getElementById("main-content") || document.body;
       if (!overlay) {
         overlay = document.createElement("div");
         overlay.id = "ui-dialog-overlay";
-        overlay.className = "absolute inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm hidden pointer-events-auto";
-        document.body.appendChild(overlay);
+        overlay.className = "unter-header-fenster bg-black/80 backdrop-blur-sm pointer-events-auto";
+        overlay.style.display = "none";
+        ziel.appendChild(overlay);
+        this.els.dialog = overlay;
+      } else if (overlay.parentElement !== ziel) {
+        ziel.appendChild(overlay);
         this.els.dialog = overlay;
       }
       overlay.onclick = (e) => {
@@ -9537,9 +9658,9 @@
     showInfoDialog: function(title, htmlContent) {
       if (Game.state) Game.state.inDialog = true;
       const infoOverlay = document.createElement("div");
-      infoOverlay.className = "fixed inset-0 z-[2000] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fadeIn pointer-events-auto";
+      infoOverlay.className = "absolute inset-0 z-[90] flex items-center justify-center bg-black/80 backdrop-blur-sm p-2 animate-fadeIn pointer-events-auto";
       const box = document.createElement("div");
-      box.className = "bg-black border-2 border-yellow-400 p-4 shadow-[0_0_20px_#aa0] max-w-md w-full relative animate-float-in pointer-events-auto mx-4";
+      box.className = "bg-black border-2 border-yellow-400 p-4 shadow-[0_0_20px_#aa0] max-w-md w-full max-h-full overflow-y-auto relative animate-float-in pointer-events-auto mx-4";
       box.onclick = (e) => e.stopPropagation();
       box.innerHTML = `
             <h2 class="text-2xl font-bold text-yellow-400 mb-4 border-b border-yellow-500 pb-2">${title}</h2>
@@ -9566,7 +9687,7 @@
       };
       box.appendChild(btn);
       infoOverlay.appendChild(box);
-      document.body.appendChild(infoOverlay);
+      (document.getElementById("main-content") || document.body).appendChild(infoOverlay);
     },
     showItemConfirm: function(invIndex) {
       const overlay = this.restoreOverlay();
@@ -9777,6 +9898,9 @@
       overlay.appendChild(box);
     },
     showHighscoreBoard: async function() {
+      if (typeof this.schliesseMenueUndUnterfenster === "function") {
+        this.schliesseMenueUndUnterfenster("ui-dialog-overlay");
+      }
       const overlay = this.restoreOverlay();
       overlay.style.display = "flex";
       if (Game.state) Game.state.inDialog = true;
@@ -9791,7 +9915,7 @@
         if (!scores) throw new Error("Keine Daten empfangen.");
         scores.sort((a, b) => b.lvl - a.lvl || b.xp - a.xp);
         const box = document.createElement("div");
-        box.className = "bg-black border-4 border-green-600 p-4 shadow-[0_0_30px_green] w-full max-w-2xl max-h-[90%] flex flex-col relative pointer-events-auto";
+        box.className = "bg-black border-4 border-green-600 p-4 shadow-[0_0_30px_green] w-full max-w-2xl max-h-full flex flex-col relative pointer-events-auto";
         box.onclick = (e) => e.stopPropagation();
         const closeBtn = document.createElement("button");
         closeBtn.className = "absolute top-2 right-2 text-green-500 text-xl border border-green-500 px-3 hover:bg-green-900 font-bold z-50";
@@ -10033,7 +10157,7 @@
     showDungeonVictory: function(caps, lvl) {
       const overlay = document.createElement("div");
       overlay.id = "victory-overlay";
-      overlay.className = "fixed inset-0 z-[200] flex flex-col items-center justify-center bg-black/95 animate-fadeIn pointer-events-auto";
+      overlay.className = "absolute inset-0 z-[90] flex flex-col items-center justify-center bg-black/95 p-4 animate-fadeIn pointer-events-auto";
       overlay.innerHTML = `
             <div class="bg-black border-4 border-yellow-400 p-6 shadow-[0_0_30px_gold] max-w-md text-center mb-4 relative" onclick="event.stopPropagation()">
                 <div class="text-6xl mb-2">👑⚔️</div>
@@ -10044,7 +10168,7 @@
                 <button id="btn-victory-close" class="action-button w-full border-yellow-500 text-yellow-500 font-bold hover:bg-yellow-900">ZURÜCK ZUR KARTE</button>
             </div>
         `;
-      document.body.appendChild(overlay);
+      (document.getElementById("main-content") || document.body).appendChild(overlay);
       if (Game.state) Game.state.inDialog = true;
       const btn = document.getElementById("btn-victory-close");
       if (btn) {
@@ -10094,25 +10218,43 @@
         }
       }
     },
-    // Handbuch und Patch-Notizen sind eigene Overlays, keine Dialoge. Sie
-    // brauchen deshalb einen eigenen ESC-Weg: der Knopf im Handbuch sagt seit
-    // jeher "SCHLIESSEN (ESC)", und ESC tat nichts, weil _trapEscKey nur
-    // #dialog-overlay kennt.
+    // Handbuch, Patch-Notizen, Navigation, Bug-Melden und Signale sind eigene
+    // Unterfenster, keine #ui-dialog-overlay-Dialoge. Alle fuenf schliessen
+    // verlaesslich ueber ESC.
     _trapEigeneOverlays: function() {
       if (this._eigenerEscHandler) document.removeEventListener("keydown", this._eigenerEscHandler);
       this._eigenerEscHandler = (e) => {
         if (e.key !== "Escape") return;
         const manual = document.getElementById("manual-overlay");
         const notizen = document.getElementById("patch-notes-overlay");
-        if (manual && !manual.classList.contains("hidden")) {
+        const nav = document.getElementById("nav-eingabe");
+        const bug = document.getElementById("bug-report-overlay");
+        const pl = document.getElementById("player-list-overlay");
+        if (bug) {
           e.preventDefault();
           e.stopPropagation();
-          manual.classList.add("hidden");
-          manual.style.display = "none";
+          if (typeof UI.schliesseBugModal === "function") UI.schliesseBugModal();
+          else bug.remove();
+        } else if (manual && !manual.classList.contains("hidden")) {
+          e.preventDefault();
+          e.stopPropagation();
+          if (typeof UI.schliesseHandbuch === "function") UI.schliesseHandbuch();
+          else {
+            manual.classList.add("hidden");
+            manual.style.display = "none";
+          }
         } else if (notizen && !notizen.classList.contains("hidden")) {
           e.preventDefault();
           e.stopPropagation();
           if (typeof UI.hidePatchNotes === "function") UI.hidePatchNotes();
+        } else if (nav && !nav.classList.contains("hidden")) {
+          e.preventDefault();
+          e.stopPropagation();
+          if (typeof UI.schliesseNavigation === "function") UI.schliesseNavigation();
+        } else if (pl && !pl.classList.contains("hidden") && pl.style.display === "flex") {
+          e.preventDefault();
+          e.stopPropagation();
+          if (typeof UI.togglePlayerList === "function") UI.togglePlayerList();
         }
       };
       document.addEventListener("keydown", this._eigenerEscHandler);
@@ -10120,11 +10262,20 @@
     showManualOverlay: async function() {
       const overlay = document.getElementById("manual-overlay");
       const content = document.getElementById("manual-content");
-      if (overlay) this._trapEigeneOverlays();
-      if (this.els.navMenu) {
+      if (typeof this.schliesseMenueUndUnterfenster === "function") {
+        this.schliesseMenueUndUnterfenster("manual-overlay");
+      } else if (this.els.navMenu) {
         this.els.navMenu.classList.add("hidden");
         this.els.navMenu.style.display = "none";
       }
+      if (overlay) {
+        if (typeof this.haengeFensterEin === "function") this.haengeFensterEin(overlay);
+        this._trapEigeneOverlays();
+        overlay.onclick = (e) => {
+          if (e.target === overlay && typeof UI.schliesseHandbuch === "function") UI.schliesseHandbuch();
+        };
+      }
+      if (typeof Game !== "undefined" && Game.state) Game.state.inDialog = true;
       if (overlay && content) {
         content.innerHTML = '<div class="text-center animate-pulse">Lade Handbuch...</div>';
         overlay.style.display = "flex";
@@ -10140,7 +10291,7 @@
           text = text.replace(/^### (.*$)/gim, '<h3 class="text-xl font-bold text-green-300 mt-2 mb-1">$1</h3>');
           text = text.replace(/\*\*(.*)\*\*/gim, "<b>$1</b>");
           text = text.replace(/\n/gim, "<br>");
-          text += `<br><button class="action-button w-full mt-4 border-red-500 text-red-500" onclick="document.getElementById('manual-overlay').classList.add('hidden'); document.getElementById('manual-overlay').style.display='none';">SCHLIESSEN (ESC)</button>`;
+          text += '<br><button class="action-button w-full mt-4 border-red-500 text-red-500" onclick="UI.schliesseHandbuch()">SCHLIESSEN (ESC)</button>';
           content.innerHTML = text;
         } catch (e) {
           content.innerHTML = `<div class="text-red-500">Fehler beim Laden: ${e.message}</div>`;
@@ -10364,6 +10515,22 @@
   ];
   window.GameData.RELEASED_PATCHES = [
     {
+      version: "14.0.22",
+      datum: "2026-11-24",
+      title: "Burger-Menü: alle Fenster öffnen unter dem Header im Kartenbereich",
+      punkte: [
+        "Jedes Fenster aus dem Burger-Menü (Handbuch, Patch-Notizen, Navigation, Vault Legends, Bug-Melden, Signale sowie alle Ansichten) öffnet sich jetzt in #main-content unterhalb des oberen Headers - TP, KK, MUN und der Menü-Knopf bleiben frei sichtbar.",
+        "Patch-Notizen, Navigation und Signale hatten bisher gar keine CSS-Positionierung und schoben als statische Elemente den gesamten Spielschirm samt Header nach unten. Alle teilen sich jetzt .unter-header-fenster (position: absolute; inset: 0 in #main-content).",
+        "Das Burger-Menü selbst hängt direkt an der Unterkante des Headers (top: 0, max-height: 100% in #main-content) und schließt sich zuverlässig bei jedem Menüpunkt - es bleibt nicht mehr mit z-index 999999 über Vault Legends, Navigation, Bug-Melden oder der Update-Suche stehen.",
+        "Wechsel zwischen Unterfenstern oder Ansichten räumt das zuvor offene Unterfenster ab (kein Stapeln); ESC schließt Handbuch, Patch-Notizen, Navigation, Bug-Melden und Signale.",
+        "Klicks in Unterfenstern, die ihren Inhalt neu zeichnen (z. B. Reiterwechsel in Patch-Notizen), werfen die darunterliegende Ansicht nicht mehr ungewollt auf die Karte zurück.",
+        "Auf dem Login-Schirm (ohne Spiel-Header) hängen Anleitung und Patch-Notizen weiterhin in #pipboy-case und bleiben dort voll bedienbar."
+      ],
+      offen: [
+        "Neue Layout-Prüfung (tests/menue-fenster-layout.test.mjs) prüft DOM-Hierarchie und berechnete CSS-Werte gegen das gebaute Bündel; eine echte Sichtprüfung auf physischem Telefon steht weiter aus."
+      ]
+    },
+    {
       version: "14.0.21",
       datum: "2026-11-24",
       title: "Tutorial: die ersten Schritte, interaktiv",
@@ -10504,11 +10671,18 @@
     const overlay = document.getElementById("patch-notes-overlay");
     const inhalt = document.getElementById("patch-notes-content");
     if (!overlay || !inhalt) return;
-    if (typeof Game !== "undefined" && Game.state) Game.state.inDialog = true;
-    if (typeof this.els === "object" && this.els && this.els.navMenu) {
+    if (typeof this.schliesseMenueUndUnterfenster === "function") {
+      this.schliesseMenueUndUnterfenster("patch-notes-overlay");
+    } else if (typeof this.els === "object" && this.els && this.els.navMenu) {
       this.els.navMenu.classList.add("hidden");
       this.els.navMenu.style.display = "none";
     }
+    if (typeof this.haengeFensterEin === "function") this.haengeFensterEin(overlay);
+    if (typeof this._trapEigeneOverlays === "function") this._trapEigeneOverlays();
+    overlay.onclick = (e) => {
+      if (e.target === overlay && typeof UI.hidePatchNotes === "function") UI.hidePatchNotes();
+    };
+    if (typeof Game !== "undefined" && Game.state) Game.state.inDialog = true;
     const tab = reiter === "offen" ? "offen" : "veroeffentlicht";
     const eintraege = window.GameData.RELEASED_PATCHES || [];
     const offen = window.GameData.offenePunkte || [];
@@ -10783,6 +10957,7 @@
     return this.updateUI;
   };
   window.UI.pruefeVersion = function(vonHand) {
+    if (vonHand && typeof this.schliesseMenue === "function") this.schliesseMenue();
     const ui = this.starteUpdatePruefung();
     if (!ui) {
       if (typeof this.toast === "function") this.toast("Update-Prüfung nicht verfügbar", "text-red-400");
@@ -11242,6 +11417,12 @@
   window.UI = window.UI || {};
   window.Tutorial = TUTORIAL;
   window.UI.starteTutorial = function() {
+    if (typeof UI !== "undefined" && typeof UI.schliesseMenueUndUnterfenster === "function") {
+      UI.schliesseMenueUndUnterfenster();
+    } else if (typeof UI !== "undefined" && UI.els && UI.els.navMenu) {
+      UI.els.navMenu.classList.add("hidden");
+      UI.els.navMenu.style.display = "none";
+    }
     return TUTORIAL.start();
   };
   window.UI.tutorialVielleicht = function() {
@@ -11571,6 +11752,11 @@
   window.UI.oeffneNavigation = function() {
     const feld = document.getElementById("nav-eingabe");
     if (!feld) return;
+    if (typeof this.schliesseMenueUndUnterfenster === "function") {
+      this.schliesseMenueUndUnterfenster("nav-eingabe");
+    }
+    if (typeof this.haengeFensterEin === "function") this.haengeFensterEin(feld);
+    if (typeof this._trapEigeneOverlays === "function") this._trapEigeneOverlays();
     if (typeof Game !== "undefined" && Game.state) Game.state.inDialog = true;
     const ziel = Navigation.stand();
     const text = document.getElementById("nav-eingabe-stand");

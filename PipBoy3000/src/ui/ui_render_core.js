@@ -177,11 +177,15 @@ Object.assign(UI, {
         this.stopJoystick();
         this.focusIndex = -1;
 
-        if(this.els.navMenu) {
-            this.els.navMenu.classList.add('hidden');
-            this.els.navMenu.style.display = 'none';
+        if (typeof this.schliesseMenueUndUnterfenster === 'function') {
+            this.schliesseMenueUndUnterfenster();
+        } else {
+            if(this.els.navMenu) {
+                this.els.navMenu.classList.add('hidden');
+                this.els.navMenu.style.display = 'none';
+            }
+            if(this.els.playerList) this.els.playerList.style.display = 'none';
         }
-        if(this.els.playerList) this.els.playerList.style.display = 'none';
 
         const verDisplay = document.getElementById('version-display');
         const ver = verDisplay ? verDisplay.textContent.trim() : Date.now();
@@ -294,7 +298,8 @@ Object.assign(UI, {
                     <div class="text-xs text-[#39ff14] animate-pulse font-bold bg-[#39ff14]/20 py-2 rounded">> TIPPEN ZUM STARTEN <</div>
                 </div>
             </div>`;
-        document.body.insertAdjacentHTML('beforeend', hintHTML);
+        const ziel = document.getElementById('main-content') || document.body;
+        ziel.insertAdjacentHTML('beforeend', hintHTML);
         setTimeout(() => { const el = document.getElementById('mobile-hint'); if(el) el.classList.remove('opacity-0'); }, 10);
     },
 
@@ -319,9 +324,19 @@ Object.assign(UI, {
     
     togglePlayerList: function() {
         if(!this.els.playerList) return;
-        if(this.els.playerList.style.display === 'flex') {
+        const offen = !this.els.playerList.classList.contains('hidden') && this.els.playerList.style.display === 'flex';
+        if (offen) {
+            this.els.playerList.classList.add('hidden');
             this.els.playerList.style.display = 'none';
         } else {
+            if (typeof this.schliesseMenueUndUnterfenster === 'function') {
+                this.schliesseMenueUndUnterfenster('player-list-overlay');
+            }
+            if (typeof this.haengeFensterEin === 'function') {
+                this.haengeFensterEin(this.els.playerList);
+            }
+            if (typeof this._trapEigeneOverlays === 'function') this._trapEigeneOverlays();
+            this.els.playerList.classList.remove('hidden');
             this.els.playerList.style.display = 'flex';
             this.updatePlayerList();
         }

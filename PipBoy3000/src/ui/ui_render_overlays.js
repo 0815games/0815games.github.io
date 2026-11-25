@@ -33,11 +33,16 @@ Object.assign(UI, {
     
     restoreOverlay: function() {
         let overlay = document.getElementById('ui-dialog-overlay');
+        const ziel = document.getElementById('main-content') || document.body;
         if(!overlay) {
             overlay = document.createElement('div');
             overlay.id = 'ui-dialog-overlay';
-            overlay.className = "absolute inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm hidden pointer-events-auto";
-            document.body.appendChild(overlay);
+            overlay.className = "unter-header-fenster bg-black/80 backdrop-blur-sm pointer-events-auto";
+            overlay.style.display = 'none';
+            ziel.appendChild(overlay);
+            this.els.dialog = overlay;
+        } else if (overlay.parentElement !== ziel) {
+            ziel.appendChild(overlay);
             this.els.dialog = overlay;
         }
         
@@ -150,10 +155,10 @@ Object.assign(UI, {
         if(Game.state) Game.state.inDialog = true;
 
         const infoOverlay = document.createElement('div');
-        infoOverlay.className = "fixed inset-0 z-[2000] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fadeIn pointer-events-auto";
+        infoOverlay.className = "absolute inset-0 z-[90] flex items-center justify-center bg-black/80 backdrop-blur-sm p-2 animate-fadeIn pointer-events-auto";
         
         const box = document.createElement('div');
-        box.className = "bg-black border-2 border-yellow-400 p-4 shadow-[0_0_20px_#aa0] max-w-md w-full relative animate-float-in pointer-events-auto mx-4";
+        box.className = "bg-black border-2 border-yellow-400 p-4 shadow-[0_0_20px_#aa0] max-w-md w-full max-h-full overflow-y-auto relative animate-float-in pointer-events-auto mx-4";
         box.onclick = (e) => e.stopPropagation();
 
         box.innerHTML = `
@@ -182,7 +187,7 @@ Object.assign(UI, {
 
         box.appendChild(btn);
         infoOverlay.appendChild(box);
-        document.body.appendChild(infoOverlay);
+        (document.getElementById('main-content') || document.body).appendChild(infoOverlay);
     },
 
     showItemConfirm: function(invIndex) {
@@ -423,6 +428,9 @@ Object.assign(UI, {
     },
 
     showHighscoreBoard: async function() {
+        if (typeof this.schliesseMenueUndUnterfenster === 'function') {
+            this.schliesseMenueUndUnterfenster('ui-dialog-overlay');
+        }
         const overlay = this.restoreOverlay();
         overlay.style.display = 'flex';
         if(Game.state) Game.state.inDialog = true;
@@ -441,7 +449,7 @@ Object.assign(UI, {
             scores.sort((a,b) => b.lvl - a.lvl || b.xp - a.xp);
 
             const box = document.createElement('div');
-            box.className = "bg-black border-4 border-green-600 p-4 shadow-[0_0_30px_green] w-full max-w-2xl max-h-[90%] flex flex-col relative pointer-events-auto";
+            box.className = "bg-black border-4 border-green-600 p-4 shadow-[0_0_30px_green] w-full max-w-2xl max-h-full flex flex-col relative pointer-events-auto";
             box.onclick = (e) => e.stopPropagation();
 
             const closeBtn = document.createElement('button');
@@ -704,7 +712,7 @@ Object.assign(UI, {
     showDungeonVictory: function(caps, lvl) {
         const overlay = document.createElement('div');
         overlay.id = "victory-overlay";
-        overlay.className = "fixed inset-0 z-[200] flex flex-col items-center justify-center bg-black/95 animate-fadeIn pointer-events-auto";
+        overlay.className = "absolute inset-0 z-[90] flex flex-col items-center justify-center bg-black/95 p-4 animate-fadeIn pointer-events-auto";
         
         overlay.innerHTML = `
             <div class="bg-black border-4 border-yellow-400 p-6 shadow-[0_0_30px_gold] max-w-md text-center mb-4 relative" onclick="event.stopPropagation()">
@@ -717,7 +725,7 @@ Object.assign(UI, {
             </div>
         `;
         
-        document.body.appendChild(overlay);
+        (document.getElementById('main-content') || document.body).appendChild(overlay);
         
         if(Game.state) Game.state.inDialog = true;
         
@@ -778,22 +786,35 @@ Object.assign(UI, {
         }
     },
     
-    // Handbuch und Patch-Notizen sind eigene Overlays, keine Dialoge. Sie
-    // brauchen deshalb einen eigenen ESC-Weg: der Knopf im Handbuch sagt seit
-    // jeher "SCHLIESSEN (ESC)", und ESC tat nichts, weil _trapEscKey nur
-    // #dialog-overlay kennt.
+    // Handbuch, Patch-Notizen, Navigation, Bug-Melden und Signale sind eigene
+    // Unterfenster, keine #ui-dialog-overlay-Dialoge. Alle fuenf schliessen
+    // verlaesslich ueber ESC.
     _trapEigeneOverlays: function() {
         if (this._eigenerEscHandler) document.removeEventListener('keydown', this._eigenerEscHandler);
         this._eigenerEscHandler = (e) => {
             if (e.key !== 'Escape') return;
             const manual = document.getElementById('manual-overlay');
             const notizen = document.getElementById('patch-notes-overlay');
-            if (manual && !manual.classList.contains('hidden')) {
+            const nav = document.getElementById('nav-eingabe');
+            const bug = document.getElementById('bug-report-overlay');
+            const pl = document.getElementById('player-list-overlay');
+            if (bug) {
                 e.preventDefault(); e.stopPropagation();
-                manual.classList.add('hidden'); manual.style.display = 'none';
+                if (typeof UI.schliesseBugModal === 'function') UI.schliesseBugModal();
+                else bug.remove();
+            } else if (manual && !manual.classList.contains('hidden')) {
+                e.preventDefault(); e.stopPropagation();
+                if (typeof UI.schliesseHandbuch === 'function') UI.schliesseHandbuch();
+                else { manual.classList.add('hidden'); manual.style.display = 'none'; }
             } else if (notizen && !notizen.classList.contains('hidden')) {
                 e.preventDefault(); e.stopPropagation();
                 if (typeof UI.hidePatchNotes === 'function') UI.hidePatchNotes();
+            } else if (nav && !nav.classList.contains('hidden')) {
+                e.preventDefault(); e.stopPropagation();
+                if (typeof UI.schliesseNavigation === 'function') UI.schliesseNavigation();
+            } else if (pl && !pl.classList.contains('hidden') && pl.style.display === 'flex') {
+                e.preventDefault(); e.stopPropagation();
+                if (typeof UI.togglePlayerList === 'function') UI.togglePlayerList();
             }
         };
         document.addEventListener('keydown', this._eigenerEscHandler);
@@ -802,8 +823,18 @@ Object.assign(UI, {
     showManualOverlay: async function() {
         const overlay = document.getElementById('manual-overlay');
         const content = document.getElementById('manual-content');
-        if (overlay) this._trapEigeneOverlays();
-        if(this.els.navMenu) { this.els.navMenu.classList.add('hidden'); this.els.navMenu.style.display = 'none'; }
+        if (typeof this.schliesseMenueUndUnterfenster === 'function') {
+            this.schliesseMenueUndUnterfenster('manual-overlay');
+        } else if(this.els.navMenu) {
+            this.els.navMenu.classList.add('hidden');
+            this.els.navMenu.style.display = 'none';
+        }
+        if (overlay) {
+            if (typeof this.haengeFensterEin === 'function') this.haengeFensterEin(overlay);
+            this._trapEigeneOverlays();
+            overlay.onclick = (e) => { if (e.target === overlay && typeof UI.schliesseHandbuch === 'function') UI.schliesseHandbuch(); };
+        }
+        if (typeof Game !== 'undefined' && Game.state) Game.state.inDialog = true;
         if(overlay && content) {
             content.innerHTML = '<div class="text-center animate-pulse">Lade Handbuch...</div>';
             overlay.style.display = 'flex'; overlay.classList.remove('hidden');
@@ -820,7 +851,7 @@ Object.assign(UI, {
                 text = text.replace(/^### (.*$)/gim, '<h3 class="text-xl font-bold text-green-300 mt-2 mb-1">$1</h3>');
                 text = text.replace(/\*\*(.*)\*\*/gim, '<b>$1</b>');
                 text = text.replace(/\n/gim, '<br>');
-                text += '<br><button class="action-button w-full mt-4 border-red-500 text-red-500" onclick="document.getElementById(\'manual-overlay\').classList.add(\'hidden\'); document.getElementById(\'manual-overlay\').style.display=\'none\';">SCHLIESSEN (ESC)</button>';
+                text += '<br><button class="action-button w-full mt-4 border-red-500 text-red-500" onclick="UI.schliesseHandbuch()">SCHLIESSEN (ESC)</button>';
                 content.innerHTML = text; 
             } catch(e) { content.innerHTML = `<div class="text-red-500">Fehler beim Laden: ${e.message}</div>`; }
         }

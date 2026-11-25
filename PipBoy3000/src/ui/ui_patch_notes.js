@@ -35,6 +35,22 @@ window.GameData.offenePunkte = [
 // nicht mit dem, was geplant war.
 window.GameData.RELEASED_PATCHES = [
   {
+    version: '14.0.22',
+    datum: '2026-11-24',
+    title: 'Burger-Menü: alle Fenster öffnen unter dem Header im Kartenbereich',
+    punkte: [
+      'Jedes Fenster aus dem Burger-Menü (Handbuch, Patch-Notizen, Navigation, Vault Legends, Bug-Melden, Signale sowie alle Ansichten) öffnet sich jetzt in #main-content unterhalb des oberen Headers - TP, KK, MUN und der Menü-Knopf bleiben frei sichtbar.',
+      'Patch-Notizen, Navigation und Signale hatten bisher gar keine CSS-Positionierung und schoben als statische Elemente den gesamten Spielschirm samt Header nach unten. Alle teilen sich jetzt .unter-header-fenster (position: absolute; inset: 0 in #main-content).',
+      'Das Burger-Menü selbst hängt direkt an der Unterkante des Headers (top: 0, max-height: 100% in #main-content) und schließt sich zuverlässig bei jedem Menüpunkt - es bleibt nicht mehr mit z-index 999999 über Vault Legends, Navigation, Bug-Melden oder der Update-Suche stehen.',
+      'Wechsel zwischen Unterfenstern oder Ansichten räumt das zuvor offene Unterfenster ab (kein Stapeln); ESC schließt Handbuch, Patch-Notizen, Navigation, Bug-Melden und Signale.',
+      'Klicks in Unterfenstern, die ihren Inhalt neu zeichnen (z. B. Reiterwechsel in Patch-Notizen), werfen die darunterliegende Ansicht nicht mehr ungewollt auf die Karte zurück.',
+      'Auf dem Login-Schirm (ohne Spiel-Header) hängen Anleitung und Patch-Notizen weiterhin in #pipboy-case und bleiben dort voll bedienbar.'
+    ],
+    offen: [
+      'Neue Layout-Prüfung (tests/menue-fenster-layout.test.mjs) prüft DOM-Hierarchie und berechnete CSS-Werte gegen das gebaute Bündel; eine echte Sichtprüfung auf physischem Telefon steht weiter aus.'
+    ]
+  },
+  {
     version: '14.0.21',
     datum: '2026-11-24',
     title: 'Tutorial: die ersten Schritte, interaktiv',
@@ -184,12 +200,16 @@ window.UI.showPatchNotes = function(reiter) {
     const overlay = document.getElementById('patch-notes-overlay');
     const inhalt = document.getElementById('patch-notes-content');
     if (!overlay || !inhalt) return;
-    if (typeof Game !== 'undefined' && Game.state) Game.state.inDialog = true;
-
-    if (typeof this.els === 'object' && this.els && this.els.navMenu) {
+    if (typeof this.schliesseMenueUndUnterfenster === 'function') {
+        this.schliesseMenueUndUnterfenster('patch-notes-overlay');
+    } else if (typeof this.els === 'object' && this.els && this.els.navMenu) {
         this.els.navMenu.classList.add('hidden');
         this.els.navMenu.style.display = 'none';
     }
+    if (typeof this.haengeFensterEin === 'function') this.haengeFensterEin(overlay);
+    if (typeof this._trapEigeneOverlays === 'function') this._trapEigeneOverlays();
+    overlay.onclick = (e) => { if (e.target === overlay && typeof UI.hidePatchNotes === 'function') UI.hidePatchNotes(); };
+    if (typeof Game !== 'undefined' && Game.state) Game.state.inDialog = true;
 
     const tab = reiter === 'offen' ? 'offen' : 'veroeffentlicht';
     const eintraege = window.GameData.RELEASED_PATCHES || [];

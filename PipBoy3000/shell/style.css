@@ -71,13 +71,15 @@
     -webkit-overflow-scrolling: touch; /* Flüssiges Scrollen auf iOS */
 }
 
-/* BURGER MENÜ FIX */
+/* BURGER MENÜ FIX
+   Liegt direkt in #main-content (unterhalb von #game-header) bei top:0 right:0
+   und ragt mit max-height:100% nie aus dem Kartenbereich heraus. */
 #main-nav {
     z-index: 999999 !important; /* [FIX] Über Toasts und allem anderen */
-    max-height: 90vh;         /* Nicht höher als 70% des Screens */
-    overflow-y: auto;         /* Vertikal scrollen erlaubt */
-    overflow-x: hidden;       /* FIX: Horizontales Wackeln/Scrollen verboten */
-    width: 14rem;             /* Entspricht w-56, erzwingt feste Breite */
+    max-height: 100%;           /* Bleibt komplett im Bereich unter dem Header */
+    overflow-y: auto;           /* Vertikal scrollen erlaubt */
+    overflow-x: hidden;         /* FIX: Horizontales Wackeln/Scrollen verboten */
+    width: 14rem;               /* Entspricht w-56, erzwingt feste Breite */
 }
 
 /* --- LEICHEN IM KELLER (Old Layout entfernen) --- */
@@ -229,7 +231,7 @@ canvas { image-rendering: pixelated; image-rendering: crisp-edges; display: bloc
 }
 #tutorial-feld[hidden] { display: none; }
 @media (min-width: 768px) {
-    #tutorial-feld { right: 1.25rem; bottom: auto; top: 7.5rem; }
+    #tutorial-feld { right: 1.25rem; bottom: auto; top: calc(2.5vh + 6.25rem); max-height: calc(95vh - 7.5rem); overflow-y: auto; }
 }
 
 .tut-kopf { display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid rgba(57, 255, 20, 0.3); padding-bottom: 0.3rem; margin-bottom: 0.45rem; }
@@ -372,12 +374,45 @@ body.fenster-offen #game-screen * {
     align-items: center;
 }
 
-#login-screen, #spawn-screen, #reset-overlay, #manual-overlay, #changelog-overlay, #char-select-screen, #delete-confirm-overlay {
+#login-screen, #spawn-screen, #reset-overlay, #changelog-overlay, #char-select-screen, #delete-confirm-overlay {
     position: absolute; inset: 0; z-index: 999;
     background: #000;
     display: flex; flex-direction: column;
     justify-content: center; align-items: center;
     width: 100%; height: 100%;
+}
+
+/* --- Fenster aus dem Burger-Menue (unter dem oberen Header) --------------
+   Im Spiel haengen Handbuch, Patch-Notizen, Navigation, Vault Legends,
+   Bug-Melden und Signale in #main-content - also exakt im Kartenbereich
+   unterhalb von #game-header (TP, KK, MUN und Burger-Knopf bleiben frei).
+   Auf dem Login-Schirm gibt es noch keinen Header; dort haengen Handbuch
+   und Patch-Notizen in #pipboy-case und fuellen das Gehaeuse (z-index 1000
+   ueber #login-screen). */
+.unter-header-fenster {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    inset: 0;
+    z-index: 80;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    padding: 0.5rem;
+    background: rgba(0, 0, 0, 0.94);
+    overflow: hidden;
+}
+#pipboy-case > .unter-header-fenster {
+    z-index: 1000;
+}
+.unter-header-fenster.hidden,
+.unter-header-fenster[hidden] {
+    display: none;
 }
 
 /* --- ANIMATIONS & EFFECTS --- */

@@ -1,5 +1,29 @@
 # CHANGELOG
 
+## v14.0.22 (Burger-Menue-Fenster unter dem Header, 2026-11-24)
+Jedes ueber das Burger-Menue geoeffnete Fenster liegt im Spiel unterhalb von
+`#game-header` in `#main-content` (TP, KK, MUN und Burger-Knopf bleiben frei).
+
+- [FIX] Einheitliche Klasse `.unter-header-fenster` (`position: absolute;
+  top/right/bottom/left: 0` in `#main-content`): behebt die fehlende CSS-Regel
+  auf `#patch-notes-overlay`, `#nav-eingabe` und `#player-list-overlay`
+  (schoben bisher als statische Flex-Kinder den Header nach unten) sowie die
+  Vollbild-Ueberdeckung auf `#manual-overlay`, `#ui-dialog-overlay` (Vault
+  Legends) und `#bug-report-overlay`.
+- [FIX] `#main-nav` liegt direkt in `#main-content` (`top: 0; max-height: 100%`)
+  und schliesst sich bei jedem Menuepunkt sauber (`hidden` + `display: none`),
+  auch bei Vault Legends, Navigation, Bug-Melden, Tutorial und Update-Suche.
+- [FIX] Wechsel zwischen Unterfenstern und `switchView()` schliesst offene
+  Unterfenster automatisch; `Escape` schliesst Handbuch, Patch-Notizen,
+  Navigation, Bug-Melden und Signale.
+- [FIX] `ui_input.js`: beim Klick neu gezeichnete Buttons (`!document.contains`)
+  und Klicks in Unterfenstern setzen die darunterliegende Ansicht nicht mehr
+  ungewollt auf `map` zurueck.
+- [FIX] Auf dem Login-Schirm haengen Anleitung und Patch-Notizen weiter in
+  `#pipboy-case`, damit sie vor Spielbeginn sichtbar bleiben.
+- [NEU] `tests/menue-fenster-layout.test.mjs` (4 Integrationstests gegen das
+  ausgelieferte HTML + CSS + Buendel, 4 Gegenproben rot).
+
 ## v14.0.21 (Tutorial, 2026-11-24)
 Die ersten Schritte, interaktiv. Kein Textkasten zum Durchklicken: jeder
 Schritt wartet darauf, dass die Handlung wirklich passiert ist.

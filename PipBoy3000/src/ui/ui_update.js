@@ -268,6 +268,7 @@ window.UI.starteUpdatePruefung = function() {
 // Der Menuepunkt "NACH UPDATE SUCHEN". Ohne Argument startet er die Pruefung
 // von Hand; mit true meldet er auch dann etwas, wenn alles aktuell ist.
 window.UI.pruefeVersion = function(vonHand) {
+    if (vonHand && typeof this.schliesseMenue === 'function') this.schliesseMenue();
     const ui = this.starteUpdatePruefung();
     if (!ui) {
         if (typeof this.toast === 'function') this.toast('Update-Prüfung nicht verfügbar', 'text-red-400');

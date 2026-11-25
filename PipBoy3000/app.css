@@ -312,14 +312,14 @@
 .z-\[6000\] {
     z-index: 6000
 }
-.z-\[60\] {
-    z-index: 60
-}
 .z-\[8000\] {
     z-index: 8000
 }
 .z-\[9000\] {
     z-index: 9000
+}
+.z-\[90\] {
+    z-index: 90
 }
 .z-\[9999\] {
     z-index: 9999
@@ -555,11 +555,8 @@
 .max-h-\[60vh\] {
     max-height: 60vh
 }
-.max-h-\[90\%\] {
-    max-height: 90%
-}
-.max-h-\[calc\(100vh-6rem\)\] {
-    max-height: calc(100vh - 6rem)
+.max-h-full {
+    max-height: 100%
 }
 .min-h-0 {
     min-height: 0px
