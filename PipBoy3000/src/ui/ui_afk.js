@@ -80,6 +80,14 @@ const UI_AFK = {
             return;
         }
         if (this.fensterOffen) {
+            // Der Spieler hat den Bildschirm angefasst, aber nicht den Knopf
+            // getroffen (oder die Maus bewegt). Dann ist er da - das Fenster
+            // muss zu, statt ihn trotzdem abzumelden. Die Eingabe setzt
+            // ui_input.js auf UI.lastInputTime, hier wird sie nur gelesen.
+            if (this.stille() < AFK_GRENZE) {
+                this.fensterSchliessen();
+                return;
+            }
             this.fensterTick();
             return;
         }

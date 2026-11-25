@@ -35,6 +35,19 @@ window.GameData.offenePunkte = [
 // nicht mit dem, was geplant war.
 window.GameData.RELEASED_PATCHES = [
   {
+    version: '14.0.20',
+    datum: '2026-11-24',
+    title: 'Zwei Loecher im AFK-Schutz gestopft',
+    punkte: [
+      'Wer im AFK-Fenster daneben tippte, war damit wieder da - die Uhr wurde zurueckgesetzt. Das Fenster merkte das aber nicht und meldete ihn trotzdem ab. Jetzt geht es zu, sobald eine echte Eingabe kommt.',
+      'Bei offenem Fenster reagierte das Spiel dahinter auf Tastendruecke: Escape und die Pfeiltasten bewegten die Ansicht, waehrend das Fenster noch stand. Die Tastatur gehoert jetzt dem Fenster; Escape bleibt fuers offene Menue zustaendig, damit man sich nicht aussperrt.',
+      'Beides mit Test und Gegenprobe.'
+    ],
+    offen: [
+      'Die Fenster lassen sich hier nicht als Bild ansehen - in der Arbeitsumgebung ist kein Browser installiert. Geprueft sind Aufbau, Texte, CSS und Verhalten; die Optik auf einem echten Geraet steht aus.'
+    ]
+  },
+  {
     version: '14.0.19',
     datum: '2026-11-24',
     title: 'Durchsicht: Fenster sperren jetzt richtig, und ein Klick wirft nicht mehr raus',

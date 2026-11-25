@@ -129,6 +129,36 @@ test('auf dem Login-Bildschirm schweigt der Schutz', () => {
   assert.equal(w.eval('UI.logoutGrund'), null, 'Logout auf dem Login-Bildschirm');
 });
 
+test('wer den Bildschirm anfasst, ist da - das Fenster geht zu', () => {
+  // Im Fenster ist der Hintergrund gesperrt. Wer daneben tippt, setzt ueber
+  // ui_input.js die AFK-Uhr zurueck, trifft aber nicht den Knopf. Ohne diese
+  // Regel bliebe das Fenster stehen und wuerde ihn trotzdem abmelden.
+  const {w, document} = mitAfk();
+  w.eval('AFK.start(); UI.lastInputTime = Date.now() - 5*60*1000; AFK.pruefen();');
+  assert.equal(w.eval('AFK.fensterOffen'), true);
+  // Ein Tipp irgendwo auf den Bildschirm
+  w.eval('UI.lastInputTime = Date.now(); AFK.pruefen();');
+  assert.equal(w.eval('AFK.fensterOffen'), false, 'Das Fenster bleibt trotz Eingabe offen');
+  assert.equal(w.eval('UI.logoutGrund'), null, 'Es wurde trotz Eingabe abgemeldet');
+  assert.equal(document.body.classList.contains('fenster-offen'), false,
+    'Der Hintergrund bleibt gesperrt');
+});
+
+test('bei offenem Fenster reagiert das Spiel nicht auf Tastendruecke', () => {
+  // Der Hintergrund ist per CSS gesperrt - das gilt nur fuer Zeiger, nicht
+  // fuer die Tastatur. Ohne die Sperre bewegt Escape oder eine Pfeiltaste das
+  // Spiel dahinter, waehrend das Fenster noch steht.
+  const quelle = readFileSync(join(ROOT, 'src/ui/ui_input.js'), 'utf8');
+  const stelle = quelle.indexOf('handleKeyDown: function(e)');
+  assert.ok(stelle > 0, 'handleKeyDown fehlt');
+  const rumpf = quelle.slice(stelle, stelle + 1200);
+  assert.match(rumpf, /classList\.contains\('fenster-offen'\)/,
+    'Die Tastatur wird bei offenem Fenster nicht gesperrt');
+  // Escape muss weiter durch, solange das Menue offen ist - sonst sperrt man
+  // sich aus.
+  assert.match(rumpf, /e\.key !== 'Escape'/, 'Escape darf nicht mitgesperrt werden');
+});
+
 test('solange das Fenster steht, ist der Hintergrund gesperrt', () => {
   // "Modal" im HTML heisst auch: der Hintergrund ist nicht bedienbar. Vorher
   // war er nur abgedunkelt - ein Klick auf die Karte bewegte den Spieler unter
