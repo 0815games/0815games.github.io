@@ -1322,8 +1322,8 @@ async function startVisit(friendUid, friendName) {
   }
   endVisit();
   const town = hydrateTown(raw);
-  const model = { state: advance(town, Date.now(), ctx(baseData)).state };
-  visit = { uid: friendUid, model, board: null, timer: null };
+  const model = { state: advance(town, Date.now(), ctx(baseData)).state, at: Date.now() };
+  visit = { uid: friendUid, model, board: null, timer: null, refreshing: false, lastError: false };
   $('#visit-name').textContent = town.name;
   $('#visit').hidden = false;
   visit.board = createBoard($('#visit-board'), {
@@ -1339,10 +1339,35 @@ async function startVisit(friendUid, friendName) {
   updateVisitInfo();
   visit.timer = setInterval(() => {
     if (!visit || visit.model !== model) return;
+    if (Date.now() - model.at >= VISIT_REFRESH_MS && !visit.refreshing) void refreshVisit(friendUid, model);
     model.state = advance(model.state, Date.now(), ctx(baseData)).state;
     visit.board?.redraw();
     updateVisitInfo();
   }, 1000);
+}
+
+// Besuch: der Stand kommt alle 30 s frisch aus der Cloud. Nur lesen, nichts wird zurückgeschrieben.
+// Der Anzeigestand ist damit höchstens etwa 60 s alt. Fällt das Laden aus, bleibt der alte Stand sichtbar und wird als veraltet markiert.
+const VISIT_REFRESH_MS = 30_000;
+const VISIT_STALE_MS = 60_000;
+
+async function refreshVisit(friendUid, model) {
+  if (!visit || visit.model !== model) return;
+  visit.refreshing = true;
+  try {
+    const raw = await withTimeout(cloud.loadTown(friendUid), REMOTE_TIMEOUT_MS, 'Besuch aktualisieren');
+    if (visit && visit.model === model && raw) {
+      model.state = advance(hydrateTown(raw), Date.now(), ctx(baseData)).state;
+      model.at = Date.now();
+      visit.lastError = false;
+      visit.board?.redraw();
+    }
+  } catch {
+    if (visit && visit.model === model) visit.lastError = true;
+  } finally {
+    if (visit && visit.model === model) visit.refreshing = false;
+    updateVisitInfo();
+  }
 }
 
 function endVisit() {
@@ -1357,7 +1382,9 @@ function updateVisitInfo() {
   const st = visit?.model.state;
   if (!st) return;
   const count = Object.values(st.tiles).filter((t) => t.building).length;
-  $('#visit-info').textContent = `Level ${st.townLevel} · 🪙 ${Math.floor(st.coins)} · 🏠 ${count} Gebäude`;
+  const age = Math.max(0, Math.round((Date.now() - visit.model.at) / 1000));
+  const stale = visit.lastError && age > VISIT_STALE_MS / 1000 ? ' · veraltet, keine Verbindung' : '';
+  $('#visit-info').textContent = `Level ${st.townLevel} · 🪙 ${Math.floor(st.coins)} · 🏠 ${count} Gebäude · Stand vor ${age} s${stale}`;
 }
 
 function describeIn(st, x, y) {
