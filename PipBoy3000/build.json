@@ -1,14 +1,14 @@
 {
-  "version": "14.0.5",
+  "version": "14.0.6",
   "scripts": 28,
   "bytes": {
-    "js": 482084,
+    "js": 482189,
     "admin": 80787,
     "css": 81615,
     "html": 31151
   },
   "sha256": {
-    "js": "1f9fbbc0a33b75d9",
+    "js": "a3bdd896c4e3f428",
     "css": "b7e32efb1f6742f6"
   }
 }
