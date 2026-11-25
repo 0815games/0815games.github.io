@@ -1,6 +1,6 @@
 {
   "name": "pipboy3000",
-  "version": "14.0.10",
+  "version": "14.0.11",
   "private": true,
   "description": "Pip-Boy 3003 - Ödland-RPG im Browser",
   "type": "module",

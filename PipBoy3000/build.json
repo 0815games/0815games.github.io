@@ -1,11 +1,11 @@
 {
-  "version": "14.0.10",
+  "version": "14.0.11",
   "scripts": 29,
   "bytes": {
     "js": 485156,
     "admin": 80952,
     "css": 81658,
-    "html": 35303
+    "html": 35307
   },
   "sha256": {
     "js": "10cd182a58ee776d",

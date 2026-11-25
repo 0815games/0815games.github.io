@@ -1,5 +1,32 @@
 # CHANGELOG
 
+## v14.0.11 (Neues App-Icon, 2026-11-24)
+"Das Logo ist haesslich." Das alte Icon war ein Gasmasken-Gesicht: duenne
+Striche, ein Strahlensymbol als Fleck in der Mitte, ein Filter, der unten zu
+einem Kuchen verschmolz. Ikonografisch war die Idee gut, gezeichnet war sie
+schlecht - und bei 16 px im Browser-Tab blieb davon ein gruener Punkt.
+
+- [NEU] **Vault-Tuer als Motiv.** Ring in Ring, sechs Verriegelungsbolzen,
+  Kernloch. Massive Farbflaechen statt Linien: bei kleiner Groesse bleibt die
+  Silhouette, weil es keine duennen Striche gibt, die verschwinden koennen.
+- [NEU] **Die Quelle ist jetzt Vektor** (`docs/muster/app-icon.svg`) statt
+  eines 1024er Rohbilds. Damit ist jede Groesse exakt, und die Datei ist
+  923 Byte statt 797 kB.
+- [FIX] **Kleine Groessen werden gezeichnet, nicht verkleinert.** Bei 16 px
+  ist ein Strich von 2.4 Einheiten 0.38 px; beim Weichzeichnen entstehen 140
+  Zwischentoene und das Motiv verschwindet. Unter 64 px entscheidet jetzt pro
+  Pixel eine Formel - zwei Farben, keine Graustufen. Das alte Favicon hatte
+  140/388/724 Zwischentoene bei 16/32/48 px.
+- [FIX] **SVG mit zwei Zweigen.** `gross` ab 120 px (mit Innenring fuer die
+  Tiefe), `mittel` 64-119 px (ohne, sonst verschwindet der Ring zuerst).
+  `icon.svg` im Browser-Tab ist die grosse Fassung.
+- [TEST] **`tests/app-icon.test.mjs` prueft die kleinen Groessen**, nicht nur
+  die Dateigroesse: hoechstens vier Farben pro ICO-Eintrag, Kernloch in der
+  Mitte bei 16 px, Abstand zum Rand, und dass SVG und Werkzeug dieselben
+  Radien nennen. Gegenprobe: mit dem alten Icon fallen genau diese zwei
+  Pruefungen um.
+- Das Rohbild `docs/muster/app-icon.png` ist entfallen.
+
 ## v14.0.10 (Item-Bilder im Inventar, 2026-11-24)
 Der Bericht war eindeutig: das Inventar zeigte an jeder Position ein Emoji,
 obwohl seit 14.0.6 alle 126 Items ein Bild haben. Die Bilder waren in Ordnung,
