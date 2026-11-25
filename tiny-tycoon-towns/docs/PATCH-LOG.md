@@ -606,3 +606,27 @@ Ereignis ergänzt.
 - Git / PR / Veröffentlichung: Commit folgt im Schritt danach. Nicht veröffentlicht.
 - Offen / nächster Schritt: Auf zwei Geräten prüfen (Nutzer). Prüfen, ob der Hinweis auf dem
   alten Gerät gewünscht ist oder ganz wegfallen soll.
+
+### TTT-0043 – „Cloud Safe fehlgeschlagen“: Regeln für Konvoi-Felder fehlten
+
+- Zeit / Quelle: Sitzung 2026-11-25 (UTC). Nutzermeldung: „Cloud Safe fehlgeschlagen, prüfe die Regeln“
+  nach der Veröffentlichung der Regeln.
+- Ursache: `saves/{uid}/town` hat `$other: false`. Die Engine schreibt seit den Konvois die Felder
+  `convoySeq` und `convoys` in den Stadtstand. Beide standen nicht in der Regel. Die Datenbank hat
+  deshalb jedes Speichern des Stadtstands abgelehnt.
+- Änderungen / Dateien:
+  - `firebase/database.rules.json`: `convoySeq` (Zahl ab 0) und `convoys/$convoyIndex` (Index
+    1 bis 6 Ziffern, `id`, `status`, `departAt`, `arriveAt`; `status` nur `travelling`, `arrived`
+    oder `settled`).
+  - `tests/rules-town-keys.test.mjs` (neu, 3 Tests): Wächter. Jedes Feld, das die Engine in den
+    Stadtstand schreibt, muss in der Regel stehen. Probe: ohne die zwei Felder schlägt der Test
+    mit „Felder ohne Regel: convoySeq, convoys“ fehl, danach wieder grün.
+- Prüfungen (lokal, Node 22.22.3):
+  - `npm test`: 124 Tests, 124 pass, 0 fail, Exit 0 (Unit).
+  - `npm run check`: Exit 0, kein Fehler.
+  - Nicht geprüft: Firebase-Emulator (nicht eingerichtet), Live-Regeln.
+- Git / PR / Veröffentlichung: Die Regeln sind in diesem Branch geändert, **nicht in Firebase
+  veröffentlicht**. Der Betreiber muss `firebase/database.rules.json` erneut veröffentlichen
+  (`docs/FIREBASE.md`, Schritte 1 bis 4). Bis dahin scheitert das Speichern weiter.
+- Offen / nächster Schritt: Betreiber veröffentlicht die Regeln. Danach Test: Stadt speichern,
+  Konvoi starten, abrechnen, Seite neu laden.

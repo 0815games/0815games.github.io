@@ -76,6 +76,14 @@
               ".validate": false
             }
           },
+          "convoySeq": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          },
+          "convoys": {
+            "$convoyIndex": {
+              ".validate": "$convoyIndex.matches(/^[0-9]{1,6}$/) && newData.hasChildren(['id','status','departAt','arriveAt']) && newData.child('id').isString() && newData.child('id').val().length <= 128 && newData.child('status').isString() && (newData.child('status').val() == 'travelling' || newData.child('status').val() == 'arrived' || newData.child('status').val() == 'settled')"
+            }
+          },
           "adminEditedAt": {
             ".validate": "newData.isNumber() && newData.val() >= 0"
           },
