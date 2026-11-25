@@ -1226,9 +1226,7 @@ function drawDeco(ctx,deco,theme,notify,scale=1){
       // field reads flat, buildings "go under" the ground) - it follows the
       // ink outline, so every piece separates from the busy tile mosaic.
       // The terrain layer caches this once; no per-frame cost.
-      ctx.filter='drop-shadow(0 1.5px 1.5px rgba(8,12,8,.55)) drop-shadow(0 4px 6px rgba(8,12,8,.32))';
       ctx.drawImage(artwork,-w/2,13-h,w,h);
-      ctx.filter='none';
       ctx.restore();continue;
     }
     ctx.save();ctx.translate(d.x,d.y);if(d.rot)ctx.rotate(Math.PI/2);
