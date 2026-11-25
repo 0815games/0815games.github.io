@@ -145,6 +145,33 @@ function bestAction(s, ctx) {
   // Lager, wenn die Vorräte fast die Kapazität erreichen.
   const cap = storageCap(s, d);
   const fullest = Math.max(0, ...Object.values(s.stock)) / cap;
+
+  // Marktplatz: ohne Verkauf stauen sich die Vorräte am Lagerlimit (Produktion geht verloren) und die XP
+  // aus Verkäufen bleiben aus. Der Bot baut deshalb einen Markt und bringt ihn auf Stufe, sobald ein Lager
+  // zur Hälfte voll ist. Der Markt steht auf jedem Land, also auch wenn das Raster schon voll ist (Platzierung prüft).
+  if (fullest > 0.5) {
+    const mk = d.buildings.marketSquare;
+    const markets = Object.values(s.tiles).filter((t) => t.building?.id === 'marketSquare');
+    const mcost = buildCost('marketSquare', 0, d);
+    if (markets.length === 0 && level >= mk.unlockTownLevel && s.coins >= mcost.coins && (s.stock[mcost.material.resource] ?? 0) >= mcost.material.amount) {
+      for (let y = 0; y < GRID; y++) for (let x = 0; x < GRID; x++) {
+        if (!isUnlocked(x, y, level, d) || s.tiles[keyOf(x, y)]?.building) continue;
+        if (!checkPlacement(s, x, y, 'marketSquare', d).ok) continue;
+        consider(0.6, { kind: 'build', id: 'marketSquare', x, y });
+        return best;
+      }
+    }
+    for (let y = 0; y < GRID; y++) for (let x = 0; x < GRID; x++) {
+      const b = s.tiles[keyOf(x, y)]?.building;
+      if (!b || b.id !== 'marketSquare' || b.level >= mk.maxLevel) continue;
+      const uc = buildCost('marketSquare', b.level, d);
+      if (s.coins >= uc.coins && (s.stock[uc.material.resource] ?? 0) >= uc.material.amount) {
+        consider(0.6, { kind: 'upgrade', x, y });
+        return best;
+      }
+    }
+  }
+
   // Bot-Regel: höchstens 5 Lager, sonst baut er nur noch Lager statt Felder und Upgrades.
   const warehouses = Object.values(s.tiles).filter((t) => t.building?.id === 'warehouse').length;
   if (fullest > 0.9 && warehouses < 5) {

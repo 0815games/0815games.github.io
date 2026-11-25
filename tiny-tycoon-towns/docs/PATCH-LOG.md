@@ -841,3 +841,28 @@ Ereignis ergänzt.
   - Freibrief-Stärke (Perk-Werte, Anzahl Freibriefe) nicht verändert.
   - Browser-/Vercel-Prüfung nicht erfolgt. Keine Firebase-Regeländerung.
   - Commit, PR und Merge nach diesem Eintrag.
+
+### TTT-0051 – Balance Tiefwald: Markt, Schwellen 1,1× (Welle `20261125-bal2`)
+
+- Auftrag des Nutzers („2“): Tiefwald ausbauen, Platz- und Materialproblem lösen.
+- Befund: Tiefwald endete mit ca. 480 000 ungenutzten Münzen. Das Raster war voll (81 Gebäude, Felder dazu). Waren
+  stauten sich am Lagerlimit (560 je Ware), weil der Bot nie einen Marktplatz baute. Verkäufe bringen XP, der Bot
+  kam deshalb nicht voran. Eisen fehlt (kein Berg in Tiefwald), Salz kaum vorhanden.
+- Änderungen:
+  - `scripts/simulate-balance.mjs`: Bot-Regel Marktplatz. Ist ein Lager zu mehr als 50 % voll, baut der Bot einen
+    Marktplatz (einmal) und bringt ihn auf Stufe. Spielregel selbst unverändert.
+  - `data/economy.json`: `townLevelThresholds` Stufen 5 bis 10 mit Faktor 1,1 gegenüber TTT-0050
+    (935 000 bis 2 420 000 XP).
+  - `tests/domain.test.mjs`: Schwellen-Erwartungen angepasst.
+  - `src/patch-notes.mjs`: Stadtchronik `20261125-bal2` (DE/EN).
+  - Cache-Welle `20261125-bal1` → `20261125-bal2`.
+- Tests (lokal, Node 22.22.3):
+  - `npm test`: 147 Tests, 147 pass, 0 fail. `npm run check`: kein Fehler.
+  - `npm run simulate` (30 Tage, aktive Stunden):
+    - Stadtlevel 5 (Faktor 1,1): Riverlands 6,5 · Tiefwald 6,3 · Hochland 5,3 · Küste 4,0. Alle im Korridor 4 bis 8.
+    - Stadtlevel 10 (Faktor 1,1): **Tiefwald 12,5 im Korridor** (11 bis 13). Riverlands 13,8 · Hochland 10,5 · Küste 7,8 außerhalb.
+- Grenzen / offen:
+  - Ein einziger Schwellenwert passt nicht für alle Biome. Ursache: XP kommen aus verkauften Waren. Küste verkauft am
+    meisten und ist deshalb zu schnell, Riverlands verkauft wenig und ist zu langsam. Lösung wäre ein biomeabhängiger
+    XP-Faktor für Verkäufe (Entscheidung nötig).
+  - Browser-/Vercel-Prüfung nicht erfolgt. Keine Firebase-Regeländerung.

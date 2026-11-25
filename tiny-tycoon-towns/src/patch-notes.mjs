@@ -4,6 +4,16 @@
 
 export const RELEASED_PATCHES = [
   {
+    build: '20261125-bal2',
+    date: '2026-11-25',
+    items: [
+      {
+        de: 'Marktplatz: Wird ein Lager zur Hälfte voll, baut die Stadt einen Marktplatz und bringt ihn auf Stufe. Vorräte fließen dann besser ab. Die Stufenschwellen wurden angepasst.',
+        en: 'Market square: when a warehouse is half full, the town builds a market square and upgrades it. Goods then sell better. Town level thresholds were adjusted.',
+      },
+    ],
+  },
+  {
     build: '20261125-bal1',
     date: '2026-11-25',
     items: [
