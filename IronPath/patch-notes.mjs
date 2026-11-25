@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see docs/PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261124-aim8';
+import {getLanguage} from './language.mjs?v=20261124-aim9';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,18 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'aim9',build:'20261124-aim9',pr:445,
+    title:{en:'Off the Ground · The Map Stands Up',de:'Vom Boden ab · Die Karte steht auf'},
+    shipped:[
+      {en:'Every building, ruin and piece of dead life now casts a two-step silhouette shadow that follows its ink outline - painted once into the terrain layer, so the field reads as objects on ground instead of pictures in the ground.',de:'Jedes Gebäude, jede Ruine und jedes Stück Totholz wirft jetzt einen zweistufigen Silhouettenschatten entlang seiner Tusche-Kontur - einmal in die Terrainschicht gemalt, damit das Feld wie Objekte auf dem Boden liest und nicht wie Bilder im Boden.'},
+      {en:'All thirty-eight map sprites got a contrast lift - a touch more colour and brightness against the terrain - without touching their outlines or cut-out edges.',de:'Alle achtunddreißig Karten-Sprites bekamen einen Kontrastschub - etwas mehr Farbe und Helligkeit gegen den Boden - ohne dass Konturen oder Freistell-Kanten verändert wurden.'},
+      {en:'Raised the cache wave to 20261124-aim9, because the whole field changed its shading: no device should fight with yesterdays eyes.',de:'Die Cache-Welle auf 20261124-aim9 erhöht, weil sich die ganze Karte ihre Schattierung änderte: Kein Gerät soll mit den Augen von gestern kämpfen.'},
+    ],
+    open:[
+      {en:'Whether the field now stands up enough is the operators call in the game - a stronger or softer shadow step is a one-line change each way.',de:'Ob die Karte jetzt stark genug abhebt, entscheidet der Betreiber im Spiel - stärkerer oder weicherer Schatten ist jeweils eine Zeile Änderung.'},
+    ]
+  },
   {
     id:'aim8',build:'20261124-aim8',pr:438,
     title:{en:'The Map Wears the Towers Style · Depth in the Slow Patches · Dead Life',de:'Die Karte trägt den Turm-Stil · Tiefe in den Verlangsamungen · Totholz'},

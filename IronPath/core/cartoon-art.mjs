@@ -1,11 +1,11 @@
-import {translateText as tr,getLanguage} from '../language.mjs?v=20261124-aim8';
+import {translateText as tr,getLanguage} from '../language.mjs?v=20261124-aim9';
 import {towerDisplay} from './progression.mjs?v=20261105-prestige1';
-import {specializationRank} from './tower-specialization.mjs?v=20261124-aim8';
-import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261124-aim8';
-import {ENEMY_INTEL,SOLDIER_MAX_HP} from './combat.mjs?v=20261124-aim8';
+import {specializationRank} from './tower-specialization.mjs?v=20261124-aim9';
+import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261124-aim9';
+import {ENEMY_INTEL,SOLDIER_MAX_HP} from './combat.mjs?v=20261124-aim9';
 import {bossPhase} from './boss-mechanics.mjs?v=20261031-finale1';
 import {shotTrace,shotsToDraw} from './shot-tracers.mjs?v=20261117-shots1';
-import {buildRoadPath} from './road-geometry.mjs?v=20261124-aim8';
+import {buildRoadPath} from './road-geometry.mjs?v=20261124-aim9';
 // Drawing only: the simulation, coordinates and hit areas stay unchanged.
 const ink='#1d3028',paper='#f1e7c4';
 function line(ctx,points,color=ink,width=3){ctx.beginPath();points.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();}
@@ -1222,8 +1222,17 @@ function drawDeco(ctx,deco,theme,notify,scale=1){
       ctx.save();ctx.translate(d.x,d.y);
       // Grounding comes baked into the V3 sprites: they sit on their own
       // earthen plinth with a soft contact shadow, exactly like the towers.
-      // The old dark clearing ovals doubled that shadow into a smudge.
+      // On top of that a two-step silhouette shadow (reported: the whole
+      // field reads flat, buildings "go under" the ground) - it follows the
+      // ink outline, so every piece separates from the busy tile mosaic.
+      // The terrain layer caches this once; no per-frame cost. Canvas
+      // shadow properties instead of ctx.filter - identical silhouette
+      // shadow, but stable across browsers (filter broke the party
+      // browser checks in CI).
+      ctx.shadowColor='rgba(8,12,8,.42)';
+      ctx.shadowOffsetX=1; ctx.shadowOffsetY=3; ctx.shadowBlur=3;
       ctx.drawImage(artwork,-w/2,13-h,w,h);
+      ctx.shadowColor='transparent'; ctx.shadowOffsetX=0; ctx.shadowOffsetY=0; ctx.shadowBlur=0;
       ctx.restore();continue;
     }
     ctx.save();ctx.translate(d.x,d.y);if(d.rot)ctx.rotate(Math.PI/2);

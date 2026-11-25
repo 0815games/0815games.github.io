@@ -1,6 +1,6 @@
-import {WEB_NODES,webRequirement,SKILL_PATHS,SKILL_PATH_MAP} from '../core/skills.mjs?v=20261124-aim8';
-import {CAPSTONES} from '../core/skill-combos.mjs?v=20261124-aim8';
-import {germanSkills} from './localization-skills-de.mjs?v=20261124-aim8';
+import {WEB_NODES,webRequirement,SKILL_PATHS,SKILL_PATH_MAP} from '../core/skills.mjs?v=20261124-aim9';
+import {CAPSTONES} from '../core/skill-combos.mjs?v=20261124-aim9';
+import {germanSkills} from './localization-skills-de.mjs?v=20261124-aim9';
 // Canonical German translations for all 84 single-class tree nodes (6 classes x 14 slots).
 const masteryByClass={
  assault:['Scharfschütze','Gefechtsübungen','Veteranenziel','Tödlicher Fokus','Kriegsheld'],
