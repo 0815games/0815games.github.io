@@ -5,17 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Pip-Boy 3003</title>
     
-    <!-- App-Icon. Alle Groessen entstehen aus einer Vektordatei:
-         node tools/app-icon.mjs (docs/muster/app-icon.svg).
-
-         Die Pfade sind relativ, damit sie unter GitHub Pages (/PipBoy3000/)
-         genauso stimmen wie unter Vercel. Reihenfolge ist wichtig: Safari
-         nimmt apple-touch-icon, Chrome die Manifest-Angabe, der Rest das SVG
-         (scharf in jeder Groesse) und sonst das ICO. -->
-    <link rel="icon" href="icon.svg" type="image/svg+xml">
-    <link rel="icon" href="favicon.ico" sizes="16x16 32x32 48x48">
-    <link rel="apple-touch-icon" href="apple-touch-icon.png">
-    <link rel="manifest" href="manifest.webmanifest">
+    <!-- Versionierte Icon-URLs vermeiden alte Browser-Caches. -->
+    <link rel="icon" href="icon.svg?v=14.0.25" type="image/svg+xml">
+    <link rel="icon" href="favicon.ico?v=14.0.25" sizes="16x16 32x32 48x48">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=14.0.25">
+    <link rel="manifest" href="manifest.webmanifest?v=14.0.25">
     <meta name="theme-color" content="#39ff14">
     <meta name="application-name" content="Pip-Boy 3003">
 
@@ -40,7 +34,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js" crossorigin="anonymous"
             onerror="window.scriptLoadError='firebase-database.js';"></script>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
-    <meta name="pipboy-build" content="14.0.24">
+    <meta name="pipboy-build" content="14.0.25">
     
     <script>document.write('<link rel="stylesheet" href="style.css?v=' + Date.now() + '">');</script>
     

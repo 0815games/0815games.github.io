@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v14.0.25 (Neues App-Icon, 2026-11-25)
+- [NEU] Retro-Future-Ödland-Roboter als neues Artwork für iOS, Android, maskable Icons und Browser-Favicons.
+- [FIX] Versionierte Icon- und Manifest-URLs helfen gegen alte Browser-Caches. Installierte Icons können geräteabhängig verzögert aktualisiert werden.
+
 ## v14.0.24 (Patch-Notizen unter dem Header, Update-Knopf entfernt, 2026-11-24)
 Rueckmeldung: "Patch notizen öffnen sich ÜBER der headerleiste?! wtf"
 
