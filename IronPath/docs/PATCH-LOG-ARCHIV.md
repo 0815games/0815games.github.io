@@ -1,6 +1,6 @@
 # Iron Path – Patch-Log: Archiv
 
-Ältere Einträge IPL-0001 bis IPL-0113. Die neuesten 20 stehen in
+Ältere Einträge IPL-0001 bis IPL-0114. Die neuesten 20 stehen in
 [PATCH-LOG.md](PATCH-LOG.md); die Regeln für beide Dateien dort und in
 [`../../AGENTS.md`](../../AGENTS.md). Beim Verschieben wandert ein Eintrag immer
 vollständig einschließlich seiner Ereignis-Nachträge.
@@ -4634,4 +4634,22 @@ sie geprüft wurde.
 - **Prüfungen:** `coop-ui` 1/1 (großer Harness), `menu-redesign` 7/7, `cartoon-art`/`endless-retreat-viewport`/`language` 22/22 (echte Welle-10-Sektor-Fahrt inklusive). `patch.mjs check --fast`: 0 Fehler (2 Hinweise vor der Welle). Gesamtsuite und Browser-Fahrten folgen auf der Welle/in der CI; Sichtprüfung über die lokale Live-Vorschau.
 - **Git / PR / Release:** Wird mit Welle `20261123-life1` und PR-Nummer fortgeschrieben.
 - **Offen / nächster Schritt:** Aus Block E Scheibe 2 bleiben Treffer-Feedback im engeren Sinn und die Tutorial-Einführung (E2), die Host-/Reconnect-Prüfung im Detail (E5) und die menschliche Balance mit Block C. Geräteabnahmen erfolgen generell durch den Betreiber.
+
+
+## IPL-0114 – Block E Scheibe 2, erster Schnitt: Treffer-Feedback und Tutorial-Einführung ins Schadenssystem (Welle `20261123-blocke2`, PR `#376`)
+- **Zeit / Quelle:** 2026-11-23 UTC; Betreiber-Entscheid in dieser Sitzung: die im Rundum-Check vorgeschlagene Reihenfolge wird übernommen – „Als erstes machen wir die oberen Blöcke fertig mit dem Tutorial und den ganzen Krempel dann alles sicherheitsrelevante und dann grad durch die Bank weg weiter". Die Reihenfolge steht jetzt dauerhaft in `docs/AUSBAU-PLAN.md` (verlinkt aus `PATCH-BLOECKE.md`), damit sie jederzeit greifbar ist.
+- **Block / Ziel:** Block E Scheibe 2 (E2), erster von drei Restpunkten: Treffer-Feedback + Tutorial-Einführung. Offen danach: Host-/Reconnect-Prüfung im Detail (E5), menschliche Balance mit Block C.
+- **Branch / Basis:** `arena/a7ff6aef-0815games-github-io` ab `fbb6473d8e9983a0c660708412fc83ac7a93f7df` (`main`, Merge PR `#375`).
+- **Änderungen / Dateien:**
+  - `IronPath/docs/AUSBAU-PLAN.md` (neu): beschlossene Reihenfolge 1–7 mit Statusspalte (Block E Scheibe 2 → Regel-Zuwachsdeckel → Sektor-Modifikatoren → Scrap-Senke/NG+ → 6-stellige Party-Codes → Start-Requests messen → Block-Tabelle pflegen). `PATCH-BLOECKE.md` verlinkt sie oben; die veraltete Block-7-Zeile der Übersicht („5 %") wurde auf den echten Stand (Scheibe 1 live, Scheibe 2 läuft) nachgezogen.
+  - `IronPath/core/hit-feedback.mjs` (neu): reine Darstellungslogik. `hitFeedbackForEvent` übersetzt Simulationsereignisse (`enemyAttack`, `soldierDown` neu mit `seconds`, `towerDisabled`, `soldierReturn`, `towerRepaired`) in Ansagen mit Gegenmaßnahme; `createHitAnnouncer` drosselt gewöhnliche Treffer pro Ziel (7 s), Alarme (Ausfall) nie. Kein Schadensentscheid hier.
+  - `IronPath/game.js`: `announceHit` – Trefferblitz am Ziel + Funkmeldung (Alarm/Warnung über `warn`, Rückkehr/Reparatur über `notice`), verdrahtet in der Solo-Ereignisschleife und im Koop-`onEvents`; im Trainingslauf erklärt der erste Treffer einmalig ausführlich das Schadenssystem (Welle-3-Regel, Ring=Warnung, Fallen ohne Strafe, Reparatur). Neuer `game.js`-Import in allen 14 Harness-Testlisten nachgetragen.
+  - `IronPath/core/combat-fx.mjs` + `IronPath/core/cartoon-art.mjs`: Koop-Gäste blitzen gelandete Treffer aus der Lebensdifferenz zweier Snapshots (Join-Baseline spielt nichts nach). Maler: Ring beim Soldaten, Raute beim Turm (Form statt nur Farbe), Schadenszahl steigt auf; reduzierte Bewegung behält Funktext + Balken als Erklärung.
+  - `IronPath/ui/first-run-coach.mjs`: neue Karte `under-fire` nach `hero` (`when: null` – erklärt nur, blockiert den Sieben-Wellen-Vertrag nie), deutsche Texte in `i18n/localization-firstrun-de.mjs`, Feedback-Texte DE in `i18n/localization-battle-de.mjs`. `soldierDown` trägt jetzt `seconds` im Ereignis (`core/simulation.mjs`).
+  - Cache-Welle `20261123-blocke2` (79 Dateien), Feldnotizen `blocke2` in `patch-notes.mjs`; Log-Rotation `IPL-0094` ins Archiv (Haupt `IPL-0095…IPL-0114`, Archiv bis `IPL-0094`).
+- **Prüfungen:**
+  - Neu/gezielt: `hit-feedback` 7/7 (inkl. Koop-Snapshot-Blitz und Coach-Karte), `first-run-coach`/`coach-highlight`/`combat-fx`/`combat-readability`/`block-e-core` grün; betroffene Flächen (coop-ui, solo-smoke, campaign-ui, endless-launcher, patch-notes, language, translation-coverage u. a.) 71/71 und 82/82.
+  - `patch.mjs check --fast`: 0 Fehler. Gesamtsuite nach `git fetch --unshallow origin`: erste Fahrt 1298 Tests / 1 Fehler (`coach-highlight`-Allowlist kannte die neue Ankündigungs-Karte nicht – Test ergänzt, danach gezielt 6/6 grün); Schlussfahrt auf dem Commit-Stand: **1298 Tests, 1298 bestanden, 0 fehlgeschlagen, 0 übersprungen**.
+- **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet`. Commit, Push, PR `#376`, CI, Merge und Pages-Auslieferung werden als Ereignis-Nachtrag nachgetragen.
+- **Offen / nächster Schritt:** E5 Host-/Reconnect-Prüfung im Detail und menschliche Balance mit Block C (Betreiber testet ingame). Danach laut `AUSBAU-PLAN.md`: Regel-Zuwachsdeckel (Sicherheit).
 

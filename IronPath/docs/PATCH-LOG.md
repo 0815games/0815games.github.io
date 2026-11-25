@@ -57,23 +57,6 @@ jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderl
 
 
 
-## IPL-0114 – Block E Scheibe 2, erster Schnitt: Treffer-Feedback und Tutorial-Einführung ins Schadenssystem (Welle `20261123-blocke2`, PR `#376`)
-- **Zeit / Quelle:** 2026-11-23 UTC; Betreiber-Entscheid in dieser Sitzung: die im Rundum-Check vorgeschlagene Reihenfolge wird übernommen – „Als erstes machen wir die oberen Blöcke fertig mit dem Tutorial und den ganzen Krempel dann alles sicherheitsrelevante und dann grad durch die Bank weg weiter". Die Reihenfolge steht jetzt dauerhaft in `docs/AUSBAU-PLAN.md` (verlinkt aus `PATCH-BLOECKE.md`), damit sie jederzeit greifbar ist.
-- **Block / Ziel:** Block E Scheibe 2 (E2), erster von drei Restpunkten: Treffer-Feedback + Tutorial-Einführung. Offen danach: Host-/Reconnect-Prüfung im Detail (E5), menschliche Balance mit Block C.
-- **Branch / Basis:** `arena/a7ff6aef-0815games-github-io` ab `fbb6473d8e9983a0c660708412fc83ac7a93f7df` (`main`, Merge PR `#375`).
-- **Änderungen / Dateien:**
-  - `IronPath/docs/AUSBAU-PLAN.md` (neu): beschlossene Reihenfolge 1–7 mit Statusspalte (Block E Scheibe 2 → Regel-Zuwachsdeckel → Sektor-Modifikatoren → Scrap-Senke/NG+ → 6-stellige Party-Codes → Start-Requests messen → Block-Tabelle pflegen). `PATCH-BLOECKE.md` verlinkt sie oben; die veraltete Block-7-Zeile der Übersicht („5 %") wurde auf den echten Stand (Scheibe 1 live, Scheibe 2 läuft) nachgezogen.
-  - `IronPath/core/hit-feedback.mjs` (neu): reine Darstellungslogik. `hitFeedbackForEvent` übersetzt Simulationsereignisse (`enemyAttack`, `soldierDown` neu mit `seconds`, `towerDisabled`, `soldierReturn`, `towerRepaired`) in Ansagen mit Gegenmaßnahme; `createHitAnnouncer` drosselt gewöhnliche Treffer pro Ziel (7 s), Alarme (Ausfall) nie. Kein Schadensentscheid hier.
-  - `IronPath/game.js`: `announceHit` – Trefferblitz am Ziel + Funkmeldung (Alarm/Warnung über `warn`, Rückkehr/Reparatur über `notice`), verdrahtet in der Solo-Ereignisschleife und im Koop-`onEvents`; im Trainingslauf erklärt der erste Treffer einmalig ausführlich das Schadenssystem (Welle-3-Regel, Ring=Warnung, Fallen ohne Strafe, Reparatur). Neuer `game.js`-Import in allen 14 Harness-Testlisten nachgetragen.
-  - `IronPath/core/combat-fx.mjs` + `IronPath/core/cartoon-art.mjs`: Koop-Gäste blitzen gelandete Treffer aus der Lebensdifferenz zweier Snapshots (Join-Baseline spielt nichts nach). Maler: Ring beim Soldaten, Raute beim Turm (Form statt nur Farbe), Schadenszahl steigt auf; reduzierte Bewegung behält Funktext + Balken als Erklärung.
-  - `IronPath/ui/first-run-coach.mjs`: neue Karte `under-fire` nach `hero` (`when: null` – erklärt nur, blockiert den Sieben-Wellen-Vertrag nie), deutsche Texte in `i18n/localization-firstrun-de.mjs`, Feedback-Texte DE in `i18n/localization-battle-de.mjs`. `soldierDown` trägt jetzt `seconds` im Ereignis (`core/simulation.mjs`).
-  - Cache-Welle `20261123-blocke2` (79 Dateien), Feldnotizen `blocke2` in `patch-notes.mjs`; Log-Rotation `IPL-0094` ins Archiv (Haupt `IPL-0095…IPL-0114`, Archiv bis `IPL-0094`).
-- **Prüfungen:**
-  - Neu/gezielt: `hit-feedback` 7/7 (inkl. Koop-Snapshot-Blitz und Coach-Karte), `first-run-coach`/`coach-highlight`/`combat-fx`/`combat-readability`/`block-e-core` grün; betroffene Flächen (coop-ui, solo-smoke, campaign-ui, endless-launcher, patch-notes, language, translation-coverage u. a.) 71/71 und 82/82.
-  - `patch.mjs check --fast`: 0 Fehler. Gesamtsuite nach `git fetch --unshallow origin`: erste Fahrt 1298 Tests / 1 Fehler (`coach-highlight`-Allowlist kannte die neue Ankündigungs-Karte nicht – Test ergänzt, danach gezielt 6/6 grün); Schlussfahrt auf dem Commit-Stand: **1298 Tests, 1298 bestanden, 0 fehlgeschlagen, 0 übersprungen**.
-- **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet`. Commit, Push, PR `#376`, CI, Merge und Pages-Auslieferung werden als Ereignis-Nachtrag nachgetragen.
-- **Offen / nächster Schritt:** E5 Host-/Reconnect-Prüfung im Detail und menschliche Balance mit Block C (Betreiber testet ingame). Danach laut `AUSBAU-PLAN.md`: Regel-Zuwachsdeckel (Sicherheit).
-
 ## IPL-0115 – Block E Scheibe 2: Host-/Reconnect-Prüfung im Detail (E5) und Balance-Nachmessung (keine Spieländerung, keine Cache-Welle)
 - **Zeit / Quelle:** 2026-11-23 UTC; Betreiber: „Und weiter" – Reihenfolge aus `docs/AUSBAU-PLAN.md` Punkt 1 (Block E fertigstellen) wird fortgesetzt.
 - **Block / Ziel:** E5-Prüfung der mit Scheibe 1 eingeführten Lebens-/Angriffs-/Reparaturzustände im Spieler-Host-Betrieb: Snapshot-/Checkpoint-Transport, Reconnect, Host-Restore, doppelte/verzögerte Befehle, Snapshot-Größe, Alt-Checkpoints. Dazu die automatisierte Balance-Nachmessung; die menschliche Balance mit Block C bleibt Betreiber-Prüfung im Spiel.
@@ -330,4 +313,18 @@ Nur Darstellung, kein Sim-State, kein Wire-Format, statisch im Terrain-Cache (Re
 **Prüfungen:** Suite **1357 pass / 1358, 0 fail** (alle visuellen Tests grün: field-visuals, battle-art, road-design, zone-interior, path-flags); `schnelltor` ohne Fehler. Sichtboard mit echter Weggeometrie, Straße, Fahne, Soldat, Panzer und Hütte: `preview-sprites/review-toon-ground.png` – drei Vorstufen (Foto-Mosaik-Stroke, Posterize-Bake) wurden verworfen, nur die flache Plattenvariante liest sich wie die Einheiten.
 
 **Git / PR / Release:** Commit `224df68` auf dem genannten Branch (Paint-Pfad, Paletten, Test-Suite grün), Push, PR `#454`; zweiter Commit: Doku (dieser Eintrag, Archiv-Schiebung `IPL-0113`, AUSBAU-Zeile 18, Feldnotizen `aim11` mit `pr: 454`) und Cache-Welle `20261125-aim11` (`bump ... --from 20261124-aim10 --apply`). Nach grünem CI gemergt: `gh pr merge 454 --merge` → Merge-Commit `a4a0250`, alle 11 IronPath-Checks pass (der externe `Vercel – pipboy3003`-Check failte unabhängig von diesem PR); Nachtrags-PR `#457` → `0b4e75a`; Pages `built`, Nachtragskommentar `#issuecomment-7157433650`.
+
+## IPL-0134 – Power-Governor: Frame-, DPR- und Effekt-Regelung gegen Hitze und Akku (Welle `20261125-aim12`, PR `#463`)
+
+**Problem (Betreiber-Meldung):** „Gerät wird schon ganz schön heiß beim spielen. Bekommen wir das irgendwie reguliert?" – Bestandsaufnahme: der Toon-Boden wird einmal in den Terrain-Cache gemalt, die Dauerlast sitzt in der Render-Schleife, die bisher bei **jedem** rAF-Frame (60–120 Hz) das ganze Feld in voller Pixeldichte gemalt hat (Backing-Store bis DPR 3).
+
+**Lösung – ein Governor, der nur die Darstellung drosselt (`core/power-governor.mjs` + vier Integrationsstellen in `game.js`):**
+- **Drei Stufen:** `full` = unverändert; `eco` = Paint-Lücke ≥30 ms (~30 fps), DPR max 2; `max` = ≥40 ms (~20 fps), DPR max 1,5, Wetter-/Tracer-Effekte aus. Die **Simulation läuft bei jedem rAF weiter** (`update(dt)` vor dem Paint-Gate, Paint im Slot via `lastDrawAt`).
+- **Frame-Signal:** EMA der rohen rAF-Lücke – >26 ms über 4 s → Stufe runter (5 s Mindestabstand), <18 ms über 20 s → Stufe hoch; ein einzelner Tab-Resume-Sprung zählt nicht. Die rohe Lücke (nicht die Paint-Dauer) kann durch das eigene Frameskippen nicht gefaked werden.
+- **Akku-Signal** (`navigator.getBattery`, feature-detected): ohne Netz ≤30 % → mindestens `eco`, ≤15 % → `max`; am Netz frei. Fehlt die API, gilt nur das Frame-Signal.
+- **Vertrag:** Spielereinstellungen (Grafik-Schalter, Wetter, Tracer) werden nie aufgeweicht, nur per UND gedrosselt (eigene + Gegner-Spur); jede Stufe kehrt von selbst zurück. Kein Sim-State, kein Wire-Format, Reduced-Motion unberührt; Wechsel per `console.debug('IronPath: power policy -> …')`.
+
+**Prüfungen:** neu `tests/power-governor.test.mjs` (7 Cases: Policy-Tabelle, Slow-Hold → eco → max, Einzel-Spike, Erholung, Akku-Floor + Freigabe, defekter Probe); die 13 Game-UI-Test-Harnesses listen den neuen Import; `endless-retreat-viewport` prüft Paints mit 50-ms-Slots (die 50-ms-Wellen-Steps sind für den Governor ein kämpfendes Gerät – genau die Regelung, die bestätigt wird). Suite **1364 pass / 1365, 0 fail**; `schnelltor` ohne Fehler.
+
+**Git / PR / Release:** Commits auf dem genannten Branch (Modul, Tests, game.js-Integration, Harness-Anpassungen), Push, PR `#463`; zweiter Commit: Doku (dieser Eintrag, Archiv-Schiebung `IPL-0114`, AUSBAU-Zeile 19, Feldnotizen `aim12` mit `pr: 463`) und Cache-Welle `20261125-aim12` (`bump ... --from 20261125-aim11 --apply`). CI, Merge und Pages werden als Ereignis nachgetragen.
 
