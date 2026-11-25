@@ -46,7 +46,7 @@ Zuständig: **N** = Nutzer (Geräte, Konsole, Entscheidungen), **A** = Agent (Co
 
 ### Neu: Siedlungen (in Planung, 2026-11-25)
 
-- **[N]** Gehalt ja oder nein. Option A: kein Lohn in der ersten Version, die Bewohner arbeiten einfach im Gebäude. Option B: Münzen je Arbeiter und Tag, automatisch abgezogen. Entscheidung offen.
+- **[A]** Lohn: Jeder zugewiesene Arbeiter kostet Münzen je Tag, automatisch abgezogen. Die Höhe legt die Balance-Simulation fest.
 - **[A]** Wohnhaus (Siedlung), ab Stadtlevel 2. Bevölkerung startet mit 1 bis 2 Bewohnern und wächst bis zur Kapazität. Die Kapazität steigt mit der Stufe.
 - **[A]** Zuweisung der Bewohner zu Produktionsgebäuden: automatisch, dort wo es sinnvoll ist (nicht einfach das nächste Gebäude). Manuelle Zuweisung ist möglich.
 - **[A]** Fünf sichtbare Stufen je Gebäude-Upgrade mit eigener Gestalt. Heute wächst ein Gebäude nur um etwa 1,2 % je Stufe.
@@ -95,6 +95,7 @@ Zuständig: **N** = Nutzer (Geräte, Konsole, Entscheidungen), **A** = Agent (Co
 - Der Name im Menü ist „Stadtchronik“ (vorher „Feldnotizen“). (TTT-0025)
 
 - Siedlungen (2026-11-25, Nutzerentscheidung): Zuweisung automatisch, dort wo es sinnvoll ist. Manuell ist möglich. Fünf sichtbare Stufen. Erste Version nur Arbeitszuweisung, ohne Bedürfnisse.
+- Lohn für Arbeiter (2026-11-25, Nutzerentscheidung): Münzen je Arbeiter und Tag, automatisch. Kein Lohn wurde verworfen.
 
 ## Erledigt
 
