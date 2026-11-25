@@ -3,25 +3,15 @@
 Object.assign(UI, {
     
     update: function() {
-        // --- AFK LOGIC (Muss VOR Game.state Check stehen!) ---
-        // Da diese Funktion die update() aus ui_core.js überschreibt, muss der Check hier rein.
-        
-        const loginScreen = document.getElementById('login-screen');
-        // Wir sind "eingeloggt", wenn der Login-Screen weg ist (hidden Klasse oder display none)
-        const isLoginHidden = loginScreen && (loginScreen.style.display === 'none' || loginScreen.classList.contains('hidden'));
-        // Und wenn wir eine Network ID haben
-        const isAuth = (typeof Network !== 'undefined' && Network.myId);
-
-        if (isLoginHidden && isAuth) {
-            // 300000 ms = 5 Minuten
-            if (Date.now() - (this.lastInputTime || Date.now()) > 300000) { 
-                console.log("AFK Trigger: Zeitüberschreitung im UI Render Loop");
-                if(typeof this.logout === 'function') {
-                    this.logout("AFK: ZEITÜBERSCHREITUNG");
-                }
-                return; // Nichts weiter rendern
-            }
-        }
+        // --- AFK-SCHUTZ (muss VOR dem Game.state-Check stehen) ---
+        // Die Pruefung sitzt hier und nicht in einem eigenen Timer: update()
+        // laeuft ohnehin im Takt, und ein Timer, den ein schlafender Tab
+        // anhaelt, wuerde die Zeit nach dem Aufwachen falsch messen.
+        //
+        // Was hier steht, ist die ganze Logik: nach fuenf Minuten Stille ein
+        // Fenster mit Countdown, nach weiteren 60 Sekunden der Logout. Das
+        // Frueher-war-es-ein-stiller-Abbruch. Siehe src/ui/ui_afk.js.
+        if (typeof AFK !== 'undefined' && AFK.pruefen) AFK.pruefen();
         // -----------------------------------------------------
 
         if (!Game.state) return;
@@ -219,6 +209,9 @@ Object.assign(UI, {
             Game.state.view = name;
             if(Game.state) Game.state.inDialog = false;
             if(document.activeElement) document.activeElement.blur();
+            // Ab hier laeuft das Spiel: AFK-Uhr auf jetzt stellen. Ohne das
+            // zaehlte die Zeit der Charakterwahl als Stille mit.
+            if (typeof UI !== 'undefined' && UI.starteAfkSchutz) UI.starteAfkSchutz();
             Game.initCanvas();
             this.restoreOverlay();
             this.toggleControls(true);

@@ -6,9 +6,9 @@
 //
 //   node tools/app-icon.mjs
 //
-// Das Motiv ist das des Lade-Kreisels vom Startbildschirm: zwei gruene Boegen
-// oben und unten, ein gelber Punktkranz als gegenlaeufiger Ring, in der Mitte
-// der Reaktor (dunkle Scheibe, gruener Ring, gruener Kern).
+// Das Motiv ist die zackige Vault-Tuer: acht Trapez-Zaehne am Rand, ein
+// dunkler Kranz mit acht Speichen, eine achteckige Innenplatte und in der
+// Mitte das Messingschild mit der 33.
 //
 // Warum nicht alles aus der SVG: bei 16 px ist eine Bogenbreite von 8
 // Einheiten 1.3 Pixel. Beim Weichzeichnen wird daraus eine graue Flaeche ohne
@@ -54,67 +54,84 @@ const PNG = [
   {name: 'apple-touch-icon.png', size: 180, typ: 'any'}
 ];
 
-// Das Motiv in Zahlen. Die SVG beschreibt dasselbe, nur als Pfade; die Werte
-// hier entsprechen dem Zweig <g id="mittel"> - die kraeftige Fassung ohne
-// Punktkranz, die auch fuer das Favicon gezeichnet wird.
+// Das Motiv in Zahlen. Die Werte hier gehoeren zum Zweig <g id="mittel">:
+// die kraeftige Fassung ohne Achteck und ohne Nummer. Die "33" ist bei 16 px
+// vier Pixel breit - das ist ein Fleck, keine Ziffer.
 const MOTIV = {
-  bogenR: 39,            // Mitte der beiden Boegen (oben und unten)
-  bogenBreite: 15,       // bei 16 px sind das 2.4 Pixel - duenn waere weg
-  bogenGrad: 130,        // Bogenweite; die Luecken links und rechts machen aus
-                         // dem Kreis einen Kreisel und keine Zielscheibe
-  bogenMitte: [0, 180],  // oben und unten
-  gelbInnen: 23,         // gelber Ring von ... bis. 8 Einheiten = 1.3 px bei
-  gelbAussen: 31,        // 16 px - schmaler wird zu Matsch
-  scheibe: 22,           // dunkle Scheibe
-  ringAussen: 22.75,     // gruener Ring darum
-  kern: 12               // gruener Kern
+  zaehne: 8,
+  zahnAussen: 40,        // Winkelbreite an der Korpuskante
+  zahnInnen: 26,         // Winkelbreite an der Zahnspitze - der Unterschied
+                         // macht den Zacken, nicht den Kasten
+  rKorpus: 34,           // Aussenkante des Korpus
+  rZahn: 50,             // Zaehne reichen bis hierhin
+  rRing: 27,             // dunkler Kranz ...
+  ringBreite: 8,
+  speichen: 8,
+  spBreite: 9,
+  spVon: 12,             // Speichen von ... bis (Radius)
+  spBis: 32,
+  rMitte: 19,            // Messingschild
+  achtInnen: 28.3        // Achteck-Platte (r * 1.18)
 };
 
-// Die Farben des Motivs. Kein Farbverlauf, keine Zwischentoene - das ist der
-// ganze Witz der Pixelformel.
+// Die festen Farben des Motivs. Kein Verlauf, keine Zwischentoene - das ist
+// der ganze Witz der Pixelformel.
 const GRUEN = [0x39, 0xff, 0x14];
-const GELB = [0xea, 0xb3, 0x08];
-const GRUEN_DUNKEL = [0x00, 0x11, 0x00];   // Fuellung der Scheibe
+const GOLD = [0xea, 0xb3, 0x08];
+const DUNKEL = [0x05, 0x0f, 0x05];   // Kranz, Speichen, Schatten
+const LINIE = [0x0a, 0x2a, 0x0a];    // Achteck-Kante
 const SCHWARZ = [0x00, 0x00, 0x00];
 
-// Liegt der Punkt im Bogen? Zwei Boegen, je 150 Grad breit, oben und unten
-// zentriert. Der Radius entscheidet ueber die Dicke, der Winkel ueber die
-// Laenge - ohne das waeren es Klammern statt eines drehenden Rings.
-function bogenTreffer(winkel, radius) {
-  if (Math.abs(radius - MOTIV.bogenR) > MOTIV.bogenBreite / 2) return false;
-  const halb = MOTIV.bogenGrad / 2;
-  for (const mitte of MOTIV.bogenMitte) {
-    let d = Math.abs(winkel - mitte);
+// Ein Zahn ist ein Trapez: aussen schmaler als aussen am Korpus. Als
+// Winkelbreite gerechnet, damit die Zacken mit dem Radius skalieren.
+function zahnTreffer(winkel, radius) {
+  if (radius > MOTIV.rZahn || radius < MOTIV.rKorpus) return false;
+  // Zwischen Korpuskante und Zahnspitze laeuft die Breite von zahnAussen
+  // auf zahnInnen zurueck.
+  const t = (radius - MOTIV.rKorpus) / (MOTIV.rZahn - MOTIV.rKorpus);
+  const breite = MOTIV.zahnAussen + (MOTIV.zahnInnen - MOTIV.zahnAussen) * t;
+  for (let i = 0; i < MOTIV.zaehne; i++) {
+    let d = Math.abs(winkel - i * 360 / MOTIV.zaehne);
     d = Math.min(d, 360 - d);
-    if (d <= halb) return true;
+    if (d <= breite / 2) return true;
   }
   return false;
 }
 
 // Pixelgenaue Zeichnung fuer kleine Kantenlaengen.
-// Kein sharp-Resize, keine Interpolation: jeder Pixel ist eine der vier
-// Motivfarben. Das ist der Unterschied zwischen "erkennbar" und "Matsch".
 function zeichneKlein(kante) {
   const puffer = Buffer.alloc(kante * kante * 4);
   const mitte = kante / 2;
-  const einheit = kante / 100;   // das 100er-Raster der SVG
+  const einheit = kante / 100;
 
   for (let y = 0; y < kante; y++) {
     for (let x = 0; x < kante; x++) {
       const dx = x + 0.5 - mitte;
       const dy = y + 0.5 - mitte;
       const radius = Math.hypot(dx, dy) / einheit;
-
       let winkel = Math.atan2(dx, -dy) * 180 / Math.PI;
       if (winkel < 0) winkel += 360;
 
-      // Von aussen nach innen: Boegen, gelber Ring, gruener Ring, Scheibe, Kern.
       let farbe = SCHWARZ;
-      if (bogenTreffer(winkel, radius)) farbe = GRUEN;
-      if (radius >= MOTIV.gelbInnen && radius <= MOTIV.gelbAussen) farbe = GELB;
-      if (radius <= MOTIV.scheibe) farbe = GRUEN_DUNKEL;
-      if (radius <= MOTIV.ringAussen && radius > MOTIV.scheibe) farbe = GRUEN;
-      if (radius <= MOTIV.kern) farbe = GRUEN;
+      if (zahnTreffer(winkel, radius)) farbe = GRUEN;       // Zaehne
+      if (radius <= MOTIV.rKorpus) farbe = GRUEN;           // Korpus
+      if (radius <= MOTIV.achtInnen && innerhalbAchteck(dx, dy, einheit)) farbe = GRUEN;
+
+      // Dunkler Kranz
+      if (Math.abs(radius - MOTIV.rRing) <= MOTIV.ringBreite / 2) {
+        farbe = radius > MOTIV.rRing ? LINIE : DUNKEL;
+      }
+
+      // Speichen als dunkle Stege ueber den Kranz hinaus
+      if (radius >= MOTIV.spVon && radius <= MOTIV.spBis) {
+        for (let i = 0; i < MOTIV.speichen; i++) {
+          let d = Math.abs(winkel - (i * 360 / MOTIV.speichen + 22.5));
+          d = Math.min(d, 360 - d);
+          if (d * Math.PI / 180 * radius <= MOTIV.spBreite / 2) { farbe = DUNKEL; break; }
+        }
+      }
+
+      if (radius <= MOTIV.rMitte) farbe = GOLD;             // Messingschild
 
       const i = (y * kante + x) * 4;
       puffer[i] = farbe[0];
@@ -126,6 +143,16 @@ function zeichneKlein(kante) {
   return sharp(puffer, {raw: {width: kante, height: kante, channels: 4}})
     .png({compressionLevel: 9})
     .toBuffer();
+}
+
+// Liegt der Punkt in der achteckigen Innenplatte? Achteck = Kreis, bei dem
+// die Ecken abgeschnitten sind: max(|x|,|y|) begrenzt die Kanten, der Radius
+// die Ecken.
+function innerhalbAchteck(dx, dy, einheit) {
+  const r = MOTIV.achtInnen;
+  const kante = r * Math.cos(Math.PI / 8);   // halbe Kantenbreite des Achtecks
+  const ax = Math.abs(dx) / einheit, ay = Math.abs(dy) / einheit;
+  return ax <= kante && ay <= kante && Math.hypot(ax, ay) <= r;
 }
 
 // SVG rastern. density hoch, damit die Kanten vor dem Herunterrechnen fein
@@ -148,7 +175,7 @@ async function quadrat(seite) {
 
 // Ab hier wird geschrieben. Vorher nichts: das Modul ist auch als Bibliothek
 // importierbar (tools/emblem.mjs holt sich MOTIV und bolzenTreffer von hier).
-export {MOTIV, bogenTreffer, zeichneKlein, RASTER_AB};
+export {MOTIV, zahnTreffer, innerhalbAchteck, zeichneKlein, RASTER_AB};
 
 for (const {name, size, typ} of PNG) {
   let bild = await quadrat(typ === 'maskable' ? Math.round(size * 0.8) : size);

@@ -110,6 +110,8 @@ export function createUpdateUI({document, window, fetcher = window?.fetch?.bind(
     .reduce((satz, [name, wert]) => satz.replace(`{${name}}`, String(wert)), TEXTE[schluessel] || '');
 
   function zeichnen() {
+    const stand = document.getElementById('update-banner-stand');
+    if (stand) stand.textContent = `AKTUELL ${build}`;
     if (!zustand) { balken.hidden = true; return; }
     balken.hidden = false;
     if (zustand.art === 'veraltet') {
@@ -117,15 +119,15 @@ export function createUpdateUI({document, window, fetcher = window?.fetch?.bind(
       text.textContent = gruende.length
         ? sagen('wartet', {grund: gruende.map(g => GRUND[g] || g).join(', ')})
         : sagen('verfuegbar', {build: zustand.build});
-      text.className = 'text-yellow-400';
+      text.className = 'popup-text text-yellow-400';
       jetzt.hidden = gruende.length > 0;
     } else if (zustand.art === 'laedt') {
       text.textContent = sagen('laedt');
-      text.className = 'text-yellow-400 animate-pulse';
+      text.className = 'popup-text text-yellow-400 animate-pulse';
       jetzt.hidden = true;
     } else if (zustand.art === 'geladen') {
       text.textContent = sagen('geladen', {build: zustand.build});
-      text.className = 'text-[#39ff14]';
+      text.className = 'popup-text text-[#39ff14]';
       jetzt.hidden = true;
     } else if (zustand.art === 'aktuell') {
       balken.hidden = true;
@@ -135,7 +137,7 @@ export function createUpdateUI({document, window, fetcher = window?.fetch?.bind(
       // Balken waere schlimmer als keiner: der Spieler glaubt dann, es sei
       // geprueft worden.
       text.textContent = sagen('unerreichbar');
-      text.className = 'text-green-700';
+      text.className = 'popup-text text-green-700';
       jetzt.hidden = true;
     }
     if (spaeter) spaeter.hidden = zustand.art !== 'veraltet' && zustand.art !== 'unerreichbar';

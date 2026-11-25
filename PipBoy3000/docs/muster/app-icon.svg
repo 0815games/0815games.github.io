@@ -1,57 +1,79 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
   <!--
-    Pip-Boy 3003 - App-Icon
+    Pip-Boy 3003 - App-Icon (zackige Vault-Tuer)
 
     DIESE DATEI IST DIE QUELLE ALLER ICON-GROESSEN.
     tools/app-icon.mjs rastert sie und schreibt PNG, ICO und die ausgelieferte
     SVG-Fassung. Nach jeder Aenderung:   npm run icons:app
 
-    Das Motiv ist das des Lade-Kreisels vom Startbildschirm: zwei gruene
-    Boegen oben und unten (der drehende Ring), ein gelber Punktkranz innen
-    (der gegenlaeufige Ring) und in der Mitte der Reaktor - dunkle Scheibe,
-    gruener Ring, gruener Kern.
+    Vorbild ist die Vault-Tuer: acht zackige Zaehne am Rand (Trapeze, keine
+    Rechtecke), ein dunkler Kranz mit acht Speichen, eine achteckige
+    Innenplatte und in der Mitte das Messingschild mit der Nummer 33.
 
-    Zwei Fassungen, weil ein Motiv allein nicht in jeder Groesse traegt:
-      ab 64 px    <g id="gross">  mit Punktkranz
-      darunter    <g id="mittel"> ohne Punkte, aber mit dickeren Boegen und
-                                  einem vollen gelben Ring. Zwoelf Punkte auf
-                                  16 px waeren zwoelf einzelne Pixel.
-    Unter 64 px keine SVG-Ableitung, sondern die Pixelformel in
-    tools/app-icon.mjs - dieselben Massen wie im mittleren Zweig.
+    Zwei Fassungen:
+      ab 64 px   grosse Fassung mit Achteck-Platte und Nummer 33
+      darunter   kraeftige Fassung ohne Achteck und ohne Nummer. Die 33 waere
+                 bei 16 px vier Pixel breit - ein Fleck, keine Ziffer.
 
-    Zur Geschichte, damit es niemand wieder einbaut: vorher war das Motiv eine
-    Zielscheibe aus gleichmaessigen Ringen, dann kurz eine Vault-Tuer. Beides
-    war nicht das, was auf dem Startbildschirm steht. Das Icon zeigt jetzt, was
-    das Spiel zeigt.
+    Unter 64 px zeichnet tools/app-icon.mjs die Pixelformel, mit denselben
+    Massen wie die kraeftige Fassung: Zahnkranz r=34..50 (aussen 26 Grad breit,
+    an der Kante 40), dunkler Ring 23..31, acht Speichen, Messing r=19.
   -->
-  <rect width="100" height="100" fill="#000000"/>
-
-  <!-- Ab 64 px: mit Punktkranz und duennem Innenring -->
   <g id="gross">
-      <path d="M10.40 39.39A41 41 0 0 1 89.60 39.39" fill="none" stroke="#39ff14" stroke-width="8" stroke-linecap="round"/>
-      <path d="M89.60 60.61A41 41 0 0 1 10.40 60.61" fill="none" stroke="#39ff14" stroke-width="8" stroke-linecap="round"/>
-      <circle cx="50.00" cy="18.50" r="2.1" fill="#eab308"/>
-      <circle cx="65.75" cy="22.72" r="2.1" fill="#eab308"/>
-      <circle cx="77.28" cy="34.25" r="2.1" fill="#eab308"/>
-      <circle cx="81.50" cy="50.00" r="2.1" fill="#eab308"/>
-      <circle cx="77.28" cy="65.75" r="2.1" fill="#eab308"/>
-      <circle cx="65.75" cy="77.28" r="2.1" fill="#eab308"/>
-      <circle cx="50.00" cy="81.50" r="2.1" fill="#eab308"/>
-      <circle cx="34.25" cy="77.28" r="2.1" fill="#eab308"/>
-      <circle cx="22.72" cy="65.75" r="2.1" fill="#eab308"/>
-      <circle cx="18.50" cy="50.00" r="2.1" fill="#eab308"/>
-      <circle cx="22.72" cy="34.25" r="2.1" fill="#eab308"/>
-      <circle cx="34.25" cy="22.72" r="2.1" fill="#eab308"/>
-      <circle cx="50" cy="50" r="23" fill="#001100" stroke="#39ff14" stroke-width="2"/>
-      <circle cx="50" cy="50" r="10" fill="#39ff14"/>
+    <g fill="#39ff14">
+      <path d="M40.84 2.88L59.16 2.88L59.94 17.49L40.06 17.49Z"/>
+      <path d="M76.84 10.21L89.79 23.16L80.02 34.04L65.96 19.98Z"/>
+      <path d="M97.12 40.84L97.12 59.16L82.51 59.94L82.51 40.06Z"/>
+      <path d="M89.79 76.84L76.84 89.79L65.96 80.02L80.02 65.96Z"/>
+      <path d="M59.16 97.12L40.84 97.12L40.06 82.51L59.94 82.51Z"/>
+      <path d="M23.16 89.79L10.21 76.84L19.98 65.96L34.04 80.02Z"/>
+      <path d="M2.88 59.16L2.88 40.84L17.49 40.06L17.49 59.94Z"/>
+      <path d="M10.21 23.16L23.16 10.21L34.04 19.98L19.98 34.04Z"/>
+    </g>
+    <circle cx="50" cy="50" r="34" fill="#39ff14"/>
+    <path d="M60.83 23.85L76.15 39.17L76.15 60.83L60.83 76.15L39.17 76.15L23.85 60.83L23.85 39.17L39.17 23.85Z" fill="none" stroke="#0a2a0a" stroke-width="1.6"/>
+    <circle cx="50" cy="50" r="27" fill="none" stroke="#050f05" stroke-width="7"/>
+    <g fill="#050f05">
+      <rect x="46" y="18" width="8" height="20" transform="rotate(22.5 50 50)"/>
+      <rect x="46" y="18" width="8" height="20" transform="rotate(67.5 50 50)"/>
+      <rect x="46" y="18" width="8" height="20" transform="rotate(112.5 50 50)"/>
+      <rect x="46" y="18" width="8" height="20" transform="rotate(157.5 50 50)"/>
+      <rect x="46" y="18" width="8" height="20" transform="rotate(202.5 50 50)"/>
+      <rect x="46" y="18" width="8" height="20" transform="rotate(247.5 50 50)"/>
+      <rect x="46" y="18" width="8" height="20" transform="rotate(292.5 50 50)"/>
+      <rect x="46" y="18" width="8" height="20" transform="rotate(337.5 50 50)"/>
+    </g>
+    <circle cx="50" cy="50" r="18.8" fill="#050f05"/>
+    <circle cx="50" cy="50" r="18" fill="#eab308"/>
+    <text x="50" y="51.5" text-anchor="middle" dominant-baseline="central"
+          font-family="DejaVu Sans, Verdana, sans-serif" font-size="16.6"
+          font-weight="bold" letter-spacing="-1" fill="#1a1400">33</text>
   </g>
 
-  <!-- Kleine Fassungen: kraeftiger, ohne Punktkranz -->
   <g id="mittel">
-      <path d="M14.65 33.52A39 39 0 0 1 85.35 33.52" fill="none" stroke="#39ff14" stroke-width="15" stroke-linecap="round"/>
-      <path d="M85.35 66.48A39 39 0 0 1 14.65 66.48" fill="none" stroke="#39ff14" stroke-width="15" stroke-linecap="round"/>
-      <circle cx="50" cy="50" r="27" fill="none" stroke="#eab308" stroke-width="8"/>
-      <circle cx="50" cy="50" r="22" fill="#001100" stroke="#39ff14" stroke-width="1.6"/>
-      <circle cx="50" cy="50" r="12" fill="#39ff14"/>
+    <g fill="#39ff14">
+      <path d="M38.75 1.28L61.25 1.28L61.63 18.05L38.37 18.05Z"/>
+      <path d="M76.5 7.6L92.4 23.5L80.81 35.63L64.37 19.19Z"/>
+      <path d="M98.72 38.75L98.72 61.25L81.95 61.63L81.95 38.37Z"/>
+      <path d="M92.4 76.5L76.5 92.4L64.37 80.81L80.81 64.37Z"/>
+      <path d="M61.25 98.72L38.75 98.72L38.37 81.95L61.63 81.95Z"/>
+      <path d="M23.5 92.4L7.6 76.5L19.19 64.37L35.63 80.81Z"/>
+      <path d="M1.28 61.25L1.28 38.75L18.05 38.37L18.05 61.63Z"/>
+      <path d="M7.6 23.5L23.5 7.6L35.63 19.19L19.19 35.63Z"/>
+    </g>
+    <circle cx="50" cy="50" r="34" fill="#39ff14"/>
+    <path d="M60.83 23.85L76.15 39.17L76.15 60.83L60.83 76.15L39.17 76.15L23.85 60.83L23.85 39.17L39.17 23.85Z" fill="none" stroke="#0a2a0a" stroke-width="2"/>
+    <circle cx="50" cy="50" r="27" fill="none" stroke="#050f05" stroke-width="8"/>
+    <g fill="#050f05">
+      <rect x="45.5" y="18" width="9" height="20" transform="rotate(22.5 50 50)"/>
+      <rect x="45.5" y="18" width="9" height="20" transform="rotate(67.5 50 50)"/>
+      <rect x="45.5" y="18" width="9" height="20" transform="rotate(112.5 50 50)"/>
+      <rect x="45.5" y="18" width="9" height="20" transform="rotate(157.5 50 50)"/>
+      <rect x="45.5" y="18" width="9" height="20" transform="rotate(202.5 50 50)"/>
+      <rect x="45.5" y="18" width="9" height="20" transform="rotate(247.5 50 50)"/>
+      <rect x="45.5" y="18" width="9" height="20" transform="rotate(292.5 50 50)"/>
+      <rect x="45.5" y="18" width="9" height="20" transform="rotate(337.5 50 50)"/>
+    </g>
+    <circle cx="50" cy="50" r="19" fill="#eab308"/>
   </g>
 </svg>

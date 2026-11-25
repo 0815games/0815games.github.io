@@ -1,5 +1,39 @@
 # CHANGELOG
 
+## v14.0.18 (Vault-Tuer als Icon, AFK- und Update-Fenster, 2026-11-24)
+Drei Auftraege in einer Runde:
+
+### 1. Icon: zackige Vault-Tuer
+Vorbild war das Bild, das Marcel geschickt hat: acht Trapez-Zaehne am Rand,
+dunkler Kranz mit acht Speichen, achteckige Innenplatte, Messingschild mit 33.
+
+- [NEU] Zahnkranz mit Trapezen (aussen 26 Grad, an der Kante 40) - Rechtecke
+  haetten vier gerade Kanten und damit keine Zacken.
+- [NEU] Die 33 traegt nur die grosse Fassung. Bei 16 px waeren das vier
+  Pixel. Die kleine Fassung ist kraeftiger und ohne Nummer.
+- [FIX] Beim Umbau ist die SVG einmal kaputtgegangen (unterminierter
+  Kommentar, fehlendes `</g>`) - der Rasterer brach ab. Datei komplett neu
+  geschrieben, nicht geflickt.
+
+### 2. AFK: fuenf Minuten, dann fragen statt abmelden
+Die Zeit war schon fuenf Minuten. Was fehlte, war die Rueckfrage: der Logout
+kam still.
+
+- [NEU] `src/ui/ui_afk.js`: Fenster mittig mit Countdown und Balken, 60
+  Sekunden Nachfrist, Logout mit Grund.
+- [FIX] Die alte stille Abmeldung in `ui_core.js` und `ui_render_core.js` ist
+  raus. Zwei Uhren fuer dieselbe Sache laufen auseinander.
+- [NEU] `tests/afk.test.mjs` (7 Tests). Gegenprobe: mit sofortigem Logout
+  werden drei Tests rot.
+
+### 3. Update-Fenster mittig
+Der Balken unten war leicht zu uebersehen.
+
+- [NEU] `#update-banner` nutzt dieselbe Form (`.popup-mitte`), Kennungen
+  bleiben - `ui_update.js` und die Tests nennen sie beim Namen.
+- [NEU] Einrast-Animation und Scanlinie fuer beide Fenster; bei
+  `prefers-reduced-motion` ohne Animation.
+
 ## v14.0.17 (App-Icon: der Kreisel vom Ladebildschirm, 2026-11-24)
 Korrektur zu 14.0.16. Auftrag: "Nicht das Logo beim Laden, das war Gold wert.
 Aber das App Icon, dann gerne so wie das alte Lade Logo."

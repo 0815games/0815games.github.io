@@ -210,6 +210,87 @@ canvas { image-rendering: pixelated; image-rendering: crisp-edges; display: bloc
     overflow-y: auto; 
 }
 
+/* --- Mittiges Popup (AFK, Update) ---------------------------------------
+   Beide Popups teilen sich diese Form: mittig, schwarzer Grund, gruener
+   Rahmen mit Schein, Terminal-Schrift. Die Animation ist kurz und im
+   Geraetestil: das Feld rastet ein (zwei Stufen, wie ein Relais), der
+   Bildschirm dahinter flackert einmal.
+
+   Kein Farbwechsel: #39ff14 und Gelb wie ueberall. Der Rahmen ist das
+   einzige, was sich bewegt. */
+.popup-mitte {
+    position: fixed;
+    inset: 0;
+    z-index: 10050;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.82);
+    animation: popup-schleier 0.18s ease-out;
+}
+.popup-mitte[hidden] { display: none; }
+
+.popup-feld {
+    position: relative;
+    width: 100%;
+    max-width: 26rem;
+    background: #000;
+    border: 2px solid var(--pip-green);
+    box-shadow: 0 0 24px rgba(57, 255, 20, 0.35), inset 0 0 18px rgba(57, 255, 20, 0.08);
+    padding: 1.1rem 1.2rem 1rem;
+    font-family: 'VT323', ui-monospace, monospace;
+    text-align: left;
+    /* Einrasten in zwei Stufen - kein weiches Fade, das passt nicht zu einem
+       Geraet, das eine Roehre aufwaermt. */
+    animation: popup-einrasten 0.26s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+.popup-feld::before {
+    content: "";
+    position: absolute;
+    inset: 3px;
+    border: 1px solid rgba(57, 255, 20, 0.25);
+    pointer-events: none;
+}
+.popup-feld::after {
+    /* Die Scanlinie, die einmal ueber das Feld laeuft. */
+    content: "";
+    position: absolute;
+    left: 0; right: 0; top: 0;
+    height: 34%;
+    background: linear-gradient(to bottom, rgba(57, 255, 20, 0.13), transparent);
+    animation: popup-scan 0.9s ease-out 0.1s both;
+    pointer-events: none;
+}
+.popup-titel {
+    font-size: 1.05rem;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: #eab308;
+    border-bottom: 1px solid rgba(57, 255, 20, 0.3);
+    padding-bottom: 0.35rem;
+    margin-bottom: 0.7rem;
+}
+.popup-text { font-size: 1.05rem; line-height: 1.35; color: var(--pip-green); }
+.popup-zeile { display: flex; justify-content: space-between; gap: 1rem; font-size: 0.95rem; color: #4ade80; }
+.popup-knoepfe { display: flex; gap: 0.5rem; margin-top: 0.9rem; }
+.popup-knoepfe .action-button { flex: 1; font-size: 1.15rem; padding: 0.5rem 0.6rem; }
+.popup-knoepfe .action-button:focus-visible { outline: 2px solid #eab308; outline-offset: 2px; }
+
+@keyframes popup-schleier { from { opacity: 0; } to { opacity: 1; } }
+@keyframes popup-einrasten {
+    0%   { opacity: 0; transform: scale(0.86) translateY(10px); }
+    55%  { opacity: 1; transform: scale(1.025) translateY(0); }
+    75%  { transform: scale(0.995); }
+    100% { opacity: 1; transform: scale(1); }
+}
+@keyframes popup-scan { from { transform: translateY(-40%); opacity: 0; } 30% { opacity: 1; } to { transform: translateY(300%); opacity: 0; } }
+
+/* Wer Bewegung abbestellt, bekommt das Feld ohne Animation - aber sichtbar. */
+@media (prefers-reduced-motion: reduce) {
+    .popup-mitte, .popup-feld, .popup-feld::after { animation: none; }
+}
+
 /* Spezieller Fix für Boot-Sequenz, damit sie nicht oben klebt */
 #boot-sequence {
     flex-grow: 1;
