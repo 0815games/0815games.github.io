@@ -27,12 +27,12 @@ import { checkTownName } from './town-names.js?v=20261125-bal7';
 import { friendsShell, mountFriends } from './friends-ui.js?v=20261125-bal7';
 import { createBoard } from './world/board.js?v=20261125-bal7';
 import { createLoginScene } from './world/login-scene.js?v=20261125-bal7';
-import { TUTORIAL_STEPS, HELP_SECTIONS } from './tutorial.js?v=20261125-bal7';
+import { TUTORIAL_STEPS, HELP_SECTIONS, CHECK_LABELS, STATE_TASKS, tutorialResume, tutorialStored } from './tutorial.js?v=20261125-bal7';
 import { createVersionUI } from './version-ui.mjs?v=20261125-bal7';
 import { startAfkWatch, showAfkOverlay } from './afk.js?v=20261125-bal7';
 import { fullResources, fillPercent } from './stock-dock.js?v=20261125-bal7';
 import { nextRequestToShow, requestBadgeLabel, canShowRequestPopup } from './friend-requests.js?v=20261125-bal7';
-import { houseCapacity, staffFactor } from './domain/settlement.js?v=20261125-bal7';
+import { houseCapacity, staffFactor, tutorialTaskDone } from './domain/settlement.js?v=20261125-bal7';
 
 const BUILD = '20261125-bal7';
 console.info(`Tiny Tycoon Towns ${BUILD}`);
@@ -544,6 +544,7 @@ function dispatch(result, okMsg) {
   }
   if (okMsg && !result.events.some((e) => e.type === 'levelUp')) toast(okMsg);
   renderAll();
+  refreshTutorialTask();
 }
 
 // iOS Safari: Pinch-Zoom der Seite unterdrücken, Karte bleibt davon ausgenommen (eigene Pointer-Events).
@@ -553,6 +554,7 @@ for (const type of ['gesturestart', 'gesturechange', 'gestureend']) {
 document.addEventListener('dblclick', (e) => { if (!e.target.closest?.('.board, .visit-board')) e.preventDefault(); }, { passive: false });
 
 function selectTile({ x, y }) {
+  markTutorial('tap');
   const key = `${x},${y}`;
   if (key !== lastSelKey) {
     lastSelKey = key;
@@ -611,6 +613,8 @@ function bindStatic() {
   });
   $('#panel').addEventListener('click', onPanelClick);
   $('#stock-btn').addEventListener('click', openStock);
+  $('#xp-bar')?.addEventListener('click', () => markTutorial('xp'));
+  $('#merchant')?.addEventListener('click', () => markTutorial('merchant'));
   $('#dock-toggle').addEventListener('click', () => setDockOpen($('#dock-body').hidden));
   setDockOpen(window.matchMedia?.('(min-width: 900px)').matches ?? false); // Desktop offen, Mobile eingeklappt
   $('#stock-close').addEventListener('click', () => $('#stock-sheet').close());
@@ -631,6 +635,7 @@ function bindStatic() {
   $('#stock').addEventListener('click', (e) => {
     const btn = e.target.closest('[data-sell]');
     if (!btn || !state) return;
+    markTutorial('sell');
     dispatch(toggleSell(state, { resource: btn.dataset.sell }));
   });
   $('#feld-btn').addEventListener('click', showFieldNotes);
@@ -702,6 +707,7 @@ function onPanelClick(e) {
 }
 
 function openStock() {
+  markTutorial('stock');
   renderStock();
   const sheet = $('#stock-sheet');
   if (!sheet.open) sheet.showModal();
@@ -726,6 +732,12 @@ function startGame() {
     toast('Tipp: Wähle eine Wiese und baue deinen ersten Hof.');
   }
   // Nach einem Update einmal die Neuerungen zeigen. Danach (oder bei Neuinstallation) das Tutorial.
+  startupDialogs();
+}
+
+/** Reihenfolge beim Start: erst das Tutorial-Angebot (für alle, einmal), dann Neuerungen, dann ein laufendes Tutorial. */
+function startupDialogs() {
+  if (tutorialResume(state.tutorialStep ?? 0) === 'offer') return offerTutorial();
   if (!showWhatsNewIfUpdated()) maybeStartTutorial();
 }
 
@@ -776,7 +788,63 @@ function endTutorial() {
 
 function saveTutorialStep(step) {
   if (!state) return;
-  dispatch(setTutorialStep(state, Math.min(step, TUTORIAL_STEPS.length)));
+  dispatch(setTutorialStep(state, tutorialStored(Math.min(step, TUTORIAL_STEPS.length))));
+}
+
+/** Im Browser gemerkte Aufgaben dieses Kontos (Feld angetippt, Inventar geöffnet, …). */
+function tutorialBrowserTasks() {
+  if (!state) return new Set();
+  try {
+    return new Set(JSON.parse(localStorage.getItem(`ttt-tut-tasks-${state.id}`) || '[]'));
+  } catch {
+    return new Set();
+  }
+}
+
+/** Erledigt, egal ob im Spielstand oder im Browser gemerkt. */
+function tutorialTaskIsDone(task) {
+  if (STATE_TASKS.includes(task)) return tutorialTaskDone(state, task);
+  return tutorialBrowserTasks().has(task);
+}
+
+/** Merkt eine Aufgabe, die nicht im Spielstand steht, und aktualisiert den offenen Schritt. */
+function markTutorial(task) {
+  if (!state || STATE_TASKS.includes(task)) return;
+  const set = tutorialBrowserTasks();
+  if (set.has(task)) return;
+  set.add(task);
+  try {
+    localStorage.setItem(`ttt-tut-tasks-${state.id}`, JSON.stringify([...set]));
+  } catch { /* ohne Speicher gilt die Aufgabe nur für diese Sitzung nicht; der Schritt bleibt offen */ }
+  refreshTutorialTask();
+}
+
+/** Hinweis, Häkchen und Knopf im offenen Schritt nachziehen, sobald eine Aufgabe erledigt ist. */
+function refreshTutorialTask() {
+  if (tutorialIndex === null) return;
+  const step = TUTORIAL_STEPS[tutorialIndex];
+  const last = tutorialIndex === TUTORIAL_STEPS.length - 1;
+  if (step?.checklist) {
+    for (const t of step.checklist) {
+      const el = $(`#tut-check-${t}`);
+      if (!el) continue;
+      const done = tutorialTaskIsDone(t);
+      el.textContent = `${done ? '✓' : '○'} ${CHECK_LABELS[t]}`;
+      el.classList.toggle('done', done);
+    }
+    const next = $('#tut-next');
+    if (next) next.textContent = last ? 'Fertig' : 'Weiter';
+    return;
+  }
+  if (!step?.task) return;
+  const done = tutorialTaskIsDone(step.task);
+  const hint = $('#tut-hint');
+  if (hint) {
+    hint.textContent = done ? 'Gut gemacht, du hast es ausprobiert.' : 'Probier es direkt aus. Oder wähle Später.';
+    hint.classList.toggle('done', done);
+  }
+  const next = $('#tut-next');
+  if (next) next.textContent = last ? 'Fertig' : done ? 'Weiter' : 'Später';
 }
 
 function showTutorialStep(index) {
@@ -792,6 +860,8 @@ function showTutorialStep(index) {
     <p class="small muted">Schritt ${index + 1} von ${TUTORIAL_STEPS.length}</p>
     <h2 id="tut-title">${esc(step.title)}</h2>
     <p>${esc(step.text)}</p>
+    ${step.task ? '<p class="small tut-hint" id="tut-hint"></p>' : ''}
+    ${step.checklist ? `<ul class="tut-check">${step.checklist.map((t) => `<li id="tut-check-${t}"></li>`).join('')}</ul>` : ''}
     <p class="row">
       <button type="button" id="tut-skip" class="ghost">Überspringen</button>
       <button type="button" id="tut-next" class="primary">${last ? 'Fertig' : 'Weiter'}</button>
@@ -810,11 +880,13 @@ function showTutorialStep(index) {
     saveTutorialStep(TUTORIAL_STEPS.length);
     endTutorial();
   });
+  refreshTutorialTask();
   $('#tut-next').focus({ preventScroll: true });
 }
 
 /** Hilfe-Übersicht: alle Abschnitte, jederzeit über den Hilfe-Knopf. */
 function showHelp() {
+  markTutorial('help');
   const sections = HELP_SECTIONS.map((sec) => `<section>
       <h3>${esc(sec.title)}</h3>
       ${sec.paragraphs.map((p) => `<p>${esc(p)}</p>`).join('')}
@@ -822,13 +894,42 @@ function showHelp() {
   openDialog(`<div class="dlg-body help">
     <h2 id="dlg-title">Hilfe</h2>
     ${sections}
-    <p class="row"><button type="button" id="help-close" class="primary">Schließen</button></p>
+    <p class="row"><button type="button" id="help-tut" class="ghost">Anleitung noch einmal</button><button type="button" id="help-close" class="primary">Schließen</button></p>
   </div>`);
   $('#help-close').addEventListener('click', closeDialog);
+  $('#help-tut').addEventListener('click', () => {
+    closeDialog();
+    saveTutorialStep(0);
+    showTutorialStep(0);
+  });
 }
 
+/** Beim Start einer Stadt einmal anbieten. Danach nur fortsetzen, was offen ist. */
 function maybeStartTutorial() {
-  if (state && (state.tutorialStep ?? 0) < TUTORIAL_STEPS.length) showTutorialStep(state.tutorialStep ?? 0);
+  if (!state) return;
+  const r = tutorialResume(state.tutorialStep ?? 0);
+  if (r !== null && r !== 'offer') showTutorialStep(r);
+}
+
+function offerTutorial() {
+  // Einmal gefragt: auch wer den Dialog nur schließt, bekommt ihn nicht wieder. Über Hilfe geht es jederzeit.
+  saveTutorialStep(TUTORIAL_STEPS.length);
+  openDialog(`<div class="dlg-body help">
+    <h2 id="dlg-title">Willkommen in deiner Stadt</h2>
+    <p>Möchtest du eine kurze Anleitung? Du baust selbst ein Wohnhaus, weist einen Arbeiter zu und prüfst am Ende, was steht.</p>
+    <p class="row"><button type="button" id="tut-offer-no" class="ghost">Nein danke</button><button type="button" id="tut-offer-yes" class="primary">Anleitung starten</button></p>
+  </div>`);
+  $('#tut-offer-yes').addEventListener('click', () => {
+    closeDialog();
+    saveTutorialStep(0);
+    // Gibt es Neuerungen, kommt das Tutorial danach (maybeStartTutorial nach dem OK).
+    if (!showWhatsNewIfUpdated()) showTutorialStep(0);
+  });
+  $('#tut-offer-no').addEventListener('click', () => {
+    closeDialog();
+    showWhatsNewIfUpdated();
+  });
+  $('#tut-offer-yes').focus();
 }
 
 function tick() {
