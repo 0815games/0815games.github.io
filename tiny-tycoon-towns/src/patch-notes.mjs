@@ -8,6 +8,14 @@ export const RELEASED_PATCHES = [
     date: '2026-11-24',
     items: [
       {
+        de: 'AFK-Modus: Nach 5 Minuten ohne Eingabe wird deine Stadt gesichert und du wirst abgemeldet. Danach erscheint ein Hinweis auf dem Anmeldebildschirm.',
+        en: 'AFK mode: after 5 minutes without input your town is saved and you are signed out. A notice then appears on the sign-in screen.',
+      },
+      {
+        de: 'Zweites Gerät: Wenn du dich auf einem zweiten Gerät anmeldest, fragt nur dieses Gerät, ob du abmelden oder hierbleiben willst. Das andere Gerät meldet sich ohne Rückfrage ab.',
+        en: 'Second device: when you sign in on a second device, only that device asks whether to sign out or stay. The other device signs out without a prompt.',
+      },
+      {
         de: 'Handel mit Nachbarstädten: Im Menü „Handel“ schickst du einen Konvoi mit Ware in eine Nachbarstadt. Vor dem Start siehst du Dauer, Kosten und Ertrag. Es laufen höchstens zwei Konvois gleichzeitig. Wenn ein Konvoi angekommen ist, rechnest du ihn ab. Münzen, Ware und Erfahrung kommen dann in deine Stadt.',
         en: 'Trade with neighbouring towns: in the menu "Handel" you send a convoy with goods to a neighbouring town. Before departure you see duration, cost and yield. At most two convoys run at the same time. When a convoy has arrived, you settle it. Coins, goods and experience then go to your town.',
       },

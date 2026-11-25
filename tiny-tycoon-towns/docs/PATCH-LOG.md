@@ -577,3 +577,32 @@ Ereignis ergänzt.
   (IronPath, nicht dieses Spiel) und keine Deployments. Es wurde nichts deployed und kein Projekt
   angelegt. Die Preview-Prüfung steht aus, bis ein Projekt für dieses Spiel festgelegt ist.
 - Firebase-Regeln: weiterhin nicht veröffentlicht.
+
+### TTT-0042 – AFK-Modus und Sitzungsmeldung nur auf dem neuen Gerät (Welle `20261124-konvoi1`)
+
+- Zeit / Quelle: Sitzung 2026-11-25 (UTC). Nutzerwunsch wörtlich: „AFK Modus nach 5 Minuten
+  Inaktivität, abmelden, zurück zum Loginbildschirm, passendes Popup, volle Hütte für AFK“ und
+  „Beim Anmelden im 2. Gerät erscheint die Meldung auf beiden Geräten. Nur auf dem neuen Gerät.“
+- Branch / Basis: `arena/f8bf0bda-0815games-github-io`, Basis `964ebf5` (`main`).
+- Änderungen / Dateien:
+  - `src/afk.js` (neu): Zeitlogik (`isAfk`, `startAfkWatch`) und Vollbild-Hinweis (`showAfkOverlay`).
+  - `src/main.js`: AFK-Abmeldung (`onAfkTimeout`), Abmeldung ohne Rückfrage auf dem alten Gerät
+    (`onSessionLost`), Rückfrage „Abmelden oder hierbleiben“ nur auf dem neuen Gerät
+    (`showSessionTaken`), Hinweis auf dem Anmeldebildschirm.
+  - `style.css`: Stil des AFK-Overlays (Mond, Zzz-Animation, reduzierte Bewegung respektiert).
+  - `tests/afk.test.mjs` (neu, 5 Tests). `src/patch-notes.mjs`: Stadtchronik DE/EN.
+- Verhalten:
+  - 5 Minuten ohne Tastatur, Maus, Touch oder Scrollen: Stadt sichern, abmelden, Overlay „Deine
+    Stadt schläft“ über dem Anmeldebildschirm.
+  - Neues Gerät, Konto offen: Dialog nur dort, Buttons „Abmelden“ und „Hierbleiben“.
+  - Altes Gerät: wird ohne Dialog abgemeldet. Auf dem Anmeldebildschirm steht ein kurzer Text
+    „Dieses Konto ist jetzt auf einem anderen Gerät geöffnet.“ Das ist eine Entscheidung, die
+    der Nutzer prüfen soll.
+- Prüfungen (lokal, Node 22.22.3):
+  - `npm test`: 121 Tests, 121 pass, 0 fail, Exit 0 (Unit). Die Stopp-Regel war zuerst rot
+    (`check()` nach `stop()` konnte auslösen) und ist behoben.
+  - `npm run check`: Exit 0, kein Fehler.
+  - Nicht geprüft: Browser, zwei echte Geräte, Firebase-Sitzungen end-to-end.
+- Git / PR / Veröffentlichung: Commit folgt im Schritt danach. Nicht veröffentlicht.
+- Offen / nächster Schritt: Auf zwei Geräten prüfen (Nutzer). Prüfen, ob der Hinweis auf dem
+  alten Gerät gewünscht ist oder ganz wegfallen soll.

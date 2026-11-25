@@ -24,6 +24,7 @@ import { createBoard } from './world/board.js?v=20261124-konvoi1';
 import { createLoginScene } from './world/login-scene.js?v=20261124-konvoi1';
 import { TUTORIAL_STEPS, HELP_SECTIONS } from './tutorial.js?v=20261124-konvoi1';
 import { createVersionUI } from './version-ui.mjs?v=20261124-konvoi1';
+import { startAfkWatch, showAfkOverlay } from './afk.js?v=20261124-konvoi1';
 
 const BUILD = '20261124-konvoi1';
 console.info(`Tiny Tycoon Towns ${BUILD}`);
@@ -202,11 +203,16 @@ async function enterAccount(user) {
     releaseCurrentSession();
     endTutorial();
     renderSignedOut();
-    showLoginScreen('login');
+    if (afkStop) { afkStop(); afkStop = null; }
+    const notice = nextLoginNotice;
+    nextLoginNotice = null;
+    showLoginScreen('login', notice && !notice.afk ? notice.text : '');
+    if (notice?.afk) showAfkOverlay(notice.text);
     return;
   }
   hideLoginScreen();
   closeDialog();
+  if (!afkStop) afkStop = startAfkWatch(onAfkTimeout);
   if (uid === user.uid && state) return; // token refresh, nothing to load
   if (activeUid !== user.uid) {
     if (activeUid) releaseCurrentSession(); // anderes Konto: alte Sitzung freigeben
@@ -1076,8 +1082,8 @@ const SESSION_ID = (() => {
   }
 })();
 const HEARTBEAT_MS = 30_000;
-const SESSION_TAKEN_TEXT = 'Dieses Konto ist gerade in einem anderen Fenster oder auf einem anderen Gerät geöffnet. Schließe das andere Fenster oder übernimm die Sitzung hier.';
-const SESSION_LOST_TEXT = 'Dieses Konto wurde in einem anderen Fenster oder auf einem anderen Gerät übernommen. Hier wird nichts mehr gespeichert, bis du es hier übernimmst.';
+const SESSION_TAKEN_TEXT = 'Dieses Konto ist gerade in einem anderen Fenster oder auf einem anderen Gerät geöffnet. Abmelden oder hierbleiben? Hierbleiben beendet die Sitzung dort.';
+const SESSION_LOST_TEXT = 'Dieses Konto ist jetzt auf einem anderen Gerät geöffnet. Melde dich hier erneut an, um weiterzuspielen.';
 let activeUid = null;       // Konto, dessen Sitzung dieses Fenster hält
 let sessionLost = false;    // true, sobald ein anderes Fenster übernommen hat: nichts mehr speichern
 let sessionUnwatch = null;
@@ -1160,37 +1166,57 @@ function releaseCurrentSession() {
   if (prev) cloud.releaseSession(prev, SESSION_ID).catch(() => { /* Ablauf nach 2 Minuten greift */ });
 }
 
-function onSessionLost(sessionUid) {
+// AFK und Sitzungswechsel. Der Hinweis erscheint nach dem Abmelden auf dem Anmeldebildschirm.
+let afkStop = null;
+let nextLoginNotice = null; // { text, afk }
+const AFK_TEXT = 'Du warst 5 Minuten inaktiv und wurdest abgemeldet. Deine Stadt ist gesichert.';
+
+/** AFK: Stadt sichern, abmelden, Hinweis auf dem Anmeldebildschirm. */
+async function onAfkTimeout() {
+  if (!currentUser) return;
+  flushNow();
+  nextLoginNotice = { text: AFK_TEXT, afk: true };
+  try {
+    await cloud.logout();
+  } catch {
+    nextLoginNotice = null;
+    toast('Abmelden fehlgeschlagen. Du bist noch angemeldet.', 'error');
+  }
+}
+
+/** Ein anderes Gerät hat das Konto übernommen. Dieses Gerät meldet sich ohne Rückfrage ab. */
+async function onSessionLost(sessionUid) {
   if (sessionLost || activeUid !== sessionUid) return;
-  sessionLost = true;
+  sessionLost = true; // bleibt gesetzt, bis die Abmeldung durch ist: nichts speichern
   stopSessionGuard();
   activeUid = null;
-  setPanelHtml(`<p class="warn">${esc(SESSION_LOST_TEXT)}</p>`);
-  openDialog(`<div class="dlg-body">
-    <h2 id="dlg-title">Sitzung übernommen</h2>
-    <p>${esc(SESSION_LOST_TEXT)}</p>
-    <p class="row">
-      <button type="button" id="lost-logout">Abmelden</button>
-      <button type="button" id="lost-take" class="primary">Hier übernehmen</button>
-    </p>
+  nextLoginNotice = { text: SESSION_LOST_TEXT, afk: false };
+  try {
+    await cloud.logout();
+  } catch {
+    nextLoginNotice = null;
+    toast('Abmelden fehlgeschlagen. Hier wird nichts mehr gespeichert.', 'error');
+  }
+}
+
+/** Konto ist woanders offen. Die Rückfrage gibt es nur auf dem neu anmeldenden Gerät. */
+function showSessionTaken(sessionUid) {
+  openDialog(`<div class="dlg-body confirm">
+    <h2 id="dlg-title">Konto ist schon offen</h2>
+    <p>${esc(SESSION_TAKEN_TEXT)}</p>
+    <div class="confirm-row">
+      <button type="button" id="session-logout">Abmelden</button>
+      <button type="button" id="session-stay" class="primary">Hierbleiben</button>
+    </div>
   </div>`);
-  $('#dlg').addEventListener('cancel', (e) => e.preventDefault(), { once: true });
-  $('#dlg').dataset.persist = '1'; // Entscheidung erzwingen: nicht per Klick daneben schließen
-  $('#lost-take').addEventListener('click', () => takeOverSession(sessionUid));
-  $('#lost-logout').addEventListener('click', async () => {
+  const dlg = $('#dlg');
+  dlg.dataset.persist = '1'; // Entscheidung erzwingen: nicht per Klick oder Escape schließen
+  dlg.addEventListener('cancel', (e) => e.preventDefault(), { once: true });
+  $('#session-stay').addEventListener('click', () => takeOverSession(sessionUid));
+  $('#session-logout').addEventListener('click', async () => {
     closeDialog();
     try { await cloud.logout(); } catch { toast('Abmelden fehlgeschlagen.', 'error'); }
   });
-}
-
-function showSessionTaken(sessionUid) {
-  setPanelHtml(`<p class="warn">${esc(SESSION_TAKEN_TEXT)}</p>
-    <p class="row">
-      <button type="button" id="session-take" class="primary">Hier übernehmen</button>
-      <button type="button" id="session-retry">Erneut prüfen</button>
-    </p>`);
-  $('#session-take').addEventListener('click', () => takeOverSession(sessionUid));
-  $('#session-retry').addEventListener('click', () => { uid = null; void onUser(currentUser); });
 }
 
 /** Übernimmt die Sitzung für dieses Fenster und lädt den Stand neu (der neuere Stand gewinnt). */
