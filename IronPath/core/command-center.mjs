@@ -38,7 +38,7 @@ export function createCommandCenter({document,getProfile,getGame,isPartyActive,o
  // old pop-up tour, because `showTutorial` prefers the live coach only when a match is
  // running and otherwise falls back to the modal briefing. `replayFirstRun` deploys the
  // training contract again - map, cards, guide - and pays nothing for the second run.
- $('menuTutorial').onclick=()=>{if(typeof onTutorial==='function'){onTutorial();return;}const game=getGame();if(game?.replayFirstRun?.())return;game?.showTutorial();};$('menuArmory').onclick=()=>$('armoryOpen').onclick();$('menuSkills').onclick=()=>$('skillOpen').onclick();$('menuResults').onclick=()=>getGame()?.showResults?.();$('menuLogout').onclick=()=>signOut();$('backToCommand').onclick=showMenu;
+ $('menuTutorial').onclick=()=>{$('settingsDialog')?.close?.();if(typeof onTutorial==='function'){onTutorial();return;}const game=getGame();if(game?.replayFirstRun?.())return;game?.showTutorial();};$('menuArmory').onclick=()=>$('armoryOpen').onclick();$('menuSkills').onclick=()=>$('skillOpen').onclick();$('menuResults').onclick=()=>getGame()?.showResults?.();$('menuLogout').onclick=()=>signOut();$('backToCommand').onclick=showMenu;
  function showMenu(){return navigateToMenu();}
  function showAfterEnd(){return navigateToMenu(true);}
  return {render,showBattle,showLobby,showMenu,showAfterEnd};

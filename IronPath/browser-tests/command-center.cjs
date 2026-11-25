@@ -70,7 +70,8 @@ if (!commandCenterToken) throw new Error('account.js does not import command-cen
     await page.locator('#multiplayerPromptActions [data-action="later"]').click();
     assert.equal(await page.locator('#multiplayerPrompt').isHidden(),true);
     assert.match(await page.locator('#inviteNotification').textContent(),/1/,'putting the card aside keeps the invitation');
-    await page.locator('#menuTutorial').click();
+    await page.locator('#menuSettings').click();
+    await page.locator('#menuTutorial').click(); // closes Settings, opens the dossier
     await page.locator('#tutorialDossier[open]').waitFor({state:'visible',timeout:15000});
     await page.locator('#dossierAccept').click();
     mark('first-run field');
@@ -504,7 +505,7 @@ if (!commandCenterToken) throw new Error('account.js does not import command-cen
     await page.locator('#settingsClose').click();assert.equal(await page.locator('#settingsDialog').evaluate(e=>e.open),false,'the dialog the field menu opened closes again');
     // Back to the Command Center: pause the solo run via Command Center workspace navigation.
     await page.locator('#backToCommand').evaluate(button=>button.click());await page.locator('#menuSkills').click();assert.equal(await page.locator('#skillDialog').evaluate(e=>e.open),true);await page.locator('#skillCancel').click();
-    assert.equal(await page.locator('.command-utilities button').count(),4,'Command HQ utility row holds four compact actions');
+    assert.equal(await page.locator('.command-utilities button').count(),2,'Command HQ utility row holds Settings and Sign Out only');
     assert.equal(await page.locator('.command-utilities #menuDeleteCharacter').count(),0,'Delete character lives inside Settings -> Account');
     for(const [trigger,dialog] of [['#menuFriends','#friendsDialog'],['#menuLeaderboard','#leaderboardDialog']]){
       await page.locator(trigger).click();assert.equal(await page.locator(dialog).evaluate(e=>e.open),true);
@@ -512,6 +513,8 @@ if (!commandCenterToken) throw new Error('account.js does not import command-cen
     }
     await page.locator('#menuSettings').click();assert.equal(await page.locator('#settingsDialog').evaluate(e=>e.open),true);
     assert.equal(await page.locator('#settingsTabGeneral').getAttribute('aria-selected'),'true');
+    assert.equal(await page.locator('#settingsPanelGeneral #menuPatchNotes').isVisible(),true,'FIELD NOTES lives in Settings');
+    assert.equal(await page.locator('#settingsPanelGeneral #menuTutorial').isVisible(),true,'FIELD TUTORIAL lives in Settings');
     await page.locator('#settingsTabAccount').click();assert.equal(await page.locator('#settingsPanelAccount').isVisible(),true);assert.equal(await page.locator('#settingsAccountEmail').innerText(),'soldier@example.test');assert.equal(await page.locator('#settingsPanelAccount #menuDeleteCharacter').isVisible(),true);
     await page.locator('#settingsCurrentPassword').fill('old-secret');await page.locator('#settingsNewPassword').fill('new-secret-1');await page.locator('#settingsConfirmPassword').fill('mismatch-1');await page.locator('#settingsPasswordSubmit').click();
     assert.match(await page.locator('#settingsAccountStatus').innerText(),/do not match/i,'Settings -> Account reports mismatched passwords in-dialog');
@@ -717,16 +720,18 @@ if (!commandCenterToken) throw new Error('account.js does not import command-cen
       await page.locator('#endRun').click(); await page.locator('#gameConfirmAccept').click();
       await page.locator('#runResults').waitFor({state: 'visible'});
       await page.locator('#runResults').evaluate(dialog => dialog.close());
-      await page.waitForSelector('#menuTutorial', {state: 'visible'});
+      await page.waitForSelector('#menuSettings', {state: 'visible'});
     };
     // Back to the Command Center with the real control: both restart buttons live there.
     // A synthetic click: the field layout sits over the workspace nav, and this only
     // needs to trigger the same handler a tap would.
     await page.locator('#backToCommand').evaluate(button=>button.click());
-    await page.waitForSelector('#menuTutorial',{state:'visible'});
+    await page.waitForSelector('#menuSettings',{state:'visible'});
+    await page.waitForSelector('#menuTutorial',{state:'attached'});
     // (a) FIELD TUTORIAL in the Command Center opens the dossier, then launches the first run.
     await restartOnce('field tutorial', async () => {
-      await page.locator('#menuTutorial').click();
+      await page.locator('#menuSettings').click();
+      await page.locator('#menuTutorial').click(); // closes Settings, opens the dossier
       await page.locator('#tutorialDossier[open]').waitFor({state: 'visible', timeout: 10000});
       await page.locator('#dossierAccept').click();
     });
