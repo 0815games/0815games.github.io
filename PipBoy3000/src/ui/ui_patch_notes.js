@@ -35,6 +35,17 @@ window.GameData.offenePunkte = [
 // nicht mit dem, was geplant war.
 window.GameData.RELEASED_PATCHES = [
   {
+    version: '14.0.28',
+    datum: '2026-11-26',
+    title: 'Tutorial als Mission',
+    punkte: [
+      'Unter AUFGABEN steht das Tutorial als eigene Mission mit Fortschritt und einem Knopf zum Fortsetzen.',
+      'Das X pausiert nur; der aktuelle Schritt wird pro Spielstand gespeichert und nach erneutem Einloggen fortgesetzt.',
+      'Die Mission ist erst abgeschlossen, wenn alle Schritte erledigt sind. Der Kampfschritt wartet auf eine echte Begegnung und kann bis dahin pausiert werden.',
+      'Bereits als fertig gespeicherte Tutorials bleiben abgeschlossen; über das Menü kann man sie erneut starten.'
+    ]
+  },
+  {
     version: '14.0.27',
     datum: '2026-11-26',
     title: 'Update-Bestätigung, Tutorial und Speicher-Meldungen',

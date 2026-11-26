@@ -241,6 +241,26 @@ Object.assign(UI, {
         if(!list) return;
         list.innerHTML = '';
 
+        // Das Tutorial ist eine besondere Mission: ihr Fortschritt kommt aus
+        // dem Tutorial-Spielstand, nicht aus den Kampagnen-Questzaehlern.
+        const tut = typeof Tutorial !== 'undefined' && Tutorial.missionsstand
+            ? Tutorial.missionsstand() : null;
+        if (tut) {
+            const karte = document.createElement('section');
+            karte.id = 'tutorial-mission';
+            karte.className = 'border-l-4 border-green-400 bg-black/80 pl-4 py-3 mb-4';
+            if (tut.fertig) {
+                karte.innerHTML = '<div class="text-green-400 font-bold">✔ TUTORIAL – ABGESCHLOSSEN</div>';
+            } else {
+                karte.innerHTML = `<div class="text-yellow-400 font-bold">◉ TUTORIAL – ERSTE SCHRITTE</div>
+                    <div class="text-green-100 text-sm mt-2">Lerne die Grundlagen im Ödland. Du kannst jederzeit pausieren und hier weitermachen.</div>
+                    <div class="text-yellow-200 text-sm mt-2">Fortschritt: ${tut.erledigt} / ${tut.gesamt} · ${tut.titel}</div>
+                    <button type="button" class="action-button mt-3" data-tutorial-fortsetzen>TUTORIAL FORTSETZEN</button>`;
+                karte.querySelector('[data-tutorial-fortsetzen]').addEventListener('click', () => UI.starteTutorial());
+            }
+            list.appendChild(karte);
+        }
+
         const chains = []; 
         const sideQuests = [];
         const processedIds = new Set();
@@ -345,7 +365,7 @@ Object.assign(UI, {
         };
 
         if(chains.length > 0) {
-            list.innerHTML += `<h3 class="text-yellow-500 font-bold text-sm tracking-[0.2em] border-b-2 border-yellow-800 mb-4 pb-1 uppercase">Haupt-Missionen</h3>`;
+            list.insertAdjacentHTML('beforeend', `<h3 class="text-yellow-500 font-bold text-sm tracking-[0.2em] border-b-2 border-yellow-800 mb-4 pb-1 uppercase">Haupt-Missionen</h3>`);
             chains.forEach((chain) => {
                 const chainContainer = document.createElement('div');
                 chainContainer.className = "mb-8 bg-black/40 p-3 rounded border border-green-900"; 
@@ -380,6 +400,6 @@ Object.assign(UI, {
                 list.appendChild(sideContainer);
             }
         }
-        if(chains.length === 0 && sideQuests.length === 0) { list.innerHTML = '<div class="text-center text-gray-400 italic mt-10 text-lg">Keine Aufzeichnungen vorhanden.</div>'; }
+        if(!tut && chains.length === 0 && sideQuests.length === 0) { list.innerHTML = '<div class="text-center text-gray-400 italic mt-10 text-lg">Keine Aufzeichnungen vorhanden.</div>'; }
     }
 });

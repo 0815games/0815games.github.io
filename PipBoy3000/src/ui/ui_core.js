@@ -507,6 +507,7 @@ const UI = {
         this.els.inputPass.value = "";
         
         this.schliesseMenueUndUnterfenster();
+        if (typeof Tutorial !== 'undefined' && Tutorial.ausblenden) Tutorial.ausblenden();
         const tutFeld = document.getElementById('tutorial-feld');
         if (tutFeld) tutFeld.hidden = true;
         const tutZeiger = document.getElementById('tutorial-zeiger');

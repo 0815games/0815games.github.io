@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v14.0.28 (Tutorial als Mission, 2026-11-26)
+- [NEU] Eigene Tutorial-Mission unter AUFGABEN mit Fortschritt und Fortsetzen-Knopf, auch für ältere Spielstände ohne Tutorialstatus.
+- [FIX] X pausiert statt abzuschließen. Aktueller Schritt und Anfangsposition werden pro Spielstand gespeichert; Menü und Mission setzen fort. Logout räumt Beobachter und Feld auf.
+- [FIX] Pflichtschritte, einschließlich einer Kampfbegegnung, müssen erfüllt werden; das Tutorial bleibt bis zum letzten Schritt offen. Bisher als fertig gespeicherte Tutorials bleiben fertig und können über das Menü neu gestartet werden.
+
 ## v14.0.27 (Update-Bestätigung, Tutorial und Speicher-Meldungen, 2026-11-26)
 - [FIX] Update wartet auf JETZT LADEN. Nach erfolgreichem Versionswechsel zeigt das Popup OK; dieser Klick lädt die Seite einmal ohne Update-Marker neu. Aktive Speicherungen, Dialoge und Kämpfe blockieren Reloads weiterhin.
 - [FIX] Tutorial-Feld liegt unten mittig innerhalb von #main-content und nicht mehr rechts außerhalb des Spielfelds.
