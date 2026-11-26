@@ -450,6 +450,8 @@ dialog input {
 }
 .map-hud .town { flex: none; }
 .map-pill h1 { font-size: 17px; }
+/* Pillen nehmen Klicks an (z. B. Erfahrungsleiste fürs Tutorial), der Rest der Kopfzeile bleibt durchlässig. */
+.map-pill { pointer-events: auto; }
 .stock-btn {
   position: fixed;
   left: 12px;

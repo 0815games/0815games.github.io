@@ -1163,7 +1163,7 @@ Ereignis ergänzt.
   - Die Browser-Aufgaben gelten pro Gerät. Auf einem anderen Gerät muss man sie noch einmal machen.
   - Nicht im Browser geprüft.
 
-### TTT-0068 – Neue Stadt: Ansicht springt auf das Rathaus (lokal, nicht veröffentlicht)
+### TTT-0068 – Neue Stadt: Ansicht springt auf das Rathaus (PR #495, in main)
 
 - Fehler: Beim Neustart im Spiel („Neu beginnen“, oder „Neuer Start“ über Freibriefe) blieb die Kamera der alten Stadt.
   Die neue Stadt lag dann außerhalb des Bildes, und man sah nur den Nebelring um die Mitte. Nach einem Neuladen stimmte
@@ -1178,7 +1178,7 @@ Ereignis ergänzt.
   - Die Prüfung im Browser lief mit einer Testseite, nicht mit dem Spiel selbst (Firebase ist in der Sandbox nicht erreichbar).
     Bitte den Neustart einmal im Spiel prüfen.
 
-### TTT-0069 – Tutorial als Grundstruktur auf der Karte (PR #495)
+### TTT-0069 – Tutorial als Grundstruktur auf der Karte (PR #495, in main)
 
 - Ziel: Das Tutorial baut die Grundstruktur der Stadt direkt auf der Karte nach: Hof, Sägewerk, Steinbruch, Lager, dann Ausbau.
 - Dateien: `src/domain/tutorialSpot.js` (neu: freies, legales Feld am Rathaus finden; gebautes Gebäude finden),
@@ -1194,7 +1194,7 @@ Ereignis ergänzt.
   Ein vollständiger Durchlauf im echten Spiel steht aus (Firebase in der Sandbox nicht erreichbar).
 - Grenze: Wer ein altes, laufendes Tutorial hat, springt an die Stelle derselben Nummer in der neuen Reihenfolge.
 
-### TTT-0070 – Wohnhaus und Arbeiter ab Stadtlevel 2, mit Vorschau auf der Karte
+### TTT-0070 – Wohnhaus und Arbeiter ab Stadtlevel 2, mit Vorschau auf der Karte (PR #497, in main)
 
 - Ziel: Wohnhaus und Arbeiter sind Teil des Tutorials, sobald Stadtlevel 2 erreicht ist. Das markierte Feld zeigt ein halbdurchsichtiges Bild des fertigen Gebäudes.
 - Dateien: `src/tutorial.js` (Schritte „Wohnhaus bauen“ und „Arbeiter zuweisen“ mit `needsLevel: 2`, Check zeigt beide ab Stadtlevel 2, Sonderregel für den alten Endstand 114),
@@ -1205,7 +1205,7 @@ Ereignis ergänzt.
 - Nachweis: Unit-Tests. Die Vorschau wurde im headless Browser ohne Fehler gezeichnet. Die Zoomstufe der Testaufnahme war zu klein, um das Bild sicher zu beurteilen.
   Ein Durchlauf bis Stadtlevel 2 im echten Spiel steht aus.
 
-### TTT-0071 – Tutorial minimierbar, Spielfeld frei
+### TTT-0071 – Tutorial minimierbar, Spielfeld frei (PR #503, in main)
 
 - Anlass: Das Tutorial lag mittig am unteren Rand. Auf dem Handy verdeckte es Inventar und Spielfeld, man konnte keinen Hof bauen.
 - Änderungen: Im Tutorial gibt es oben rechts „–“. Die Karte wird dann zur kleinen Pille unter dem Menü („📖 3/16 · Der Hof“), ein Tipp öffnet sie wieder.
@@ -1214,7 +1214,7 @@ Ereignis ergänzt.
 - Tests: `npm test` 185/185 grün. `npm run check` ohne Fehler.
 - Nachweis: Nur Unit-Tests und Prüfung der Logik. Die Darstellung wurde nicht im Browser gegengeprüft, die Testumgebung war nicht verfügbar. Ein Durchlauf im echten Spiel steht aus.
 
-### TTT-0072 – Bau-Fenster: feste Größe, Beschreibung auf Wunsch, Bauen in voller Breite
+### TTT-0072 – Bau-Fenster: feste Größe, Beschreibung auf Wunsch, Bauen in voller Breite (PR #511, in main)
 
 - Anlass (Screenshot): Die Bau-Karte wechselte mit jedem Gebäude die Größe. Bei viel Vorrat schob sich der „Bauen“-Knopf neben den Kostenchips aus der Karte.
 - Änderungen: Die Karte hat feste Höhe (210 px). Name, Kosten und eine Statuszeile stehen oben. Die Beschreibung (Produktion, Platzregel) ist über „Beschreibung“ ein- und ausblendbar und bleibt beim Blättern offen. „Bauen“ ist unten in voller Breite.
@@ -1222,10 +1222,19 @@ Ereignis ergänzt.
 - Tests: `npm test` 185/185 grün. `npm run check` ohne Fehler.
 - Nachweis: Nur Unit-Tests und Logikprüfung. Die Darstellung wurde nicht im Browser gegengeprüft (Testumgebung nicht verfügbar).
 
-### TTT-0073 – Ganze Bau-Karte antippbar, mit Rückfrage
+### TTT-0073 – Ganze Bau-Karte antippbar, mit Rückfrage (PR #511, in main)
 
 - Änderung: Tippen auf die ganze Bau-Karte startet den Bau. Vorher kommt die Rückfrage „<Gebäude> bauen?“ mit Feld, Münzen und Material. Der Knopf „Bauen“ unten bleibt und tut dasselbe.
 - Nicht möglich (gesperrt, zu wenig Vorrat, Gelände): Tippen zeigt den Grund als Hinweis, es kommt keine Rückfrage.
 - Dateien: `src/main.js` (`onPanelClick` als async, `[data-action]` statt nur Knöpfen, `buildMenu`), `style.css` (Zeiger auf der Karte).
 - Tests: `npm test` 185/185 grün. `npm run check` ohne Fehler.
 - Nachweis: Unit-Tests und Logikprüfung. Darstellung und Rückfrage nicht im Browser geprüft.
+
+### TTT-0074 – Welle 20261126-hud1: Erfahrungsleiste klickbar, Stadtchronik, Cache-Welle
+
+- Anlass: Nach den letzten Merges fehlte das Update-Fenster. Die Welle stand noch auf `20261125-bal7`, deshalb zeigte das Spiel keine Neuerungen, und die Cache-Schlüssel der Module blieben alt.
+- Fehler: Die Erfahrungsleiste (Tutorial-Schritt „Stadtlevel“) ließ sich nicht antippen. Ursache: Die Kopfzeile der Karte hat `pointer-events: none`, und die Pille darin erbte das. Behebung: `.map-pill { pointer-events: auto; }` in `style.css`.
+- Dateien: `style.css`, `tests/hud-clicks.test.mjs` (neu, 2 Tests; der Mutationstest belegt: ohne Regel rot), `src/patch-notes.mjs` (Eintrag `20261126-hud1`, DE und EN), `src/*` und `release-version.json` durch `scripts/patch.mjs bump 20261126-hud1 --apply`.
+- Tests: `npm test` 187/187 grün. `npm run check` ohne Fehler.
+- Nachweis: Unit-Tests und Mutationstest. Der Klick selbst ist im Browser nicht geprüft (Testumgebung nicht verfügbar).
+- Offen: Ein Durchlauf im echten Spiel. Die Welle ist erst nach dem Merge live.
