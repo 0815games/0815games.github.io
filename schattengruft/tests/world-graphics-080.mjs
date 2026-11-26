@@ -149,14 +149,13 @@ for(const theme of Object.keys(mod.WORLD_THEMES)) {
 const renderer=await readFile(
  new URL('../js/world/render.js',import.meta.url),'utf8'
 );
-const compatibility=await readFile(
- new URL('../js/systems/living-world.js',import.meta.url),'utf8'
-);
-
 assert.ok(renderer.includes(
  'drawDungeonWorld(this,state.world,state.player,drawCharacter)'
 ));
-assert.ok(!compatibility.includes('Renderer.prototype'));
+// Negative Zusicherung: Der aufgelöste Zeichenpfad darf Renderer.prototype
+// nicht mehr überschreiben. Die frühere Prüfung las dafür die inzwischen
+// entfernte Kompatibilitätsdatei living-world.js – hier direkt am Renderer.
+assert.ok(!renderer.includes('Renderer.prototype'));
 assert.ok(!source.includes('Math.random'));
 
 for(const cv of canvases) {

@@ -3,10 +3,15 @@
 **Stand:** 2026-11-26 · **Analysierter Commit:** `f8a2ee0` (Branch `arena/42e2489c-0815games-github-io`, Basis `main`)
 **Umfang:** Code- und Strukturanalyse. Es wurden **keine** Dateien im Spiel geändert.
 
-> **Statusnachtrag:** Der in §4 beschriebene Ausfall ist behoben (drei Pfade in `index.html`
-> zurück auf `js/…`), `keyboard-controls.mjs` ist korrigiert und zwei Regressionsschutz-Suiten
-> (`html-assets.mjs`, `boot-smoke.mjs`) plus ein CI-Workflow sind ergänzt. Ergebnis: 21/21 Suiten grün.
-> Die Befunde in §5–§7 bleiben unverändert gültig.
+> **Statusnachtrag (2026-11-26):** Die Befunde dieser Analyse sind abgearbeitet.
+> Behoben: Startblocker aus §4 (Skriptpfade), roter `keyboard-controls`-Test (§5c),
+> toter Code aus §5b (27 Module entfernt, keiner mehr verwaist), HTML-Injection aus §7
+> (`core/escape.js`, vier Ausgabestellen plus ein wirkungsloser Escaper in `mobile-ui.js`),
+> veraltete Doku und `rpg/`-Pfade (§5f) und die zwei wirkungslosen Workflows (§5g).
+> Ergänzt: `html-assets.mjs`, `boot-smoke.mjs`, `name-escaping.mjs` und der CI-Workflow
+> `schattengruft-tests.yml`. Stand: **22 Suiten, 22 grün**, 73 Module, alle erreichbar.
+> **Weiter offen:** fehlende Firebase-Regeln (§7), Versionspflege an sechs Stellen (§5e) und
+> die fragile Patch-Kette (§5d). Die Abschnitte unten beschreiben den Zustand *vor* der Behebung.
 
 ---
 
@@ -27,11 +32,11 @@ der Grund, warum seitdem niemand mehr etwas an `schattengruft/` committet hat.
 | Kennzahl | Wert |
 |---|---|
 | Dateien / Größe | 132 / 1,1 MB |
-| JS-Module | 99 (davon 82 in `js/`, 16 in `game/js/`) |
+| JS-Module | 99 (davon 82 in `js/`, 16 in `game/js/`) · **nach Aufräumen: 73** |
 | Codezeilen `js/` | 7.282 |
-| Codezeilen `game/js/` (Legacy) | 1.721 |
+| Codezeilen `game/js/` (Legacy) | 1.721 · **entfernt** |
 | CSS | 8 Dateien, 445 Zeilen |
-| Tests | 19 Suiten, 1.195 Assertions, **18 grün / 1 rot** |
+| Tests | 19 Suiten, 1.195 Assertions, 18 grün / 1 rot · **nach Aufräumen: 22 Suiten, 22 grün** |
 | `index.html` | 219 Zeilen, 76 Element-IDs |
 | `change.log` | 100 KB, 103 Abschnitte |
 | Version | 0.10.2 (an 6 Stellen manuell gepflegt) |
