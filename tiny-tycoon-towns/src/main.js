@@ -726,6 +726,7 @@ function startGame() {
   saveLocal();
   if (now - before >= OFFLINE_DIALOG_MS) showOfflineReport(r, (now - before) / 1000);
   renderAll();
+  board?.recenter(); // neue Stadt: Ansicht auf das Rathaus, nicht auf die Ansicht der alten Stadt
   updateSync();
   $('#logout-btn').hidden = false;
   if (state.townXp === 0) {
@@ -2017,6 +2018,7 @@ async function foundCharter() {
   lastCloudAt = 0;
   saveLocal();
   renderAll();
+  board?.recenter();
   cloudSave();
   closeDialog();
   toast(`Neuer Start! +${n} Freibrief${n === 1 ? '' : 'e'} gutgeschrieben.`);

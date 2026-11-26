@@ -1162,3 +1162,18 @@ Ereignis ergänzt.
 - Grenzen / offen:
   - Die Browser-Aufgaben gelten pro Gerät. Auf einem anderen Gerät muss man sie noch einmal machen.
   - Nicht im Browser geprüft.
+
+### TTT-0068 – Neue Stadt: Ansicht springt auf das Rathaus (lokal, nicht veröffentlicht)
+
+- Fehler: Beim Neustart im Spiel („Neu beginnen“, oder „Neuer Start“ über Freibriefe) blieb die Kamera der alten Stadt.
+  Die neue Stadt lag dann außerhalb des Bildes, und man sah nur den Nebelring um die Mitte. Nach einem Neuladen stimmte
+  es, weil das Spielfeld dann neu erzeugt wird.
+- Ursache: `createBoard` setzt die Kamera nur beim Erzeugen auf das Rathaus. Der Zustand wird danach ausgetauscht, die Kamera nicht.
+- Behebung: `src/world/board.js` bekommt `recenter()` (Kamera auf das Rathaus, Zoom auf Grundgröße). `src/main.js` ruft es
+  nach dem Start einer Stadt (`startGame`) und nach „Neuer Start“ auf.
+- Prüfung im echten Browser (headless Chromium, außerhalb des Repos): Kamera verschoben, Stadt getauscht, ohne `recenter()`
+  liegt das Rathaus außerhalb des Bildes. Mit `recenter()` steht es in der Mitte, der Nebelring liegt richtig.
+- Tests: `npm test` 178/178 grün. `npm run check` ohne Fehler.
+- Grenzen / offen:
+  - Die Prüfung im Browser lief mit einer Testseite, nicht mit dem Spiel selbst (Firebase ist in der Sandbox nicht erreichbar).
+    Bitte den Neustart einmal im Spiel prüfen.

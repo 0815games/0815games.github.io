@@ -261,6 +261,16 @@ export function createBoard(container, opts) {
   else drawOnce();
 
   return {
+    /** Kamera zurück auf das Rathaus, Zoom auf Grundgröße. Bei einer neuen Stadt, sonst bleibt die alte Ansicht. */
+    recenter() {
+      const c = toScreen(HALL.x + 0.5, HALL.y + 0.5);
+      cam.x = c.x;
+      cam.y = c.y;
+      cam.k = 1;
+      clampCam();
+      dirty = true;
+      if (reduce) drawOnce();
+    },
     /** Neu zeichnen nach einer Zustandsänderung (Auswahl, Bau, Level). */
     redraw() {
       dirty = true;
