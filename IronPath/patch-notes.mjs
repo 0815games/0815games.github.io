@@ -45,7 +45,7 @@ export const PATCH_LABELS=Object.freeze({
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
   {
-    id:'inventory1',build:'20261121-inventory1',pr:0,
+    id:'inventory1',build:'20261121-inventory1',pr:499,
     title:{en:'Inventory · Equipment Board in the Field Dossier',de:'Inventar · Ausrüstungsbrett in der Feldakte'},
     shipped:[
       {en:'The dossier wears the equipment board from the reference: circular brass places with numbers around the figure, and the collection becomes a true inventory — category tabs, search, a cell grid with artwork, and an item details panel with the take toggle.',de:'Die Feldakte zeigt das Ausrüstungsbrett aus der Referenz: runde Messing-Plätze mit Nummern um die Figur, und die Sammlung wird ein echtes Inventar — Kategorie-Tabs, Suche, ein Zellenraster mit Artwork und ein Details-Panel mit dem Anziehen-Schalter.'},
