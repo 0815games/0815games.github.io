@@ -35,6 +35,15 @@ window.GameData.offenePunkte = [
 // nicht mit dem, was geplant war.
 window.GameData.RELEASED_PATCHES = [
   {
+    version: '14.0.26',
+    datum: '2026-11-26',
+    title: 'Neues Pip-Boy-App-Icon',
+    punkte: [
+      'Das gewählte neue App-Icon zeigt ein leuchtend grünes P auf einem Retro-Terminal statt des Roboters.',
+      'Für iPhone, Android und Browser gibt es passende Varianten. Bereits installierte Icons können noch zwischengespeichert sein.'
+    ]
+  },
+  {
     version: '14.0.25',
     datum: '2026-11-25',
     title: 'Neues App-Icon im Retro-Future-Look',

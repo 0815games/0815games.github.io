@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v14.0.26 (Neues Pip-Boy-App-Icon, 2026-11-26)
+- [NEU] Das gewählte grüne P auf einem Retro-Terminal ersetzt den Roboter als App- und Browser-Icon; mit iOS- und maskable Android-Varianten.
+- [FIX] Neue Cachekennungen für Manifest und Icons; bestehende Installationen können das alte Symbol noch zwischenspeichern.
+
 ## v14.0.25 (Neues App-Icon, 2026-11-25)
 - [NEU] Retro-Future-Ödland-Roboter als neues Artwork für iOS, Android, maskable Icons und Browser-Favicons.
 - [FIX] Versionierte Icon- und Manifest-URLs helfen gegen alte Browser-Caches. Installierte Icons können geräteabhängig verzögert aktualisiert werden.

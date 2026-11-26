@@ -140,13 +140,13 @@ Homescreen und Browser-Tab hat ein eigenes Rohbild und ein eigenes Skript.
 
 | | |
 |---|---|
-| Artwork-Quelle | `assets/app-icon-artwork.png` (1024 x 1024, KI-generiert) |
+| Artwork-Quelle | `assets/app-icon-artwork.png` (1254 x 1254, KI-generiert) |
 | Aufbereitung | `node tools/app-icon.mjs` (`npm run icons:app`) |
 | Quellen fuer den Build | `shell/icon-192.png`, `icon-512.png`, `icon-512-maskable.png`, `apple-touch-icon.png`, `favicon.ico`, `icon.svg`, `manifest.webmanifest` |
 | Ausgeliefert | dieselben Namen im Wurzelverzeichnis (Build kopiert) |
 
-Alle Varianten entstehen reproduzierbar aus dem Artwork. Die weissen Ecken
-werden quadratisch beschnitten, damit iOS selbst abrunden kann. Fuer Android
+Alle Varianten entstehen reproduzierbar aus dem quadratischen Artwork. Der
+Hintergrund ist deckend schwarz; iOS rundet selbst ab. Fuer Android
 liegt das komplette Motiv innerhalb des maskable-Sicherheitskreises auf
 dunklem Grund. Das ICO enthaelt 16, 32 und 48 Pixel; das SVG bettet dasselbe
 Artwork ein. Versionierte URLs helfen gegen Browser-Caches; bereits installierte
