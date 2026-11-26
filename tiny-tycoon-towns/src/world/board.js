@@ -262,11 +262,12 @@ export function createBoard(container, opts) {
   else drawOnce();
 
   return {
-    /** Tutorial: markiert ein Feld ({ x, y }) oder hebt die Markierung auf (null). */
+    /** Tutorial: markiert ein Feld ({ x, y, ghost? }) oder hebt die Markierung auf (null). ghost = Gebäude-Id, das als Vorschau erscheint. */
     setHint(tile) {
-      const same = tile === null ? hintTile === null : hintTile !== null && hintTile.x === tile.x && hintTile.y === tile.y;
+      const same = tile === null ? hintTile === null
+        : hintTile !== null && hintTile.x === tile.x && hintTile.y === tile.y && hintTile.ghost === tile.ghost;
       if (same) return;
-      hintTile = tile ? { x: tile.x, y: tile.y } : null;
+      hintTile = tile ? { x: tile.x, y: tile.y, ghost: tile.ghost ?? null } : null;
       dirty = true;
       if (reduce) drawOnce();
     },

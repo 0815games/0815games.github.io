@@ -5,8 +5,9 @@ import { checkPlacement } from './placement.js?v=20261125-bal7';
 /**
  * Das nächste freie Feld am Rathaus, auf dem `buildingId` gebaut werden darf.
  * Gibt { x, y } oder null zurück. Gleicher Abstand: erst kleineres y, dann kleineres x.
+ * `anchor` (optional, { x, y }): Abstand wird zu diesem Feld gemessen, Standard ist das Rathaus.
  */
-export function tutorialSpot(state, buildingId, data) {
+export function tutorialSpot(state, buildingId, data, anchor = HALL) {
   if (!state || !data.buildings[buildingId]) return null;
   const best = [];
   for (const key of Object.keys(state.tiles)) {
@@ -14,7 +15,7 @@ export function tutorialSpot(state, buildingId, data) {
     if (x === HALL.x && y === HALL.y) continue;
     if (!isUnlocked(x, y, state.townLevel, data)) continue;
     if (!checkPlacement(state, x, y, buildingId, data).ok) continue;
-    best.push({ x, y, d: Math.abs(x - HALL.x) + Math.abs(y - HALL.y) });
+    best.push({ x, y, d: Math.abs(x - anchor.x) + Math.abs(y - anchor.y) });
   }
   if (!best.length) return null;
   best.sort((a, b) => a.d - b.d || a.y - b.y || a.x - b.x);

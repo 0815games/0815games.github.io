@@ -184,6 +184,13 @@ export function renderWorld(ctx, { W, H, view, model, time, day, fx, hover }) {
         const stage = cfg ? stageFor(tile.building.level, cfg).index : 1;
         drawBuilding(ctx, tile.building.id, x, y, tile.building.level, time, { night, day, stage });
       }
+      // Tutorial: Vorschau des Gebäudes auf dem markierten freien Feld, halb durchsichtig
+      if (model.hint && model.hint.ghost && model.hint.x === x && model.hint.y === y && !locked && !tile?.building) {
+        ctx.save();
+        ctx.globalAlpha = 0.55;
+        drawBuilding(ctx, model.hint.ghost, x, y, 1, time, { night, day, stage: 1 });
+        ctx.restore();
+      }
       // Auswahl und Hover
       const c = toScreen(x + 0.5, y + 0.5);
       const diamond = [P(c, -0.5, -0.5), P(c, 0.5, -0.5), P(c, 0.5, 0.5), P(c, -0.5, 0.5)];
