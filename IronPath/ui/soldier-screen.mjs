@@ -40,6 +40,12 @@ const ITEM_ART={
  'prestige-convoy-plate':'assets/prestige-convoy-plate.jpg?v=20261121-dossier1',
  'prestige-tidelock-seal':'assets/prestige-tidelock-seal.jpg?v=20261121-dossier1',
  'prestige-bridge-marker':'assets/prestige-bridge-marker.jpg?v=20261121-dossier1',
+ 'prestige-receiver':'assets/prestige-receiver.jpg?v=20261121-dossier1',
+ 'prestige-icekey':'assets/prestige-icekey.jpg?v=20261121-dossier1',
+ 'prestige-transformer-coil':'assets/prestige-transformer-coil.jpg?v=20261121-dossier1',
+ 'prestige-nia-badge':'assets/prestige-nia-badge.jpg?v=20261121-dossier1',
+ 'prestige-broadcast-horn':'assets/prestige-broadcast-horn.jpg?v=20261121-dossier1',
+ 'prestige-override-flag':'assets/prestige-override-flag.jpg?v=20261121-dossier1',
 };
 const artOf=id=>ITEM_ART[id]||'';
 // Which anatomical place wears this piece. Presentation only — the equip
