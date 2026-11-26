@@ -4,6 +4,32 @@
 
 export const RELEASED_PATCHES = [
   {
+    build: '20261126-hud1',
+    date: '2026-11-26',
+    items: [
+      {
+        de: 'Tutorial: Die Erfahrungsleiste (Stadtlevel) lässt sich jetzt antippen, der Schritt ist damit erledigt.',
+        en: 'Tutorial: the experience bar (town level) can now be tapped, which completes that step.',
+      },
+      {
+        de: 'Tutorial: Die Anleitung lässt sich mit „–“ klein machen. Dann ist sie eine Pille unter dem Menü, und das Spielfeld bleibt frei. Ein Tipp öffnet sie wieder.',
+        en: 'Tutorial: the guide can be minimized with “–”. It then becomes a pill below the menu and the board stays free. Tap it to open again.',
+      },
+      {
+        de: 'Tutorial ab Stadtlevel 2: Wohnhaus und Arbeiter. Das markierte Feld zeigt eine Vorschau des fertigen Gebäudes.',
+        en: 'Tutorial from town level 2: house and workers. The marked tile shows a preview of the finished building.',
+      },
+      {
+        de: 'Bau-Fenster: feste Größe, Beschreibung auf Wunsch, die ganze Karte ist antippbar und fragt vor dem Bau nach.',
+        en: 'Build window: fixed size, description on request, the whole card can be tapped and asks before building.',
+      },
+      {
+        de: 'Neuer Start einer Stadt: Die Ansicht springt auf das Rathaus.',
+        en: 'New town: the view jumps to the town hall.',
+      },
+    ],
+  },
+  {
     build: '20261125-bal7',
     date: '2026-11-25',
     items: [
