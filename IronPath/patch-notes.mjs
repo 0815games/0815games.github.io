@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see docs/PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261121-dossier1';
+import {getLanguage} from './language.mjs?v=20261121-inventory1';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,18 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'inventory1',build:'20261121-inventory1',pr:499,
+    title:{en:'Inventory · Equipment Board in the Field Dossier',de:'Inventar · Ausrüstungsbrett in der Feldakte'},
+    shipped:[
+      {en:'The dossier wears the equipment board from the reference: circular brass places with numbers around the figure, and the collection becomes a true inventory — category tabs, search, a cell grid with artwork, and an item details panel with the take toggle.',de:'Die Feldakte zeigt das Ausrüstungsbrett aus der Referenz: runde Messing-Plätze mit Nummern um die Figur, und die Sammlung wird ein echtes Inventar — Kategorie-Tabs, Suche, ein Zellenraster mit Artwork und ein Details-Panel mit dem Anziehen-Schalter.'},
+      {en:'All twenty-six pieces show as a progress grid: owned cells carry their artwork, missing cells stay dashed — found legacy drops from waves, crafted gear comes from the workshop, prestige gear from campaign missions. Tapping a cell opens the details.',de:'Alle 26 Stücke erscheinen als Fortschrittsraster: besessene Zellen tragen ihr Artwork, fehlende bleiben gestrichelt — gefundenes Legacy fällt aus Wellen, hergestelltes kommt aus der Werkstatt, Prestige aus Kampagnen-Missionen. Ein Tipp auf die Zelle öffnet die Details.'},
+      {en:'The armoury workshop follows the same panel language: screwed panels, brass frames, painted artwork on every card. Cache wave 20261121-inventory1.',de:'Die Waffenkammer-Werkstatt folgt derselben Panel-Sprache: geschraubte Panels, Messingrahmen, gemaltes Artwork auf jeder Karte. Cache-Welle 20261121-inventory1.'},
+    ],
+    open:[
+      {en:'Next up: the skills optics.',de:'Als Nächstes: die Optik der Fähigkeiten.'},
+    ]
+  },
   {
     id:'dossier1',build:'20261121-dossier1',pr:491,
     title:{en:'Places & Paint · The Dossier Wears Its Gear',de:'Plätze & Pinsel · Das Dossier trägt seine Ausrüstung'},

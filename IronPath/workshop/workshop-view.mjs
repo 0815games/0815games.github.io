@@ -3,12 +3,13 @@
 // Rendered inside the armory dialog so players find everything in one place.
 // Every change goes through the account service, which runs the account
 // transaction; nothing here writes a save directly.
-import {RECIPES,MOD_SCRAP,modsOf,migrateWorkshop,validLegacy} from './workshop-model.mjs?v=20261121-dossier1';
+import {RECIPES,MOD_SCRAP,modsOf,migrateWorkshop,validLegacy} from './workshop-model.mjs?v=20261121-inventory1';
 import {PRESTIGE,PRESTIGE_IDS,isPrestige,prestigeEarned} from '../core/prestige.mjs?v=20261112-pressure1';
 import {CAMPAIGN,campaignProgress} from '../core/campaign.mjs?v=20261112-pressure1';
-import {decodeWorkshop} from './workshop-wire.mjs?v=20261121-dossier1';
-import {readArmory,ITEMS} from '../core/armory.mjs?v=20261121-dossier1';
+import {decodeWorkshop} from './workshop-wire.mjs?v=20261121-inventory1';
+import {readArmory,ITEMS} from '../core/armory.mjs?v=20261121-inventory1';
 import {WORKSHOP_CATALOG} from './workshop-catalog.mjs?v=20261108-balance2';
+import {artOf} from '../ui/item-art.mjs?v=20261121-inventory1';
 // Which legacy item (by index) belongs to which new slot.
 const legacySlots=['gadget','gear','gear','gadget','gadget','gear','gadget','gadget','gadget','gadget'];
 
@@ -16,6 +17,7 @@ export function createWorkshopView({document,root,getProfile,service,confirm,tra
  if(!document||!root||typeof getProfile!=='function'||!service||typeof confirm!=='function')throw new Error('Invalid workshop view');
  let working=false,status='';
  const el=(tag,cls,text)=>{const node=document.createElement(tag);if(cls)node.className=cls;if(text!==undefined)node.textContent=text;return node;};
+ const artThumb=id=>{const art=artOf(id);if(!art)return null;const img=el('img','workshop-art');img.src=art;img.alt='';return img;};
  const tr=(text,values)=>translate(text,values);
  const itemName=id=>{
   if(id==='standard')return tr('Standard weapon');
@@ -69,32 +71,34 @@ export function createWorkshopView({document,root,getProfile,service,confirm,tra
   const list=el('div','workshop-slot-grid');
   if(!workshop.equipped.length)list.append(el('p','',tr('Nothing taken yet. Every piece you own can be worn at once.')));
   for(const id of workshop.equipped){
-   const card=el('div','workshop-slot');
-   card.append(el('strong','',itemName(id)));
-   if(id.startsWith('legacy-'))card.append(el('small','',tr('From your existing equipment. It counts the moment it is taken.')));
-   card.append(button('TAKE OFF',false,()=>run({type:'equip',item:id})));
-   list.append(card);
+   const card=el('div','workshop-slot'),body=el('div','workshop-card-body'),thumb=artThumb(id);
+   if(thumb)card.append(thumb);
+   body.append(el('strong','',itemName(id)));
+   if(id.startsWith('legacy-'))body.append(el('small','',tr('From your existing equipment. It counts the moment it is taken.')));
+   body.append(button('TAKE OFF',false,()=>run({type:'equip',item:id})));
+   card.append(body);list.append(card);
   }
   slots.append(list);into.append(slots);
 
   const section=el('section','workshop-items');section.append(el('h3','',tr('Craft and equip')));
   const grid=el('div','workshop-item-grid');
   for(const [id,recipe] of Object.entries(RECIPES)){
-   const data=WORKSHOP_CATALOG[id],owned=workshop.owned.includes(id),taken=workshop.equipped.includes(id),card=el('article','workshop-item');
-   card.append(el('span','workshop-tag',tr(recipe.slot.toUpperCase())),el('h4','',tr(data.name)),el('p','',tr(data.effect)));
+   const data=WORKSHOP_CATALOG[id],owned=workshop.owned.includes(id),taken=workshop.equipped.includes(id),card=el('article','workshop-item'),body=el('div','workshop-card-body'),thumb=artThumb(id);
+   if(thumb)card.append(thumb);
+   body.append(el('span','workshop-tag',tr(recipe.slot.toUpperCase())),el('h4','',tr(data.name)),el('p','',tr(data.effect)));
    if(!owned){
     const affordable=armory.scrap>=recipe.scrap&&workshop.components>=recipe.components;
-    card.append(el('small','',tr('{scrap} scrap · {components} boss components',{scrap:recipe.scrap,components:recipe.components})),button('CRAFT',!affordable,()=>run({type:'craft',item:id},{title:tr('Craft {name}?',{name:tr(data.name)}),text:tr('Spend {scrap} scrap and {components} boss components?',{scrap:recipe.scrap,components:recipe.components}),accept:tr('CRAFT')})));
-    if(!affordable)card.append(el('small','workshop-hint',tr('Not enough materials yet.')));
+    body.append(el('small','',tr('{scrap} scrap · {components} boss components',{scrap:recipe.scrap,components:recipe.components})),button('CRAFT',!affordable,()=>run({type:'craft',item:id},{title:tr('Craft {name}?',{name:tr(data.name)}),text:tr('Spend {scrap} scrap and {components} boss components?',{scrap:recipe.scrap,components:recipe.components}),accept:tr('CRAFT')})));
+    if(!affordable)body.append(el('small','workshop-hint',tr('Not enough materials yet.')));
    }else{
-    card.append(button(taken?'TAKEN':'TAKE',false,()=>run({type:'equip',item:id})));
+    body.append(button(taken?'TAKEN':'TAKE',false,()=>run({type:'equip',item:id})));
     for(const [mod,info] of Object.entries(data.mods)){
      const chosen=workshop.mods[id]===mod,modRow=el('div','workshop-mod');
      modRow.append(el('strong','',tr(info.name)),el('p','',tr(info.effect)),button(chosen?'INSTALLED':tr('MODIFY · {scrap} SCRAP',{scrap:MOD_SCRAP}),chosen||armory.scrap<MOD_SCRAP,()=>run({type:'modify',item:id,mod},{title:tr('Install {name}?',{name:tr(info.name)}),text:tr('Spend {scrap} scrap? This replaces the current modification.',{scrap:MOD_SCRAP}),accept:tr('MODIFY')})));
-     card.append(modRow);
+     body.append(modRow);
     }
    }
-   grid.append(card);
+   card.append(body);grid.append(card);
   }
   section.append(grid);into.append(section);
 
@@ -105,21 +109,22 @@ export function createWorkshopView({document,root,getProfile,service,confirm,tra
   const trophyGrid=el('div','workshop-item-grid');
   for(const id of PRESTIGE_IDS){
    const item=PRESTIGE[id],mission=CAMPAIGN.find(m=>m.id===item.mission),earned=prestigeEarned(id,p),owned=workshop.owned.includes(id),taken=workshop.equipped.includes(id);
-   const card=el('article',`workshop-item${earned?'':' is-locked'}`);
-   card.append(el('span','workshop-tag',`${tr('TIER')} ${item.tier} · ${tr(item.slot.toUpperCase())}`),el('h4','',tr(item.name)),el('p','',tr(item.effect)));
+   const card=el('article',`workshop-item${earned?'':' is-locked'}`),body=el('div','workshop-card-body'),thumb=artThumb(id);
+   if(thumb)card.append(thumb);
+   body.append(el('span','workshop-tag',`${tr('TIER')} ${item.tier} · ${tr(item.slot.toUpperCase())}`),el('h4','',tr(item.name)),el('p','',tr(item.effect)));
    if(!earned){
-    card.append(el('small','workshop-hint',tr('Locked · finish “{mission}”',{mission:tr(mission?.title||'')})));
+    body.append(el('small','workshop-hint',tr('Locked · finish “{mission}”',{mission:tr(mission?.title||'')})));
    }else if(!owned){
-    card.append(el('small','workshop-hint',tr('Earned. Reopen the workshop to collect it.')),button('COLLECT',false,()=>run(null)));
+    body.append(el('small','workshop-hint',tr('Earned. Reopen the workshop to collect it.')),button('COLLECT',false,()=>run(null)));
    }else{
-    card.append(button(taken?'TAKEN':'TAKE',false,()=>run({type:'equip',item:id})));
+    body.append(button(taken?'TAKEN':'TAKE',false,()=>run({type:'equip',item:id})));
     for(const [mod,info] of Object.entries(item.mods)){
      const chosen=workshop.mods[id]===mod,row=el('div','workshop-mod');
      row.append(el('strong','',tr(info.name)),el('p','',tr(info.effect)),button(chosen?'INSTALLED':tr('MODIFY · {scrap} SCRAP',{scrap:MOD_SCRAP}),chosen||armory.scrap<MOD_SCRAP,()=>run({type:'modify',item:id,mod},{title:tr('Install {name}?',{name:tr(info.name)}),text:tr('Spend {scrap} scrap? This replaces the current modification.',{scrap:MOD_SCRAP}),accept:tr('MODIFY')})));
-     card.append(row);
+     body.append(row);
     }
    }
-   trophyGrid.append(card);
+   card.append(body);trophyGrid.append(card);
   }
   trophies.append(trophyGrid);
   into.append(trophies);
@@ -130,10 +135,11 @@ export function createWorkshopView({document,root,getProfile,service,confirm,tra
   if(!legacyOwned.length)legacy.append(el('p','',tr('No existing equipment yet. Every completed wave can find one of the ten pieces - FOUND in the report.')));
   for(const id of legacyOwned){
    const index=Number(id.slice(7))-1,item=ITEMS[index],taken=workshop.equipped.includes(id);
-   const row=el('article','workshop-legacy-item');
-   row.append(el('strong','',itemName(id)),el('p','',tr(item.description)));
-   row.append(button(taken?'TAKEN':'TAKE',false,()=>run({type:'equip',item:id})));
-   legacy.append(row);
+   const row=el('article','workshop-legacy-item'),body=el('div','workshop-card-body'),thumb=artThumb(id);
+   if(thumb)row.append(thumb);
+   body.append(el('strong','',itemName(id)),el('p','',tr(item.description)));
+   body.append(button(taken?'TAKEN':'TAKE',false,()=>run({type:'equip',item:id})));
+   row.append(body);legacy.append(row);
   }
   into.append(legacy);
   into.append(el('p','workshop-note',tr('Everything you own counts at once — vest, boots, radio and weapon together. Bunker upgrades stay in the Bunker tab.')));

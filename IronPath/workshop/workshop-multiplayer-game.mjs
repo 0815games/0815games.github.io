@@ -1,11 +1,11 @@
 // Builds a multiplayer match that carries validated workshop loadouts; used
 // by the live Firebase party game and the recovery path. A validated lock
 // does not establish trusted ownership.
-import {createMatch} from '../core/simulation.mjs?v=20261121-dossier1';
-import {createVersus} from '../core/versus.mjs?v=20261121-dossier1';
-import {createFourCoop,createTwoVsTwo} from '../core/four-modes.mjs?v=20261121-dossier1';
-import {verifyWorkshopRoster,decodeMatchLoadout} from './workshop-multiplayer.mjs?v=20261121-dossier1';
-import {workshopEffects} from './workshop-effects.mjs?v=20261121-dossier1';
+import {createMatch} from '../core/simulation.mjs?v=20261121-inventory1';
+import {createVersus} from '../core/versus.mjs?v=20261121-inventory1';
+import {createFourCoop,createTwoVsTwo} from '../core/four-modes.mjs?v=20261121-inventory1';
+import {verifyWorkshopRoster,decodeMatchLoadout} from './workshop-multiplayer.mjs?v=20261121-inventory1';
+import {workshopEffects} from './workshop-effects.mjs?v=20261121-inventory1';
 function attach(lane,lock){
  const entries=Object.keys(lane.players).map(id=>lock.players.find(p=>p.id===id));
  if(entries.some(e=>!e))throw new Error('Workshop player missing');

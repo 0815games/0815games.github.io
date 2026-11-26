@@ -13,7 +13,7 @@
 // refuse unknown player fields, so the donation transaction is separate
 // from every other save and simply fails until the operator publishes
 // PRESTIGE-EFFORT-TO-PUBLISH.json (see firebase/PRESTIGE-EFFORT-ROLLOUT.md).
-import {readArmory} from './armory.mjs?v=20261121-dossier1';
+import {readArmory} from './armory.mjs?v=20261121-inventory1';
 
 export const WAR_EFFORT_DONATION = 250;   // one button press, one transaction
 export const WAR_EFFORT_TIER_COST = 500;  // scrap per tier
