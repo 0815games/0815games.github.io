@@ -542,6 +542,8 @@ function dispatch(result, okMsg) {
   saveLocal();
   for (const e of result.events) {
     if (e.type === 'levelUp') toast(`Stadtlevel ${e.level} erreicht. Dein Raster wächst!`);
+    // Stadtlevel 2: Wer das Tutorial schon beendet hat, bekommt den Abschnitt zu Wohnhaus und Arbeitern.
+    if (e.type === 'levelUp' && e.level >= 2) setTimeout(startLevelTwoTutorial, 0); // nach dem Speichern, nicht mitten im Vorgang
   }
   if (okMsg && !result.events.some((e) => e.type === 'levelUp')) toast(okMsg);
   renderAll();
@@ -779,12 +781,36 @@ function clearTutorialHighlight() {
   board?.setHint(null);
 }
 
-/** Feld, das der Schritt markiert: freies passendes Feld für einen Bau, oder das gebaute Gebäude für einen Ausbau. */
+/** Feld, das der Schritt markiert: freies passendes Feld für einen Bau (mit Vorschau), oder das Gebäude für Ausbau und Arbeiter. */
 function tutorialHintFor(step) {
   if (!state || !step) return null;
-  if (step.build) return tutorialSpot(state, step.build, data);
+  if (step.build) {
+    const anchor = step.anchor ? builtSpot(state, step.anchor) : null;
+    const spot = tutorialSpot(state, step.build, data, anchor ?? undefined);
+    return spot && { ...spot, ghost: step.ghost ?? null };
+  }
   if (step.upgrade) return builtSpot(state, step.upgrade);
+  if (step.worker) return builtSpot(state, step.worker);
   return null;
+}
+
+/** Ab Stadtlevel 2: Wer das Tutorial schon beendet hat, bekommt den Abschnitt zu Wohnhaus und Arbeitern. */
+function startLevelTwoTutorial() {
+  if (!state || tutorialIndex !== null || tutorialResume(state.tutorialStep ?? 0) !== null) return;
+  const i = TUTORIAL_STEPS.findIndex((s) => s.needsLevel);
+  if (i < 0) return;
+  saveTutorialStep(i);
+  showTutorialStep(i);
+}
+
+/** Gegencheck: Wohnhaus und Arbeiter stehen erst ab Stadtlevel 2 im Check. */
+function checklistFor(step) {
+  return (step.checklist ?? []).filter((t) => !['house', 'worker'].includes(t) || (state?.townLevel ?? 1) >= 2);
+}
+
+/** Schritte mit Stadtlevel-Bedingung (Wohnhaus, Arbeiter) sind erst ab diesem Level dran. */
+function tutorialLevelOk(step) {
+  return !step.needsLevel || (state?.townLevel ?? 1) >= step.needsLevel;
 }
 
 function endTutorial() {
@@ -836,7 +862,7 @@ function refreshTutorialTask() {
   const step = TUTORIAL_STEPS[tutorialIndex];
   const last = tutorialIndex === TUTORIAL_STEPS.length - 1;
   if (step?.checklist) {
-    for (const t of step.checklist) {
+    for (const t of checklistFor(step)) {
       const el = $(`#tut-check-${t}`);
       if (!el) continue;
       const done = tutorialTaskIsDone(t);
@@ -850,7 +876,7 @@ function refreshTutorialTask() {
   if (!step?.task) return;
   const done = tutorialTaskIsDone(step.task);
   // Bau- und Ausbau-Schritte: erst erledigen, dann weiter. Das markierte Feld zeigt, wo.
-  const required = Boolean(step.build || step.upgrade);
+  const required = Boolean(step.build || step.upgrade || step.worker);
   board?.setHint(done ? null : tutorialHintFor(step));
   const hint = $('#tut-hint');
   if (hint) {
@@ -867,6 +893,8 @@ function refreshTutorialTask() {
 }
 
 function showTutorialStep(index) {
+  // Schritte für ein höheres Stadtlevel überspringen, solange das Level nicht erreicht ist.
+  while (TUTORIAL_STEPS[index] && !tutorialLevelOk(TUTORIAL_STEPS[index])) index += 1;
   const step = TUTORIAL_STEPS[index];
   if (!step || !state) return endTutorial();
   tutorialIndex = index;
@@ -880,7 +908,7 @@ function showTutorialStep(index) {
     <h2 id="tut-title">${esc(step.title)}</h2>
     <p>${esc(step.text)}</p>
     ${step.task ? '<p class="small tut-hint" id="tut-hint"></p>' : ''}
-    ${step.checklist ? `<ul class="tut-check">${step.checklist.map((t) => `<li id="tut-check-${t}"></li>`).join('')}</ul>` : ''}
+    ${step.checklist ? `<ul class="tut-check">${checklistFor(step).map((t) => `<li id="tut-check-${t}"></li>`).join('')}</ul>` : ''}
     <p class="row">
       <button type="button" id="tut-skip" class="ghost">Überspringen</button>
       <button type="button" id="tut-next" class="primary">${last ? 'Fertig' : 'Weiter'}</button>

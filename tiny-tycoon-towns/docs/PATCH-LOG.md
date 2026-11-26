@@ -1193,3 +1193,14 @@ Ereignis ergänzt.
 - Nachweis: Unit-Tests und Logik-Prüfung. Die Markierung wurde im headless Browser ohne Fehler gerendert, ist im Screenshot aber schwach zu sehen.
   Ein vollständiger Durchlauf im echten Spiel steht aus (Firebase in der Sandbox nicht erreichbar).
 - Grenze: Wer ein altes, laufendes Tutorial hat, springt an die Stelle derselben Nummer in der neuen Reihenfolge.
+
+### TTT-0070 – Wohnhaus und Arbeiter ab Stadtlevel 2, mit Vorschau auf der Karte
+
+- Ziel: Wohnhaus und Arbeiter sind Teil des Tutorials, sobald Stadtlevel 2 erreicht ist. Das markierte Feld zeigt ein halbdurchsichtiges Bild des fertigen Gebäudes.
+- Dateien: `src/tutorial.js` (Schritte „Wohnhaus bauen“ und „Arbeiter zuweisen“ mit `needsLevel: 2`, Check zeigt beide ab Stadtlevel 2, Sonderregel für den alten Endstand 114),
+  `src/domain/tutorialSpot.js` (Abstand zu einem Anker, hier Hof), `src/world/board.js` (Markierung mit Vorschau), `src/world/scene.js` (Vorschau-Zeichnung),
+  `src/main.js` (Schritte überspringen, solange das Level fehlt; ab Stadtlevel 2 startet der Abschnitt auch bei fertigem Tutorial).
+- Vorschläge: Das Wohnhaus wird neben dem Hof markiert, der Arbeiter-Schritt markiert den Hof.
+- Tests: `npm test` 185/185 grün (2 neue). `npm run check` ohne Fehler.
+- Nachweis: Unit-Tests. Die Vorschau wurde im headless Browser ohne Fehler gezeichnet. Die Zoomstufe der Testaufnahme war zu klein, um das Bild sicher zu beurteilen.
+  Ein Durchlauf bis Stadtlevel 2 im echten Spiel steht aus.

@@ -60,3 +60,21 @@ test('every build step asks for a building that the final check lists', () => {
     if (s.build) assert.ok(check.includes(s.build), `Check fehlt ${s.build}`);
   }
 });
+
+import { tutorialResume, TUTORIAL_STORE_OFFSET } from '../src/tutorial.js';
+
+test('the house and worker steps wait for town level 2 and sit before the final check', () => {
+  const house = TUTORIAL_STEPS.findIndex((s) => s.build === 'house');
+  const worker = TUTORIAL_STEPS.findIndex((s) => s.worker === 'farm');
+  assert.ok(house > 0 && worker === house + 1, 'Wohnhaus, dann Arbeiter');
+  assert.equal(TUTORIAL_STEPS[house].needsLevel, 2);
+  assert.equal(TUTORIAL_STEPS[worker].needsLevel, 2);
+  assert.ok(TUTORIAL_STEPS[house].ghost === 'house', 'Vorschau des Wohnhauses');
+  assert.equal(TUTORIAL_STEPS[house].anchor, 'farm', 'Wohnhaus nahe beim Hof');
+  assert.ok(house < TUTORIAL_STEPS.length - 1 && TUTORIAL_STEPS.at(-1).checklist.includes('house'));
+});
+
+test('a finished tutorial from the earlier 14-step run stays finished', () => {
+  assert.equal(tutorialResume(TUTORIAL_STORE_OFFSET + 14), null);
+  assert.equal(tutorialResume(TUTORIAL_STORE_OFFSET + TUTORIAL_STEPS.length), null);
+});

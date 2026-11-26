@@ -80,15 +80,33 @@ export const TUTORIAL_STEPS = Object.freeze([
     upgrade: 'farm',
   },
   {
+    title: 'Wohnhaus bauen',
+    text: 'Ein Wohnhaus bringt Bewohner. Es braucht Platz in der Nähe des Hofes. Das markierte Feld zeigt dir, wie das Haus aussieht, wenn es fertig ist. Tippe darauf und baue das Wohnhaus.',
+    target: '#board',
+    task: 'house',
+    build: 'house',
+    ghost: 'house',
+    anchor: 'farm',
+    needsLevel: 2,
+  },
+  {
+    title: 'Arbeiter zuweisen',
+    text: 'Bewohner arbeiten in Betrieben, höchstens 3 Felder entfernt. Tippe auf den markierten Hof und setze mit + einen Arbeiter aus dem Wohnhaus. Jeder Arbeiter bekommt Lohn, der täglich automatisch abgezogen wird.',
+    target: '#board',
+    task: 'worker',
+    worker: 'farm',
+    needsLevel: 2,
+  },
+  {
     title: 'Stufen der Gebäude',
-    text: 'Gebäude und Wohnhäuser haben fünf sichtbare Stufen. Du erkennst sie am Bild. Wohnhäuser und Arbeiter kommen mit Stadtlevel 2. Bis dahin reicht die Grundstruktur.',
+    text: 'Gebäude und Wohnhäuser haben fünf sichtbare Stufen. Du erkennst sie am Bild. Die Bewohner wachsen langsam nach, bis zur Kapazität des Hauses.',
     target: null,
   },
   {
     title: 'Dein Check',
     text: 'Hier siehst du, was du in diesem Tutorial gebaut und ausprobiert hast. Fehlt etwas, holst du es am Feld nach. Die Anleitung findest du jederzeit unter Hilfe.',
     target: null,
-    checklist: ['farm', 'sawmill', 'quarry', 'warehouse', 'tap', 'stock', 'sell', 'xp', 'merchant', 'help', 'upgrade'],
+    checklist: ['farm', 'sawmill', 'quarry', 'warehouse', 'tap', 'stock', 'sell', 'xp', 'merchant', 'help', 'upgrade', 'house', 'worker'],
   },
 ]);
 
@@ -120,6 +138,8 @@ export const STATE_TASKS = Object.freeze(['farm', 'sawmill', 'quarry', 'warehous
 export function tutorialResume(stored) {
   const v = Number(stored) || 0;
   if (v === 0 || v === 8) return 'offer';
+  // Ende des Laufs mit 14 Schritten (vor dem Wohnhaus-Abschnitt). Wer dort fertig war, bleibt fertig.
+  if (v === TUTORIAL_STORE_OFFSET + 14) return null;
   if (v >= 1 && v <= 7) return v;
   if (v >= TUTORIAL_STORE_OFFSET && v - TUTORIAL_STORE_OFFSET < TUTORIAL_STEPS.length) return v - TUTORIAL_STORE_OFFSET;
   return null;
