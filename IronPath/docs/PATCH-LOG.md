@@ -309,10 +309,10 @@ Nur Darstellung, kein Sim-State, kein Wire-Format, statisch im Terrain-Cache (Re
 - **Git / PR / Release:** Branch `arena/2f95b5e0-0815games-github-io` ab `4871272d`; Commits `9d89a5e` (102 Dateien: Ringe, Raster, Details, Werkstatt-Restyle, `item-art.mjs`), `bdbcc20` (PR-Nummer), `f82457d` (Wallet-Case-Fix nach dem roten `interface-browser-smoke`: `text-transform:uppercase` machte `50 scrap` zu `50 SCRAP`), Push, PR `#499`, CI grün, Merge `f179f195`.
 - **Offen / nächster Schritt:** Skills-Optik.
 
-## IPL-0141 – Skills-Optik: das Fortschrittsfenster im Brett-Look von Dossier und Werkstatt (Welle `20261121-skills1`, PR `#—`)
+## IPL-0141 – Skills-Optik: das Fortschrittsfenster im Brett-Look von Dossier und Werkstatt (Welle `20261121-skills1`, PR `#506`)
 
 - **Was:** Letzte Stufe der Optik-Leiter nach dem `go` des Betreibers: `skill-menu.css` wird vollständig in die Referenz-Sprache gebracht — Dialograhmen wie die Feldakte, Hero-Leiste, geschraubte Messing-Platte für die Punktanzeige, eckige Messing-Tabs (ASSAULT…ALL), geschraubte Panels für Inspector und Build-Zusammenfassung, grüner Feldknopf für die Klassen-/Freischalt-Aktion, DIN-Header in den Gruppenüberschriften, dunklere Plattflächen für alle Skill-Karten. Reines CSS: kein DOM-Eingriff, keine Mechanik (Entwurf/Reset/Save, Draft-Status), keine neuen Strings.
 - **Zustände bleiben lesbar:** `is-unlocked`/`is-active`/`is-selected`/Capstone behalten Farbe UND Textlabel; Legend unverändert. Bewusst kein `text-transform` auf `.skill-card-name`, `#skillDetailText` und `#skillStatus` — diese Texte pinnen Browser-Tests per `innerText` (Lesson aus IPL-0140 „50 SCRAP").
 - **Prüfung:** Suite …, Schnelltor … (wird vor Merge final); neuer Style-Pin `skill-menu-style.test.mjs`.
-- **Git / PR / Release:** Branch `arena/dfa2a3b8-0815games-github-io` ab `418933be`; Push, PR `#—`, CI, Merge – wird nachgetragen.
+- **Git / PR / Release:** Branch `arena/dfa2a3b8-0815games-github-io` ab `418933be`; Push, **PR `#506`**, CI, Merge – wird nachgetragen.
 - **Offen / nächster Schritt:** Optik-Leiter vollständig (Command Center · Dossier · Werkstatt · Skills).

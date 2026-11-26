@@ -45,7 +45,7 @@ export const PATCH_LABELS=Object.freeze({
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
   {
-    id:'skills1',build:'20261121-skills1',pr:0,
+    id:'skills1',build:'20261121-skills1',pr:506,
     title:{en:'Skills · The Progression Board in the Field-Kit Look',de:'Fähigkeiten · Der Fortschrittsbrett im Feldkit-Look'},
     shipped:[
       {en:'The skills dialog wears the same board language as the dossier and the workshop: screwed panels, brass edges, DIN-style headers, squared brass tabs and the green field button for the class and unlock actions.',de:'Das Fähigkeiten-Fenster trägt dieselbe Brett-Sprache wie Feldakte und Werkstatt: geschraubte Panels, Messingkanten, DIN-Header, eckige Messing-Tabs und der grüne Feldknopf für Klassen- und Freischalt-Aktionen.'},
