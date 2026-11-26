@@ -146,7 +146,7 @@ test('der Build liefert die Icons mit aus', () => {
 test('Artwork, App-Icon und SVG zeigen dasselbe Motiv', async () => {
   const {default: sharp} = await import('sharp');
   const source = await sharp(join(ROOT, 'assets/app-icon-artwork.png'))
-    .extract({left: 72, top: 72, width: 880, height: 880})
+    .flatten({background: '#000000'})
     .resize(32, 32).removeAlpha().raw().toBuffer();
   const icon = await sharp(join(ROOT, 'icon-512.png'))
     .resize(32, 32).removeAlpha().raw().toBuffer();
@@ -163,6 +163,6 @@ test('maskable Icon ist deckend und hat einen sicheren Rand', async () => {
     .ensureAlpha().raw().toBuffer({resolveWithObject: true});
   for (const [x, y] of [[0, 0], [511, 0], [0, 511], [511, 511], [256, 20]]) {
     const i = (y * info.width + x) * 4;
-    assert.deepEqual([...data.subarray(i, i + 4)], [10, 23, 16, 255]);
+    assert.deepEqual([...data.subarray(i, i + 4)], [0, 0, 0, 255]);
   }
 });

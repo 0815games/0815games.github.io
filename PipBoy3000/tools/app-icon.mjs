@@ -9,10 +9,9 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SHELL = join(ROOT, 'shell');
 const source = await readFile(join(ROOT, 'assets/app-icon-artwork.png'));
 const metadata = await sharp(source).metadata();
-if (metadata.width !== 1024 || metadata.height !== 1024) throw new Error('Artwork muss 1024 x 1024 sein');
-// Die KI-Vorlage hat weisse, abgerundete Ecken. Quadratisch beschneiden,
-// damit iOS und Android ihre eigene Maske ohne weisse Ecken anwenden.
-const artwork = await sharp(source).extract({left: 72, top: 72, width: 880, height: 880}).png().toBuffer();
+if (!metadata.width || metadata.width !== metadata.height) throw new Error('Artwork muss quadratisch sein');
+// Dunkler, deckender Hintergrund statt Transparenz; die Plattform rundet selbst.
+const artwork = await sharp(source).flatten({background: '#000000'}).png().toBuffer();
 async function image(size) {
   return sharp(artwork).resize(size, size).png({palette: true, colours: 256, effort: 8}).toBuffer();
 }
@@ -22,7 +21,7 @@ for (const [name, size] of [['icon-192.png', 192], ['icon-512.png', 512], ['appl
 // Zentrales Motiv innerhalb des maskable-Sicherheitskreises (40% Radius).
 // Das Artwork selbst liegt deshalb innerhalb eines Quadrats mit 56% Kante.
 const safe = await image(288);
-const maskable = await sharp({create: {width: 512, height: 512, channels: 3, background: '#0a1710'}})
+const maskable = await sharp({create: {width: 512, height: 512, channels: 3, background: '#000000'}})
   .composite([{input: safe, gravity: 'center'}]).png({palette: true, colours: 256, effort: 8}).toBuffer();
 await writeFile(join(SHELL, 'icon-512-maskable.png'), maskable);
 
