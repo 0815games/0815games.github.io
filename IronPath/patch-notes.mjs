@@ -53,7 +53,7 @@ export const RELEASED_PATCHES=Object.freeze([
       {en:'The mechanics stay untouched: three slots, toggle gear, wave finds — the split into places is presentation only. Cache wave 20261121-dossier1.',de:'Die Mechanik bleibt unberührt: drei Slots, Toggle-Ausrüstung, Wellen-Funde – die Aufteilung auf Plätze ist reine Darstellung. Cache-Welle 20261121-dossier1.'},
     ],
     open:[
-      {en:'Next up: artwork for the crafted and prestige pieces, then the skills optics.',de:'Als Nächstes: Artwork für die hergestellten und Prestige-Stücke, danach die Optik der Fähigkeiten.'},
+      {en:'The dossier now carries artwork for all 26 pieces — found, crafted and prestige. Next up: the skills optics.',de:'Das Dossier führt jetzt Artwork für alle 26 Stücke — gefunden, hergestellt und Prestige. Als Nächstes: die Optik der Fähigkeiten.'},
     ]
   },
   {
