@@ -469,3 +469,81 @@ test('Tutorial: ein Klick je Aktion oeffnet Menue, Inventar und Aufgaben und ESC
     window.Tutorial.ausblenden();
   } finally { await schliesse(); }
 });
+
+test('Vault-Einzug kann uebersprungen werden; Ausruhen und Verlassen bleiben unveraendert', async () => {
+  const {window, document, schliesse} = await starteEchteOberflaeche({imSpiel: true});
+  try {
+    const state = window.Game.state;
+    state.hp = 13; state.maxHp = 85; state.rads = 26; state.rad = 9;
+    let gespeichert = 0;
+    window.Game.saveGame = () => gespeichert++;
+    window.UI.enterVault();
+    assert.equal(state.inDialog, true);
+    assert.ok(document.querySelector('.vault-cinematic-door'));
+    assert.ok(document.querySelector('.vault-cinematic-corridor'));
+    assert.equal(window.UI.enterVault(), false, 'kein zweiter Einzug');
+    const skip = document.querySelector('.vault-cinematic-skip');
+    assert.equal(document.activeElement, skip);
+    skip.click();
+    assert.equal(document.getElementById('vault-anim-layer'), null);
+    const overlay = document.getElementById('ui-dialog-overlay');
+    const panel = overlay.querySelector('.vault-menu-panel');
+    assert.ok(panel);
+    assert.equal(panel.closest('#main-content').id, 'main-content');
+    assert.match(panel.textContent, /VAULT\s*101/);
+    assert.match(panel.textContent, /AUSRUHEN \(GRATIS\)/);
+    assert.match(panel.textContent, /ZURÜCK INS ÖDLAND/);
+    panel.querySelector('.vault-menu-rest').click();
+    assert.equal(state.hp, 85);
+    assert.equal(state.rads, 0);
+    assert.equal(state.rad, 0);
+    assert.equal(gespeichert, 1);
+    assert.match(document.getElementById('main-content').textContent, /DEKONTAMINIERT & AUSGERUHT/);
+    const bestaetigen = [...document.querySelectorAll('button')].find(b => b.textContent === 'VERSTANDEN');
+    assert.ok(bestaetigen);
+    bestaetigen.click();
+    assert.equal(state.inDialog, true, 'Basismenue bleibt nach Info offen');
+    panel.querySelector('.vault-menu-leave').click();
+    assert.equal(state.inDialog, false);
+    assert.equal(overlay.style.display, 'none');
+  } finally { window.UI._cancelVaultCinematic(); await schliesse(); }
+});
+
+test('Vault-Einzug oeffnet nach Ablauf einmal das Menue; alte Spielstaende werden nicht wieder geoeffnet', async () => {
+  const {window, document, schliesse} = await starteEchteOberflaeche({imSpiel: true});
+  const orig = window.setTimeout;
+  try {
+    window.UI.log = () => {};
+    let ablauf;
+    window.setTimeout = (fn, ms, ...args) => ms === 5000 ? (ablauf = fn, 4242) : orig(fn, ms, ...args);
+    window.UI.enterVault();
+    window.setTimeout = orig;
+    assert.equal(typeof ablauf, 'function');
+    ablauf();
+    assert.equal(document.getElementById('vault-anim-layer'), null);
+    assert.ok(document.querySelector('.vault-menu-panel'));
+    ablauf();
+    assert.equal(document.querySelectorAll('.vault-menu-panel').length, 1);
+    window.UI.leaveDialog();
+    window.setTimeout = (fn, ms, ...args) => ms === 5000 ? (ablauf = fn, 4242) : orig(fn, ms, ...args);
+    window.UI.enterVault();
+    window.setTimeout = orig;
+    window.Game.state = null;
+    ablauf();
+    assert.equal(document.getElementById('vault-anim-layer'), null);
+    assert.equal(document.querySelector('.vault-menu-panel'), null);
+  } finally { window.setTimeout = orig; window.UI._cancelVaultCinematic(); await schliesse(); }
+});
+
+test('reduzierte Bewegung ueberspringt die Szene ohne das Vault-Menue zu verlieren', async () => {
+  const {window, document, schliesse} = await starteEchteOberflaeche({imSpiel: true});
+  try {
+    window.matchMedia = () => ({matches: true});
+    window.UI.enterVault();
+    assert.equal(document.getElementById('vault-anim-layer'), null);
+    assert.ok(document.querySelector('.vault-menu-panel'));
+    assert.equal(window.Game.state.inDialog, true);
+    window.UI.leaveDialog();
+    assert.equal(window.Game.state.inDialog, false);
+  } finally { window.UI._cancelVaultCinematic(); await schliesse(); }
+});

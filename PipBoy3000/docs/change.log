@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v14.0.30 (Neuer Vault-Eingang, 2026-11-26)
+- [NEU] Illustrierte, animierte Vault-Tür rollt zur Seite; Kamerafahrt zoomt in den Gang. Überspringen möglich, reduzierte Bewegung öffnet das Menü direkt. Es ist eine CSS-Animation aus Bild-Ebenen, keine Videodatei.
+- [NEU] Vault-Menü optisch als grün-goldenes Retro-Terminal gestaltet. Ausruhen, Dekontamination, Speichern, Infodialog und Verlassen bleiben unverändert.
+- [FIX] Szene blockiert während des Einzugs Steuerung, vermeidet Doppelstarts und räumt Timer bei Abbruch, Logout oder Charakterwechsel auf.
+- [TEST] Integration prüft reguläres Ende, Überspringen, reduziertes Bewegen, alten Spielstand und die bestehenden Menüfunktionen; Artwork/Maskierung geprüft.
+
 ## v14.0.29 (Tutorial-Steuerung und Ein-Klick-Ablauf, 2026-11-26)
 - [FIX] Karten-Anleitung nennt WASD/Pfeiltasten und den Touch-Joystick statt eines nicht existierenden Klickziels.
 - [FIX] Ein Klick öffnet Menü, Inventar und Aufgaben und geht nach erfolgreichem Laden zum nächsten Schritt. Ladefehler bleiben wiederholbar; Pause und Charakterwechsel stoppen spätes Weiterlaufen.

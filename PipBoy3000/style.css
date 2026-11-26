@@ -631,3 +631,115 @@ input.login-input { background: #000; border: 2px solid var(--pip-green); color:
     border: 2px solid #39ff14 !important;
     box-shadow: inset 0 0 50px rgba(0,0,0,0.8), 0 0 20px rgba(57,255,20,0.3) !important;
 }
+
+/* --- Vault 101: illustrierter Einzug und Terminal ----------------------- */
+.vault-cinematic {
+    position: fixed;
+    top: 0; right: 0; bottom: 0; left: 0;
+    z-index: 10045;
+    overflow: hidden;
+    background: #030b06;
+    color: #b9ff8d;
+    font-family: 'VT323', monospace;
+}
+.vault-cinematic-corridor {
+    position: absolute;
+    top: 0; right: 0; bottom: 0; left: 0;
+    background: #08120b url('assets/vault-eingang.jpg') center / cover no-repeat;
+    animation: vault-kamera 5s cubic-bezier(.4,0,.2,1) both;
+}
+.vault-cinematic-vignette {
+    position: absolute;
+    top: 0; right: 0; bottom: 0; left: 0;
+    background: radial-gradient(ellipse at center, transparent 15%, rgba(0,0,0,.65) 100%);
+    pointer-events: none;
+}
+.vault-cinematic-door {
+    position: absolute;
+    left: 50%; top: 50%;
+    width: min(88vw, 88vh);
+    height: min(88vw, 88vh);
+    background: url('assets/vault-tuer.png') center / contain no-repeat;
+    filter: drop-shadow(0 12px 24px #000);
+    animation: vault-rollen 5s cubic-bezier(.45,0,.3,1) both;
+    pointer-events: none;
+}
+.vault-cinematic-caption {
+    position: absolute;
+    left: 0; right: 0; top: 6%;
+    text-align: center;
+    color: #d4dba6;
+    text-shadow: 0 2px 10px #000;
+    letter-spacing: .18em;
+    animation: vault-caption 5s ease both;
+    pointer-events: none;
+}
+.vault-cinematic-caption span { display: block; font-size: clamp(1.4rem, 4vw, 2.8rem); }
+.vault-cinematic-caption small { font-size: 1rem; color: #8bc575; }
+.vault-cinematic-skip {
+    position: absolute;
+    right: 1rem; bottom: 1rem;
+    z-index: 2;
+    border: 1px solid #7eae6b;
+    padding: .55rem 1rem;
+    background: rgba(0, 10, 2, .92);
+    color: #d1ffc3;
+    font: inherit;
+    font-size: 1rem;
+    cursor: pointer;
+}
+.vault-cinematic-skip:focus-visible, .vault-menu-action:focus-visible { outline: 3px solid #f4d883; outline-offset: 3px; }
+@keyframes vault-rollen {
+    0%, 14% { transform: translate(-50%, -50%) rotate(0deg); }
+    35% { transform: translate(-50%, -50%) rotate(18deg); }
+    78%, 100% { transform: translate(calc(-50% + 120vw), -50%) rotate(240deg); }
+}
+@keyframes vault-kamera {
+    0%, 45% { transform: scale(1); }
+    100% { transform: scale(1.65); }
+}
+@keyframes vault-caption {
+    0%, 55% { opacity: 1; }
+    80%, 100% { opacity: 0; }
+}
+.vault-menu-panel {
+    position: relative;
+    isolation: isolate;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+    width: min(100%, 28rem);
+    max-height: 100%;
+    overflow-y: auto;
+    padding: clamp(1rem, 3vw, 1.8rem);
+    border: 2px solid #8aa56b;
+    outline: 1px solid #263f2a;
+    outline-offset: -7px;
+    color: #d8f4c6;
+    background: #07120a;
+    box-shadow: 0 18px 55px #000, inset 0 0 32px #000;
+    font-family: 'VT323', monospace;
+    pointer-events: auto;
+}
+.vault-menu-panel::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0; bottom: 0; left: 0;
+    z-index: -1;
+    background: linear-gradient(rgba(2,12,5,.77), rgba(1,8,3,.96)), url('assets/vault-eingang.jpg') center / cover;
+    pointer-events: none;
+}
+.vault-menu-kicker { color: #8ec97f; font-size: .85rem; letter-spacing: .17em; text-align: center; }
+.vault-menu-title { margin: .35rem 0; color: #e1f7cb; font-size: clamp(2.6rem, 6vw, 4rem); letter-spacing: .12em; line-height: 1; text-align: center; text-shadow: 0 0 14px #388f30; }
+.vault-menu-title span { color: #eacb72; }
+.vault-menu-divider { height: 1px; background: linear-gradient(90deg, transparent, #a6bf6e, transparent); }
+.vault-menu-description { margin: .75rem 0; font-size: 1.05rem; line-height: 1.25; text-align: center; color: #c0d6b4; }
+.vault-menu-action { width: 100%; min-height: 3.3rem; padding: .7rem; font: inherit; font-size: 1.25rem; letter-spacing: .05em; cursor: pointer; }
+.vault-menu-rest { color: #d8ffbd; background: #173a1a; border: 1px solid #9acb70; }
+.vault-menu-rest:hover { background: #285b29; }
+.vault-menu-leave { color: #b9c9ac; background: #0b130c; border: 1px solid #526a4b; }
+.vault-menu-leave:hover { background: #213322; }
+@media (prefers-reduced-motion: reduce) {
+    .vault-cinematic-corridor, .vault-cinematic-door, .vault-cinematic-caption { animation: none; }
+}

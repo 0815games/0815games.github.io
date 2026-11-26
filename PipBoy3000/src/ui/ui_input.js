@@ -212,7 +212,7 @@ Object.assign(UI, {
             //   #afk-popup      - "ICH BIN DA" ebenfalls
             //   #tutorial-feld  - die Sprechblase (kommt mit dem Tutorial)
             if (e.target && e.target.closest &&
-                e.target.closest('#update-banner, #afk-popup, #tutorial-feld, #tutorial-zeiger')) return;
+                e.target.closest('#update-banner, #afk-popup, #tutorial-feld, #tutorial-zeiger, #vault-anim-layer')) return;
             if(this.els.navMenu && !this.els.navMenu.classList.contains('hidden')) {
                 if (!this.els.navMenu.contains(e.target) && e.target !== this.els.btnMenu) {
                     this.toggleMenu();
@@ -301,6 +301,7 @@ Object.assign(UI, {
     },
 
     handleKeyDown: function(e) {
+        if (document.getElementById('vault-anim-layer')) return;
         if (this.deleteMode) return;
 
         // Steht ein Fenster (AFK, Update) oder die Permadeath-Warnung, gehoert
