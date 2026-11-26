@@ -1847,6 +1847,7 @@
       if (typeof Network !== "undefined") Network.startPresence();
     },
     logout: async function(msg) {
+      if (typeof this._cancelVaultCinematic === "function") this._cancelVaultCinematic();
       this.loginBusy = false;
       this.selectedSlot = -1;
       this.charSelectMode = false;
@@ -6278,7 +6279,7 @@
       }
       document.addEventListener("click", (e) => {
         if (!e.target || !document.contains(e.target)) return;
-        if (e.target && e.target.closest && e.target.closest("#update-banner, #afk-popup, #tutorial-feld, #tutorial-zeiger")) return;
+        if (e.target && e.target.closest && e.target.closest("#update-banner, #afk-popup, #tutorial-feld, #tutorial-zeiger, #vault-anim-layer")) return;
         if (this.els.navMenu && !this.els.navMenu.classList.contains("hidden")) {
           if (!this.els.navMenu.contains(e.target) && e.target !== this.els.btnMenu) {
             this.toggleMenu();
@@ -6360,6 +6361,7 @@
       });
     },
     handleKeyDown: function(e) {
+      if (document.getElementById("vault-anim-layer")) return;
       if (this.deleteMode) return;
       if (!e.__fenster && typeof document !== "undefined" && document.body && document.body.classList.contains("fenster-offen")) {
         const menueOffen = this.els.navMenu && !this.els.navMenu.classList.contains("hidden");
@@ -9735,6 +9737,7 @@
       this.els.joyStick = document.getElementById("joystick-stick");
     },
     leaveDialog: function() {
+      if (typeof this._cancelVaultCinematic === "function") this._cancelVaultCinematic();
       if (Game.state) Game.state.inDialog = false;
       if (this._activeEscHandler) {
         document.removeEventListener("keydown", this._activeEscHandler);
@@ -10442,46 +10445,49 @@
     showChangelogOverlay: function() {
       if (typeof UI.showPatchNotes === "function") UI.showPatchNotes();
     },
+    // Filmische Szene aus zwei illustrierten Ebenen (kein Videostream). Der
+    // Timer ist abbrechbar: Logout/Charakterwechsel darf kein altes Menue
+    // wieder oeffnen. Ueberspringen und reduzierte Bewegung fuehren direkt
+    // zum gleichen Menue und veraendern keine Spielmechanik.
+    _cancelVaultCinematic: function() {
+      if (this._vaultTimer) clearTimeout(this._vaultTimer);
+      this._vaultTimer = null;
+      const layer = document.getElementById("vault-anim-layer");
+      if (layer) layer.remove();
+    },
     enterVault: function() {
-      if (Game.state) Game.state.inDialog = true;
-      if (typeof UI !== "undefined" && UI.log) UI.log("Das schwere Vault-Tor knirscht...", "text-blue-400 font-bold");
+      if (!Game.state || Game.state.inDialog || document.getElementById("vault-anim-layer")) return false;
+      const spielstand = Game.state;
+      spielstand.inDialog = true;
+      if (typeof this.stopJoystick === "function") this.stopJoystick();
+      if (typeof UI.log === "function") UI.log("Das schwere Vault-Tor knirscht...", "text-yellow-400");
+      const reduziert = typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (reduziert) {
+        this._showVaultMenuInternal();
+        return true;
+      }
       const animLayer = document.createElement("div");
       animLayer.id = "vault-anim-layer";
-      animLayer.className = "fixed inset-0 z-[3000] bg-black flex items-center justify-center overflow-hidden transition-opacity duration-1000 pointer-events-auto";
+      animLayer.className = "vault-cinematic";
+      animLayer.setAttribute("role", "dialog");
+      animLayer.setAttribute("aria-label", "Der Eingang zur Vault öffnet sich");
       animLayer.innerHTML = `
-            <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,_#2d3748_0%,_#000_100%)] opacity-80"></div>
-            <div id="vault-door-container" class="relative flex items-center justify-center transition-transform duration-[2500ms] ease-in-out">
-                <div id="vault-gear" class="relative w-64 h-64 md:w-96 md:h-96 bg-[#4a5568] rounded-full border-[12px] border-[#2d3748] flex items-center justify-center shadow-[0_0_50px_rgba(0,0,0,0.9)] transition-transform duration-[2500ms] ease-in-out">
-                    <div class="absolute w-full h-12 bg-[#2d3748]" style="transform: rotate(0deg);"></div>
-                    <div class="absolute w-full h-12 bg-[#2d3748]" style="transform: rotate(45deg);"></div>
-                    <div class="absolute w-full h-12 bg-[#2d3748]" style="transform: rotate(90deg);"></div>
-                    <div class="absolute w-full h-12 bg-[#2d3748]" style="transform: rotate(135deg);"></div>
-                    <div class="absolute w-52 h-52 md:w-80 md:h-80 bg-[#1a202c] rounded-full z-10 border-4 border-[#111] flex items-center justify-center shadow-inner">
-                        <span class="text-6xl md:text-8xl font-bold text-yellow-500 tracking-widest font-mono drop-shadow-[0_0_20px_rgba(234,179,8,0.8)]">101</span>
-                    </div>
-                </div>
-            </div>
-            <div id="vault-flash" class="absolute inset-0 bg-white opacity-0 transition-opacity duration-300 pointer-events-none z-50"></div>
-        `;
+            <div class="vault-cinematic-corridor" aria-hidden="true"></div>
+            <div class="vault-cinematic-vignette" aria-hidden="true"></div>
+            <div class="vault-cinematic-door" aria-hidden="true"></div>
+            <div class="vault-cinematic-caption" aria-hidden="true"><span>VAULT 101</span><small>ZUGANG WIRD FREIGEGEBEN</small></div>
+            <button type="button" class="vault-cinematic-skip">ÜBERSPRINGEN</button>`;
       document.body.appendChild(animLayer);
-      setTimeout(() => {
-        const container = document.getElementById("vault-door-container");
-        const gear = document.getElementById("vault-gear");
-        const flash = document.getElementById("vault-flash");
-        if (container) container.style.transform = "translateX(120vw)";
-        if (gear) gear.style.transform = "rotate(270deg)";
-        setTimeout(() => {
-          if (flash) flash.style.opacity = "1";
-          setTimeout(() => {
-            this._showVaultMenuInternal();
-            if (flash) flash.style.opacity = "0";
-            animLayer.style.opacity = "0";
-            setTimeout(() => {
-              animLayer.remove();
-            }, 1e3);
-          }, 300);
-        }, 2e3);
-      }, 100);
+      const abschliessen = () => {
+        if (document.getElementById("vault-anim-layer") !== animLayer) return;
+        this._cancelVaultCinematic();
+        if (Game.state === spielstand && spielstand.inDialog && !spielstand.isGameOver) this._showVaultMenuInternal();
+      };
+      const skip = animLayer.querySelector(".vault-cinematic-skip");
+      skip.onclick = abschliessen;
+      skip.focus({ preventScroll: true });
+      this._vaultTimer = setTimeout(abschliessen, 5e3);
+      return true;
     },
     _showVaultMenuInternal: function() {
       const overlay = this.restoreOverlay();
@@ -10489,15 +10495,17 @@
       overlay.innerHTML = "";
       if (Game.state) Game.state.inDialog = true;
       const box = document.createElement("div");
-      box.className = "flex flex-col gap-3 w-full max-w-sm p-6 bg-black border-4 border-blue-600 shadow-[0_0_30px_blue] pointer-events-auto animate-float-in";
+      box.className = "vault-menu-panel";
       box.onclick = (e) => e.stopPropagation();
       const msg = document.createElement("div");
       msg.innerHTML = `
-            <h2 class='text-blue-400 font-bold mb-2 text-3xl tracking-widest border-b-2 border-blue-900 pb-2 text-center'>VAULT 101</h2>
-            <p class='text-sm text-blue-200 mb-4 text-center'>Willkommen zuhause, Bewohner.<br>Hier bist du sicher vor dem Ödland.</p>
+            <div class='vault-menu-kicker'>VAULT-TEC // SICHERHEITSBEREICH</div>
+            <h2 class='vault-menu-title'>VAULT <span>101</span></h2>
+            <div class='vault-menu-divider'></div>
+            <p class='vault-menu-description'>Willkommen zuhause, Bewohner.<br>Hier bist du sicher vor dem Ödland.</p>
         `;
       const restBtn = document.createElement("button");
-      restBtn.className = "action-button w-full border-blue-500 text-blue-400 hover:bg-blue-900 py-4 font-bold text-xl";
+      restBtn.className = "action-button vault-menu-action vault-menu-rest";
       restBtn.innerHTML = "🛏️ AUSRUHEN (GRATIS)";
       restBtn.onclick = () => {
         if (Game.state) {
@@ -10510,7 +10518,7 @@
         this.showInfoDialog("DEKONTAMINIERT & AUSGERUHT", "Du hast sicher in der Vault geschlafen. Deine TP sind vollständig regeneriert und die Dekontaminationsduschen haben jegliche Verstrahlung abgewaschen!");
       };
       const leaveBtn = document.createElement("button");
-      leaveBtn.className = "action-button w-full border-gray-600 text-gray-400 hover:bg-gray-800 py-2 mt-2";
+      leaveBtn.className = "action-button vault-menu-action vault-menu-leave";
       leaveBtn.innerHTML = "🚪 ZURÜCK INS ÖDLAND";
       leaveBtn.onclick = () => UI.leaveDialog();
       box.appendChild(msg);
@@ -10650,6 +10658,16 @@
     "Der RAD-Balken nutzt noch einen Platzhalter (+1000) statt des echten Strahlungswerts."
   ];
   window.GameData.RELEASED_PATCHES = [
+    {
+      version: "14.0.30",
+      datum: "2026-11-26",
+      title: "Neuer Vault-Eingang",
+      punkte: [
+        "Beim Betreten rollt eine illustrierte Vault-Tür zur Seite und die Kamera fährt in den Gang hinein. Die Szene lässt sich überspringen.",
+        "Das Vault-Menü ist optisch neu gestaltet. Kostenloses Ausruhen, Dekontamination und Rückkehr ins Ödland funktionieren unverändert.",
+        "Bei aktivierter reduzierter Bewegung öffnet sich das Menü direkt."
+      ]
+    },
     {
       version: "14.0.29",
       datum: "2026-11-26",

@@ -487,6 +487,7 @@ const UI = {
     },
 
     logout: async function(msg) {
+        if (typeof this._cancelVaultCinematic === 'function') this._cancelVaultCinematic();
         this.loginBusy = false;
         this.selectedSlot = -1; 
         this.charSelectMode = false; 

@@ -35,6 +35,16 @@ window.GameData.offenePunkte = [
 // nicht mit dem, was geplant war.
 window.GameData.RELEASED_PATCHES = [
   {
+    version: '14.0.30',
+    datum: '2026-11-26',
+    title: 'Neuer Vault-Eingang',
+    punkte: [
+      'Beim Betreten rollt eine illustrierte Vault-Tür zur Seite und die Kamera fährt in den Gang hinein. Die Szene lässt sich überspringen.',
+      'Das Vault-Menü ist optisch neu gestaltet. Kostenloses Ausruhen, Dekontamination und Rückkehr ins Ödland funktionieren unverändert.',
+      'Bei aktivierter reduzierter Bewegung öffnet sich das Menü direkt.'
+    ]
+  },
+  {
     version: '14.0.29',
     datum: '2026-11-26',
     title: 'Tutorial-Steuerung und Ein-Klick-Ablauf',
