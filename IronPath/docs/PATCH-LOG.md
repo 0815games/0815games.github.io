@@ -6,7 +6,7 @@ aber ersetzt weder Git noch die GitHub-PR-Historie. Die dazugehörige
 [Arbeitsanweisung](../../AGENTS.md) verlangt, dieses Log vor der Arbeit zu lesen
 und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
 
-Die Einträge IPL-0001 bis IPL-0120 stehen im
+Die Einträge IPL-0001 bis IPL-0121 stehen im
 [Archiv](PATCH-LOG-ARCHIV.md); hier stehen die neuesten 20. Beide Dateien
 zusammen sind lückenlos und doppelfrei - `../scripts/patch.mjs` (Unterbefehl `check`) und
 `../tests/patch-log-archive.test.mjs` prüfen das.
@@ -59,18 +59,6 @@ jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderl
 
 
 
-## IPL-0121 – Punkt 7: Block-Übersicht in `PATCH-BLOECKE.md` auf den echten Stand gezogen (keine Cache-Welle, kein Browser-Code)
-
-- **Zeit / Quelle:** 2026-11-23 UTC; Punkt 7 der Reihenfolge in `AUSBAU-PLAN.md` (dort als Quick-Win geführt: die Übersicht zeigte Block E veraltet; bei jedem Block-Paket mitpflegen). Schließt die beschlossene Reihe ab.
-- **Block / Ziel:** Kein Spiel-Block. Die ausführliche Block-Dokumentation `PATCH-BLOECKE.md` behauptete an mehreren Stellen einen alten Stand: Prozentwerte aus der Bauzeit, PR `#324`/`#325` als „offen“, Block 6 als „Abnahme ausstehend“, Block 7/E als „offen / ~70 %“ und Rückbau-Reste aus `#337`–`#339` als offene Punkte, obwohl der Betreiber sie bis auf die Boss-Ankündigung ausdrücklich fallen gelassen hatte.
-- **Branch / Basis:** `arena/2c6e1584-0815games-github-io` ab `c40fd6df3bf7a2f4d1ad482c98e73b3ecaa4efc2` (`main`, Merge PR `#382`).
-- **Änderungen / Dateien:**
-  - `IronPath/docs/PATCH-BLOECKE.md`: Kopf (Reihe abgearbeitet; Geräteabnahmen sind Betreiber-Sache und keine offenen Punkte), Schnellübersicht (alle Blöcke „ausgeliefert“, Block 7/E „ausgeliefert (Scheibe 1 + 2)“, einzig technisch offene Punkte: Screenreader-Prüfung Block 2, Emulator-Transportfälle E5, D1-Datenmenge bewusst zurückgestellt), Reihenfolge-Tabelle (alle Zeilen auf ausgeliefert/merged), Abschnitts-Überschriften 6 und 7 plus Sprungmarken, Block-9f abgehakt (PR `#325` gemergt), Rückbau-Reste `#337`/`#339`/Mündungsblitz als per Betreiber-Entscheid fallengelassen markiert, Boss-Ankündigung als neu gelandet (`IPL-0104`) vermerkt, `game-regressions`-Pflicht-Check als Betreiber-Repo-Einstellung gekennzeichnet (keine Code-Aufgabe). Die ausführlichen Block-Kriterien und historischen Vermerke in den Abschnitten bleiben als Historie stehen.
-  - `IronPath/docs/AUSBAU-PLAN.md`: Punkt 7 `[x]` mit Verweis auf diesen Eintrag.
-  - `IronPath/docs/PATCH-LOG.md` + `PATCH-LOG-ARCHIV.md`: dieser Eintrag; Rotation `IPL-0101` ins Archiv (Haupt `IPL-0102…IPL-0121`, Archiv bis `IPL-0101`).
-- **Prüfungen:** Schnelltor: „Kein Fehler, 3 Hinweis(e)“; `patch-log-archive` 5/5 (lückenlos/doppelfrei nach der Rotation). Gesamtsuite folgt auf dem Commit-Stand (nur Doku berührt).
-- **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet`. Commit, Push, PR `#383`, CI, Merge und Pages-Auslieferung (nur Doku — die Live-Seite ändert sich für Spieler nicht) werden als Ereignis nachgetragen.
-- **Offen / nächster Schritt:** Die beschlossene Reihe (Punkte 1–7) ist damit vollständig. Neue Punkte beschließt der Betreiber.
 
 ## IPL-0122 – Lebendiges Feld, Scheibe 1: Drehender MG-Turmkopf (geschichtet), Schadens-Rauch, Soldaten-Leben (Cache-Welle folgt im selben PR)
 
@@ -320,3 +308,11 @@ Nur Darstellung, kein Sim-State, kein Wire-Format, statisch im Terrain-Cache (Re
 - **Prüfung:** Suite **1370 pass / 0 fail / 1 skip** (Shallow-Checkout-Skip lokal; zwei Fails nur am `pr:0`-Platzhalter bis zur PR-Nummer) – neu: Filter-/Details-Tests im `soldier-screen.test.mjs` (Tabs, Suche, Herkunfts-Hinweise, Toggle über den Service), Browser-Pins zeigen26 Zellen + `.is-owned` + Details; `workshop-view.test.mjs` unverändert grün; `schnelltor` ohne Fehler (gleicher Platzhalter).
 - **Git / PR / Release:** Branch `arena/2f95b5e0-0815games-github-io` ab `4871272d`; Commits `9d89a5e` (102 Dateien: Ringe, Raster, Details, Werkstatt-Restyle, `item-art.mjs`), `bdbcc20` (PR-Nummer), `f82457d` (Wallet-Case-Fix nach dem roten `interface-browser-smoke`: `text-transform:uppercase` machte `50 scrap` zu `50 SCRAP`), Push, PR `#499`, CI grün, Merge `f179f195`.
 - **Offen / nächster Schritt:** Skills-Optik.
+
+## IPL-0141 – Skills-Optik: das Fortschrittsfenster im Brett-Look von Dossier und Werkstatt (Welle `20261121-skills1`, PR `#506`)
+
+- **Was:** Letzte Stufe der Optik-Leiter nach dem `go` des Betreibers: `skill-menu.css` wird vollständig in die Referenz-Sprache gebracht — Dialograhmen wie die Feldakte, Hero-Leiste, geschraubte Messing-Platte für die Punktanzeige, eckige Messing-Tabs (ASSAULT…ALL), geschraubte Panels für Inspector und Build-Zusammenfassung, grüner Feldknopf für die Klassen-/Freischalt-Aktion, DIN-Header in den Gruppenüberschriften, dunklere Plattflächen für alle Skill-Karten. Reines CSS: kein DOM-Eingriff, keine Mechanik (Entwurf/Reset/Save, Draft-Status), keine neuen Strings.
+- **Zustände bleiben lesbar:** `is-unlocked`/`is-active`/`is-selected`/Capstone behalten Farbe UND Textlabel; Legend unverändert. Bewusst kein `text-transform` auf `.skill-card-name`, `#skillDetailText` und `#skillStatus` — diese Texte pinnen Browser-Tests per `innerText` (Lesson aus IPL-0140 „50 SCRAP").
+- **Prüfung:** Suite …, Schnelltor … (wird vor Merge final); neuer Style-Pin `skill-menu-style.test.mjs`.
+- **Git / PR / Release:** Branch `arena/dfa2a3b8-0815games-github-io` ab `418933be`; Push, **PR `#506`**, CI, Merge – wird nachgetragen.
+- **Offen / nächster Schritt:** Optik-Leiter vollständig (Command Center · Dossier · Werkstatt · Skills).

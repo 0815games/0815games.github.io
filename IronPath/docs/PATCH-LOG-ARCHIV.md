@@ -1,6 +1,6 @@
 # Iron Path – Patch-Log: Archiv
 
-Ältere Einträge IPL-0001 bis IPL-0120. Die neuesten 20 stehen in
+Ältere Einträge IPL-0001 bis IPL-0121. Die neuesten 20 stehen in
 [PATCH-LOG.md](PATCH-LOG.md); die Regeln für beide Dateien dort und in
 [`../../AGENTS.md`](../../AGENTS.md). Beim Verschieben wandert ein Eintrag immer
 vollständig einschließlich seiner Ereignis-Nachträge.
@@ -4740,3 +4740,15 @@ sie geprüft wurde.
 - **Prüfungen:** `startup-measurement` 2/2; Messlauf selbst reproduzierbar per Skript. Schnelltor und Gesamtsuite folgen auf dem Commit-Stand.
 - **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet`. Commit, Push, PR `#382`, CI, Merge und Pages-Auslieferung (nur Doku/Werkzeug — die Live-Seite ändert sich für Spieler nicht) werden als Ereignis nachgetragen.
 - **Offen / nächster Schritt:** Punkt 7: Block-Übersicht in `PATCH-BLOECKE.md` auf den echten Stand ziehen. Die Reihe ist danach vollständig; neue Punkte beschließt der Betreiber.
+## IPL-0121 – Punkt 7: Block-Übersicht in `PATCH-BLOECKE.md` auf den echten Stand gezogen (keine Cache-Welle, kein Browser-Code)
+
+- **Zeit / Quelle:** 2026-11-23 UTC; Punkt 7 der Reihenfolge in `AUSBAU-PLAN.md` (dort als Quick-Win geführt: die Übersicht zeigte Block E veraltet; bei jedem Block-Paket mitpflegen). Schließt die beschlossene Reihe ab.
+- **Block / Ziel:** Kein Spiel-Block. Die ausführliche Block-Dokumentation `PATCH-BLOECKE.md` behauptete an mehreren Stellen einen alten Stand: Prozentwerte aus der Bauzeit, PR `#324`/`#325` als „offen“, Block 6 als „Abnahme ausstehend“, Block 7/E als „offen / ~70 %“ und Rückbau-Reste aus `#337`–`#339` als offene Punkte, obwohl der Betreiber sie bis auf die Boss-Ankündigung ausdrücklich fallen gelassen hatte.
+- **Branch / Basis:** `arena/2c6e1584-0815games-github-io` ab `c40fd6df3bf7a2f4d1ad482c98e73b3ecaa4efc2` (`main`, Merge PR `#382`).
+- **Änderungen / Dateien:**
+  - `IronPath/docs/PATCH-BLOECKE.md`: Kopf (Reihe abgearbeitet; Geräteabnahmen sind Betreiber-Sache und keine offenen Punkte), Schnellübersicht (alle Blöcke „ausgeliefert“, Block 7/E „ausgeliefert (Scheibe 1 + 2)“, einzig technisch offene Punkte: Screenreader-Prüfung Block 2, Emulator-Transportfälle E5, D1-Datenmenge bewusst zurückgestellt), Reihenfolge-Tabelle (alle Zeilen auf ausgeliefert/merged), Abschnitts-Überschriften 6 und 7 plus Sprungmarken, Block-9f abgehakt (PR `#325` gemergt), Rückbau-Reste `#337`/`#339`/Mündungsblitz als per Betreiber-Entscheid fallengelassen markiert, Boss-Ankündigung als neu gelandet (`IPL-0104`) vermerkt, `game-regressions`-Pflicht-Check als Betreiber-Repo-Einstellung gekennzeichnet (keine Code-Aufgabe). Die ausführlichen Block-Kriterien und historischen Vermerke in den Abschnitten bleiben als Historie stehen.
+  - `IronPath/docs/AUSBAU-PLAN.md`: Punkt 7 `[x]` mit Verweis auf diesen Eintrag.
+  - `IronPath/docs/PATCH-LOG.md` + `PATCH-LOG-ARCHIV.md`: dieser Eintrag; Rotation `IPL-0101` ins Archiv (Haupt `IPL-0102…IPL-0121`, Archiv bis `IPL-0101`).
+- **Prüfungen:** Schnelltor: „Kein Fehler, 3 Hinweis(e)“; `patch-log-archive` 5/5 (lückenlos/doppelfrei nach der Rotation). Gesamtsuite folgt auf dem Commit-Stand (nur Doku berührt).
+- **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet`. Commit, Push, PR `#383`, CI, Merge und Pages-Auslieferung (nur Doku — die Live-Seite ändert sich für Spieler nicht) werden als Ereignis nachgetragen.
+- **Offen / nächster Schritt:** Die beschlossene Reihe (Punkte 1–7) ist damit vollständig. Neue Punkte beschließt der Betreiber.
