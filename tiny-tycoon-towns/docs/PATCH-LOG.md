@@ -1221,3 +1221,11 @@ Ereignis ergänzt.
 - Dateien: `src/main.js` (`buildMenu`, `onPanelClick` für „info“, `buildInfoOpen`), `style.css` (`.panel .cycle .opt`, `.opt-body`, `.opt-foot`).
 - Tests: `npm test` 185/185 grün. `npm run check` ohne Fehler.
 - Nachweis: Nur Unit-Tests und Logikprüfung. Die Darstellung wurde nicht im Browser gegengeprüft (Testumgebung nicht verfügbar).
+
+### TTT-0073 – Ganze Bau-Karte antippbar, mit Rückfrage
+
+- Änderung: Tippen auf die ganze Bau-Karte startet den Bau. Vorher kommt die Rückfrage „<Gebäude> bauen?“ mit Feld, Münzen und Material. Der Knopf „Bauen“ unten bleibt und tut dasselbe.
+- Nicht möglich (gesperrt, zu wenig Vorrat, Gelände): Tippen zeigt den Grund als Hinweis, es kommt keine Rückfrage.
+- Dateien: `src/main.js` (`onPanelClick` als async, `[data-action]` statt nur Knöpfen, `buildMenu`), `style.css` (Zeiger auf der Karte).
+- Tests: `npm test` 185/185 grün. `npm run check` ohne Fehler.
+- Nachweis: Unit-Tests und Logikprüfung. Darstellung und Rückfrage nicht im Browser geprüft.

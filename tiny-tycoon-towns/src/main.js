@@ -682,8 +682,8 @@ function bindStatic() {
   });
 }
 
-function onPanelClick(e) {
-  const btn = e.target.closest('button[data-action]');
+async function onPanelClick(e) {
+  const btn = e.target.closest('[data-action]');
   if (!btn || btn.disabled || !state) return;
   const { action, id, index } = btn.dataset;
   const { x, y } = selected;
@@ -692,7 +692,21 @@ function onPanelClick(e) {
     renderPanel();
     return;
   }
-  if (action === 'build') dispatch(placeBuilding(state, { x, y, buildingId: id }, ctx()), 'Gebaut.');
+  if (action === 'build') {
+    // Die ganze Karte ist der Knopf. Nicht möglich: sagen, warum. Möglich: erst fragen.
+    if (btn.dataset.disabled === '1') return toast(btn.dataset.why || 'Hier geht das gerade nicht.', 'error');
+    const d = data.buildings[id];
+    const c = buildCost(id, 0, data);
+    const mat = data.resources[c.material.resource];
+    const yes = await askConfirm(
+      `${d.name.de} bauen?`,
+      `Auf Feld ${x}, ${y} für ${fmt0(c.coins)} Münzen und ${fmt0(c.material.amount)} ${mat.name.de}.`,
+      { ok: 'Ja, bauen' },
+    );
+    if (!yes || !state) return;
+    dispatch(placeBuilding(state, { x, y, buildingId: id }, ctx()), 'Gebaut.');
+    return;
+  }
   if (action === 'upgrade') dispatch(upgradeBuilding(state, { x, y }, ctx()), 'Aufgewertet.');
   if (action === 'worker') {
     const n = Number(btn.dataset.n);
@@ -1385,10 +1399,11 @@ function buildMenu(x, y) {
         : 'Bereit zum Bauen';
   const statusClass = locked || !affordable || !place.ok ? 'locked-note' : 'ok small';
   const details = `<div class="meta small">${meta}</div>${hint ? `<div class="meta small">${esc(hint)}</div>` : ''}`;
+  const blocked = locked || !affordable || !place.ok;
   return `<section>
     <div class="cycle">
       <button type="button" data-action="cycle" data-dir="-1" data-cycle aria-label="Vorherige Option">‹</button>
-      <div class="opt">
+      <div class="opt" data-action="build" data-id="${id}" data-disabled="${blocked ? '1' : '0'}" data-why="${esc(status)}">
         <div class="opt-body">
           <div class="opt-head"><strong>${d.icon} ${esc(d.name.de)}</strong> <span class="muted small">${buildIdx + 1} / ${entries.length}</span></div>
           ${costChips(c)}
@@ -1397,7 +1412,7 @@ function buildMenu(x, y) {
         </div>
         <div class="opt-foot">
           <button type="button" class="ghost" data-action="info" aria-expanded="${buildInfoOpen}">${buildInfoOpen ? 'Weniger' : 'Beschreibung'}</button>
-          <button type="button" class="primary" data-action="build" data-id="${id}" ${locked || !affordable || !place.ok ? 'disabled' : ''}>Bauen</button>
+          <button type="button" class="primary" data-action="build" data-id="${id}" data-disabled="${blocked ? '1' : '0'}" data-why="${esc(status)}">Bauen</button>
         </div>
       </div>
       <button type="button" data-action="cycle" data-dir="1" data-cycle aria-label="Nächste Option">›</button>

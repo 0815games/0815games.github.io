@@ -599,6 +599,8 @@ button.danger { background: #E4837A; border-color: var(--ink); }
   align-content: start;
   gap: 6px;
 }
+.panel .cycle .opt[data-disabled="0"] { cursor: pointer; }
+.panel .cycle .opt[data-disabled="0"]:active { transform: scale(0.99); }
 .panel .cycle .opt .opt-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
 .panel .cycle .opt .opt-info { border-top: 1px dashed rgba(59, 47, 47, 0.3); padding-top: 6px; }
 .panel .cycle .opt .opt-foot { flex: none; display: flex; gap: 8px; }
