@@ -18,8 +18,8 @@ Das Backup enthält Repository-Dateien, keine Firebase-Spielstände.
 - [ ] Speichern/Neuladen und Charakterwechsel prüfen.
 - [x] Nutzer hat am 27.10.2026 die Fortsetzung mit Phase 2 angefordert. Einzelne Gerätetests sind damit nicht automatisch abgenommen.
 
-Online-Test: /rpg/?view=3d
-Standard: /rpg/ bleibt zunächst 2D.
+Online-Test: /schattengruft/?view=3d
+Standard: /schattengruft/ bleibt zunächst 2D.
 Andere Umgebungen bleiben in Phase 1 automatisch in 2D.
 3D benötigt Internet zum Laden der gepinnten Three.js-Abhängigkeit.
 In Phase 1 wurden 2D-Weltpartikel noch nicht übertragen; Phase 2 ergänzt eine begrenzte 3D-Darstellung.

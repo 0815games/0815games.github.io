@@ -20,7 +20,7 @@ function setup(){
  document.body.append(combat);combat.setAttribute('role','dialog');combat.setAttribute('aria-modal','true');combat.setAttribute('aria-label','Kampf');
  document.querySelectorAll('nav button').forEach(b=>b.setAttribute('aria-label',{inv:'Inventar',char:'Ausrüstung',skills:'Skills',log:'Chronik'}[b.dataset.tab]||b.dataset.tab));
  const hint=document.querySelector('.intro-hint');if(hint)hint.textContent='TIPPE ZUM BETRETEN · ENTER AM PC';
- const esc=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&','<':'<','>':'>','"':'"',"'":'&#39;'}[c]));
+ const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  function meter(label,v,max,mana=false){v=Math.max(0,Number(v)||0);max=Math.max(0,Number(max)||0);return `<span class="combat-meter-label">${label}: ${v} / ${max}</span><div class="combat-meter${mana?' mana':''}"><span style="width:${max?Math.min(100,v/max*100):0}%"></span></div>`;}
  function refresh(){
   if(!state.inCombat||combat.classList.contains('hidden')||!state.activeMonster)return;
