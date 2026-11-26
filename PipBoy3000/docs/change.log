@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v14.0.31 (Aufgeräumte Statusleiste, 2026-11-26)
+- [OPTIK] Statusleiste mit sauberem Raster, gekürztem Namen und kompakter Menüschaltfläche. Auf schmalen Geräten steht die Lebensanzeige in einer eigenen Zeile; Farben und Bedienung bleiben erhalten.
+- [FIX] UI.update aktualisierte bisher das TP-Textfeld statt des Lebensbalkens; der Balken war außerdem durch eine Inline-Farbe transparent. Jetzt aktualisiert die Leiste den richtigen Balken und der TP-Text bleibt lesbar. Die Berechnung der Werte ist unverändert.
+- [TEST] Integration prüft Anzeigen, Balkenbreiten, Farben, Menü/Charakter-Aktion und responsive CSS-Regeln.
+
 ## v14.0.30 (Neuer Vault-Eingang, 2026-11-26)
 - [NEU] Illustrierte, animierte Vault-Tür rollt zur Seite; Kamerafahrt zoomt in den Gang. Überspringen möglich, reduzierte Bewegung öffnet das Menü direkt. Es ist eine CSS-Animation aus Bild-Ebenen, keine Videodatei.
 - [NEU] Vault-Menü optisch als grün-goldenes Retro-Terminal gestaltet. Ausruhen, Dekontamination, Speichern, Infodialog und Verlassen bleiben unverändert.

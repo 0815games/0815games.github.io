@@ -29,6 +29,53 @@
     }
 }
 
+/* Statusleiste: dieselben Anzeigen und Farben, aber feste Ausrichtung und
+   ein eigenes Leben-Feld auf schmalen Bildschirmen. IDs bleiben unveraendert. */
+.hud-leiste {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) max-content minmax(8rem, 2fr) 3rem;
+    grid-template-areas: "char ressourcen leben menu";
+    align-items: center;
+    gap: .5rem;
+    min-height: 4rem;
+    padding: .4rem .55rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+.hud-char { grid-area: char; min-width: 0; min-height: 3rem; overflow: hidden; }
+.hud-char #val-name { display: block; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1; }
+.hud-ressourcen { grid-area: ressourcen; min-width: 0; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.hud-leben { grid-area: leben; min-width: 0; width: 100%; max-width: 32rem; }
+#val-hp {
+    font-size: clamp(1.15rem, 2.2vw, 1.65rem);
+    letter-spacing: .04em;
+    white-space: nowrap;
+    color: #071007;
+    text-shadow: -1px -1px 0 #d5f5cb, 1px -1px 0 #d5f5cb, -1px 1px 0 #d5f5cb, 1px 1px 0 #d5f5cb;
+    font-variant-numeric: tabular-nums;
+}
+#game-header #btn-menu-toggle {
+    grid-area: menu;
+    box-sizing: border-box;
+    width: 3rem;
+    min-width: 0;
+    height: 3rem;
+    padding: 0;
+    line-height: 1;
+}
+.hud-xp { flex-shrink: 0; }
+@media (max-width: 540px) {
+    .hud-leiste {
+        grid-template-columns: minmax(0, 1fr) max-content 2.75rem;
+        grid-template-areas: "char ressourcen menu" "leben leben leben";
+        gap: .3rem .5rem;
+        padding: .35rem .45rem;
+    }
+    .hud-char { min-height: 2.75rem; }
+    .hud-leben { max-width: none; height: 1.65rem; }
+    #game-header #btn-menu-toggle { width: 2.75rem; height: 2.75rem; }
+}
+
 /* 2. Game Screen: Der innere Monitor */
 #game-screen {
     background-color: var(--pip-bg);
