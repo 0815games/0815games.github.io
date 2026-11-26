@@ -21,6 +21,7 @@ const read = (...p) => readFileSync(join(ROOT, ...p), 'utf8');
 function mitTutorial() {
   const dom = new JSDOM(`<!DOCTYPE html><html><body>
       <div id="main-content"></div>
+      <div id="quest-list"></div>
       <button id="btn-menu-toggle"></button>
       <div id="main-nav" class="hidden"></div>
       <button id="btn-inv"></button>
@@ -31,7 +32,8 @@ function mitTutorial() {
   w.eval(`
     var gespeichert = 0;
     var Game = {
-      state: { view: 'map', player: {x: 25, y: 25}, kills: 0 },
+      state: { view: 'map', player: {x: 25, y: 25}, kills: 0, activeQuests: [], completedQuests: [] },
+      questDefs: [],
       saveGame: function(){ gespeichert++; }
     };
     var UI = {
@@ -44,6 +46,7 @@ function mitTutorial() {
       }
     };`);
   w.eval(read('src/ui', 'ui_tutorial.js'));
+  w.eval(read('src/ui', 'ui_view_journal.js'));
   const feld = () => w.document.getElementById('tutorial-feld');
   return {
     dom, w, document: w.document, feld,
@@ -129,12 +132,12 @@ test('das Tutorial laeuft bis zum Ende durch und merkt sich das', () => {
   assert.equal(feld().hidden, true, 'Das Tutorial kommt nach dem Ende wieder');
 });
 
-test('Ueberspringen beendet und merkt sich das', () => {
+test('Schliessen pausiert die Mission und merkt sich den Fortschritt', () => {
   const {w, feld} = mitTutorial();
   w.eval('Tutorial.start();');
   feld().querySelector('[data-tut-ueberspringen]').click();
   assert.equal(feld().hidden, true);
-  assert.equal(w.eval('Game.state.tutorial'), 'fertig');
+  assert.equal(w.eval('Game.state.tutorial'), 'pausiert');
   assert.ok(w.eval('gespeichert') > 0, 'Der neue Stand wurde nicht gespeichert');
 });
 
@@ -148,17 +151,67 @@ test('mitten im Tutorial abgebrochen: es geht dort weiter, nicht bei Schritt 1',
   assert.equal(schritt(), '2/7', 'Es faengt wieder bei Schritt 1 an');
 });
 
-test('der Kampf-Schritt ist weich - er laesst sich notfalls ueberspringen', () => {
-  // Wer im Tutorial keinem Gegner begegnet, soll nicht festsitzen. Der Knopf
-  // ist da, heisst aber anders - damit niemand denkt, er habe gekaempft.
+test('Kampf bleibt eine offene Aufgabe bis ein Kampf erlebt wurde', () => {
   const {w, feld, knopf, titel} = mitTutorial();
-  w.eval('Tutorial.zeigen(5);');
+  w.eval('Tutorial.start(); Tutorial.zeigen(5);');
   assert.match(titel(), /GEFAHR/);
-  assert.equal(knopf().hidden, false, 'Der Kampf-Schritt hat keinen Weiter-Knopf');
-  assert.equal(knopf().textContent, 'TROTZDEM WEITER');
+  assert.equal(knopf().hidden, true);
+  assert.equal(w.Tutorial.weiter(), false);
+  assert.equal(w.Game.state.tutorial, 'laeuft');
+  w.eval("Game.state.view = 'combat'; Tutorial.pruefen();");
+  assert.equal(knopf().hidden, false);
   knopf().click();
-  assert.equal(feld().hidden, false, 'Es ging nicht weiter');
+  assert.equal(feld().hidden, false);
   assert.match(titel(), /RAUS INS ÖDLAND/);
+  w.close();
+});
+
+test('Tutorial erscheint als Mission und pausiert, setzt nach Neustart und Charakterwechsel am gespeicherten Schritt fort', () => {
+  const a = mitTutorial();
+  a.w.UI.renderQuests();
+  assert.match(a.document.getElementById('tutorial-mission').textContent, /0 \/ 7/);
+  a.document.querySelector('[data-tutorial-fortsetzen]').click();
+  a.knopf().click();
+  assert.equal(a.w.Game.state.tutorialSchritt, 1);
+  a.feld().querySelector('[data-tut-ueberspringen]').click();
+  assert.equal(a.w.Game.state.tutorial, 'pausiert');
+  assert.match(a.document.getElementById('tutorial-mission').textContent, /1 \/ 7/);
+  const save = JSON.parse(JSON.stringify(a.w.Game.state));
+  a.w.close();
+  const b = mitTutorial();
+  b.w.Game.state = save;
+  b.w.UI.renderQuests();
+  assert.match(b.document.getElementById('tutorial-mission').textContent, /1 \/ 7/);
+  b.document.querySelector('[data-tutorial-fortsetzen]').click();
+  assert.equal(b.schritt(), '2/7');
+  // Ein anderer Spielstand darf nicht den Index dieses Charakters erben.
+  b.w.Tutorial.ausblenden();
+  b.w.Game.state = {view:'map', player:{x:2,y:2}, activeQuests:[], completedQuests:[]};
+  b.w.UI.starteTutorial();
+  assert.equal(b.schritt(), '1/7');
+  b.w.close();
+});
+
+test('Tutorial-Missionsknopf funktioniert auch neben Hauptmissionen', () => {
+  const {w, document} = mitTutorial();
+  w.Game.questDefs = [{id:'a', title:'A'}, {id:'b', preReq:'a', title:'B'}];
+  w.UI.renderQuests();
+  document.querySelector('[data-tutorial-fortsetzen]').click();
+  assert.equal(w.Tutorial.offen, true);
+  w.close();
+});
+
+test('Abschluss der letzten Aufgabe beendet die Mission dauerhaft', () => {
+  const {w, document} = mitTutorial();
+  w.Tutorial.start();
+  w.Tutorial.zeigen(6);
+  w.Tutorial.weiter();
+  assert.equal(w.Game.state.tutorial, 'fertig');
+  w.UI.renderQuests();
+  assert.match(document.getElementById('tutorial-mission').textContent, /ABGESCHLOSSEN/);
+  assert.equal(document.querySelector('[data-tutorial-fortsetzen]'), null);
+  assert.equal(w.UI.tutorialNachWarnung(), false);
+  w.close();
 });
 
 test('steht der Spieler schon in der Ziel-Ansicht, schliesst sich das Menue trotzdem', () => {

@@ -1868,6 +1868,7 @@
       this.els.loginStatus.className = "mt-4 text-yellow-400";
       this.els.inputPass.value = "";
       this.schliesseMenueUndUnterfenster();
+      if (typeof Tutorial !== "undefined" && Tutorial.ausblenden) Tutorial.ausblenden();
       const tutFeld = document.getElementById("tutorial-feld");
       if (tutFeld) tutFeld.hidden = true;
       const tutZeiger = document.getElementById("tutorial-zeiger");
@@ -7958,6 +7959,22 @@
       const list = document.getElementById("quest-list");
       if (!list) return;
       list.innerHTML = "";
+      const tut = typeof Tutorial !== "undefined" && Tutorial.missionsstand ? Tutorial.missionsstand() : null;
+      if (tut) {
+        const karte = document.createElement("section");
+        karte.id = "tutorial-mission";
+        karte.className = "border-l-4 border-green-400 bg-black/80 pl-4 py-3 mb-4";
+        if (tut.fertig) {
+          karte.innerHTML = '<div class="text-green-400 font-bold">✔ TUTORIAL – ABGESCHLOSSEN</div>';
+        } else {
+          karte.innerHTML = `<div class="text-yellow-400 font-bold">◉ TUTORIAL – ERSTE SCHRITTE</div>
+                    <div class="text-green-100 text-sm mt-2">Lerne die Grundlagen im Ödland. Du kannst jederzeit pausieren und hier weitermachen.</div>
+                    <div class="text-yellow-200 text-sm mt-2">Fortschritt: ${tut.erledigt} / ${tut.gesamt} · ${tut.titel}</div>
+                    <button type="button" class="action-button mt-3" data-tutorial-fortsetzen>TUTORIAL FORTSETZEN</button>`;
+          karte.querySelector("[data-tutorial-fortsetzen]").addEventListener("click", () => UI.starteTutorial());
+        }
+        list.appendChild(karte);
+      }
       const chains = [];
       const sideQuests = [];
       const processedIds = /* @__PURE__ */ new Set();
@@ -8052,7 +8069,7 @@
             `;
       };
       if (chains.length > 0) {
-        list.innerHTML += `<h3 class="text-yellow-500 font-bold text-sm tracking-[0.2em] border-b-2 border-yellow-800 mb-4 pb-1 uppercase">Haupt-Missionen</h3>`;
+        list.insertAdjacentHTML("beforeend", `<h3 class="text-yellow-500 font-bold text-sm tracking-[0.2em] border-b-2 border-yellow-800 mb-4 pb-1 uppercase">Haupt-Missionen</h3>`);
         chains.forEach((chain) => {
           const chainContainer = document.createElement("div");
           chainContainer.className = "mb-8 bg-black/40 p-3 rounded border border-green-900";
@@ -8089,7 +8106,7 @@
           list.appendChild(sideContainer);
         }
       }
-      if (chains.length === 0 && sideQuests.length === 0) {
+      if (!tut && chains.length === 0 && sideQuests.length === 0) {
         list.innerHTML = '<div class="text-center text-gray-400 italic mt-10 text-lg">Keine Aufzeichnungen vorhanden.</div>';
       }
     }
@@ -10634,6 +10651,17 @@
   ];
   window.GameData.RELEASED_PATCHES = [
     {
+      version: "14.0.28",
+      datum: "2026-11-26",
+      title: "Tutorial als Mission",
+      punkte: [
+        "Unter AUFGABEN steht das Tutorial als eigene Mission mit Fortschritt und einem Knopf zum Fortsetzen.",
+        "Das X pausiert nur; der aktuelle Schritt wird pro Spielstand gespeichert und nach erneutem Einloggen fortgesetzt.",
+        "Die Mission ist erst abgeschlossen, wenn alle Schritte erledigt sind. Der Kampfschritt wartet auf eine echte Begegnung und kann bis dahin pausiert werden.",
+        "Bereits als fertig gespeicherte Tutorials bleiben abgeschlossen; über das Menü kann man sie erneut starten."
+      ]
+    },
+    {
       version: "14.0.27",
       datum: "2026-11-26",
       title: "Update-Bestätigung, Tutorial und Speicher-Meldungen",
@@ -11406,8 +11434,8 @@
       text: "Im Ödland begegnen dir Gegner. Klick auf sie, um anzugreifen - sonst greifen sie dich an.",
       ziel: "#game-canvas",
       weiter: "ALLES KLAR",
-      // Kein Muss: wer im Tutorial keinem Gegner begegnet, soll nicht festsitzen.
-      weich: true,
+      // Die Mission bleibt offen, bis ein Kampf erlebt wurde. Pausieren ist
+      // jederzeit moeglich, damit niemand im Tutorial festhaengt.
       pruefung: () => typeof Game !== "undefined" && Game.state && (Game.state.kills > 0 || Game.state.view === "combat")
     },
     {
@@ -11424,33 +11452,60 @@
     offen: false,
     beobachter: null,
     zeigerHorcher: null,
-    // Startet das Tutorial, wenn der Spielstand es verlangt.
+    schrittAusSpielstand: function() {
+      const n = Game.state.tutorialSchritt;
+      return Number.isInteger(n) && n >= 0 && n < SCHRITTE.length ? n : 0;
+    },
+    missionsstand: function() {
+      if (typeof Game === "undefined" || !Game.state) return null;
+      const fertig = Game.state.tutorial === "fertig";
+      const index = fertig ? SCHRITTE.length : this.schrittAusSpielstand();
+      return {
+        fertig,
+        erledigt: index,
+        gesamt: SCHRITTE.length,
+        titel: fertig ? "" : SCHRITTE[index].titel
+      };
+    },
     vielleichtStarten: function() {
-      if (typeof Game === "undefined" || !Game.state) return false;
-      if (Game.state.tutorial === "fertig") return false;
-      if (Game.state.tutorial === "laeuft") return this.zeigen(this.index || 0);
-      return false;
+      if (typeof Game === "undefined" || !Game.state || Game.state.tutorial !== "laeuft") return false;
+      return this.zeigen(this.schrittAusSpielstand());
     },
     start: function() {
       if (typeof Game === "undefined" || !Game.state) return false;
-      this.index = 0;
-      this.offen = true;
+      const neuerDurchlauf = !["laeuft", "pausiert"].includes(Game.state.tutorial);
+      if (neuerDurchlauf) {
+        Game.state.tutorialSchritt = 0;
+        Game.state.tutorialStartPlayer = Game.state.player ? { x: Game.state.player.x, y: Game.state.player.y } : null;
+      }
       Game.state.tutorial = "laeuft";
-      Game.state.tutorialStartPlayer = Game.state.player ? { x: Game.state.player.x, y: Game.state.player.y } : null;
-      this.zeigen(0);
+      this.zeigen(this.schrittAusSpielstand());
       if (typeof Game.saveGame === "function") Game.saveGame();
       return true;
     },
-    beenden: function() {
+    ausblenden: function() {
       this.offen = false;
       this.beobachterAbstellen();
       const feld = this.feld();
       if (feld) feld.hidden = true;
       const zeiger = document.getElementById("tutorial-zeiger");
       if (zeiger) zeiger.remove();
+    },
+    pausieren: function() {
+      this.ausblenden();
+      if (typeof Game !== "undefined" && Game.state && Game.state.tutorial !== "fertig") {
+        Game.state.tutorial = "pausiert";
+        if (typeof Game.saveGame === "function") Game.saveGame();
+        if (typeof UI !== "undefined" && UI.renderQuests) UI.renderQuests();
+      }
+    },
+    beenden: function() {
+      this.ausblenden();
       if (typeof Game !== "undefined" && Game.state) {
         Game.state.tutorial = "fertig";
+        Game.state.tutorialSchritt = SCHRITTE.length;
         if (typeof Game.saveGame === "function") Game.saveGame();
+        if (typeof UI !== "undefined" && UI.renderQuests) UI.renderQuests();
       }
     },
     // Das Feld entsteht beim ersten Bedarf und bleibt. Kein innerHTML pro Tick:
@@ -11467,7 +11522,7 @@
       <div class="tut-kopf">
         <span class="tut-schritt" data-tut-schritt>1/7</span>
         <span class="tut-titel" data-tut-titel></span>
-        <button type="button" class="tut-zu" data-tut-ueberspringen title="Tutorial beenden" aria-label="Tutorial beenden">✕</button>
+        <button type="button" class="tut-zu" data-tut-ueberspringen title="Tutorial pausieren" aria-label="Tutorial pausieren">✕</button>
       </div>
       <div class="tut-text" data-tut-text></div>
       <div class="tut-fuss">
@@ -11476,7 +11531,7 @@
       </div>`;
       (document.getElementById("main-content") || document.body).appendChild(el);
       el.querySelector("[data-tut-weiter]").onclick = () => this.weiter();
-      el.querySelector("[data-tut-ueberspringen]").onclick = () => this.beenden();
+      el.querySelector("[data-tut-ueberspringen]").onclick = () => this.pausieren();
       return el;
     },
     zeigen: function(index) {
@@ -11484,6 +11539,11 @@
       if (!schritt) return this.beenden();
       this.index = index;
       this.offen = true;
+      if (typeof Game !== "undefined" && Game.state && Game.state.tutorialSchritt !== index) {
+        Game.state.tutorialSchritt = index;
+        if (typeof Game.saveGame === "function") Game.saveGame();
+      }
+      if (typeof UI !== "undefined" && UI.renderQuests) UI.renderQuests();
       const feld = this.feld();
       if (!feld) return false;
       feld.hidden = false;
@@ -11555,6 +11615,7 @@
       if (schritt.menueZu && sichtbar("main-nav") && typeof UI !== "undefined" && UI.toggleMenu) {
         UI.toggleMenu();
       }
+      if (schritt.pruefung && !schritt.pruefung()) return false;
       const naechster = this.index + 1;
       if (naechster >= SCHRITTE.length) return this.beenden();
       this.beobachterAbstellen();

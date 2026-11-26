@@ -8,8 +8,8 @@
 // soll genau das anklicken koennen, worauf das Tutorial zeigt; ein Fenster
 // mit Hintergrundsperre waere das Gegenteil davon.
 //
-// Stand: liegt im Spielstand (`state.tutorial`). Abgebrochen heisst
-// fortsetzen, nicht von vorn. Menue -> TUTORIAL startet es neu.
+// Stand und aktueller Schritt liegen im Spielstand. Schliessen pausiert;
+// Menue und Missionsliste setzen fort, bis alle Schritte erledigt sind.
 //
 // Was hier NICHT stehen darf und warum:
 //   * Ansicht 'inv'  - das Template heisst templates/inventory.html. Mit 'inv'
@@ -88,8 +88,8 @@ const SCHRITTE = [
     text: 'Im Ödland begegnen dir Gegner. Klick auf sie, um anzugreifen - sonst greifen sie dich an.',
     ziel: '#game-canvas',
     weiter: 'ALLES KLAR',
-    // Kein Muss: wer im Tutorial keinem Gegner begegnet, soll nicht festsitzen.
-    weich: true,
+    // Die Mission bleibt offen, bis ein Kampf erlebt wurde. Pausieren ist
+    // jederzeit moeglich, damit niemand im Tutorial festhaengt.
     pruefung: () => (typeof Game !== 'undefined' && Game.state &&
       (Game.state.kills > 0 || Game.state.view === 'combat'))
   },
@@ -109,36 +109,63 @@ const TUTORIAL = {
   beobachter: null,
   zeigerHorcher: null,
 
-  // Startet das Tutorial, wenn der Spielstand es verlangt.
+  schrittAusSpielstand: function () {
+    const n = Game.state.tutorialSchritt;
+    return Number.isInteger(n) && n >= 0 && n < SCHRITTE.length ? n : 0;
+  },
+
+  missionsstand: function () {
+    if (typeof Game === 'undefined' || !Game.state) return null;
+    const fertig = Game.state.tutorial === 'fertig';
+    const index = fertig ? SCHRITTE.length : this.schrittAusSpielstand();
+    return {fertig, erledigt: index, gesamt: SCHRITTE.length,
+      titel: fertig ? '' : SCHRITTE[index].titel};
+  },
+
   vielleichtStarten: function () {
-    if (typeof Game === 'undefined' || !Game.state) return false;
-    if (Game.state.tutorial === 'fertig') return false;
-    if (Game.state.tutorial === 'laeuft') return this.zeigen(this.index || 0);
-    return false;
+    if (typeof Game === 'undefined' || !Game.state || Game.state.tutorial !== 'laeuft') return false;
+    return this.zeigen(this.schrittAusSpielstand());
   },
 
   start: function () {
     if (typeof Game === 'undefined' || !Game.state) return false;
-    this.index = 0;
-    this.offen = true;
+    const neuerDurchlauf = !['laeuft', 'pausiert'].includes(Game.state.tutorial);
+    if (neuerDurchlauf) {
+      Game.state.tutorialSchritt = 0;
+      Game.state.tutorialStartPlayer = Game.state.player
+        ? {x: Game.state.player.x, y: Game.state.player.y} : null;
+    }
     Game.state.tutorial = 'laeuft';
-    Game.state.tutorialStartPlayer = Game.state.player
-      ? {x: Game.state.player.x, y: Game.state.player.y} : null;
-    this.zeigen(0);
+    this.zeigen(this.schrittAusSpielstand());
     if (typeof Game.saveGame === 'function') Game.saveGame();
     return true;
   },
 
-  beenden: function () {
+  ausblenden: function () {
     this.offen = false;
     this.beobachterAbstellen();
     const feld = this.feld();
     if (feld) feld.hidden = true;
     const zeiger = document.getElementById('tutorial-zeiger');
     if (zeiger) zeiger.remove();
+  },
+
+  pausieren: function () {
+    this.ausblenden();
+    if (typeof Game !== 'undefined' && Game.state && Game.state.tutorial !== 'fertig') {
+      Game.state.tutorial = 'pausiert';
+      if (typeof Game.saveGame === 'function') Game.saveGame();
+      if (typeof UI !== 'undefined' && UI.renderQuests) UI.renderQuests();
+    }
+  },
+
+  beenden: function () {
+    this.ausblenden();
     if (typeof Game !== 'undefined' && Game.state) {
       Game.state.tutorial = 'fertig';
+      Game.state.tutorialSchritt = SCHRITTE.length;
       if (typeof Game.saveGame === 'function') Game.saveGame();
+      if (typeof UI !== 'undefined' && UI.renderQuests) UI.renderQuests();
     }
   },
 
@@ -156,7 +183,7 @@ const TUTORIAL = {
       <div class="tut-kopf">
         <span class="tut-schritt" data-tut-schritt>1/7</span>
         <span class="tut-titel" data-tut-titel></span>
-        <button type="button" class="tut-zu" data-tut-ueberspringen title="Tutorial beenden" aria-label="Tutorial beenden">✕</button>
+        <button type="button" class="tut-zu" data-tut-ueberspringen title="Tutorial pausieren" aria-label="Tutorial pausieren">✕</button>
       </div>
       <div class="tut-text" data-tut-text></div>
       <div class="tut-fuss">
@@ -165,7 +192,7 @@ const TUTORIAL = {
       </div>`;
     (document.getElementById('main-content') || document.body).appendChild(el);
     el.querySelector('[data-tut-weiter]').onclick = () => this.weiter();
-    el.querySelector('[data-tut-ueberspringen]').onclick = () => this.beenden();
+    el.querySelector('[data-tut-ueberspringen]').onclick = () => this.pausieren();
     return el;
   },
 
@@ -174,6 +201,11 @@ const TUTORIAL = {
     if (!schritt) return this.beenden();
     this.index = index;
     this.offen = true;
+    if (typeof Game !== 'undefined' && Game.state && Game.state.tutorialSchritt !== index) {
+      Game.state.tutorialSchritt = index;
+      if (typeof Game.saveGame === 'function') Game.saveGame();
+    }
+    if (typeof UI !== 'undefined' && UI.renderQuests) UI.renderQuests();
 
     const feld = this.feld();
     if (!feld) return false;
@@ -272,6 +304,9 @@ const TUTORIAL = {
       UI.toggleMenu();
     }
 
+    // Ein nicht erfuellter Pflichtschritt darf auch durch direkte Aufrufe
+    // nicht als erledigt zaehlen.
+    if (schritt.pruefung && !schritt.pruefung()) return false;
     const naechster = this.index + 1;
     if (naechster >= SCHRITTE.length) return this.beenden();
     this.beobachterAbstellen();
