@@ -30,6 +30,16 @@ const ITEM_ART={
  'legacy-8':'assets/equip-manual.jpg?v=20261121-dossier1',
  'legacy-9':'assets/equip-badge.jpg?v=20261121-dossier1',
  'legacy-10':'assets/equip-tankkit.jpg?v=20261121-dossier1',
+ marksman:'assets/equip-marksman.jpg?v=20261121-dossier1',
+ mechanic:'assets/equip-mechanic.jpg?v=20261121-dossier1',
+ radio:'assets/equip-tacticalradio.jpg?v=20261121-dossier1',
+ boots:'assets/equip-fieldboots.jpg?v=20261121-dossier1',
+ 'prestige-relay':'assets/prestige-relay.jpg?v=20261121-dossier1',
+ 'prestige-oscillator':'assets/prestige-oscillator.jpg?v=20261121-dossier1',
+ 'prestige-chargekey':'assets/prestige-chargekey.jpg?v=20261121-dossier1',
+ 'prestige-convoy-plate':'assets/prestige-convoy-plate.jpg?v=20261121-dossier1',
+ 'prestige-tidelock-seal':'assets/prestige-tidelock-seal.jpg?v=20261121-dossier1',
+ 'prestige-bridge-marker':'assets/prestige-bridge-marker.jpg?v=20261121-dossier1',
 };
 const artOf=id=>ITEM_ART[id]||'';
 // Which anatomical place wears this piece. Presentation only — the equip
