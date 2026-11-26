@@ -1213,3 +1213,11 @@ Ereignis ergänzt.
 - Dateien: `src/main.js` (`renderTutorialStep`, `minimizeTutorialForPanel`, Aufruf beim Öffnen des Feld-Fensters), `style.css` (`.tut-min`, `.tut-pill`, `.tutorial.mini`).
 - Tests: `npm test` 185/185 grün. `npm run check` ohne Fehler.
 - Nachweis: Nur Unit-Tests und Prüfung der Logik. Die Darstellung wurde nicht im Browser gegengeprüft, die Testumgebung war nicht verfügbar. Ein Durchlauf im echten Spiel steht aus.
+
+### TTT-0072 – Bau-Fenster: feste Größe, Beschreibung auf Wunsch, Bauen in voller Breite
+
+- Anlass (Screenshot): Die Bau-Karte wechselte mit jedem Gebäude die Größe. Bei viel Vorrat schob sich der „Bauen“-Knopf neben den Kostenchips aus der Karte.
+- Änderungen: Die Karte hat feste Höhe (210 px). Name, Kosten und eine Statuszeile stehen oben. Die Beschreibung (Produktion, Platzregel) ist über „Beschreibung“ ein- und ausblendbar und bleibt beim Blättern offen. „Bauen“ ist unten in voller Breite.
+- Dateien: `src/main.js` (`buildMenu`, `onPanelClick` für „info“, `buildInfoOpen`), `style.css` (`.panel .cycle .opt`, `.opt-body`, `.opt-foot`).
+- Tests: `npm test` 185/185 grün. `npm run check` ohne Fehler.
+- Nachweis: Nur Unit-Tests und Logikprüfung. Die Darstellung wurde nicht im Browser gegengeprüft (Testumgebung nicht verfügbar).

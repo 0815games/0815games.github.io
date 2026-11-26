@@ -687,6 +687,11 @@ function onPanelClick(e) {
   if (!btn || btn.disabled || !state) return;
   const { action, id, index } = btn.dataset;
   const { x, y } = selected;
+  if (action === 'info') {
+    buildInfoOpen = !buildInfoOpen;
+    renderPanel();
+    return;
+  }
   if (action === 'build') dispatch(placeBuilding(state, { x, y, buildingId: id }, ctx()), 'Gebaut.');
   if (action === 'upgrade') dispatch(upgradeBuilding(state, { x, y }, ctx()), 'Aufgewertet.');
   if (action === 'worker') {
@@ -1345,7 +1350,9 @@ function farmFieldsHtml(b, x, y) {
   return html;
 }
 
-/** Eine Bauoption je Ansicht. ‹ › blättert durch alle Gebäude. */
+let buildInfoOpen = false; // Beschreibung im Bau-Fenster eingeblendet (bleibt beim Blättern)
+
+/** Eine Bauoption je Ansicht. ‹ › blättert durch alle Gebäude. Feste Größe, Beschreibung auf Wunsch. */
 function buildMenu(x, y) {
   const entries = Object.entries(data.buildings).filter(([, d]) => !d.fixed);
   if (buildIdx >= entries.length) buildIdx = 0;
@@ -1368,21 +1375,30 @@ function buildMenu(x, y) {
     meta = id === 'warehouse' ? 'Mehr Lagerkapazität' : 'Mehr Verkaufsdurchsatz';
   }
   const hint = placementHint(d);
-  const placeNote = !place.ok && !locked
-    ? `<div class="locked-note">${esc(hint || ERR_DE[place.reason] || 'Hier nicht möglich.')}</div>`
-    : (hint ? `<div class="meta small">${esc(hint)}</div>` : '');
+  // Eine Zeile sagt, woran es hängt. Alles Lange steht in der Beschreibung.
+  const status = locked
+    ? `Ab Stadtlevel ${d.unlockTownLevel}`
+    : !affordable
+      ? missingText(c)
+      : !place.ok
+        ? (ERR_DE[place.reason] || 'Hier nicht möglich.')
+        : 'Bereit zum Bauen';
+  const statusClass = locked || !affordable || !place.ok ? 'locked-note' : 'ok small';
+  const details = `<div class="meta small">${meta}</div>${hint ? `<div class="meta small">${esc(hint)}</div>` : ''}`;
   return `<section>
     <div class="cycle">
       <button type="button" data-action="cycle" data-dir="-1" data-cycle aria-label="Vorherige Option">‹</button>
       <div class="opt">
-        <div><strong>${d.icon} ${esc(d.name.de)}</strong> <span class="muted small">${buildIdx + 1} / ${entries.length}</span>
+        <div class="opt-body">
+          <div class="opt-head"><strong>${d.icon} ${esc(d.name.de)}</strong> <span class="muted small">${buildIdx + 1} / ${entries.length}</span></div>
           ${costChips(c)}
-          <div class="meta">${meta}</div>
-          ${locked ? `<div class="locked-note">Ab Stadtlevel ${d.unlockTownLevel}</div>` : ''}
-          ${!locked && !affordable ? `<div class="locked-note">${missingText(c)}</div>` : ''}
-          ${placeNote}
+          <div class="${statusClass}">${esc(status)}</div>
+          ${buildInfoOpen ? `<div class="opt-info">${details}</div>` : ''}
         </div>
-        <button type="button" data-action="build" data-id="${id}" ${locked || !affordable || !place.ok ? 'disabled' : ''}>Bauen</button>
+        <div class="opt-foot">
+          <button type="button" class="ghost" data-action="info" aria-expanded="${buildInfoOpen}">${buildInfoOpen ? 'Weniger' : 'Beschreibung'}</button>
+          <button type="button" class="primary" data-action="build" data-id="${id}" ${locked || !affordable || !place.ok ? 'disabled' : ''}>Bauen</button>
+        </div>
       </div>
       <button type="button" data-action="cycle" data-dir="1" data-cycle aria-label="Nächste Option">›</button>
     </div>

@@ -579,12 +579,34 @@ button.danger { background: #E4837A; border-color: var(--ink); }
 .panel .cycle { gap: 10px; }
 .panel .cycle .opt {
   flex: 1 1 auto;
+  min-width: 0;
+  /* Feste Größe: die Karte wechselt nicht mehr mit dem Gebäude. Langes scrollt im Inneren. */
+  height: 210px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   background: #fff;
   border: 2px solid var(--ink);
   border-radius: 16px;
   padding: 12px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
 }
+.panel .cycle .opt .opt-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  display: grid;
+  align-content: start;
+  gap: 6px;
+}
+.panel .cycle .opt .opt-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.panel .cycle .opt .opt-info { border-top: 1px dashed rgba(59, 47, 47, 0.3); padding-top: 6px; }
+.panel .cycle .opt .opt-foot { flex: none; display: flex; gap: 8px; }
+.panel .cycle .opt .opt-foot button { min-height: 44px; font-weight: 700; }
+.panel .cycle .opt .opt-foot [data-action="build"] { flex: 1 1 auto; }
+.panel .cycle .opt .opt-foot [data-action="info"] { flex: 0 0 auto; padding-inline: 12px; }
+.panel .cycle .opt .cost-row { margin: 0; }
+.panel .cycle .opt .cost-chip { font-size: 13px; padding: 1px 8px; }
 .panel .cycle .opt strong { font-size: 18px; }
 .panel .cycle button[data-cycle] {
   flex: 0 0 46px;
@@ -598,7 +620,7 @@ button.danger { background: #E4837A; border-color: var(--ink); }
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
 }
 .panel .cycle button[data-cycle]:active { transform: scale(0.94); }
-.panel .opt > button { min-height: 44px; font-weight: 700; }
+
 
 /* Rückfrage im Spiel-Design (ersetzt Browser-Dialoge) */
 .confirm p { margin: 0; }
