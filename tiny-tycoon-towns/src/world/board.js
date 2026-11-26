@@ -35,6 +35,7 @@ export function createBoard(container, opts) {
   let W = 0, H = 0, dpr = 1, base = 0.9;
   let fx = makeFx();
   let hover = null;
+  let hintTile = null;   // Tutorial: Feld, das markiert wird (oder null)
   let last = performance.now();
   let t0 = last;
   let rafId = 0;
@@ -92,7 +93,7 @@ export function createBoard(container, opts) {
 
   function model() {
     const m = opts.getModel();
-    return { ...m, selected: opts.getSelected(), reduceMotion: reduce, size: GRID_SIZE };
+    return { ...m, selected: opts.getSelected(), hint: hintTile, reduceMotion: reduce, size: GRID_SIZE };
   }
 
   // ----- Eingabe -----
@@ -261,6 +262,14 @@ export function createBoard(container, opts) {
   else drawOnce();
 
   return {
+    /** Tutorial: markiert ein Feld ({ x, y }) oder hebt die Markierung auf (null). */
+    setHint(tile) {
+      const same = tile === null ? hintTile === null : hintTile !== null && hintTile.x === tile.x && hintTile.y === tile.y;
+      if (same) return;
+      hintTile = tile ? { x: tile.x, y: tile.y } : null;
+      dirty = true;
+      if (reduce) drawOnce();
+    },
     /** Kamera zurück auf das Rathaus, Zoom auf Grundgröße. Bei einer neuen Stadt, sonst bleibt die alte Ansicht. */
     recenter() {
       const c = toScreen(HALL.x + 0.5, HALL.y + 0.5);

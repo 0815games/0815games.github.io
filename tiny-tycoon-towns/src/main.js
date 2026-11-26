@@ -28,6 +28,7 @@ import { friendsShell, mountFriends } from './friends-ui.js?v=20261125-bal7';
 import { createBoard } from './world/board.js?v=20261125-bal7';
 import { createLoginScene } from './world/login-scene.js?v=20261125-bal7';
 import { TUTORIAL_STEPS, HELP_SECTIONS, CHECK_LABELS, STATE_TASKS, tutorialResume, tutorialStored } from './tutorial.js?v=20261125-bal7';
+import { tutorialSpot, builtSpot } from './domain/tutorialSpot.js?v=20261125-bal7';
 import { createVersionUI } from './version-ui.mjs?v=20261125-bal7';
 import { startAfkWatch, showAfkOverlay } from './afk.js?v=20261125-bal7';
 import { fullResources, fillPercent } from './stock-dock.js?v=20261125-bal7';
@@ -775,6 +776,15 @@ let tutorialIndex = null; // aktueller Schritt, null wenn keiner offen ist
 
 function clearTutorialHighlight() {
   document.querySelectorAll('.tut-target').forEach((el) => el.classList.remove('tut-target'));
+  board?.setHint(null);
+}
+
+/** Feld, das der Schritt markiert: freies passendes Feld für einen Bau, oder das gebaute Gebäude für einen Ausbau. */
+function tutorialHintFor(step) {
+  if (!state || !step) return null;
+  if (step.build) return tutorialSpot(state, step.build, data);
+  if (step.upgrade) return builtSpot(state, step.upgrade);
+  return null;
 }
 
 function endTutorial() {
@@ -839,13 +849,21 @@ function refreshTutorialTask() {
   }
   if (!step?.task) return;
   const done = tutorialTaskIsDone(step.task);
+  // Bau- und Ausbau-Schritte: erst erledigen, dann weiter. Das markierte Feld zeigt, wo.
+  const required = Boolean(step.build || step.upgrade);
+  board?.setHint(done ? null : tutorialHintFor(step));
   const hint = $('#tut-hint');
   if (hint) {
-    hint.textContent = done ? 'Gut gemacht, du hast es ausprobiert.' : 'Probier es direkt aus. Oder wähle Später.';
+    if (done) hint.textContent = 'Gut gemacht, das steht.';
+    else if (required) hint.textContent = 'Probier es direkt aus: Tippe auf das markierte Feld. Fehlen Münzen oder Material, arbeitet die Stadt weiter. Mit Überspringen beendest du das Tutorial.';
+    else hint.textContent = 'Probier es direkt aus. Oder wähle Später.';
     hint.classList.toggle('done', done);
   }
   const next = $('#tut-next');
-  if (next) next.textContent = last ? 'Fertig' : done ? 'Weiter' : 'Später';
+  if (next) {
+    next.textContent = last ? 'Fertig' : done ? 'Weiter' : required ? 'Erst bauen' : 'Später';
+    next.disabled = required && !done && !last;
+  }
 }
 
 function showTutorialStep(index) {
@@ -869,6 +887,7 @@ function showTutorialStep(index) {
     </p>
   </section>`;
   $('#tut-next').addEventListener('click', () => {
+    if ($('#tut-next').disabled) return;
     if (last) {
       saveTutorialStep(TUTORIAL_STEPS.length);
       endTutorial();

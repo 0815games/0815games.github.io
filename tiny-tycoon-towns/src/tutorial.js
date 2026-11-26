@@ -5,7 +5,7 @@
 export const TUTORIAL_STEPS = Object.freeze([
   {
     title: 'Willkommen in deiner Stadt',
-    text: 'Deine Stadt arbeitet auch dann weiter, wenn du nicht hinsiehst. In wenigen Schritten gehst du alles einmal durch. Jeder Schritt wartet auf deine Aktion. Mit „Später“ gehst du weiter.',
+    text: 'Deine Stadt arbeitet auch dann weiter, wenn du nicht hinsiehst. Du baust jetzt die Grundstruktur: Hof, Sägewerk, Steinbruch und Lager. Jeder Bau ist eine Aufgabe auf der Karte. Das markierte Feld zeigt dir, wo er hingehört.',
     target: null,
   },
   {
@@ -15,10 +15,32 @@ export const TUTORIAL_STEPS = Object.freeze([
     task: 'tap',
   },
   {
-    title: 'Gebäude bauen',
-    text: 'Im Feld-Fenster baust du Gebäude. Mit den Pfeilen wählst du die Option. Jedes Gebäude braucht Münzen und Material. Tippe auf ein freies Feld und baue ein Gebäude.',
+    title: 'Der Hof',
+    text: 'Der Hof liefert Getreide. Er braucht eine Wiese. Das markierte Feld ist frei und liegt am nächsten am Rathaus. Tippe darauf und baue den Hof.',
     target: '#board',
-    task: 'build',
+    task: 'farm',
+    build: 'farm',
+  },
+  {
+    title: 'Das Sägewerk',
+    text: 'Das Sägewerk macht aus dem Wald Holz. Es steht nur im Wald. Das markierte Feld ist ein freier Waldboden. Tippe darauf und baue das Sägewerk.',
+    target: '#board',
+    task: 'sawmill',
+    build: 'sawmill',
+  },
+  {
+    title: 'Der Steinbruch',
+    text: 'Der Steinbruch fördert Stein aus dem Fels. Er steht nur auf Fels. Das markierte Feld ist frei. Tippe darauf und baue den Steinbruch.',
+    target: '#board',
+    task: 'quarry',
+    build: 'quarry',
+  },
+  {
+    title: 'Das Lager',
+    text: 'Das Lager braucht Platz auf jedem Land. Es hilft, wenn viel zusammenkommt. Das markierte Feld ist frei. Tippe darauf und baue das Lager.',
+    target: '#board',
+    task: 'warehouse',
+    build: 'warehouse',
   },
   {
     title: 'Lager und Reserve',
@@ -51,33 +73,22 @@ export const TUTORIAL_STEPS = Object.freeze([
     task: 'help',
   },
   {
-    title: 'Wohnhaus bauen',
-    text: 'Ein Wohnhaus bringt Bewohner. Tippe auf ein freies Feld, wähle Wohnhaus und baue es. Ab Stadtlevel 2 verfügbar. Es kostet Münzen und Holz.',
-    target: '#board',
-    task: 'house',
-  },
-  {
-    title: 'Arbeit und Lohn',
-    text: 'Bewohner arbeiten in Betrieben, höchstens 3 Felder entfernt. Tippe auf einen Betrieb und setze mit + einen Arbeiter aus einem Wohnhaus. Jeder Arbeiter bekommt Lohn, der täglich automatisch abgezogen wird.',
-    target: '#board',
-    task: 'worker',
-  },
-  {
-    title: 'Gebäude ausbauen',
-    text: 'Mit dem Ausbau steigt der Ertrag, und das Gebäude zeigt die nächste Stufe. Tippe auf ein Gebäude und baue es auf Stufe 2 aus. Das kostet Münzen und Material.',
+    title: 'Ausbauen',
+    text: 'Mit dem Ausbau steigt der Ertrag, und das Gebäude zeigt die nächste Stufe. Das markierte Gebäude ist dein Hof. Tippe darauf und baue ihn auf Stufe 2 aus. Das kostet Münzen und Material.',
     target: '#board',
     task: 'upgrade',
+    upgrade: 'farm',
   },
   {
     title: 'Stufen der Gebäude',
-    text: 'Gebäude und Wohnhäuser haben fünf sichtbare Stufen. Du erkennst sie am Bild. Die Bewohner wachsen langsam nach, bis zur Kapazität des Hauses.',
+    text: 'Gebäude und Wohnhäuser haben fünf sichtbare Stufen. Du erkennst sie am Bild. Wohnhäuser und Arbeiter kommen mit Stadtlevel 2. Bis dahin reicht die Grundstruktur.',
     target: null,
   },
   {
     title: 'Dein Check',
-    text: 'Hier siehst du, was du in diesem Tutorial ausprobiert hast. Fehlt etwas, holst du es am Feld nach. Die Anleitung findest du jederzeit unter Hilfe.',
+    text: 'Hier siehst du, was du in diesem Tutorial gebaut und ausprobiert hast. Fehlt etwas, holst du es am Feld nach. Die Anleitung findest du jederzeit unter Hilfe.',
     target: null,
-    checklist: ['tap', 'build', 'stock', 'sell', 'xp', 'merchant', 'help', 'house', 'worker', 'upgrade'],
+    checklist: ['farm', 'sawmill', 'quarry', 'warehouse', 'tap', 'stock', 'sell', 'xp', 'merchant', 'help', 'upgrade'],
   },
 ]);
 
@@ -88,7 +99,10 @@ export const TUTORIAL_STORE_OFFSET = 100;
 
 export const CHECK_LABELS = Object.freeze({
   tap: 'Ein Feld angetippt',
-  build: 'Ein Gebäude gebaut',
+  farm: 'Einen Hof gebaut',
+  sawmill: 'Ein Sägewerk gebaut',
+  quarry: 'Einen Steinbruch gebaut',
+  warehouse: 'Ein Lager gebaut',
   stock: 'Das Inventar geöffnet',
   sell: 'Den Verkauf einer Ressource umgeschaltet',
   xp: 'Die Erfahrungsleiste angesehen',
@@ -100,7 +114,7 @@ export const CHECK_LABELS = Object.freeze({
 });
 
 /** Aufgaben, die der Spielstand selbst festhält. Die übrigen merkt sich der Browser (pro Konto). */
-export const STATE_TASKS = Object.freeze(['build', 'house', 'worker', 'upgrade']);
+export const STATE_TASKS = Object.freeze(['farm', 'sawmill', 'quarry', 'warehouse', 'house', 'worker', 'upgrade']);
 
 /** Was beim Start passiert: 'offer' (Angebot zeigen), eine Schrittnummer oder null (nichts mehr). */
 export function tutorialResume(stored) {

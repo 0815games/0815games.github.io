@@ -1177,3 +1177,19 @@ Ereignis ergänzt.
 - Grenzen / offen:
   - Die Prüfung im Browser lief mit einer Testseite, nicht mit dem Spiel selbst (Firebase ist in der Sandbox nicht erreichbar).
     Bitte den Neustart einmal im Spiel prüfen.
+
+### TTT-0069 – Tutorial als Grundstruktur auf der Karte (PR #495)
+
+- Ziel: Das Tutorial baut die Grundstruktur der Stadt direkt auf der Karte nach: Hof, Sägewerk, Steinbruch, Lager, dann Ausbau.
+- Dateien: `src/domain/tutorialSpot.js` (neu: freies, legales Feld am Rathaus finden; gebautes Gebäude finden),
+  `src/tutorial.js` (Schritte, Bezeichnungen, Aufgaben), `src/domain/settlement.js` (Aufgaben für Hof, Sägewerk, Steinbruch, Lager),
+  `src/world/board.js` und `src/world/scene.js` (pulsierende Markierung für das Tutorial-Feld), `src/main.js` (Markierung, Schritte mit Pflicht).
+- Ablauf: Bau-Schritte markieren das nächste freie, passende Feld am Rathaus. „Weiter“ wird erst nach dem Bau aktiv (Schaltfläche „Erst bauen“). Ausbau-Schritt markiert den Hof.
+- Abschluss-Check: Hof, Sägewerk, Steinbruch, Lager, Antippen, Inventar, Verkauf, Erfahrung, Eberhard, Hilfe, Ausbau.
+- Geändert gegenüber TTT-0064: „Wohnhaus bauen“ und „Arbeit und Lohn“ sind nicht mehr Pflicht. Ein Wohnhaus braucht Stadtlevel 2 (2000 Erfahrung).
+  Ein Gebäude bringt 20 Erfahrung, im Tutorial ist Stadtlevel 2 nicht zu erreichen. Der Schritt „Stufen“ weist darauf hin.
+- Tests: `npm test` 183/183 grün (4 neue in `tests/tutorialSpot.test.mjs`). `npm run check` ohne Fehler.
+  Finder auf 160 Testkarten (4 Biome × 40 Seeds): für alle vier Startgebäude ein Feld gefunden.
+- Nachweis: Unit-Tests und Logik-Prüfung. Die Markierung wurde im headless Browser ohne Fehler gerendert, ist im Screenshot aber schwach zu sehen.
+  Ein vollständiger Durchlauf im echten Spiel steht aus (Firebase in der Sandbox nicht erreichbar).
+- Grenze: Wer ein altes, laufendes Tutorial hat, springt an die Stelle derselben Nummer in der neuen Reihenfolge.

@@ -108,6 +108,7 @@ export function tutorialTaskDone(state, task) {
   const tiles = Object.values(state.tiles);
   if (task === 'build') return tiles.some((t) => t.building && t.building.id !== 'townHall');
   if (task === 'house') return tiles.some((t) => t.building?.id === 'house');
+  if (['farm', 'sawmill', 'quarry', 'warehouse'].includes(task)) return tiles.some((t) => t.building?.id === task);
   if (task === 'upgrade') return tiles.some((t) => t.building && t.building.id !== 'townHall' && (t.building.level ?? 1) >= 2);
   if (task === 'worker') return tiles.some((t) => (t.building?.manual ?? []).some((m) => m.n > 0));
   return false;

@@ -194,6 +194,14 @@ export function renderWorld(ctx, { W, H, view, model, time, day, fx, hover }) {
         diamond.forEach((p, i) => (i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)));
         ctx.closePath();
         ctx.stroke();
+      } else if (model.hint && model.hint.x === x && model.hint.y === y) {
+        // Tutorial: pulsierende Umrandung, damit das Feld sofort auffällt
+        ctx.strokeStyle = `rgba(120,220,255,${0.5 + 0.5 * Math.sin(time * 3)})`;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        diamond.forEach((p, i) => (i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)));
+        ctx.closePath();
+        ctx.stroke();
       } else if (hover && hover.x === x && hover.y === y) {
         fillPoly(ctx, diamond, 'rgba(255,255,255,0.18)');
       }
