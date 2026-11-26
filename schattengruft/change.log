@@ -1,5 +1,44 @@
 # CHANGELOG – Chroniken der Schattengruft
 
+## 2026-11-26 – 3D-Ansicht im Spiel verdrahtet
+
+- **3D-Schalter im Spiel:** Statt des Testschalters über der Karte gibt es jetzt einen
+  Schalter **3D** im Kopfbereich – sichtbar in Erkundung und Kampf. Er zeigt den Zustand
+  (`3D ein` / `3D aus`), ist per Tastatur bedienbar und deaktiviert sich selbst, wenn WebGL
+  oder das CDN nicht verfügbar ist.
+- **Vorliebe bleibt:** Die Wahl wird in `localStorage` gespeichert und beim nächsten Start
+  angewandt. `?view=3d` in der Adresse hat Vorrang und wird übernommen; `?view=2d` erzwingt 2D.
+  Ein Bestandsschutz: Wer bisher den Link aus der Doku nutzt, landet weiterhin in 3D.
+- **Kritischer Layoutfehler behoben:** `#combat` liegt als `position:fixed` mit
+  `rgba(5,6,10,.97)` über dem ganzen Spiel. Die Phase-5-Kampfbühne wurde zwar gerendert,
+  war darunter aber **unsichtbar**. Die Leinwand wird jetzt beim Kampfstart in einen eigenen
+  Rahmen (`#combat-stage`) im Kampfbildschirm umgehängt und beim Kampfende zurück in die Karte.
+  Der Rahmen bleibt ohne 3D vollständig verschwunden; die 2D-Ansicht ist unverändert.
+- **Ein Modul, eine Aufgabe:** `world3d-mode.js` entscheidet nur über Schalter, Vorliebe und
+  Sichtbarkeit. Es kennt weder Three.js noch Kampfregeln. `world3d-phase1.js` verliert seine
+  eingebaute Steuerleiste und stellt eine kleine API (`setEnabled`, `subscribe`, `canvasMoved`).
+- **Sicheres Erkennen von Zustandswechseln:** Ein `MutationObserver` auf `class`/`hidden`
+  löst das Neuzeichnen aus – nicht ein Klick- oder Tastenhandler. Kampfbeginn, Kampfende und
+  Tod ändern Klassen am DOM; das ist robuster und trifft auch Zustandswechsel, die ohne
+  Eingabe passieren (Tod, Ebenenwechsel).
+- **Zwei Fehler beim Testen gefunden und behoben:**
+  1. Das Modul installierte sich beim Laden selbst **und** wurde erneut aufgerufen. Damit
+     hingen zwei Klick-Handler am Schalter, die sich gegenseitig aufhoben: ein Klick
+     schaltete ein und sofort wieder aus. Die Installation ist jetzt einmalig und wird von
+     `main.js` nach dem Setzen von `window.__rpg` ausgelöst.
+  2. `queueMicrotask` im Beobachter lief im Test erst nach dem synchronen Ablauf. Das war ein
+     Testartefakt, hat aber gezeigt, dass die Nacharbeit nicht synchron sein darf; der Test
+     wartet jetzt echte Mikrotasks ab.
+- **Layout im 3D-Kampf:** Der Kampfbildschirm wird nur bei aktiver 3D-Ansicht kompakter
+  gesetzt (`world3d-combat`): kleinere Abstände, kürzeres Kampfprotokoll, flachere Tasten.
+  Damit passen Bühne, Werte, Text und Tasten auf ein Handydisplay (Rechnung: 602 von 700 px).
+- **Tests:** Neue Suite `three-mode-integration.mjs` mit DOM-Ersatz und Scheinrenderer prüft
+  Schalter, Umhängen der Leinwand, gespeicherte Vorliebe, `?view=`-Vorrang, Tod und die
+  Verdrahtung im Markup. Insgesamt **25 Suiten**, alle grün. `html-assets.mjs` erkennt das neue
+  Modul im Import-Graph (74 Module).
+- **Unverändert:** Kampfreihenfolge, Schadensformeln, Spielstandformat, Weltgenerierung und
+  der vollständige 2D-Pfad. Keine Minor-Erhöhung, Stand bleibt 0.10.x.
+
 ## 2026-11-26 – 3D-Kampfbühne (Phase 5)
 
 - **Neues Bühnenmodul** `js/world/world3d-stage.js`: reine Rechnung ohne Three.js,

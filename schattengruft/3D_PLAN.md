@@ -59,10 +59,24 @@ Angriffe, Zauber, Treffer und der Belohnungsübergang sind als Choreografie sich
 - [x] Manavorrat 8 und Fluchtchance 40 % unverändert; keine Eingriffe in Kampfwerte.
 - [x] Vollständige Kampfreihenfolge bleibt im bestehenden Code (Angriff, Feuer, Trank, Mana, Flucht).
 - [x] Neue Suiten `three-phase5.mjs` (Rechnung) und `three-phase5-engine.mjs` (Engine-Lauf).
+
+### Integration ins Spiel (Nachtrag)
+- [x] Schalter **3D** im Kopfbereich des Spiels, sichtbar in Erkundung und Kampf.
+- [x] Vorliebe wird gespeichert und beim nächsten Start angewandt.
+- [x] `?view=3d` in der Adresse hat Vorrang und wird übernommen; `?view=2d` erzwingt 2D.
+- [x] Die Leinwand folgt dem Bildschirm: Karte beim Erkunden, eigener Bühnenrahmen im Kampf.
+- [x] Bugfix: `#combat` ist `position:fixed` mit 97 % deckendem Hintergrund – die Bühne lag
+      darunter und war im Kampf **unsichtbar**. Sie bekommt jetzt einen eigenen Rahmen im
+      Kampfbildschirm; das 2D-Layout bleibt unverändert.
+- [x] Im Tod und außerhalb des Spiels wird nicht gezeichnet; der Rahmen verschwindet.
+- [x] Der Kampfbildschirm wird nur im 3D-Modus kompakter gesetzt (`world3d-combat`),
+      damit Bühne, Werte, Text und Tasten auf ein Handydisplay passen.
+- [x] Test `three-mode-integration.mjs` mit DOM-Ersatz: Schalter, Umhängen, Vorliebe, Tod.
 - [ ] Kampfbühne auf Desktop und Handy online abnehmen.
 - [ ] Trefferzahlen, Krits, Boss-Kampf und Flucht im 3D-Modus sichtbar prüfen.
 - [ ] Übergang nach Sieg (EP-Zahl, Stufenaufstieg, Treppe) im 3D-Modus prüfen.
-- [ ] 2D-Rückschaltung mitten im Kampf prüfen.
+- [ ] 3D-Schalter auf Desktop und Handy im Spiel abnehmen.
+- [ ] 2D-Rückschaltung mitten im Kampf prüfen (Leinwand kehrt in die Karte zurück).
 - [ ] Freigabe für Phase 6.
 
 Die Bühne ist reine Darstellung. Kampfreihenfolge, Schadensformeln, Gegenstands-
