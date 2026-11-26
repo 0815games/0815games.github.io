@@ -73,7 +73,7 @@ test('the icon set is the transmission mark: gold star over two chevrons',()=>{
   assert.deepEqual(sizes,[16,32,48]);
   // Every icon link and the manifest are cache-busted with this wave.
   for(const ref of ['favicon.svg?v=','favicon.ico?v=','apple-touch-icon.png?v=','manifest.webmanifest?v='])
-    assert.ok(html.includes(`assets/${ref}20261031-loading1`),`busted: ${ref}`);
+    assert.ok(html.includes(`assets/${ref}20261121-pwa1`),`busted: ${ref}`);
   const manifest=JSON.parse(readFileSync(new URL('../assets/manifest.webmanifest',import.meta.url),'utf8'));
   assert.equal(manifest.short_name,'Iron Path');
   assert.deepEqual(manifest.icons.map(i=>i.sizes),['192x192','512x512']);

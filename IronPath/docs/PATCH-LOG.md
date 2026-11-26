@@ -6,7 +6,7 @@ aber ersetzt weder Git noch die GitHub-PR-Historie. Die dazugehörige
 [Arbeitsanweisung](../../AGENTS.md) verlangt, dieses Log vor der Arbeit zu lesen
 und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
 
-Die Einträge IPL-0001 bis IPL-0121 stehen im
+Die Einträge IPL-0001 bis IPL-0122 stehen im
 [Archiv](PATCH-LOG-ARCHIV.md); hier stehen die neuesten 20. Beide Dateien
 zusammen sind lückenlos und doppelfrei - `../scripts/patch.mjs` (Unterbefehl `check`) und
 `../tests/patch-log-archive.test.mjs` prüfen das.
@@ -60,20 +60,6 @@ jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderl
 
 
 
-## IPL-0122 – Lebendiges Feld, Scheibe 1: Drehender MG-Turmkopf (geschichtet), Schadens-Rauch, Soldaten-Leben (Cache-Welle folgt im selben PR)
-
-- **Zeit / Quelle:** 2026-11-23 UTC; Betreiber: „Ich hätte gern, dass das ganze Spiel ein wenig lebendiger wirkt. Türme sollen sich in Richtung der Gegner drehen …“ Auf Rückfrage wählte der Betreiber Bauart **B (geschichtet)**: gemalter Grundkörper bleibt, ein neuer, im Code gezeichneter Oberbau dreht sich frei 360° — Prototyp zuerst am MG-Turm, die anderen drei Typen nach seiner Sichtung. Gegner und Soldaten sollten im selben Paket mit lebendiger werden.
-- **Block / Ziel:** Kein Spiel-Block; reine Darstellung. Keine Simulations-, Snapshot-, Protokoll- oder Regeländerung: Drehung ist Optik, keine Spielmechanik (Drehgeschwindigkeit begrenzt nur das Bild). Mehrspieler sieht aus demselben Snapshot dasselbe Bild.
-- **Branch / Basis:** `arena/fd8d6466-0815games-github-io` ab `0dbada0209297fe873724bea654e6590cab7b1cb` (`main`, Merge PR `#383`).
-- **Änderungen / Dateien:**
-  - `IronPath/core/tower-aim.mjs` (neu): Renderer-seitiger Ziel-Tracker nach dem Muster von `soldier-motion.mjs`. Zielwahl spiegelt die Simulation (am weitesten vorgedrungener lebender Gegner in `getTowerRange`), Schwenk mit begrenzter Drehgeschwindigkeit (3,4 rad/s, kürzester Bogen), Rückstoß aus den Schuss-Folge-IDs (`state.shots`), erste Sichtung rastet ein, Pause/Lücken frieren ein, reduzierte Bewegung rastet ohne Rückstoß, ausgefallene/reparierende Türme halten die letzte Richtung.
-  - `IronPath/core/cartoon-art.mjs`: `pad()` bekommt den Zielwinkel; für das MG (Typ 0) zeichnet `mgTurret()` Sandsackring (statisch) + drehenden Waffen-Kopf (Dreibein, Gehäuse, Lauf, Gurtkasten) in Tusche/Oliv auf der gemalten Stellung — die übrigen drei Typen behalten ihre Gemälde. Gegner: Fahrzeuge/Bosse unter 35 % Leben rauchen dunkel (Muster wie der Bunker), Infanterie wirbelt Schritt-Staub auf. `drawCartoonBattle` reicht `towerAims` durch.
-  - `IronPath/core/soldier-motion.mjs`: stehende Soldaten atmen (langsames Bob), drehen sich nach dem Setzen zum nächsten Gegner, Rückstoß beim eigenen Schuss und Zucken bei Treffer (erkannt an Schuss-IDs bzw. Lebensabfall) — alles in die bestehende Pose (facing/bob/lean) gefaltet.
-  - `IronPath/game.js`: zwei Tracker (eigenes + Rivalen-Feld), Verdrahtung in beiden `drawCartoonBattle`-Aufrufen, Resets an beiden Reset-Stellen.
-  - 13 Test-Harnische führen `core/tower-aim.mjs` in ihren Import-Umschreibelisten (Erfahrung aus `IPL-0118`).
-- **Prüfungen:** `tower-aim` 7/7 und `soldier-motion` 3/3 neu bzw. erweitert (Zielwahl, Drehbegrenzung, Rückstoß-Fenster, Reduzierte-Bewegung/Pause, Atmung, Bedrohungs-Facing); Schnelltor „Kein Fehler, 3 Hinweis(e)“; Gesamtsuite **1343 Tests, 1342 bestanden, 0 Fehler, 1 übersprungen**.
-- **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet`. Commit, Push, PR `#384`, danach Cache-Welle `20261123-aim1` mit Feldnotizen `aim1` als zweiter Commit (Muster `IPL-0104`), CI, Merge und Pages-Auslieferung werden als Ereignis nachgetragen. **Betreiber-Sichtung auf `20261123-aim1`:** MG-Turm muss Gegner sichtbar nachführen und beim Feuern zurückstoßen; danach Folgepaket für Kanone/Flak/Sniper entscheiden.
-- **Offen / nächster Schritt:** Nach Betreiber-Sichtung: drehende Köpfe für Kanone, Flak und Scharfschütze (eigener Eintrag), ggf. Feinschliff an Drehgeschwindigkeit/Rückstoß über zwei Konstanten in `tower-aim.mjs`/`cartoon-art.mjs`.
 
 ## IPL-0123 – Lebendiges Feld, Scheibe 2: Drehende Köpfe für Kanone, Flak und Scharfschütze (Cache-Welle folgt im selben PR)
 
@@ -316,3 +302,11 @@ Nur Darstellung, kein Sim-State, kein Wire-Format, statisch im Terrain-Cache (Re
 - **Prüfung:** Suite 1372+2 pr-Platzhalter/1 (Skill-Gruppe 20/0 inkl. neuem Style-Pin), Schnelltor nur pr-Platzhalter; neuer Pin `skill-menu-style.test.mjs` (Platte/Schrauben/Brass/Field-Button + kein `text-transform` auf `.skill-card-name`/`#skillDetailText`/`#skillStatus` + Mobile-Scroll-Architektur).
 - **Git / PR / Release:** Branch `arena/dfa2a3b8-0815games-github-io` ab `418933be`; Push, **PR `#506`**, Suite 1372+2 pr-Platzhalter, CI (`game-regressions`/`interface-browser-smoke`/`database-rules`/party-finalization) — alle Checks grün, **Merge `61565fbd` auf `main`**. Doku-PR im Anschluss.
 - **Offen / nächster Schritt:** Optik-Leiter vollständig (Command Center · Dossier · Werkstatt · Skills).
+
+## IPL-0142 – PWA-Manifest: Home-Screen-Icon öffnet das Spiel statt `assets/index.html` (Welle `20261121-pwa1`, PR `#—`)
+
+- **Was:** Der Bericht des Betreibers — beim Speichern von IronPath als Web-App am Home-Bildschirm entsteht immer `https://0815games.github.io/IronPath/assets/index.html`, obwohl nur `/IronPath/` aufgerufen wird. Ursache: `assets/manifest.webmanifest` hatte `"start_url": "./index.html"` (und kein `scope`); relative URLs im Manifest werden gegen die Manifest-URL aufgelöst, also `…/IronPath/assets/index.html`. iOS (16.4+) speichert genau diese aufgelöste start_url am Icon. **Fix:** `start_url` und `scope` = `/IronPath/` — dieselben Werte, die `release-tools/stage-version.mjs` für gestagte Builds schon schreibt (die Quelle, die GitHub Pages direkt ausliefert, war nie repariert).
+- **Cache:** Alle vier Asset-Links (favicon.svg/ico, apple-touch-icon, manifest) auf `?v=20261121-pwa1` — iOS cached Manifests hart; ohne Stempel bleibt das alte Manifest im Cache. `loading-scene.test.mjs` trägt denselben Wellen-Token.
+- **Prüfung:** Neuer Pin `pwa-manifest.test.mjs` (löst start_url/scope wie ein Browser gegen die Manifest-URL auf und fällt bei jedem Rücksprung unter `/IronPath/assets/`; vier Asset-Links teilen einen Token) · Suite … · Schnelltor … (vor Merge final).
+- **Git / PR / Release:** Branch `arena/32003763-0815games-github-io` ab `998e234`; Push, PR `#—`, CI, Merge – wird nachgetragen.
+- **Offen / nächster Schritt:** Nach dem Deploy das alte Home-Screen-Icon einmal entfernen und neu hinzufügen — iOS hält die am Icon gespeicherte URL fest.

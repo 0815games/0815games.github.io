@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see docs/PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261121-skills1';
+import {getLanguage} from './language.mjs?v=20261121-pwa1';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,17 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'pwa1',build:'20261121-pwa1',pr:0,
+    title:{en:'Iron Path · Home-Screen Icon Opens the Game, Not assets/index.html',de:'Iron Path · Home-Screen-Icon öffnet das Spiel, nicht assets/index.html'},
+    shipped:[
+      {en:'The web app manifest pointed its start_url and scope at ./index.html inside assets/, so saving IronPath to the home screen produced the icon for https://0815games.github.io/IronPath/assets/index.html. Both now resolve to /IronPath/, matching what the release stager already writes for staged builds. Cache wave 20261121-pwa1 (the manifest URL is cache-busted because iOS caches it stubbornly).',de:'Das Web-App-Manifest zeigte start_url und scope auf ./index.html innerhalb von assets/ — beim Speichern von IronPath auf dem Home-Screen entstand dadurch das Icon für https://0815games.github.io/IronPath/assets/index.html. Beide zeigen jetzt auf /IronPath/, passend zu dem, was der Release-Stager für gestagte Bauten schon schreibt. Cache-Welle 20261121-pwa1 (die Manifest-URL wird mitgestempelt, weil iOS sie hart cached).'},
+      {en:'A pin test resolves the manifest URL exactly the way the browser does and fails if start_url ever lands under assets/ again.',de:'Ein Pin-Test löst die Manifest-URL exakt wie der Browser auf und fällt, wenn start_url jemals wieder unter assets/ landet.'},
+    ],
+    open:[
+      {en:'After deploying, remove the old home-screen icon once and add the game again — iOS keeps the URL stored on the icon.',de:'Nach dem Deploy das alte Home-Screen-Icon einmal entfernen und das Spiel neu hinzufügen — iOS hält die am Icon gespeicherte URL fest.'},
+    ]
+  },
   {
     id:'skills1',build:'20261121-skills1',pr:506,
     title:{en:'Skills · The Progression Board in the Field-Kit Look',de:'Fähigkeiten · Der Fortschrittsbrett im Feldkit-Look'},
