@@ -303,10 +303,10 @@ Nur Darstellung, kein Sim-State, kein Wire-Format, statisch im Terrain-Cache (Re
 - **Git / PR / Release:** Branch `arena/dfa2a3b8-0815games-github-io` ab `418933be`; Push, **PR `#506`**, Suite 1372+2 pr-Platzhalter, CI (`game-regressions`/`interface-browser-smoke`/`database-rules`/party-finalization) — alle Checks grün, **Merge `61565fbd` auf `main`**. Doku-PR im Anschluss.
 - **Offen / nächster Schritt:** Optik-Leiter vollständig (Command Center · Dossier · Werkstatt · Skills).
 
-## IPL-0142 – PWA-Manifest: Home-Screen-Icon öffnet das Spiel statt `assets/index.html` (Welle `20261121-pwa1`, PR `#—`)
+## IPL-0142 – PWA-Manifest: Home-Screen-Icon öffnet das Spiel statt `assets/index.html` (Welle `20261121-pwa1`, PR `#514`)
 
 - **Was:** Der Bericht des Betreibers — beim Speichern von IronPath als Web-App am Home-Bildschirm entsteht immer `https://0815games.github.io/IronPath/assets/index.html`, obwohl nur `/IronPath/` aufgerufen wird. Ursache: `assets/manifest.webmanifest` hatte `"start_url": "./index.html"` (und kein `scope`); relative URLs im Manifest werden gegen die Manifest-URL aufgelöst, also `…/IronPath/assets/index.html`. iOS (16.4+) speichert genau diese aufgelöste start_url am Icon. **Fix:** `start_url` und `scope` = `/IronPath/` — dieselben Werte, die `release-tools/stage-version.mjs` für gestagte Builds schon schreibt (die Quelle, die GitHub Pages direkt ausliefert, war nie repariert).
 - **Cache:** Alle vier Asset-Links (favicon.svg/ico, apple-touch-icon, manifest) auf `?v=20261121-pwa1` — iOS cached Manifests hart; ohne Stempel bleibt das alte Manifest im Cache. `loading-scene.test.mjs` trägt denselben Wellen-Token.
 - **Prüfung:** Neuer Pin `pwa-manifest.test.mjs` (löst start_url/scope wie ein Browser gegen die Manifest-URL auf und fällt bei jedem Rücksprung unter `/IronPath/assets/`; vier Asset-Links teilen einen Token) · Suite … · Schnelltor … (vor Merge final).
-- **Git / PR / Release:** Branch `arena/32003763-0815games-github-io` ab `998e234`; Push, PR `#—`, CI, Merge – wird nachgetragen.
+- **Git / PR / Release:** Branch `arena/32003763-0815games-github-io` ab `998e234`; Push, **PR `#514`**, CI, Merge – wird nachgetragen.
 - **Offen / nächster Schritt:** Nach dem Deploy das alte Home-Screen-Icon einmal entfernen und neu hinzufügen — iOS hält die am Icon gespeicherte URL fest.
