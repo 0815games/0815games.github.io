@@ -1,5 +1,49 @@
 # CHANGELOG – Chroniken der Schattengruft
 
+## 2026-11-26 – 3D-Kampfbühne (Phase 5)
+
+- **Neues Bühnenmodul** `js/world/world3d-stage.js`: reine Rechnung ohne Three.js,
+  DOM oder Spielzustand. Es bestimmt Kampfmitte, Bühnenplätze, Kameraübergang,
+  Sichtbarkeit, Kartengrenzen und die Umrechnung der Treffereffekte.
+- **Zweiter Kameramodus:** Bisher folgte die orthografische Kamera immer dem Helden.
+  Im Kampf schwenkt sie jetzt über die Kampfmitte und zoomt auf 0,42 heran; der
+  Übergang läuft weich (16 % pro Frame) und berücksichtigt `prefers-reduced-motion`.
+  Nach Sieg oder Flucht schwenkt sie zurück.
+- **Bühnenaufbau:** Held und Gegner verlassen ihre Kacheln und stehen sich mit festem
+  Abstand auf einer Reihe gegenüber. Der Abstand bleibt unabhängig von der Entfernung
+  der Kacheln, am Kartenrand wird die Mitte so verschoben, dass beide auf der Karte bleiben.
+- **Sichtbarkeit:** Der aktive Gegner ist auch auf unentdeckten Feldern sichtbar –
+  vorher wäre der Kampf gegen einen unsichtbaren Gegner gelaufen. Andere Monster
+  bleiben dem Nebel unterworfen. Bühnenfelder werden nur geliehen dargestellt;
+  `w.tiles` und `w.discovered` bleiben unverändert.
+- **Trefferzahlen und Funken:** Die Effekte entstehen weiterhin in Kachelkoordinaten.
+  Für die Dauer des Kampfs werden sie über den nächstgelegenen Kämpfer auf dessen
+  Bühnenplatz umgerechnet. Der 2D-Renderer wird dabei nicht angefasst – es entstehen
+  nur flache Kopien der Listen, das Original bleibt unverändert.
+- **Atmosphäre:** `known()` prüft jetzt zusätzlich die Bühnenfelder, sonst wären
+  Trefferzahlen auf unentdeckten Bühnenfeldern unsichtbar geblieben. Hauptlicht und
+  Sonnenstand folgen der Kampfmitte. Der Label-Pool wächst von sechs auf zehn, weil
+  im Kampf gleichzeitig Angriff, Gegenzug, Krit und EP-Zahl auftreten können.
+- **Unverändert:** Kampfreihenfolge, Schadensformeln, Manakosten (8), Fluchtchance
+  (40 %), Gegenstandslogik und Spielstandformat. Die Bühne liest den Spielzustand
+  nur; ohne `?view=3d` oder ohne WebGL bleibt alles beim 2D-Pfad.
+- **Tests:** `tests/three-phase5.mjs` prüft Bühnenrechnung, Grenzen, Sichtbarkeit,
+  Effektumrechnung und dass die Kampfregeln unangetastet bleiben.
+  `tests/three-phase5-engine.mjs` fährt den echten `createEngine`-Pfad mit einem
+  Three.js-Doppel: Kameraübergang hin und zurück, Zoom, unentdeckter Gegner,
+  Randfall und Zustandsschutz. Insgesamt **24 Suiten**, alle grün.
+- **Zwei Fehler beim Testen gefunden und behoben:** Bei einem neuen Grundriss
+  (Ebenenwechsel) behielt die Kamera ihre alte Position und wäre quer über die Karte
+  geflogen – `reset()` setzt sie jetzt zurück. Der Zoom blieb nach einem Kampf auf
+  dem herangezoomten Wert hängen, wenn die Restdifferenz unter der Schwelle lag;
+  `reset()` setzt ihn ebenfalls zurück.
+- **Testwartbarkeit:** Die Stub-Ersetzung der Phase-1/2/4-Suiten für den
+  Bühnen-Import läuft jetzt über einen regulären Ausdruck statt über einen
+  zeichengenauen String; weitere Importe brechen die Tests damit nicht mehr.
+- **Dokumentation:** `3D_PLAN.md` fasst die frühere Kurzliste „Phase 5“ mit dem
+  tatsächlichen Umsetzungsstand zusammen. Die Versionsregel bleibt: Phasen erhöhen
+  die Minor-Version nicht automatisch, der Stand bleibt bei 0.10.x.
+
 ## 2026-11-26 – Startblocker behoben, toter Code entfernt, Namen escaped
 
 - **Startblocker (kritisch):** `index.html` lud seit dem Ordner-Refactoring vom 2026-10-29

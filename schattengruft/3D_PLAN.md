@@ -40,11 +40,34 @@ In Phase 1 wurden 2D-Weltpartikel noch nicht übertragen; Phase 2 ergänzt eine 
 - [ ] Themen-/Ebenenwechsel und Leistung prüfen.
 - [ ] Online-Abnahme durch Nutzer.
 
-## Phase 5 — Kampf
-- [ ] Gemeinsame 3D-Kampfbühne.
-- [ ] Angriffe, Zauber, Treffer und Belohnungsübergänge.
-- [ ] Mana 4 und Flucht 5 beibehalten.
-- [ ] Vollständige Kampfreihenfolge und Online-Abnahme.
+## Phase 5 – Kampfbühne implementiert, Geräteabnahme offen
+Stand: bleibt bei 0.10.x (Versionsregel unten), keine Minor-Erhöhung durch die Phase.
+Ziel: Held und Gegner stehen sich in der gemeinsamen 3D-Welt gegenüber;
+Angriffe, Zauber, Treffer und der Belohnungsübergang sind als Choreografie sichtbar.
+
+- [x] Eigenes Bühnenmodul (`js/world/world3d-stage.js`) ohne Three.js- und DOM-Abhängigkeit.
+- [x] Bühnenmitte aus Held und Gegner; fester Abstand, beide auf einer Reihe.
+- [x] Begrenzung auf die Kartengrenzen, damit Kämpfe am Rand die Bühne nicht verschieben.
+- [x] Zweiter Kameramodus: Schwenk über die Kampfmitte und Heranzoomen, weich überblendet.
+- [x] Rückfall bei Kampf ohne lebenden Gegner: Kamera bleibt in der Erkundung.
+- [x] Aktiver Gegner ist auch auf unentdeckten Feldern sichtbar; andere Monster bleiben im Nebel.
+- [x] Bühnenfelder werden geliehen dargestellt, ohne die Weltkarte zu verändern.
+- [x] Trefferzahlen, Ringe und Funken werden auf die Bühnenplätze umgerechnet.
+- [x] Die Effektlisten des 2D-Renderers bleiben unverändert (flache Kopien).
+- [x] Hauptlicht und Sonnenstand folgen der Kampfmitte statt dem Helden.
+- [x] Label-Pool von sechs auf zehn erhöht (Angriff, Gegenzug, Krit, EP gleichzeitig).
+- [x] Manavorrat 8 und Fluchtchance 40 % unverändert; keine Eingriffe in Kampfwerte.
+- [x] Vollständige Kampfreihenfolge bleibt im bestehenden Code (Angriff, Feuer, Trank, Mana, Flucht).
+- [x] Neue Suiten `three-phase5.mjs` (Rechnung) und `three-phase5-engine.mjs` (Engine-Lauf).
+- [ ] Kampfbühne auf Desktop und Handy online abnehmen.
+- [ ] Trefferzahlen, Krits, Boss-Kampf und Flucht im 3D-Modus sichtbar prüfen.
+- [ ] Übergang nach Sieg (EP-Zahl, Stufenaufstieg, Treppe) im 3D-Modus prüfen.
+- [ ] 2D-Rückschaltung mitten im Kampf prüfen.
+- [ ] Freigabe für Phase 6.
+
+Die Bühne ist reine Darstellung. Kampfreihenfolge, Schadensformeln, Gegenstands-
+und Speicherlogik bleiben beim bestehenden Code in `js/main.js`; die Bühne liest
+den Spielzustand nur. Ohne `?view=3d` bzw. ohne WebGL bleibt alles beim 2D-Pfad.
 
 ## Phase-2-Abnahme / v0.10.0
 - [ ] Texturen, Beleuchtung und Schatten im echten Browser.

@@ -2,6 +2,7 @@ import {createFigureFactory} from './world-actors3d.js';
 import {createDungeonSurfaces,createDungeonAtmosphere,theme3D,supportsTheme3D} from './world3d-atmosphere.js';
 import {drawCharacter} from './character.js';
 import {drawMonster} from './monster.js';
+import {stageCenter,stagePositions,cameraTarget,approach,visibleInMode,stageEffectView,stageCells,worldBounds,STAGE} from './world3d-stage.js';
 
 export function discovered(w,x,y){
  return Number.isInteger(x)&&Number.isInteger(y)
@@ -99,8 +100,14 @@ export function installWorld3D(renderer,state){
      show(false);
      return false;
     }
+    const fighting=state.inCombat===true
+     &&!!state.activeMonster
+     &&state.activeMonster.hp>0;
+
     engine.render(
-     state.world,state.player,renderer._visualTime||0,renderer
+     state.world,state.player,renderer._visualTime||0,renderer,
+     fighting?'combat':'explore',
+     fighting?state.activeMonster:null
     );
     show(true);
     const label='3D · '+theme3D(state.world.theme).label;
@@ -250,7 +257,9 @@ export function createEngine(T,canvas){
 
  const cells=new Map(),actors=new Map(),chests=new Map();
  let tiles=null,seed=null,stairs=null,size='',closed=false,themeKey='';
+ let cameraX=null,cameraZ=null;
 
+ const reduced=matchMedia('(prefers-reduced-motion: reduce)');
  const ray=new T.Raycaster();
  const pointer=new T.Vector2();
  const plane=new T.Plane(new T.Vector3(0,1,0),0);
@@ -273,14 +282,23 @@ export function createEngine(T,canvas){
   actors.clear();
   chests.clear();
   stairs=null;
+
+  // Neuer Grundriss: die Kamera springt, statt quer ueber die Karte zu fliegen.
+  cameraX=null;
+  cameraZ=null;
+  if(camera){
+   camera.zoom=1;
+   camera.updateProjectionMatrix();
+  }
  }
 
- function synchronizeCells(w,p){
+ function synchronizeCells(w,p,extra=null){
   const retained=new Set();
 
   for(let y=0;y<w.tiles.length;y++){
    for(let x=0;x<w.tiles[y].length;x++){
-    if(!discovered(w,x,y))continue;
+    const onStage=extra?.has(x+':'+y);
+    if(!discovered(w,x,y)&&!onStage)continue;
 
     const key=x+':'+y,type=w.tiles[y][x];
     retained.add(key);
@@ -337,7 +355,32 @@ export function createEngine(T,canvas){
   }
  }
 
- function actor(key,value,hero,time){
+ // Setzt eine Figur auf ihren Buehnenplatz. Der eigene Zustand in der
+ // Actor-Huelle verhindert, dass sich die Figur-Interpolation und die
+ // Buehnenposition gegenseitig ueberschreiben.
+ function stagePlace(entry,spot){
+  if(!spot){
+   entry.stageX=entry.stageZ=null;
+   return false;
+  }
+  const still=reduced.matches;
+  if(entry.stageX===null||entry.stageX===undefined){
+   entry.stageX=spot.x;
+   entry.stageZ=spot.z;
+  }else if(still){
+   entry.stageX=spot.x;
+   entry.stageZ=spot.z;
+  }else{
+   entry.stageX=approach(entry.stageX,spot.x);
+   entry.stageZ=approach(entry.stageZ,spot.z);
+  }
+  entry.node.position.set(
+   entry.stageX,entry.node.position.y,entry.stageZ
+  );
+  return true;
+ }
+
+ function actor(key,value,hero,time,spot=null){
   if(figures.supports(value,hero)){
    const signature=figures.signature(value,hero);
    let entry=actors.get(key);
@@ -356,6 +399,7 @@ export function createEngine(T,canvas){
    }
 
    entry.figure.update(value,time);
+   stagePlace(entry,spot);
    return;
   }
 
@@ -422,19 +466,36 @@ export function createEngine(T,canvas){
    entry.last=time;
   }
 
+  if(stagePlace(entry,spot))return;
   entry.node.position.set(value.x+.5,.035,value.y+.5);
  }
 
- function synchronizeObjects(w,p,time){
+ function synchronizeObjects(w,p,time,fighting=false,enemy=null){
   const live=new Set();
 
-  if(discovered(w,p.x,p.y)){
-   actor('hero',p,true,time);
+  const center=fighting?stageCenter(p,enemy):null;
+  const spots=fighting&&center.valid
+   ?stagePositions(center,worldBounds(w))
+   :null;
+
+  if(fighting||discovered(w,p.x,p.y)){
+   actor('hero',p,true,time,spots?spots.hero:null);
    live.add('hero');
   }
 
+  if(fighting&&enemy){
+   // Der aktive Gegner steht auf der Buehne, auch ohne Aufdeckung.
+   actor(enemy,enemy,false,time,spots?spots.enemy:null);
+   live.add(enemy);
+  }
+
   for(const monster of w.monsters||[]){
-   if(discovered(w,monster.x,monster.y)){
+   if(fighting&&monster===enemy)continue;
+   if(visibleInMode({
+    mode:fighting?'combat':'explore',
+    discovered:discovered(w,monster.x,monster.y),
+    isEnemy:false
+   })){
     actor(monster,monster,false,time);
     live.add(monster);
    }
@@ -560,8 +621,11 @@ export function createEngine(T,canvas){
   camera.updateProjectionMatrix();
  }
 
- function render(w,p,time,effects){
+ function render(w,p,time,effects,mode='explore',enemy=null){
   if(closed)return;
+
+  // Kampf nur mit lebendem Gegner: nach Flucht/Tod bleibt die Erkundung.
+  const fighting=mode==='combat'&&!!enemy&&enemy.hp>0;
 
   if(tiles!==w.tiles||seed!==w.seed){
    reset();
@@ -580,12 +644,59 @@ export function createEngine(T,canvas){
    sun.color?.set(palette.sun);
   }
 
-  synchronizeCells(w,p);
-  synchronizeObjects(w,p,time);atmosphere.update(w,p,time,effects);
+  // Buehne einmal bestimmen und an Zellen, Figuren und Effekte geben.
+  const center=fighting?stageCenter(p,enemy):null;
+  const spots=center&&center.valid
+   ?stagePositions(center,worldBounds(w))
+   :null;
 
-  camera.position.set(p.x+.5,12,p.y+.5+9);
-  camera.lookAt(p.x+.5,0,p.y+.5);
+  // Trefferzahlen und Funken entstehen in Kachelkoordinaten. Auf der Buehne
+  // werden sie auf die Figuren umgerechnet; die Listen des Renderers bleiben
+  // unangetastet (nur flache Kopien).
+  const stageTiles=spots
+   ?new Set(stageCells(w,p,enemy,spots).map(c=>c.x+':'+c.y))
+   :null;
+
+  synchronizeCells(w,p,stageTiles);
+  synchronizeObjects(w,p,time,fighting,enemy);
+
+  atmosphere.update(
+   w,p,time,
+   {
+    ...stageEffectView(effects,{hero:p,enemy,spots}),
+    stageFocus:spots?{x:center.x,z:center.z}:null,
+    // Buehnenfelder gelten auch fuer Effekte als sichtbar.
+    stageTiles
+   }
+  );
+
+  const target=cameraTarget({
+   mode:fighting?'combat':'explore',hero:p,enemy
+  });
+
+  if(fighting&&!target.centered){
+   // Ohne Gegner keine Bühne: Kamera bleibt bei der Erkundung.
+   target.x=p.x+.5;target.z=p.y+.5;target.zoom=STAGE.zoomOut;
+  }
+
+  // Übergang nur bei echter Bewegung, damit ein ruhender Kampf nicht
+  // jeden Frame neu berechnet.
+  const still=reduced.matches;
+  if(still){
+   cameraX=target.x;cameraZ=target.z;
+  }else{
+   cameraX=approach(cameraX,target.x);
+   cameraZ=approach(cameraZ,target.z);
+  }
+
+  camera.position.set(cameraX,target.height,cameraZ+target.depth);
+  camera.lookAt(cameraX,0,cameraZ);
   camera.updateMatrixWorld();
+
+  if(Math.abs(camera.zoom-target.zoom)>.001){
+   camera.zoom=still?target.zoom:approach(camera.zoom,target.zoom);
+   camera.updateProjectionMatrix();
+  }
 
   gpu.render(scene,camera);
  }

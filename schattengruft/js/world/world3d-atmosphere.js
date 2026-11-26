@@ -17,6 +17,14 @@ export function qualityProfile(mode,coarse=false){
  };
 }
 
+// Felder, die im Kampf zur Buehne gehoeren, gelten als sichtbar – auch wenn
+// sie noch nicht entdeckt sind. Sonst waeren Trefferzahlen auf der Buehne
+// unsichtbar, obwohl die Figuren dort stehen.
+function visible(w,x,y,effects){
+ if(known(w,x,y))return true;
+ return effects?.stageTiles?.has(x+':'+y)===true;
+}
+
 function known(w,x,y){
  return Number.isInteger(x)&&Number.isInteger(y)
   &&!!w.discovered?.[y]?.[x]&&w.tiles?.[y]?.[x]!==undefined;
@@ -334,7 +342,9 @@ export function createDungeonAtmosphere(T,scene,gpu,sun){
   dust.push(mesh);
  }
 
- for(let i=0;i<6;i++){
+ // Zehn Labels statt sechs: Im Kampf entstehen mehrere Zahlen gleichzeitig
+ // (Angriff, Gegenzug, Krit, EP), die sonst nur die ersten sechs zeigten.
+ for(let i=0;i<10;i++){
   const cv=document.createElement('canvas');
   cv.width=512;
   cv.height=96;
@@ -399,8 +409,14 @@ export function createDungeonAtmosphere(T,scene,gpu,sun){
   const still=reduced.matches;
   const t=still?0:time;
 
-  sun.position.set(p.x-5,12,p.y+7);
-  sun.target.position.set(p.x+.5,0,p.y+.5);
+  // Licht folgt der Bildmitte: in der Erkundung dem Helden, im Kampf der
+  // Buehne. center kommt vom Renderer und ist optional.
+  const focus=effects?.stageFocus;
+  const fx=Number.isFinite(focus?.x)?focus.x:p.x;
+  const fz=Number.isFinite(focus?.z)?focus.z:p.y;
+
+  sun.position.set(fx-5,12,fz+7);
+  sun.target.position.set(fx+.5,0,fz+.5);
 
   const sites=torchSites(w,p,profile.lights);
 
@@ -429,7 +445,7 @@ export function createDungeonAtmosphere(T,scene,gpu,sun){
    const v=effects?.particles?.[i];
    const ok=!still&&i<profile.particles
     &&v&&v.a>0
-    &&known(w,Math.floor(v.x/32),Math.floor(v.y/32));
+    &&visible(w,Math.floor(v.x/32),Math.floor(v.y/32),effects);
 
    mesh.visible=!!ok;
    if(!ok)return;
@@ -444,7 +460,7 @@ export function createDungeonAtmosphere(T,scene,gpu,sun){
   rings.forEach((mesh,i)=>{
    const v=effects?.waves?.[i];
    const ok=!still&&v&&v.a>0
-    &&known(w,Math.floor(v.x/32),Math.floor(v.y/32));
+    &&visible(w,Math.floor(v.x/32),Math.floor(v.y/32),effects);
 
    mesh.visible=!!ok;
    if(!ok)return;
@@ -459,7 +475,7 @@ export function createDungeonAtmosphere(T,scene,gpu,sun){
   labels.forEach((item,i)=>{
    const v=effects?.texts?.[i];
    const ok=v&&v.a>0
-    &&known(w,Math.floor(v.x/32),Math.floor(v.y/32));
+    &&visible(w,Math.floor(v.x/32),Math.floor(v.y/32),effects);
 
    item.node.visible=!!ok;
    if(!ok)return;
