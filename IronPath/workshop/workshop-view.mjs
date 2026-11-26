@@ -3,13 +3,13 @@
 // Rendered inside the armory dialog so players find everything in one place.
 // Every change goes through the account service, which runs the account
 // transaction; nothing here writes a save directly.
-import {RECIPES,MOD_SCRAP,modsOf,migrateWorkshop,validLegacy} from './workshop-model.mjs?v=20261121-skills1';
+import {RECIPES,MOD_SCRAP,modsOf,migrateWorkshop,validLegacy} from './workshop-model.mjs?v=20261121-pwa1';
 import {PRESTIGE,PRESTIGE_IDS,isPrestige,prestigeEarned} from '../core/prestige.mjs?v=20261112-pressure1';
 import {CAMPAIGN,campaignProgress} from '../core/campaign.mjs?v=20261112-pressure1';
-import {decodeWorkshop} from './workshop-wire.mjs?v=20261121-skills1';
-import {readArmory,ITEMS} from '../core/armory.mjs?v=20261121-skills1';
+import {decodeWorkshop} from './workshop-wire.mjs?v=20261121-pwa1';
+import {readArmory,ITEMS} from '../core/armory.mjs?v=20261121-pwa1';
 import {WORKSHOP_CATALOG} from './workshop-catalog.mjs?v=20261108-balance2';
-import {artOf} from '../ui/item-art.mjs?v=20261121-skills1';
+import {artOf} from '../ui/item-art.mjs?v=20261121-pwa1';
 // Which legacy item (by index) belongs to which new slot.
 const legacySlots=['gadget','gear','gear','gadget','gadget','gear','gadget','gadget','gadget','gadget'];
 

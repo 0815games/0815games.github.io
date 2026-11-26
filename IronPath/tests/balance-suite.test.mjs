@@ -6,7 +6,7 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {runSolo,runCoop,runVersus,runFourCoop,runCampaign,GEARS} from './balance-harness.mjs';
-import {ITEMS} from '../core/armory.mjs?v=20261121-skills1';
+import {ITEMS} from '../core/armory.mjs?v=20261121-pwa1';
 import {CAMPAIGN,actOf,actEndIndex} from '../core/campaign.mjs';
 import {PRESSURE,campaignPressure} from '../core/campaign-pressure.mjs';
 import {getMap} from '../core/maps.mjs';

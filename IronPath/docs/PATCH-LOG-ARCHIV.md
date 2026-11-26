@@ -1,6 +1,6 @@
 # Iron Path – Patch-Log: Archiv
 
-Ältere Einträge IPL-0001 bis IPL-0121. Die neuesten 20 stehen in
+Ältere Einträge IPL-0001 bis IPL-0122. Die neuesten 20 stehen in
 [PATCH-LOG.md](PATCH-LOG.md); die Regeln für beide Dateien dort und in
 [`../../AGENTS.md`](../../AGENTS.md). Beim Verschieben wandert ein Eintrag immer
 vollständig einschließlich seiner Ereignis-Nachträge.
@@ -4752,3 +4752,17 @@ sie geprüft wurde.
 - **Prüfungen:** Schnelltor: „Kein Fehler, 3 Hinweis(e)“; `patch-log-archive` 5/5 (lückenlos/doppelfrei nach der Rotation). Gesamtsuite folgt auf dem Commit-Stand (nur Doku berührt).
 - **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet`. Commit, Push, PR `#383`, CI, Merge und Pages-Auslieferung (nur Doku — die Live-Seite ändert sich für Spieler nicht) werden als Ereignis nachgetragen.
 - **Offen / nächster Schritt:** Die beschlossene Reihe (Punkte 1–7) ist damit vollständig. Neue Punkte beschließt der Betreiber.
+## IPL-0122 – Lebendiges Feld, Scheibe 1: Drehender MG-Turmkopf (geschichtet), Schadens-Rauch, Soldaten-Leben (Cache-Welle folgt im selben PR)
+
+- **Zeit / Quelle:** 2026-11-23 UTC; Betreiber: „Ich hätte gern, dass das ganze Spiel ein wenig lebendiger wirkt. Türme sollen sich in Richtung der Gegner drehen …“ Auf Rückfrage wählte der Betreiber Bauart **B (geschichtet)**: gemalter Grundkörper bleibt, ein neuer, im Code gezeichneter Oberbau dreht sich frei 360° — Prototyp zuerst am MG-Turm, die anderen drei Typen nach seiner Sichtung. Gegner und Soldaten sollten im selben Paket mit lebendiger werden.
+- **Block / Ziel:** Kein Spiel-Block; reine Darstellung. Keine Simulations-, Snapshot-, Protokoll- oder Regeländerung: Drehung ist Optik, keine Spielmechanik (Drehgeschwindigkeit begrenzt nur das Bild). Mehrspieler sieht aus demselben Snapshot dasselbe Bild.
+- **Branch / Basis:** `arena/fd8d6466-0815games-github-io` ab `0dbada0209297fe873724bea654e6590cab7b1cb` (`main`, Merge PR `#383`).
+- **Änderungen / Dateien:**
+  - `IronPath/core/tower-aim.mjs` (neu): Renderer-seitiger Ziel-Tracker nach dem Muster von `soldier-motion.mjs`. Zielwahl spiegelt die Simulation (am weitesten vorgedrungener lebender Gegner in `getTowerRange`), Schwenk mit begrenzter Drehgeschwindigkeit (3,4 rad/s, kürzester Bogen), Rückstoß aus den Schuss-Folge-IDs (`state.shots`), erste Sichtung rastet ein, Pause/Lücken frieren ein, reduzierte Bewegung rastet ohne Rückstoß, ausgefallene/reparierende Türme halten die letzte Richtung.
+  - `IronPath/core/cartoon-art.mjs`: `pad()` bekommt den Zielwinkel; für das MG (Typ 0) zeichnet `mgTurret()` Sandsackring (statisch) + drehenden Waffen-Kopf (Dreibein, Gehäuse, Lauf, Gurtkasten) in Tusche/Oliv auf der gemalten Stellung — die übrigen drei Typen behalten ihre Gemälde. Gegner: Fahrzeuge/Bosse unter 35 % Leben rauchen dunkel (Muster wie der Bunker), Infanterie wirbelt Schritt-Staub auf. `drawCartoonBattle` reicht `towerAims` durch.
+  - `IronPath/core/soldier-motion.mjs`: stehende Soldaten atmen (langsames Bob), drehen sich nach dem Setzen zum nächsten Gegner, Rückstoß beim eigenen Schuss und Zucken bei Treffer (erkannt an Schuss-IDs bzw. Lebensabfall) — alles in die bestehende Pose (facing/bob/lean) gefaltet.
+  - `IronPath/game.js`: zwei Tracker (eigenes + Rivalen-Feld), Verdrahtung in beiden `drawCartoonBattle`-Aufrufen, Resets an beiden Reset-Stellen.
+  - 13 Test-Harnische führen `core/tower-aim.mjs` in ihren Import-Umschreibelisten (Erfahrung aus `IPL-0118`).
+- **Prüfungen:** `tower-aim` 7/7 und `soldier-motion` 3/3 neu bzw. erweitert (Zielwahl, Drehbegrenzung, Rückstoß-Fenster, Reduzierte-Bewegung/Pause, Atmung, Bedrohungs-Facing); Schnelltor „Kein Fehler, 3 Hinweis(e)“; Gesamtsuite **1343 Tests, 1342 bestanden, 0 Fehler, 1 übersprungen**.
+- **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet`. Commit, Push, PR `#384`, danach Cache-Welle `20261123-aim1` mit Feldnotizen `aim1` als zweiter Commit (Muster `IPL-0104`), CI, Merge und Pages-Auslieferung werden als Ereignis nachgetragen. **Betreiber-Sichtung auf `20261123-aim1`:** MG-Turm muss Gegner sichtbar nachführen und beim Feuern zurückstoßen; danach Folgepaket für Kanone/Flak/Sniper entscheiden.
+- **Offen / nächster Schritt:** Nach Betreiber-Sichtung: drehende Köpfe für Kanone, Flak und Scharfschütze (eigener Eintrag), ggf. Feinschliff an Drehgeschwindigkeit/Rückstoß über zwei Konstanten in `tower-aim.mjs`/`cartoon-art.mjs`.
