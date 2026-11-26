@@ -18,7 +18,7 @@ Object.assign(UI, {
         
         if(!this.els.ammo) this.els.ammo = document.getElementById('val-ammo');
         if(!this.els.caps) this.els.caps = document.getElementById('val-caps');
-        if(!this.els.hp) this.els.hp = document.getElementById('bar-hp');
+        if(!this.els.hpBar) this.els.hpBar = document.getElementById('bar-hp');
         if(!this.els.headerCharInfo) this.els.headerCharInfo = document.getElementById('header-char-info');
 
         const hasPoints = (Game.state.statPoints > 0) || (Game.state.perkPoints > 0);
@@ -64,12 +64,12 @@ Object.assign(UI, {
         if(hpPct < 25) barColor = "bg-red-500 animate-pulse";
         else if(hpPct < 50) barColor = "bg-yellow-500";
 
-        if(this.els.hp) {
-             this.els.hp.className = `absolute top-0 left-0 h-full transition-all duration-300 ${barColor}`;
-             this.els.hp.style.width = `${hpPct}%`;
+        if(this.els.hpBar) {
+             this.els.hpBar.className = `absolute top-0 left-0 h-full transition-all duration-300 ${barColor}`;
+             this.els.hpBar.style.width = `${hpPct}%`;
              
-             if(this.els.hp.parentElement) {
-                 const p = this.els.hp.parentElement;
+             if(this.els.hpBar.parentElement) {
+                 const p = this.els.hpBar.parentElement;
                  p.classList.remove('bg-green-900', 'bg-green-800', 'bg-green-700', 'bg-opacity-50');
                  p.style.backgroundColor = 'rgba(10, 10, 10, 0.9)'; 
                  p.style.borderColor = '#14532d'; 

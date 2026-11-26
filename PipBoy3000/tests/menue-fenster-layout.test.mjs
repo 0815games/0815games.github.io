@@ -547,3 +547,39 @@ test('reduzierte Bewegung ueberspringt die Szene ohne das Vault-Menue zu verlier
     assert.equal(window.Game.state.inDialog, false);
   } finally { window.UI._cancelVaultCinematic(); await schliesse(); }
 });
+
+test('Statusleiste zeigt Spielwerte, behaelt Char- und Menue-Aktionen und ein responsives Raster', async () => {
+  const {window, document, schliesse} = await starteEchteOberflaeche({imSpiel: true});
+  try {
+    const header = document.getElementById('game-header');
+    for (const id of ['val-name', 'val-lvl', 'val-caps', 'val-ammo', 'val-hp', 'bar-hp', 'bar-rads', 'bar-exp-top', 'val-xp-txt', 'btn-menu-toggle']) {
+      assert.equal(header.querySelectorAll(`#${id}`).length, 1, `${id} fehlt oder ist doppelt`);
+    }
+    Object.assign(window.Game.state, {playerName: 'EIN_SEHR_LANGER_SPIELERNAME', lvl: 7, caps: 12345, hp: 30, maxHp: 100, rads: 10, xp: 40});
+    window.Game.state.inventory = [{id: 'ammo', count: 87}];
+    window.UI.update();
+    assert.equal(document.getElementById('val-name').textContent, 'EIN_SEHR_LANGER_SPIELERNAME');
+    assert.equal(document.getElementById('val-lvl').textContent, '7');
+    assert.equal(document.getElementById('val-caps').textContent, '12345');
+    assert.equal(document.getElementById('val-ammo').textContent, '87');
+    assert.equal(document.getElementById('val-hp').textContent, 'TP 30/90');
+    assert.equal(document.getElementById('bar-hp').style.width, '30%');
+    assert.equal(document.getElementById('bar-rads').style.width, '10%');
+    assert.ok(document.getElementById('val-hp').classList.contains('justify-center'), 'TP-Text muss mittig bleiben');
+    assert.ok(document.getElementById('bar-hp').classList.contains('bg-yellow-500'));
+    assert.equal(document.getElementById('bar-hp').style.background, '');
+    document.getElementById('btn-menu-toggle').click();
+    assert.equal(document.getElementById('main-nav').classList.contains('hidden'), false);
+    document.getElementById('btn-menu-toggle').click();
+    assert.equal(document.getElementById('main-nav').classList.contains('hidden'), true);
+    let ziel = null;
+    window.UI.switchView = name => { ziel = name; return Promise.resolve(); };
+    document.getElementById('header-char-info').click();
+    assert.equal(ziel, 'char');
+    const css = readFileSync(join(ROOT, 'shell/style.css'), 'utf8');
+    assert.match(css, /grid-template-areas:\s*"char ressourcen leben menu"/);
+    assert.match(css, /@media\s*\(max-width:\s*540px\)[\s\S]*?"char ressourcen menu"\s*"leben leben leben"/);
+    assert.match(css, /#game-header #btn-menu-toggle\s*\{[^}]*min-width:\s*0/);
+    assert.match(css, /#val-name\s*\{[^}]*text-overflow:\s*ellipsis/);
+  } finally { await schliesse(); }
+});

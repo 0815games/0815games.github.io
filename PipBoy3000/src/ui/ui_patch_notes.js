@@ -35,6 +35,16 @@ window.GameData.offenePunkte = [
 // nicht mit dem, was geplant war.
 window.GameData.RELEASED_PATCHES = [
   {
+    version: '14.0.31',
+    datum: '2026-11-26',
+    title: 'Aufgeräumte Statusleiste',
+    punkte: [
+      'Name, Level, Kronkorken, Munition, Leben und Menü sind sauber ausgerichtet. Auf schmalen Displays steht der Lebensbalken darunter.',
+      'Der Menüknopf nimmt weniger Platz ein und lange Namen werden passend gekürzt. Farben, Pip-Boy-Stil und Bedienung bleiben erhalten.',
+      'Die Lebensanzeige aktualisiert nun den Balken statt versehentlich den Text; Werte und Spielmechanik bleiben unverändert.'
+    ]
+  },
+  {
     version: '14.0.30',
     datum: '2026-11-26',
     title: 'Neuer Vault-Eingang',
