@@ -371,6 +371,44 @@ dialog input {
   box-shadow: 0 12px 34px rgba(0, 0, 0, 0.35);
   animation: card-in 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
+/* Minimieren: Karte wird zur kleinen Pille unter dem Menü, damit das Spielfeld frei ist */
+.tut-card { position: relative; padding-top: 18px; }
+.tut-min {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  min-height: 32px;
+  width: 32px;
+  padding: 0;
+  font-size: 20px;
+  line-height: 1;
+}
+.tutorial.mini {
+  position: fixed;
+  top: 62px;
+  right: 10px;
+  bottom: auto;
+  left: auto;
+  transform: none;
+  width: auto;
+  max-width: 62vw;
+}
+.tut-pill {
+  display: block;
+  min-height: 38px;
+  max-width: 100%;
+  padding: 6px 14px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-weight: 700;
+  background: #fff;
+  color: var(--ink);
+  border: 3px solid var(--ink);
+  border-radius: 999px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+}
 .tut-card h2 { font-size: 19px; margin-bottom: 6px; }
 .tut-card p { margin: 0 0 8px; }
 .tut-card .row { margin: 0; }

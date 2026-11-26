@@ -565,6 +565,7 @@ function selectTile({ x, y }) {
   }
   selected = { x, y };
   popupOpen = true;
+  minimizeTutorialForPanel();
   renderBoard();
   renderPanel();
   // Kein Zentrieren der Karte bei Klick oder Tipp: das Feld bleibt, wo es ist.
@@ -611,6 +612,7 @@ function bindStatic() {
   $('#board').addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && state) {
       popupOpen = true;
+      minimizeTutorialForPanel();
       renderPanel();
     }
   });
@@ -775,6 +777,7 @@ function showWhatsNewIfUpdated() {
 // Das Tutorial läuft einmal pro Konto. Fortschritt steht in state.tutorialStep.
 // Hilfe (Knopf „Hilfe“) öffnet die Übersicht jederzeit erneut.
 let tutorialIndex = null; // aktueller Schritt, null wenn keiner offen ist
+let tutorialMinimized = false; // Karte klein als Pille, damit das Spielfeld frei ist
 
 function clearTutorialHighlight() {
   document.querySelectorAll('.tut-target').forEach((el) => el.classList.remove('tut-target'));
@@ -898,12 +901,33 @@ function showTutorialStep(index) {
   const step = TUTORIAL_STEPS[index];
   if (!step || !state) return endTutorial();
   tutorialIndex = index;
+  // Aufgaben auf dem Feld oder in der Leiste: klein anfangen, damit man das Spiel bedienen kann.
+  tutorialMinimized = Boolean(step.task && step.task !== 'tap');
+  renderTutorialStep();
+}
+
+/** Zeigt den offenen Schritt als Karte oder, minimiert, als kleine Pille oben rechts. */
+function renderTutorialStep() {
+  const index = tutorialIndex;
+  const step = TUTORIAL_STEPS[index];
+  if (!step || !state) return endTutorial();
   clearTutorialHighlight();
   if (step.target) document.querySelector(step.target)?.classList.add('tut-target');
   const last = index === TUTORIAL_STEPS.length - 1;
   const el = $('#tutorial');
   el.hidden = false;
+  el.classList.toggle('mini', tutorialMinimized);
+  if (tutorialMinimized) {
+    el.innerHTML = `<button type="button" id="tut-open" class="tut-pill" aria-label="Anleitung öffnen">📖 ${index + 1}/${TUTORIAL_STEPS.length} · ${esc(step.title)}</button>`;
+    $('#tut-open').addEventListener('click', () => {
+      tutorialMinimized = false;
+      renderTutorialStep();
+    });
+    refreshTutorialTask();
+    return;
+  }
   el.innerHTML = `<section class="tut-card" role="dialog" aria-labelledby="tut-title">
+    <button type="button" id="tut-min" class="ghost tut-min" aria-label="Anleitung minimieren">–</button>
     <p class="small muted">Schritt ${index + 1} von ${TUTORIAL_STEPS.length}</p>
     <h2 id="tut-title">${esc(step.title)}</h2>
     <p>${esc(step.text)}</p>
@@ -914,6 +938,10 @@ function showTutorialStep(index) {
       <button type="button" id="tut-next" class="primary">${last ? 'Fertig' : 'Weiter'}</button>
     </p>
   </section>`;
+  $('#tut-min').addEventListener('click', () => {
+    tutorialMinimized = true;
+    renderTutorialStep();
+  });
   $('#tut-next').addEventListener('click', () => {
     if ($('#tut-next').disabled) return;
     if (last) {
@@ -930,6 +958,13 @@ function showTutorialStep(index) {
   });
   refreshTutorialTask();
   $('#tut-next').focus({ preventScroll: true });
+}
+
+/** Klein machen, sobald ein Feld-Fenster aufgeht: dann kann man bauen. */
+function minimizeTutorialForPanel() {
+  if (tutorialIndex === null || tutorialMinimized) return;
+  tutorialMinimized = true;
+  renderTutorialStep();
 }
 
 /** Hilfe-Übersicht: alle Abschnitte, jederzeit über den Hilfe-Knopf. */
