@@ -12,6 +12,8 @@
     "test:server": "npm test --prefix IronPath/server",
     "test:release": "node --test IronPath/release-tools/session-config.test.mjs IronPath/release-tools/runtime-compatibility.test.mjs",
     "setup": "npm ci --prefix IronPath/server --no-audit --no-fund && npm ci --prefix IronPath/release-tools --no-audit --no-fund",
-    "ci-lokal": "npm run schnelltor && npm run test:suite && npm run test:stress && npm run test:server && npm run test:release"
+    "ci-lokal": "npm run schnelltor && npm run test:suite && npm run test:stress && npm run test:server && npm run test:release",
+    "test:schattengruft": "node --test schattengruft/tests/*.mjs",
+    "check:schattengruft": "node --test schattengruft/tests/html-assets.mjs"
   }
 }

@@ -55,7 +55,10 @@ check(()=>{const h=create();h.doc.activeElement=h.env.abilities[2];h.press('Ente
 check(()=>{const h=create();h.press('1');assert.equal(h.nodes.attack.hits,1);});
 check(()=>{const h=create();assert.equal(h.env.abilities[1].attrs['aria-keyshortcuts'],'E');assert.equal(h.env.abilities[1].children[0].textContent,'[E] ');});
 check(()=>{const h=create();h.observers[2]();h.observers[2]();assert.equal(h.env.abilities[0].children.length,1);});
-check(()=>{const h=create();h.press('5');assert.equal(h.nodes.mana.hits,1);});
-check(()=>{const h=create();h.nodes.mana.disabled=true;h.press('5');assert.equal(h.nodes.mana.hits,undefined);});
-check(()=>{const h=create();h.press('5',{repeat:true});assert.equal(h.nodes.mana.hits,undefined);});
+check(()=>{const h=create();h.press('4');assert.equal(h.nodes.mana.hits,1);});
+check(()=>{const h=create();h.nodes.mana.disabled=true;h.press('4');assert.equal(h.nodes.mana.hits,undefined);});
+check(()=>{const h=create();h.press('4',{repeat:true});assert.equal(h.nodes.mana.hits,undefined);});
+check(()=>{const h=create();h.press('5');assert.equal(h.nodes.flee.hits,1);});
+check(()=>{const h=create();h.nodes.flee.disabled=true;h.press('5');assert.equal(h.nodes.flee.hits,undefined);});
+check(()=>{const h=create();h.press('5',{repeat:true});assert.equal(h.nodes.flee.hits,undefined);});
 console.log(JSON.stringify({checks,passed:checks,scope:'Actual keyboard.js setup/handler in VM with DOM/event/action doubles; no real browser or Firebase'}));
