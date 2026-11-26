@@ -12,7 +12,7 @@
 // opponent's name in the real game).
 import {deflateSync} from 'node:zlib';
 import {mkdirSync,writeFileSync} from 'node:fs';
-import {getMap} from '../core/maps.mjs?v=20261121-inventory1';
+import {getMap} from '../core/maps.mjs?v=20261121-skills1';
 import {CAMPAIGN} from '../core/campaign.mjs?v=20261112-pressure1';
 
 // ------------------------------------------------------------------ png ----

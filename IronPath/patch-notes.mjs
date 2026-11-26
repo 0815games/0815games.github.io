@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see docs/PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261121-inventory1';
+import {getLanguage} from './language.mjs?v=20261121-skills1';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,17 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'skills1',build:'20261121-skills1',pr:0,
+    title:{en:'Skills · The Progression Board in the Field-Kit Look',de:'Fähigkeiten · Der Fortschrittsbrett im Feldkit-Look'},
+    shipped:[
+      {en:'The skills dialog wears the same board language as the dossier and the workshop: screwed panels, brass edges, DIN-style headers, squared brass tabs and the green field button for the class and unlock actions.',de:'Das Fähigkeiten-Fenster trägt dieselbe Brett-Sprache wie Feldakte und Werkstatt: geschraubte Panels, Messingkanten, DIN-Header, eckige Messing-Tabs und der grüne Feldknopf für Klassen- und Freischalt-Aktionen.'},
+      {en:'The skill cards keep every readable state — unlocked, active, selected, capstone — on the darker plate surfaces; no state is colour-only and all labels stay as they were. Cache wave 20261121-skills1.',de:'Die Fähigkeitskarten behalten jeden lesbaren Zustand — freigeschaltet, aktiv, ausgewählt, Kapitel — auf dunkleren Plattflächen; kein Zustand ist nur Farbe, alle Labels bleiben wie gehabt. Cache-Welle 20261121-skills1.'},
+    ],
+    open:[
+      {en:'The staircase of optics is complete: command centre, dossier, workshop and skills carry the same language.',de:'Die Optik-Leiter ist vollständig: Kommandozentrale, Feldakte, Werkstatt und Fähigkeiten tragen dieselbe Sprache.'},
+    ]
+  },
   {
     id:'inventory1',build:'20261121-inventory1',pr:499,
     title:{en:'Inventory · Equipment Board in the Field Dossier',de:'Inventar · Ausrüstungsbrett in der Feldakte'},
