@@ -439,3 +439,33 @@ test('Login -> Spiel: beim Spielstart wandern offene Fenster aus #pipboy-case zu
     await schliesse();
   }
 });
+
+test('Tutorial: ein Klick je Aktion oeffnet Menue, Inventar und Aufgaben und ESC kehrt zur Karte zurueck', async () => {
+  const {window, document, schliesse} = await starteEchteOberflaeche({imSpiel: true});
+  const wartenAuf = async (bedingung) => {
+    const ende = Date.now() + 4000;
+    while (!bedingung() && Date.now() < ende) await new Promise(r => setTimeout(r, 20));
+    assert.ok(bedingung(), 'Tutorial-Schritt oder Ansicht nicht erreicht');
+  };
+  try {
+    window.Game.saveGame = () => {};
+    window.Game.state.tutorial = undefined;
+    window.Tutorial.start();
+    window.Tutorial.zeigen(2);
+    const knopf = () => document.querySelector('[data-tut-weiter]');
+    const schritt = () => document.querySelector('[data-tut-schritt]').textContent;
+    knopf().click();
+    await wartenAuf(() => schritt() === '4/7');
+    assert.equal(document.getElementById('main-nav').classList.contains('hidden'), false);
+    knopf().click();
+    await wartenAuf(() => schritt() === '5/7');
+    assert.equal(window.Game.state.view, 'inventory');
+    assert.match(document.querySelector('[data-tut-text]').textContent, /ESC/);
+    knopf().click();
+    await wartenAuf(() => schritt() === '6/7');
+    assert.equal(window.Game.state.view, 'quests');
+    window.dispatchEvent(new window.KeyboardEvent('keydown', {key:'Escape', bubbles:true}));
+    await wartenAuf(() => window.Game.state.view === 'map');
+    window.Tutorial.ausblenden();
+  } finally { await schliesse(); }
+});

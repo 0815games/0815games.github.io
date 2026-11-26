@@ -86,19 +86,82 @@ test('ohne Bewegung bleibt der Schritt stehen, auch nach mehreren Pruefungen', (
   assert.equal(knopf().hidden, true);
 });
 
-test('der Menue-Schritt oeffnet das Menue und wartet darauf', () => {
-  const {w, document, knopf, titel} = mitTutorial();
-  w.eval('Tutorial.start();');
-  knopf().click();                        // Karte
-  w.eval('Game.state.player.x = 26; Tutorial.pruefen();');
-  knopf().click();                        // Menue
-  assert.match(titel(), /MENÜ/);
+test('ein Klick pro Tutorialknopf oeffnet Menue, Inventar und Aufgaben und geht jeweils weiter', async () => {
+  const {w, document, knopf, titel, schritt} = mitTutorial();
+  const warten = () => new Promise(resolve => setTimeout(resolve, 20));
+  w.Tutorial.start();
   knopf().click();
-  // Das Oeffnen laeuft in einem Timeout (sonst schliesst der Klick-Verteiler
-  // es im selben Zug wieder) - hier direkt nachziehen.
-  w.eval('UI.toggleMenu();');
-  assert.equal(document.getElementById('main-nav').classList.contains('hidden'), false,
-    'Das Menue ist zu geblieben');
+  w.Game.state.player.x = 26;
+  w.Tutorial.pruefen();
+  knopf().click();
+  assert.equal(schritt(), '3/7');
+  knopf().click();
+  await warten();
+  assert.equal(schritt(), '4/7');
+  assert.equal(document.getElementById('main-nav').classList.contains('hidden'), false);
+  assert.match(titel(), /DEIN ZEUG/);
+  knopf().click();
+  await warten();
+  assert.equal(w.Game.state.view, 'inventory');
+  assert.equal(schritt(), '5/7');
+  assert.match(document.querySelector('[data-tut-text]').textContent, /ESC/);
+  knopf().click();
+  await warten();
+  assert.equal(w.Game.state.view, 'quests');
+  assert.equal(schritt(), '6/7');
+  assert.match(document.querySelector('[data-tut-text]').textContent, /beweg/);
+  w.close();
+});
+
+test('Steuerungstexte nennen WASD, Pfeile, Touch-Joystick und zufaellige Gegner', () => {
+  const {w, document} = mitTutorial();
+  w.Tutorial.start();
+  w.Tutorial.zeigen(1);
+  const bewegung = document.querySelector('[data-tut-text]').textContent;
+  assert.match(bewegung, /WASD/);
+  assert.match(bewegung, /Pfeiltasten/);
+  assert.match(bewegung, /halten.*Richtung ziehen/);
+  assert.doesNotMatch(bewegung, /Tippe auf ein Feld/);
+  w.Tutorial.zeigen(5);
+  const kampf = document.querySelector('[data-tut-text]').textContent;
+  assert.match(kampf, /zufällig.*bewegst/);
+  assert.match(kampf, /FEUER/);
+  w.close();
+});
+
+test('fehlgeschlagener Ansichtswechsel bleibt beim Schritt und kann erneut versucht werden', async () => {
+  const {w, knopf, schritt} = mitTutorial();
+  w.Tutorial.start();
+  w.Tutorial.zeigen(3);
+  w.UI.switchView = () => Promise.resolve(); // echter switchView faengt Ladefehler ab
+  knopf().click();
+  await new Promise(resolve => setTimeout(resolve, 20));
+  assert.equal(schritt(), '4/7');
+  assert.equal(knopf().hidden, false);
+  w.UI.switchView = name => { w.Game.state.view = name; return Promise.resolve(); };
+  knopf().click();
+  await new Promise(resolve => setTimeout(resolve, 20));
+  assert.equal(schritt(), '5/7');
+  w.close();
+});
+
+test('spaeter Ansichtswechsel fuehrt nach Pause oder Charakterwechsel nicht weiter', async () => {
+  const {w, knopf} = mitTutorial();
+  w.Tutorial.start();
+  w.Tutorial.zeigen(3);
+  let fertig;
+  w.UI.switchView = () => new Promise(resolve => { fertig = resolve; });
+  knopf().click();
+  await new Promise(resolve => setTimeout(resolve, 10));
+  const alterStand = w.Game.state;
+  w.Tutorial.pausieren();
+  w.Game.state = {view: 'inventory', player:{x:1,y:1}, activeQuests:[], completedQuests:[]};
+  fertig();
+  await new Promise(resolve => setTimeout(resolve, 10));
+  assert.equal(alterStand.tutorialSchritt, 3);
+  assert.equal(w.Game.state.tutorialSchritt, undefined);
+  assert.equal(w.Tutorial.offen, false);
+  w.close();
 });
 
 test('der Inventar-Schritt fuehrt in die Ansicht "inventory", nicht "inv"', () => {
@@ -109,11 +172,12 @@ test('der Inventar-Schritt fuehrt in die Ansicht "inventory", nicht "inv"', () =
   assert.doesNotMatch(quelle, /oeffnetArg: 'inv'/, "Die Ansicht heisst 'inventory'");
 });
 
-test('das Tutorial laeuft bis zum Ende durch und merkt sich das', () => {
+test('das Tutorial laeuft bis zum Ende durch und merkt sich das', async () => {
   const {w, feld, knopf} = mitTutorial();
   w.eval('Tutorial.start();');
   let schutz = 0;
   while (!feld().hidden && schutz++ < 40) {
+    if (w.Tutorial.aktionLaeuft) { await new Promise(resolve => setTimeout(resolve, 10)); continue; }
     if (knopf().hidden) {
       w.eval(`var t = document.querySelector('[data-tut-titel]').textContent;
         if (/KARTE/.test(t)) Game.state.player.x = 30;
@@ -130,6 +194,7 @@ test('das Tutorial laeuft bis zum Ende durch und merkt sich das', () => {
   assert.equal(w.eval('Game.state.tutorial'), 'fertig');
   w.eval('Tutorial.vielleichtStarten();');
   assert.equal(feld().hidden, true, 'Das Tutorial kommt nach dem Ende wieder');
+  w.close();
 });
 
 test('Schliessen pausiert die Mission und merkt sich den Fortschritt', () => {
