@@ -1257,12 +1257,7 @@
       saveObj._lastSeen = Date.now();
       const updates = {};
       updates[`saves/${this.myId}/${slotIndex}`] = saveObj;
-      this.db.ref().update(updates).then(() => {
-        if (typeof UI !== "undefined") {
-          const displayName = gameState && gameState.playerName ? gameState.playerName : "SLOT " + (slotIndex + 1);
-          UI.log(displayName + " GESPEICHERT.", "text-cyan-400");
-        }
-      }).catch((e) => {
+      this.db.ref().update(updates).catch((e) => {
         if (e.code !== "PERMISSION_DENIED") console.error("Save Error:", e);
       });
     },
@@ -10639,6 +10634,16 @@
   ];
   window.GameData.RELEASED_PATCHES = [
     {
+      version: "14.0.27",
+      datum: "2026-11-26",
+      title: "Update-Bestätigung, Tutorial und Speicher-Meldungen",
+      punkte: [
+        "Neue Versionen werden nach JETZT LADEN geladen. Die anschließende Bestätigung lädt nach OK die Seite einmal neu, ohne das Popup erneut zu zeigen.",
+        "Das Tutorial steht unten mittig innerhalb des Spielfelds statt außerhalb rechts oben.",
+        "Automatische Speicherungen laufen weiter, aber die wiederholten Erfolgsmeldungen im Log entfallen."
+      ]
+    },
+    {
       version: "14.0.26",
       datum: "2026-11-26",
       title: "Neues Pip-Boy-App-Icon",
@@ -10965,7 +10970,7 @@
     speichert: "Spielstand wird gespeichert",
     kampf: "Kampf laeuft"
   };
-  function createUpdateUI({ document: document2, window: window2, fetcher = window2?.fetch?.bind(window2) } = {}) {
+  function createUpdateUI({ document: document2, window: window2, fetcher = window2?.fetch?.bind(window2), reload = () => window2.location.reload(), replace = (url) => window2.location.replace(url) } = {}) {
     const meta = document2.querySelector('meta[name="pipboy-build"]');
     const build = meta ? meta.getAttribute("content") : null;
     const balken = document2.getElementById("update-banner");
@@ -11005,7 +11010,8 @@
         text.className = "popup-text text-yellow-400 animate-pulse";
         jetzt.hidden = true;
       } else if (zustand.art === "geladen") {
-        text.textContent = sagen("geladen", { build: zustand.build });
+        const gruende = zustand.blocker || [];
+        text.textContent = sagen("geladen", { build: zustand.build }) + (gruende.length ? " - " + gruende.map((g) => GRUND[g] || g).join(", ") : "");
         text.className = "popup-text text-[#39ff14]";
         jetzt.hidden = true;
       } else if (zustand.art === "aktuell") {
@@ -11031,7 +11037,7 @@
       adresse.searchParams.set("_pb_nonce", String(Date.now()));
       zustand = { art: "laedt" };
       zeichnen();
-      window2.location.replace(adresse.href);
+      replace(adresse.href);
       return true;
     }
     function geladenPruefen() {
@@ -11057,6 +11063,7 @@
       pruefungLaeuft = true;
       try {
         const ergebnis = await probe();
+        if (zustand && (zustand.art === "geladen" || zustand.art === "laedt")) return false;
         if (ergebnis.art === "aktuell") {
           if (!zustand || zustand.art !== "geladen") {
             zustand = null;
@@ -11068,11 +11075,6 @@
           const blocker = updateBlockers();
           zustand = { art: "veraltet", build: ergebnis.build, blocker };
           ziel = ergebnis.build;
-          const adresse = new URL(window2.location.href);
-          const versucht = adresse.searchParams.get("_pb_auf");
-          if (blocker.length === 0 && versucht !== ergebnis.build) {
-            window2.setTimeout(() => neuLaden(ergebnis.build), 1200);
-          }
           zeichnen();
           return true;
         }
@@ -11100,10 +11102,29 @@
       window2.removeEventListener("pageshow", beiSichtbarkeit);
     }
     if (jetzt) jetzt.onclick = () => {
-      if (ziel) neuLaden(ziel);
+      if (!ziel || !zustand || zustand.art !== "veraltet") return;
+      const blocker = updateBlockers();
+      if (blocker.length) {
+        zustand = { ...zustand, blocker };
+        zeichnen();
+        return;
+      }
+      neuLaden(ziel);
     };
     if (spaeter) spaeter.onclick = () => {
-      if (zustand && zustand.art === "geladen") zustand = null;
+      if (zustand && zustand.art === "laedt") return;
+      if (zustand && zustand.art === "geladen") {
+        const blocker = updateBlockers();
+        if (blocker.length) {
+          zustand = { ...zustand, blocker };
+          zeichnen();
+          return;
+        }
+        zustand = { art: "laedt" };
+        zeichnen();
+        reload();
+        return;
+      }
       balken.hidden = true;
       sperreAktualisieren();
     };
@@ -11453,7 +11474,7 @@
         <span class="tut-warten" data-tut-warten hidden>WARTE AUF DICH...</span>
         <button type="button" class="action-button tut-weiter" data-tut-weiter></button>
       </div>`;
-      document.body.appendChild(el);
+      (document.getElementById("main-content") || document.body).appendChild(el);
       el.querySelector("[data-tut-weiter]").onclick = () => this.weiter();
       el.querySelector("[data-tut-ueberspringen]").onclick = () => this.beenden();
       return el;

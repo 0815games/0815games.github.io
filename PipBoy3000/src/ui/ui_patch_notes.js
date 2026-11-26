@@ -35,6 +35,16 @@ window.GameData.offenePunkte = [
 // nicht mit dem, was geplant war.
 window.GameData.RELEASED_PATCHES = [
   {
+    version: '14.0.27',
+    datum: '2026-11-26',
+    title: 'Update-Bestätigung, Tutorial und Speicher-Meldungen',
+    punkte: [
+      'Neue Versionen werden nach JETZT LADEN geladen. Die anschließende Bestätigung lädt nach OK die Seite einmal neu, ohne das Popup erneut zu zeigen.',
+      'Das Tutorial steht unten mittig innerhalb des Spielfelds statt außerhalb rechts oben.',
+      'Automatische Speicherungen laufen weiter, aber die wiederholten Erfolgsmeldungen im Log entfallen.'
+    ]
+  },
+  {
     version: '14.0.26',
     datum: '2026-11-26',
     title: 'Neues Pip-Boy-App-Icon',

@@ -327,6 +327,44 @@ test('die Pruefung erkennt eine neuere Version auf dem Server', async () => {
   assert.ok(umg.abrufe[0].includes('probe='), `Anfrage ohne Cache-Brecher: ${umg.abrufe[0]}`);
 });
 
+test('ein gefundenes Update wartet auf JETZT LADEN statt automatisch neu zu laden', async () => {
+  const umg = umgebung();
+  await ladeUpdateModul(umg);
+  umg.window.eval('var Game = { state: null }; var Combat = {};');
+  umg.window.__fetcher = umg.fetcher;
+  const geplante = [];
+  const original = umg.window.setTimeout.bind(umg.window);
+  umg.window.setTimeout = (fn, ms) => { geplante.push(ms); return original(fn, ms); };
+  const ui = umg.window.eval("window.__updateApi.createUpdateUI({document, window, fetcher: window.__fetcher})");
+  await ui.pruefen();
+  assert.equal(umg.document.getElementById('update-banner-now').hidden, false);
+  assert.ok(!geplante.includes(1200), 'Update darf nicht ohne Klick starten');
+  umg.dom.window.close();
+});
+
+test('JETZT LADEN prueft Blocker erneut und navigiert mit Update-Markern', async () => {
+  const umg = umgebung();
+  await ladeUpdateModul(umg);
+  umg.window.eval('var Game = {state: {}, isDirty: false, saveTimer: null}; var Combat = {};');
+  umg.window.__fetcher = umg.fetcher;
+  umg.window.__navigation = [];
+  const ui = umg.window.eval("window.__updateApi.createUpdateUI({document, window, fetcher: window.__fetcher, replace: url => window.__navigation.push(url)})");
+  await ui.pruefen();
+  umg.window.eval('Game.isDirty = true');
+  umg.document.getElementById('update-banner-now').click();
+  assert.equal(umg.window.__navigation.length, 0);
+  assert.match(umg.document.getElementById('update-banner-text').textContent, /Spielstand wird gespeichert/);
+  umg.window.eval('Game.isDirty = false');
+  await ui.pruefen();
+  umg.document.getElementById('update-banner-now').click();
+  assert.equal(umg.window.__navigation.length, 1);
+  const ziel = new URL(umg.window.__navigation[0]);
+  assert.equal(ziel.searchParams.get('_pb_auf'), '14.0.14');
+  assert.equal(ziel.searchParams.get('_pb_von'), '14.0.13');
+  assert.equal(ui.zustand.art, 'laedt');
+  umg.dom.window.close();
+});
+
 test('bei gleicher Version bleibt der Balken weg', async () => {
   const umg = umgebung({build: '14.0.13', server: '14.0.13'});
   const {window, document} = umg;
@@ -356,7 +394,7 @@ test('ein kaputter Server-Abruf fuehrt nicht zum Neuladen', async () => {
   assert.equal(document.getElementById('update-banner-now').hidden, true);
 });
 
-test('nach einem erfolgreichen Versionssprung hat das Update-Fenster einen Schliessen-Knopf und gibt die Sperre frei', async () => {
+test('nach einem erfolgreichen Versionssprung startet OK genau einen Reload ohne erneutes Popup', async () => {
   // Regression aus v14.0.18/v14.0.19: nach dem Reload (?_pb_auf=...) zeigte
   // #update-banner "NEUE VERSION ... GELADEN" und setzte body.fenster-offen
   // (#game-screen pointer-events: none), versteckte aber sowohl JETZT LADEN
@@ -381,7 +419,8 @@ test('nach einem erfolgreichen Versionssprung hat das Update-Fenster einen Schli
   await ladeUpdateModul(umg);
   umg.window.eval('var Game = { state: null }; var Combat = {};');
   umg.window.__fetcher = umg.fetcher;
-  const ui = umg.window.eval("window.__updateApi.createUpdateUI({document: window.document, window: window, fetcher: window.__fetcher})");
+  umg.window.__reloadCount = 0;
+  const ui = umg.window.eval("window.__updateApi.createUpdateUI({document: window.document, window: window, fetcher: window.__fetcher, reload: () => window.__reloadCount++})");
   ui.start();
   await new Promise(r => setTimeout(r, 30));
   ui.stop();
@@ -393,10 +432,28 @@ test('nach einem erfolgreichen Versionssprung hat das Update-Fenster einen Schli
   assert.equal(spaeter.textContent, 'OK');
   assert.equal(umg.document.body.classList.contains('fenster-offen'), true);
 
+  assert.ok(!umg.window.location.search.includes('_pb_auf'), 'Update-Marker muss vor OK aus der URL entfernt sein');
+  // Ein Speichervorgang darf nicht durch den zweiten Reload verloren gehen.
+  umg.window.eval('Game.state = {}; Game.isDirty = true');
   spaeter.click();
-  assert.equal(banner.hidden, true, 'Klick auf OK muss das Update-Fenster schliessen');
-  assert.equal(umg.document.body.classList.contains('fenster-offen'), false,
-    'Nach dem Schliessen darf body.fenster-offen das Spiel nicht weiter sperren');
+  assert.equal(umg.window.__reloadCount, 0);
+  assert.match(umg.document.getElementById('update-banner-text').textContent, /Spielstand wird gespeichert/);
+  umg.window.eval('Game.isDirty = false');
+  spaeter.click();
+  assert.equal(umg.window.__reloadCount, 1);
+  assert.equal(ui.zustand.art, 'laedt');
+  // Ein neuer Seitenstart mit bereinigter URL darf keine Erfolgsmeldung erneut anzeigen.
+  const neu = umgebung({build: '14.0.23', server: '14.0.23'});
+  await ladeUpdateModul(neu);
+  neu.window.eval('var Game = { state: null }; var Combat = {};');
+  neu.window.__fetcher = neu.fetcher;
+  const neueUI = neu.window.eval("window.__updateApi.createUpdateUI({document, window, fetcher: window.__fetcher})");
+  neueUI.start();
+  await new Promise(r => setTimeout(r, 20));
+  neueUI.stop();
+  assert.equal(neu.document.getElementById('update-banner').hidden, true);
+  neu.dom.window.close();
+  umg.dom.window.close();
 });
 
 test('die Seite traegt den Build-Stempel und laedt das Buendel mit Version', () => {
