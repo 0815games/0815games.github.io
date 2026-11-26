@@ -39,7 +39,7 @@ const SCHRITTE = [
   {
     id: 'karte',
     titel: 'DIE KARTE',
-    text: 'Das hier ist deine Umgebung. Tippe auf ein Feld, um dich zu bewegen. Der Sektor-Anzeiger oben nennt deine Position.',
+    text: 'Bewege dich am Desktop mit WASD oder den Pfeiltasten. Auf dem Handy: Finger auf den Spielbereich legen, halten und in die gewünschte Richtung ziehen. Oben steht dein Sektor.',
     ziel: '#game-canvas',
     weiter: 'VERSTANDEN',
     // Wirklich bewegt: die Position hat sich seit dem Start geaendert.
@@ -74,7 +74,7 @@ const SCHRITTE = [
   {
     id: 'aufgaben',
     titel: 'AUFGABEN',
-    text: 'Hier stehen deine Missionen. Der Vault-Tec-Auftrag ist dein erster - er zählt, was du im Ödland findest.',
+    text: 'Hier stehen deine Missionen und dein Tutorial-Fortschritt. Mit ESC kommst du am Desktop zurück zum Spielbild; mobil mit SCHLIESSEN.',
     ziel: '#btn-quests',
     weiter: 'AUFGABEN ÖFFNEN',
     oeffnet: 'switchView',
@@ -85,7 +85,7 @@ const SCHRITTE = [
   {
     id: 'kampf',
     titel: 'GEFAHR',
-    text: 'Im Ödland begegnen dir Gegner. Klick auf sie, um anzugreifen - sonst greifen sie dich an.',
+    text: 'Gegner erscheinen zufällig, wenn du dich im Ödland bewegst. Zurück zum Spielbild: ESC oder SCHLIESSEN. Im Kampf wählst du ein Ziel und drückst FEUER.',
     ziel: '#game-canvas',
     weiter: 'ALLES KLAR',
     // Die Mission bleibt offen, bis ein Kampf erlebt wurde. Pausieren ist
@@ -108,6 +108,8 @@ const TUTORIAL = {
   offen: false,
   beobachter: null,
   zeigerHorcher: null,
+  aktionLaeuft: false,
+  generation: 0,
 
   schrittAusSpielstand: function () {
     const n = Game.state.tutorialSchritt;
@@ -142,6 +144,8 @@ const TUTORIAL = {
   },
 
   ausblenden: function () {
+    this.generation++;
+    this.aktionLaeuft = false;
     this.offen = false;
     this.beobachterAbstellen();
     const feld = this.feld();
@@ -199,6 +203,8 @@ const TUTORIAL = {
   zeigen: function (index) {
     const schritt = SCHRITTE[index];
     if (!schritt) return this.beenden();
+    this.generation++;
+    this.aktionLaeuft = false;
     this.index = index;
     this.offen = true;
     if (typeof Game !== 'undefined' && Game.state && Game.state.tutorialSchritt !== index) {
@@ -223,12 +229,9 @@ const TUTORIAL = {
     //   mit pruefung ohne oeffnet  der Spieler muss es selbst tun. Dann steht
     //                   dort WARTE AUF DICH, bis die Pruefung zustimmt. Sonst
     //                   klickt man sich durch und hat nichts gelernt.
-    // Ein "weicher" Schritt (Kampf) laesst sich ueberspringen: wer im
-    // Tutorial keinem Gegner begegnet, darf dort nicht festsitzen. Dann steht
-    // neben dem Knopf ein Hinweis statt einer Sackgasse.
     const erledigt = !schritt.pruefung || schritt.pruefung();
-    weiter.textContent = schritt.weich && !erledigt ? 'TROTZDEM WEITER' : schritt.weiter;
-    if (schritt.weich || schritt.oeffnet || !schritt.pruefung || erledigt) {
+    weiter.textContent = schritt.weiter;
+    if (schritt.oeffnet || !schritt.pruefung || erledigt) {
       weiter.hidden = false;
       warten.hidden = true;
     } else {
@@ -245,7 +248,7 @@ const TUTORIAL = {
   // Laeuft im Takt, solange ein Schritt auf eine Handlung wartet.
   pruefen: function () {
     const schritt = SCHRITTE[this.index];
-    if (!this.offen || !schritt || !schritt.pruefung) return;
+    if (!this.offen || this.aktionLaeuft || !schritt || !schritt.pruefung) return;
     if (!schritt.pruefung()) return;
     this.beobachterAbstellen();
     const feld = this.feld();
@@ -259,6 +262,7 @@ const TUTORIAL = {
   weiter: function () {
     const schritt = SCHRITTE[this.index];
     if (!schritt) return this.beenden();
+    if (!this.offen || this.aktionLaeuft) return false;
 
     // Schritte, deren Knopf das Ziel selbst oeffnet: hinfuehren und warten,
     // bis die Pruefung den Vollzug sieht. Wer es schon getan hat, springt
@@ -272,27 +276,39 @@ const TUTORIAL = {
           const nav = document.getElementById('main-nav');
           if (nav && sichtbar('main-nav')) UI.toggleMenu();
         }
-        // Erst nach dem Klick-Ereignis oeffnen - und dann pruefen, ob es noch
-        // noetig ist. Sonst schliesst der Klick-Verteiler von ui_input.js das
-        // gerade geoeffnete Menue im selben Zug wieder.
-        setTimeout(() => {
-          const s = SCHRITTE[this.index];
-          if (!s) return;
-          const da = s.oeffnet === 'toggleMenu'
-            ? sichtbar('main-nav')
-            : (s.pruefung ? s.pruefung() : false);
-          if (!da) {
-            try { UI[s.oeffnet](s.oeffnetArg); } catch (e) { console.error(e); }
-          }
-          this.zeigerSetzen(s.ziel);
-        }, 0);
+        // Ein Klick oeffnet die Ansicht UND fuehrt nach Erfolg weiter.
+        // Abwarten ist wichtig: switchView laedt Templates asynchron.
+        // Der Generationstest verhindert Weiterlaufen nach Pause, Neustart
+        // oder Charakterwechsel, auch wenn die Antwort spaet eintrifft.
+        this.aktionLaeuft = true;
+        const generation = this.generation;
+        const spielstand = Game.state;
+        const nochAktuell = () => this.offen && this.generation === generation && Game.state === spielstand;
         const feld = this.feld();
         if (feld) {
           feld.querySelector('[data-tut-weiter]').hidden = true;
           feld.querySelector('[data-tut-warten]').hidden = false;
         }
         this.beobachterAbstellen();
-        this.beobachter = setInterval(() => this.pruefen(), 400);
+        setTimeout(async () => {
+          if (!nochAktuell()) return;
+          try {
+            const da = schritt.oeffnet === 'toggleMenu'
+              ? sichtbar('main-nav') : (schritt.pruefung ? schritt.pruefung() : false);
+            if (!da) await UI[schritt.oeffnet](schritt.oeffnetArg);
+          } catch (e) { console.error(e); }
+          if (!nochAktuell()) return;
+          this.aktionLaeuft = false;
+          if (!schritt.pruefung || schritt.pruefung()) {
+            this.weiter();
+          } else {
+            // Fehlgeschlagenes Laden laesst die Aufgabe offen und den Knopf
+            // erneut nutzbar, statt unbemerkt Fortschritt zu behaupten.
+            feld.querySelector('[data-tut-weiter]').hidden = false;
+            feld.querySelector('[data-tut-warten]').hidden = true;
+            this.beobachter = setInterval(() => this.pruefen(), 400);
+          }
+        }, 0);
         return true;
       }
     }

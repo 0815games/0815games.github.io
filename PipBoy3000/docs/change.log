@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v14.0.29 (Tutorial-Steuerung und Ein-Klick-Ablauf, 2026-11-26)
+- [FIX] Karten-Anleitung nennt WASD/Pfeiltasten und den Touch-Joystick statt eines nicht existierenden Klickziels.
+- [FIX] Ein Klick öffnet Menü, Inventar und Aufgaben und geht nach erfolgreichem Laden zum nächsten Schritt. Ladefehler bleiben wiederholbar; Pause und Charakterwechsel stoppen spätes Weiterlaufen.
+- [FIX] Aufgaben erklären ESC bzw. SCHLIESSEN; Kampf erklärt zufällige Begegnungen beim Bewegen und den FEUER-Knopf.
+- [TEST] Integration mit echter UI und Templates plus Tests für Ladefehler und Pause während asynchronem Laden.
+
 ## v14.0.28 (Tutorial als Mission, 2026-11-26)
 - [NEU] Eigene Tutorial-Mission unter AUFGABEN mit Fortschritt und Fortsetzen-Knopf, auch für ältere Spielstände ohne Tutorialstatus.
 - [FIX] X pausiert statt abzuschließen. Aktueller Schritt und Anfangsposition werden pro Spielstand gespeichert; Menü und Mission setzen fort. Logout räumt Beobachter und Feld auf.

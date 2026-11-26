@@ -35,6 +35,16 @@ window.GameData.offenePunkte = [
 // nicht mit dem, was geplant war.
 window.GameData.RELEASED_PATCHES = [
   {
+    version: '14.0.29',
+    datum: '2026-11-26',
+    title: 'Tutorial-Steuerung und Ein-Klick-Ablauf',
+    punkte: [
+      'Die Karte erklärt jetzt WASD und Pfeiltasten am Desktop sowie Halten und Ziehen auf dem Handy.',
+      'Menü, Inventar und Aufgaben öffnen sich mit einem Tutorial-Klick; nach erfolgreichem Laden geht es direkt weiter.',
+      'Der Aufgaben-Schritt erklärt ESC und SCHLIESSEN für den Rückweg. Der Kampf-Schritt erklärt zufällige Begegnungen beim Laufen und den FEUER-Knopf.'
+    ]
+  },
+  {
     version: '14.0.28',
     datum: '2026-11-26',
     title: 'Tutorial als Mission',
