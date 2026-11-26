@@ -1162,3 +1162,34 @@ Ereignis ergänzt.
 - Grenzen / offen:
   - Die Browser-Aufgaben gelten pro Gerät. Auf einem anderen Gerät muss man sie noch einmal machen.
   - Nicht im Browser geprüft.
+
+### TTT-0068 – Neue Stadt: Ansicht springt auf das Rathaus (lokal, nicht veröffentlicht)
+
+- Fehler: Beim Neustart im Spiel („Neu beginnen“, oder „Neuer Start“ über Freibriefe) blieb die Kamera der alten Stadt.
+  Die neue Stadt lag dann außerhalb des Bildes, und man sah nur den Nebelring um die Mitte. Nach einem Neuladen stimmte
+  es, weil das Spielfeld dann neu erzeugt wird.
+- Ursache: `createBoard` setzt die Kamera nur beim Erzeugen auf das Rathaus. Der Zustand wird danach ausgetauscht, die Kamera nicht.
+- Behebung: `src/world/board.js` bekommt `recenter()` (Kamera auf das Rathaus, Zoom auf Grundgröße). `src/main.js` ruft es
+  nach dem Start einer Stadt (`startGame`) und nach „Neuer Start“ auf.
+- Prüfung im echten Browser (headless Chromium, außerhalb des Repos): Kamera verschoben, Stadt getauscht, ohne `recenter()`
+  liegt das Rathaus außerhalb des Bildes. Mit `recenter()` steht es in der Mitte, der Nebelring liegt richtig.
+- Tests: `npm test` 178/178 grün. `npm run check` ohne Fehler.
+- Grenzen / offen:
+  - Die Prüfung im Browser lief mit einer Testseite, nicht mit dem Spiel selbst (Firebase ist in der Sandbox nicht erreichbar).
+    Bitte den Neustart einmal im Spiel prüfen.
+
+### TTT-0069 – Tutorial als Grundstruktur auf der Karte (PR #495)
+
+- Ziel: Das Tutorial baut die Grundstruktur der Stadt direkt auf der Karte nach: Hof, Sägewerk, Steinbruch, Lager, dann Ausbau.
+- Dateien: `src/domain/tutorialSpot.js` (neu: freies, legales Feld am Rathaus finden; gebautes Gebäude finden),
+  `src/tutorial.js` (Schritte, Bezeichnungen, Aufgaben), `src/domain/settlement.js` (Aufgaben für Hof, Sägewerk, Steinbruch, Lager),
+  `src/world/board.js` und `src/world/scene.js` (pulsierende Markierung für das Tutorial-Feld), `src/main.js` (Markierung, Schritte mit Pflicht).
+- Ablauf: Bau-Schritte markieren das nächste freie, passende Feld am Rathaus. „Weiter“ wird erst nach dem Bau aktiv (Schaltfläche „Erst bauen“). Ausbau-Schritt markiert den Hof.
+- Abschluss-Check: Hof, Sägewerk, Steinbruch, Lager, Antippen, Inventar, Verkauf, Erfahrung, Eberhard, Hilfe, Ausbau.
+- Geändert gegenüber TTT-0064: „Wohnhaus bauen“ und „Arbeit und Lohn“ sind nicht mehr Pflicht. Ein Wohnhaus braucht Stadtlevel 2 (2000 Erfahrung).
+  Ein Gebäude bringt 20 Erfahrung, im Tutorial ist Stadtlevel 2 nicht zu erreichen. Der Schritt „Stufen“ weist darauf hin.
+- Tests: `npm test` 183/183 grün (4 neue in `tests/tutorialSpot.test.mjs`). `npm run check` ohne Fehler.
+  Finder auf 160 Testkarten (4 Biome × 40 Seeds): für alle vier Startgebäude ein Feld gefunden.
+- Nachweis: Unit-Tests und Logik-Prüfung. Die Markierung wurde im headless Browser ohne Fehler gerendert, ist im Screenshot aber schwach zu sehen.
+  Ein vollständiger Durchlauf im echten Spiel steht aus (Firebase in der Sandbox nicht erreichbar).
+- Grenze: Wer ein altes, laufendes Tutorial hat, springt an die Stelle derselben Nummer in der neuen Reihenfolge.
