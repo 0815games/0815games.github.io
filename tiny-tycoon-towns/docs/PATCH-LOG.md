@@ -1204,3 +1204,12 @@ Ereignis ergänzt.
 - Tests: `npm test` 185/185 grün (2 neue). `npm run check` ohne Fehler.
 - Nachweis: Unit-Tests. Die Vorschau wurde im headless Browser ohne Fehler gezeichnet. Die Zoomstufe der Testaufnahme war zu klein, um das Bild sicher zu beurteilen.
   Ein Durchlauf bis Stadtlevel 2 im echten Spiel steht aus.
+
+### TTT-0071 – Tutorial minimierbar, Spielfeld frei
+
+- Anlass: Das Tutorial lag mittig am unteren Rand. Auf dem Handy verdeckte es Inventar und Spielfeld, man konnte keinen Hof bauen.
+- Änderungen: Im Tutorial gibt es oben rechts „–“. Die Karte wird dann zur kleinen Pille unter dem Menü („📖 3/16 · Der Hof“), ein Tipp öffnet sie wieder.
+  Bau-, Ausbau-, Arbeiter- und Aufgaben-Schritte starten klein, damit das Spielfeld frei ist. Sobald ein Feld-Fenster aufgeht (Tippen oder Enter), wird das Tutorial klein.
+- Dateien: `src/main.js` (`renderTutorialStep`, `minimizeTutorialForPanel`, Aufruf beim Öffnen des Feld-Fensters), `style.css` (`.tut-min`, `.tut-pill`, `.tutorial.mini`).
+- Tests: `npm test` 185/185 grün. `npm run check` ohne Fehler.
+- Nachweis: Nur Unit-Tests und Prüfung der Logik. Die Darstellung wurde nicht im Browser gegengeprüft, die Testumgebung war nicht verfügbar. Ein Durchlauf im echten Spiel steht aus.
