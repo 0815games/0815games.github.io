@@ -1,19 +1,12 @@
 /* "Dein Soldat" as a field dossier (reported: "Ueberarbeite das Dein Soldat
- * Fenster gaenzlich"). The old screen was a flat two-column form with a
- * heavy workbench photo on top.
- * The rework follows the game's iron-plate language instead:
- *
- *   * one identity rail on the left - name, level and an XP progress bar;
- *     the portrait moved into the loadout, where the soldier stands between
- *     her three equipment slots (the RPG-style paper doll);
- *   * three numbered panels on the right - equipment, combat profile,
- *     collection - each with its own border, no nested boxes-in-boxes;
- *   * a slim header bar instead of the hero photo: the soldier IS the photo
- *     now, the workbench shot carried no information;
- *   * on the phone the rail collapses into a showcase row (portrait and tag
- *     side by side) and the panels stack single-column.
+ * Fenster gaenzlich"). The rework follows the game's iron-plate language:
+ * identity rail left, three numbered panels right. IPL-0140 turns the board
+ * into the reference layout: screwed panels with DIN-style headers, circular
+ * brass places with number badges around the figure, and the collection as a
+ * true inventory — tabs, search, cell grid, item details (desktop two
+ * columns, phone stacked).
  */
-.soldier-screen{width:min(900px,95vw);max-height:92dvh;overflow:auto;padding:0;border:1px solid #71836a;border-radius:6px;background:linear-gradient(180deg,#182b21,#122019);color:#f3edda;box-shadow:0 24px 90px #000d}
+.soldier-screen{width:min(1180px,95vw);max-height:92dvh;overflow:auto;padding:0;border:1px solid #71836a;border-radius:6px;background:linear-gradient(180deg,#182b21,#122019);color:#f3edda;box-shadow:0 24px 90px #000d}
 .soldier-screen::backdrop{background:#07130fe0}
 .soldier-hero{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin:0;padding:18px 22px;border-bottom:1px solid #63785f;background:linear-gradient(90deg,#1e3529,#152820 70%)}
 .soldier-hero h2{font:700 clamp(1.5rem,3.5vw,2.1rem) Georgia,serif;color:#f6eed8;margin:6px 0 4px}
@@ -32,9 +25,10 @@
 .soldier-ability span{font-size:.62rem;color:#b9c9b1;letter-spacing:.12em}
 .soldier-ability strong{color:#f4e2b0;font-size:.92rem;overflow-wrap:anywhere}
 .soldier-main{display:grid;gap:14px;align-content:start;min-width:0}
-.soldier-panel{background:#1d3229;border:1px solid #61745a;padding:15px;min-width:0}
+/* Reference panel language: corner screws, brass edge, plate gradient. */
+.soldier-panel{background-color:#1d3229;border:1px solid #61745a;border-radius:3px;padding:15px;min-width:0;box-shadow:inset 0 1px #ffffff0a;background-image:radial-gradient(circle at 9px 9px,#9a9577 0 2.5px,#403e31 3.2px,transparent 3.8px),radial-gradient(circle at calc(100% - 9px) 9px,#9a9577 0 2.5px,#403e31 3.2px,transparent 3.8px),radial-gradient(circle at 9px calc(100% - 9px),#9a9577 0 2.5px,#403e31 3.2px,transparent 3.8px),radial-gradient(circle at calc(100% - 9px) calc(100% - 9px),#9a9577 0 2.5px,#403e31 3.2px,transparent 3.8px),linear-gradient(180deg,#1f3528,#17281f)}
 .soldier-section-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
-.soldier-section-heading h3{margin:4px 0 0;font:700 1rem Georgia,serif;color:#f0e8cf}
+.soldier-section-heading h3{margin:4px 0 0;font:700 1.05rem/1 'Arial Narrow','DIN Alternate',Arial,sans-serif;text-transform:uppercase;letter-spacing:.14em;color:#efe6c6}
 .soldier-section-heading>span{font-size:.6rem;color:#bec9ac;letter-spacing:.1em}
 .soldier-equipment{display:flex;align-items:center;gap:12px;padding:14px;background:#2e4636;border:1px solid #819171}
 .soldier-equipment-icon{display:grid;place-items:center;width:46px;height:46px;flex:none;background:#c8af70;color:#203125;font-size:24px}
@@ -49,48 +43,82 @@
 .soldier-stat-grid span{display:block;color:#bdcdb7;font-size:.61rem;letter-spacing:.06em;line-height:1.3}
 .soldier-stat-grid strong{display:block;color:#f5e4b1;font:700 1.25rem Georgia,serif;margin-top:5px}
 .soldier-note{font-size:.75rem;line-height:1.45;color:#ccd7c1;margin:10px 0 0}
-.soldier-collection>p{color:#ccd7c1;font-size:.8rem}
-.soldier-collection-list{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-.soldier-collection-item{padding:11px;background:#152b21;border:1px solid #536b55;min-width:0}
-.soldier-collection-item.is-equipped{border-color:#d0b971;background:#304332}
-.soldier-collection-item.has-art{display:grid;grid-template-columns:46px 1fr;gap:8px;align-items:start}
-.soldier-collection-item.has-art>img{align-self:start}
-.soldier-collection-item>div{display:flex;justify-content:space-between;gap:8px;align-items:start}
-.soldier-collection-item strong{color:#f5e4b1;overflow-wrap:anywhere}
-.soldier-collection-item span{font-size:.6rem;color:#d7c68d;letter-spacing:.04em;text-align:right}
-.soldier-collection-item p{font-size:.75rem;line-height:1.4;color:#ccd7c1;margin:6px 0 0}
+/* Inventory board: tab bar + search above the26-cell progress grid. */
+.soldier-inventory-bar{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:center;margin:4px 0 10px}
+.soldier-inv-tabs{display:flex;gap:6px;flex-wrap:wrap}
+.soldier-inv-tabs button{min-height:34px;padding:6px 12px;background:#152b21;border:1px solid #61775b;border-radius:2px;color:#d9d3b6;font:700 .66rem/1 'Arial Narrow','DIN Alternate',Arial,sans-serif;text-transform:uppercase;letter-spacing:.12em;cursor:pointer}
+.soldier-inv-tabs button:hover,.soldier-inv-tabs button:focus-visible{border-color:#d0b971;color:#f2e8c6}
+.soldier-inv-tabs button[aria-pressed=true]{background:linear-gradient(180deg,#d8c488,#c3ad6c);color:#1a2a20;border-color:#e8d69a;box-shadow:inset 0 1px #fff5}
+#soldierInventorySearch{min-height:34px;padding:6px 10px;background:#0f1f18;border:1px solid #61775b;border-radius:2px;color:#f3edda;font-size:.78rem;min-width:150px;flex:1;max-width:240px}
+#soldierInventorySearch:focus{outline:none;border-color:#d0b971}
+#soldierCollectionEmpty{color:#ccd7c1;font-size:.8rem;margin:2px 0 8px}
+.soldier-collection-list{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(56px,1fr));gap:8px}
+.soldier-collection-item{min-width:0}
+.soldier-cell{position:relative;display:block;width:100%;aspect-ratio:1;padding:4px;background:#132419;border:1px solid #536b55;border-radius:3px;cursor:pointer;box-sizing:border-box}
+.soldier-cell:hover,.soldier-cell:focus-visible{border-color:#d0b971}
+.soldier-cell.is-locked{border-style:dashed;border-color:#46583f;background:#101d16}
+.soldier-cell.is-locked::after{content:'';position:absolute;inset:20%;border:1px dashed #3d4f3c;border-radius:2px;pointer-events:none}
+.soldier-cell.is-equipped{border-color:#d0b971;box-shadow:inset 0 0 0 1px #d0b97177}
+.soldier-cell.is-selected{outline:2px solid #ead9a2;outline-offset:1px}
+.soldier-cell-art{display:block;width:100%;height:100%;object-fit:cover;border-radius:2px}
+/* Item details panel: art, type, status, effect and the take toggle. */
+.soldier-item-details{display:grid;grid-template-columns:96px minmax(0,1fr);gap:12px;margin-top:12px;padding:12px;background-color:#152b21;border:1px solid #61775b;border-radius:3px;background-image:radial-gradient(circle at 8px 8px,#8f8b73 0 2.2px,#3b3a2e 3px,transparent 3.6px),radial-gradient(circle at calc(100% - 8px) 8px,#8f8b73 0 2.2px,#3b3a2e 3px,transparent 3.6px),linear-gradient(180deg,#173025,#12241c)}
+.soldier-details-art{width:96px;height:96px;border:1px dashed #4a5b47;border-radius:3px;background:#0f1f18;display:grid;place-items:center;overflow:hidden}
+.soldier-details-art img{width:100%;height:100%;object-fit:cover;border:none;border-radius:2px}
+.soldier-details-body{display:grid;gap:3px;align-content:start;min-width:0}
+.soldier-details-kicker{font:700 .6rem/1 'Arial Narrow','DIN Alternate',Arial,sans-serif;letter-spacing:.16em;color:#c9b678}
+.soldier-details-name{color:#f5e4b1;font-size:1rem;overflow-wrap:anywhere}
+.soldier-details-type{font-size:.66rem;letter-spacing:.08em;color:#aebfa6}
+.soldier-details-status{justify-self:start;font-size:.6rem;letter-spacing:.1em;padding:2px 6px;border:1px solid #61775b;border-radius:2px;color:#d7c68d}
+.soldier-details-status.is-owned{border-color:#d0b971;color:#ead9a2}
+.soldier-details-effect{font-size:.76rem;line-height:1.45;color:#ccd7c1;margin:5px 0 0}
+.soldier-details-hint{font-size:.72rem;line-height:1.45;color:#cbb987;margin:6px 0 0}
+.soldier-item-details button{min-height:44px;justify-self:start;margin-top:8px;padding:9px 22px;background:linear-gradient(180deg,#8d9c66,#6c7c4c);border:1px solid #dec988;border-radius:2px;color:#f6f1da;font:700 .82rem/1 'Arial Narrow','DIN Alternate',Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+.soldier-item-details button:hover,.soldier-item-details button:focus-visible{background:linear-gradient(180deg,#9aa971,#788853)}
+.soldier-item-details button.is-secondary{background:#1d3229;color:#d5e0cd;border-color:#61775b}
 /* Paper doll: an RPG loadout board — weapon in her hand, vest on her chest,
    boots at her feet, spare gear at the hip, gadgets along the belt. */
-.soldier-doll{position:relative;display:grid;grid-template-columns:minmax(92px,1fr) minmax(130px,180px) minmax(92px,1fr);grid-template-areas:"weapon figure vest" "boots figure gear" "gadget gadget gadget";gap:10px;align-items:stretch}
-.soldier-doll>img{grid-area:figure;justify-self:center;width:100%;max-width:180px;aspect-ratio:1;object-fit:cover;border:1px solid #a7ad80;border-radius:4px;background:#10231c}
-.soldier-slot{display:grid;gap:4px;align-content:start;min-height:96px;margin:0;padding:10px;background:#152b21;border:1px solid #536b55;color:#f3edda;text-align:left;cursor:pointer}
-.soldier-slot:hover,.soldier-slot:focus-visible{border-color:#d0b971;background:#1e3529}
-.soldier-slot[aria-expanded=true]{border-color:#d0b971;background:#2e4636}
+.soldier-doll{position:relative;display:grid;grid-template-columns:minmax(92px,1fr) minmax(130px,180px) minmax(92px,1fr);grid-template-areas:"weapon figure vest" "boots figure gear" "gadget gadget gadget";gap:12px 10px;align-items:start}
+.soldier-doll>img{grid-area:figure;justify-self:center;align-self:center;width:100%;max-width:180px;aspect-ratio:1;object-fit:cover;border:1px solid #a7ad80;border-radius:4px;background:#10231c}
+.soldier-slot{--ring:clamp(72px,7vw,100px);position:relative;display:grid;gap:5px;justify-items:center;align-content:start;align-self:center;margin:0;padding:6px 4px;background:none;border:1px solid transparent;border-radius:4px;color:#f3edda;text-align:center;cursor:pointer;min-width:0}
+.soldier-slot:hover,.soldier-slot:focus-visible,.soldier-slot[aria-expanded=true]{border-color:#d0b97177;background:#1e352977}
 .soldier-slot[data-place=weapon]{grid-area:weapon}
 .soldier-slot[data-place=vest]{grid-area:vest}
 .soldier-slot[data-place=boots]{grid-area:boots}
 .soldier-slot[data-place=gear]{grid-area:gear}
-.soldier-slot[data-place=gadget]{grid-area:gadget;justify-self:center;min-width:min(260px,100%)}
-.soldier-slot-art{width:100%;aspect-ratio:1.7;object-fit:cover;border:1px solid #6d7c5a;border-radius:3px;background:#0e1f18}
-.soldier-slot[aria-expanded=true] .soldier-slot-art,.soldier-slot:hover .soldier-slot-art{border-color:#d0b971}
+.soldier-slot[data-place=gadget]{grid-area:gadget;justify-self:center;width:min(300px,100%)}
+.soldier-slot-ring{position:relative;display:grid;place-items:center;width:var(--ring);height:var(--ring);border-radius:50%;border:3px solid #b9a062;box-shadow:0 0 0 2px #453c26,0 6px 14px #000a,inset 0 0 14px #0009;background:radial-gradient(circle at 32% 28%,#244133,#12241c 72%)}
+.soldier-slot-ring .soldier-slot-num{position:absolute;top:-6px;right:-8px;display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:linear-gradient(180deg,#2b3d2c,#17281f);border:2px solid #c9b678;color:#f2e8c6;font:700 .72rem/1 Arial,sans-serif;box-shadow:0 2px 5px #000b;z-index:2}
+.soldier-slot-art{display:block;width:100%;height:100%;object-fit:cover;border-radius:50%}
+.soldier-slot:hover .soldier-slot-ring,.soldier-slot:focus-visible .soldier-slot-ring,.soldier-slot[aria-expanded=true] .soldier-slot-ring{border-color:#e6cd87;box-shadow:0 0 0 2px #6b5a33,0 0 18px #d0b97155,inset 0 0 14px #0009}
+.soldier-slot-label{font-size:.58rem;letter-spacing:.16em;color:#e1c683;text-transform:uppercase;padding-right:10px}
+.soldier-slot strong{color:#f5e4b1;overflow-wrap:anywhere;font-size:.8rem}
+.soldier-slot-effect{font-size:.66rem;line-height:1.35;color:#aebfa6}
 .soldier-choice-art{width:46px;height:46px;object-fit:cover;border:1px solid #6d7c5a;border-radius:3px;background:#0e1f18}
-.soldier-slot-label{font-size:.6rem;letter-spacing:.14em;color:#e1c683}
-.soldier-slot strong{color:#f5e4b1;overflow-wrap:anywhere}
-.soldier-slot-effect{font-size:.68rem;line-height:1.4;color:#aebfa6}
 .soldier-slot-picker{display:grid;gap:8px;margin-top:10px;padding:12px;background:#152b21;border:1px solid #61775b}
 .soldier-slot-picker h4{margin:0;font:700 .95rem Georgia,serif;color:#f0e8cf}
 .soldier-slot-picker p{margin:0;font-size:.75rem;line-height:1.45;color:#ccd7c1}
-.soldier-slot-choice{grid-template-columns:46px 1fr auto;gap:8px;align-items:center}
-.soldier-slot-choice{display:grid}
+.soldier-slot-choice{display:grid;grid-template-columns:46px 1fr auto;gap:8px;align-items:center}
 .soldier-slot-picker button{min-height:40px;margin:0;background:#cdb977;color:#192d20;border-color:#dec988}
 .soldier-slot-picker button.is-secondary{background:#1d3229;color:#d5e0cd;border-color:#61775b}
 .soldier-slot-picker [role=status]{font-size:.72rem;color:#e1c683}
 .soldier-legacy-note{margin:10px 0 0;font-size:.72rem;line-height:1.45;color:#cbb987}
+/* Desktop: equipment + profile on the left, the tall inventory on the right. */
+@media(min-width:1000px){
+ .soldier-main{grid-template-columns:minmax(300px,1fr) minmax(330px,1.15fr);grid-template-areas:"loadout inventory" "profile inventory";grid-template-rows:auto 1fr}
+ .soldier-panel.is-loadout{grid-area:loadout}
+ .soldier-panel.is-profile{grid-area:profile}
+ .soldier-panel.is-inventory{grid-area:inventory}
+}
 @media(max-width:640px){
  .soldier-hero{padding:14px 16px}
  .soldier-body{grid-template-columns:1fr;padding:12px}
  /* The doll stacks on the phone: figure first, then each place. */
  .soldier-doll{grid-template-columns:1fr;grid-template-areas:"figure" "weapon" "vest" "boots" "gear" "gadget"}
  .soldier-doll>img{max-width:clamp(110px,38vw,150px)}
- .soldier-collection-list{grid-template-columns:1fr}
+ .soldier-slot{--ring:clamp(84px,26vw,120px)}
+ .soldier-collection-list{grid-template-columns:repeat(auto-fill,minmax(50px,1fr))}
+ .soldier-item-details{grid-template-columns:76px minmax(0,1fr)}
+ .soldier-details-art{width:76px;height:76px}
+ #soldierInventorySearch{max-width:none;min-width:120px}
 }

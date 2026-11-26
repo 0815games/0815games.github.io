@@ -1,12 +1,14 @@
-import {soldierProfile} from '../core/soldier-profile.mjs?v=20261121-dossier1';
+import {soldierProfile} from '../core/soldier-profile.mjs?v=20261121-inventory1';
 import {characterProgress} from '../core/progression.mjs?v=20261105-prestige1';
-import {renderRankInsignia,rankForLevel,rankTooltip} from '../core/rank-insignia.mjs?v=20261121-dossier1';
+import {renderRankInsignia,rankForLevel,rankTooltip} from '../core/rank-insignia.mjs?v=20261121-inventory1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
-import {decodeWorkshop} from '../workshop/workshop-wire.mjs?v=20261121-dossier1';
-import {slotOf} from '../workshop/workshop-model.mjs?v=20261121-dossier1';
+import {decodeWorkshop} from '../workshop/workshop-wire.mjs?v=20261121-inventory1';
+import {slotOf,RECIPES} from '../workshop/workshop-model.mjs?v=20261121-inventory1';
 import {WORKSHOP_CATALOG} from '../workshop/workshop-catalog.mjs?v=20261108-balance2';
-import {PRESTIGE,isPrestige} from '../core/prestige.mjs?v=20261112-pressure1';
-import {readArmory,ITEMS} from '../core/armory.mjs?v=20261121-dossier1';
+import {PRESTIGE,PRESTIGE_IDS,isPrestige,prestigeEarned} from '../core/prestige.mjs?v=20261112-pressure1';
+import {CAMPAIGN} from '../core/campaign.mjs?v=20261112-pressure1';
+import {readArmory,ITEMS} from '../core/armory.mjs?v=20261121-inventory1';
+import {artOf} from './item-art.mjs?v=20261121-inventory1';
 // The Field Dossier is the character hub: the soldier stands between her
 // three loadout slots (paper doll), each card names what she wears and opens
 // an inline picker. Every change goes through the account workshop service -
@@ -17,37 +19,6 @@ import {readArmory,ITEMS} from '../core/armory.mjs?v=20261121-dossier1';
 // the split is presentation only, and every place opens its slot's picker.
 const PLACE_BUTTONS={weapon:'soldierSlotWeapon',vest:'soldierSlotVest',boots:'soldierSlotBoots',gear:'soldierSlotGear',gadget:'soldierSlotGadget'};
 const PLACE_SLOT={weapon:'weapon',vest:'gear',boots:'gear',gear:'gear',gadget:'gadget'};
-// Item artwork in the reference style of assets/armory-kit.jpg. Keys without
-// an image yet simply render the text card (artwork lands with the piece).
-const ITEM_ART={
- 'legacy-1':'assets/equip-scope.jpg?v=20261121-dossier1',
- 'legacy-2':'assets/equip-vest.jpg?v=20261121-dossier1',
- 'legacy-3':'assets/equip-boots.jpg?v=20261121-dossier1',
- 'legacy-4':'assets/equip-binoculars.jpg?v=20261121-dossier1',
- 'legacy-5':'assets/equip-fieldradio.jpg?v=20261121-dossier1',
- 'legacy-6':'assets/equip-satchel.jpg?v=20261121-dossier1',
- 'legacy-7':'assets/equip-pouch.jpg?v=20261121-dossier1',
- 'legacy-8':'assets/equip-manual.jpg?v=20261121-dossier1',
- 'legacy-9':'assets/equip-badge.jpg?v=20261121-dossier1',
- 'legacy-10':'assets/equip-tankkit.jpg?v=20261121-dossier1',
- marksman:'assets/equip-marksman.jpg?v=20261121-dossier1',
- mechanic:'assets/equip-mechanic.jpg?v=20261121-dossier1',
- radio:'assets/equip-tacticalradio.jpg?v=20261121-dossier1',
- boots:'assets/equip-fieldboots.jpg?v=20261121-dossier1',
- 'prestige-relay':'assets/prestige-relay.jpg?v=20261121-dossier1',
- 'prestige-oscillator':'assets/prestige-oscillator.jpg?v=20261121-dossier1',
- 'prestige-chargekey':'assets/prestige-chargekey.jpg?v=20261121-dossier1',
- 'prestige-convoy-plate':'assets/prestige-convoy-plate.jpg?v=20261121-dossier1',
- 'prestige-tidelock-seal':'assets/prestige-tidelock-seal.jpg?v=20261121-dossier1',
- 'prestige-bridge-marker':'assets/prestige-bridge-marker.jpg?v=20261121-dossier1',
- 'prestige-receiver':'assets/prestige-receiver.jpg?v=20261121-dossier1',
- 'prestige-icekey':'assets/prestige-icekey.jpg?v=20261121-dossier1',
- 'prestige-transformer-coil':'assets/prestige-transformer-coil.jpg?v=20261121-dossier1',
- 'prestige-nia-badge':'assets/prestige-nia-badge.jpg?v=20261121-dossier1',
- 'prestige-broadcast-horn':'assets/prestige-broadcast-horn.jpg?v=20261121-dossier1',
- 'prestige-override-flag':'assets/prestige-override-flag.jpg?v=20261121-dossier1',
-};
-const artOf=id=>ITEM_ART[id]||'';
 // Which anatomical place wears this piece. Presentation only — the equip
 // mechanics still go through slotOf (weapon/gear/gadget), never this.
 function placeOf(id){
@@ -61,6 +32,8 @@ function placeOf(id){
 export function createSoldierScreen({document,getProfile,translate:tr,getPortrait=null,onArmory,onSkills,workshopService=null,onProfile=()=>{}}){
  const $=id=>document.getElementById(id),dialog=$('soldierDialog');
  let openSlot=null,working=false,status='';
+ // Inventory board state: category tab, search text and the selected cell.
+ let invFilter='all',invQuery='',invSelected=null;
  const el=(tag,cls,text)=>{const node=document.createElement(tag);if(cls)node.className=cls;if(text!==undefined)node.textContent=text;return node;};
  const itemName=id=>{
   if(id==='standard')return tr('Standard weapon');
@@ -89,6 +62,77 @@ export function createSoldierScreen({document,getProfile,translate:tr,getPortrai
    else status=tr('Workshop could not be saved. Check your connection and try again.');
   }catch{status=tr('Workshop could not be saved. Check your connection and try again.');}
   finally{working=false;render();}
+ }
+ // The26-piece catalogue: ten legacy finds, four recipes, twelve trophies.
+ // Ownership and the worn flag merge the old armory bits with the workshop
+ // taken list, so every source of truth shows on the board (presentation only).
+ function catalogue(data,workshop){
+  const cells=[];
+  for(const item of data.inventory){
+   const id=`legacy-${item.id}`;
+   cells.push({id,slot:slotOf(id),owned:item.owned||!!workshop?.owned?.includes(id),equipped:!!(item.equipped||workshop?.equipped?.includes(id))});
+  }
+  for(const id of Object.keys(RECIPES))cells.push({id,slot:slotOf(id),owned:!!workshop?.owned?.includes(id),equipped:!!workshop?.equipped?.includes(id)});
+  for(const id of PRESTIGE_IDS)cells.push({id,slot:slotOf(id),owned:!!workshop?.owned?.includes(id),equipped:!!workshop?.equipped?.includes(id)});
+  return cells;
+ }
+ // A missing piece says where it comes from — waves, workshop or campaign.
+ function sourceHint(cell,profile){
+  if(cell.id.startsWith('legacy-'))return tr('Found on completed waves — the report offers the piece.');
+  if(isPrestige(cell.id)){
+   if(!prestigeEarned(cell.id,profile))return tr('Locked · finish “{mission}”',{mission:tr(CAMPAIGN.find(m=>m.id===PRESTIGE[cell.id].mission)?.title||'')});
+   return tr('Earned. Reopen the workshop to collect it.');
+  }
+  return tr('Craft it in the Armory workshop.');
+ }
+ function renderDetails(cells){
+  const box=$('soldierItemDetails');
+  const cell=cells.find(c=>c.id===invSelected)||cells[0];
+  if(!cell){box.hidden=true;box.replaceChildren();return;}
+  box.hidden=false;box.replaceChildren();
+  const artBox=el('div','soldier-details-art');
+  const art=artOf(cell.id);
+  if(art){const img=el('img','');img.src=art;img.alt='';artBox.append(img);}
+  box.append(artBox);
+  const body=el('div','soldier-details-body');
+  body.append(el('span','soldier-details-kicker',tr('ITEM DETAILS')));
+  body.append(el('strong','soldier-details-name',itemName(cell.id)));
+  body.append(el('span','soldier-details-type',tr('Type: {slot}',{slot:cell.slot.toUpperCase()})));
+  body.append(el('span','soldier-details-status'+(cell.owned?' is-owned':' is-locked'),cell.owned?tr(cell.equipped?'EQUIPPED':'UNLOCKED'):tr('NOT OWNED')));
+  body.append(el('p','soldier-details-effect',itemEffect(cell.id)));
+  if(cell.owned){
+   const action=el('button',cell.equipped?'is-secondary':'',cell.equipped?tr('TAKEN'):tr('TAKE'));
+   action.type='button';action.disabled=working;
+   // Same toggle as the slot picker: one command, never a silent swap.
+   action.onclick=()=>{void equip(cell.id);};
+   body.append(action);
+  }else body.append(el('p','soldier-details-hint',sourceHint(cell,getProfile())));
+  box.append(body);
+ }
+ // The inventory board: tab + search filtered cells, every piece of the26.
+ function renderInventory(data,workshop){
+  const cells=catalogue(data,workshop);
+  $('soldierCollectionEmpty').hidden=cells.some(c=>c.owned);
+  const query=invQuery.trim().toLowerCase();
+  const visible=cells.filter(c=>(invFilter==='all'||c.slot===invFilter)&&(!query||itemName(c.id).toLowerCase().includes(query)));
+  if(!cells.some(c=>c.id===invSelected))invSelected=(cells.find(c=>c.owned)||cells[0])?.id||null;
+  for(const [filter,id] of Object.entries({all:'soldierInvTabAll',weapon:'soldierInvTabWeapon',gear:'soldierInvTabGear',gadget:'soldierInvTabGadget'}))
+   $(id).setAttribute('aria-pressed',String(invFilter===filter));
+  const list=$('soldierCollectionList');list.replaceChildren();
+  for(const cell of visible){
+   const row=document.createElement('li'),button=document.createElement('button');
+   row.className='soldier-collection-item';
+   button.type='button';
+   button.className='soldier-cell'+(cell.owned?' is-owned':' is-locked')+(cell.equipped?' is-equipped':'')+(cell.id===invSelected?' is-selected':'');
+   button.setAttribute('aria-pressed',String(cell.id===invSelected));
+   button.setAttribute('aria-label',`${itemName(cell.id)}${cell.equipped?` · ${tr('EQUIPPED')}`:''}`);
+   button.title=itemName(cell.id);
+   const art=artOf(cell.id);
+   if(art){const img=document.createElement('img');img.className='soldier-cell-art';img.src=art;img.alt='';button.append(img);}
+   button.onclick=()=>{invSelected=cell.id;render();};
+   row.append(button);list.append(row);
+  }
+  renderDetails(cells);
  }
  function renderPicker(workshop){
   const box=$('soldierSlotPicker');
@@ -139,14 +183,17 @@ export function createSoldierScreen({document,getProfile,translate:tr,getPortrai
   $('soldierLegacyNote').hidden=!legacyItem;
   if(legacyItem)$('soldierLegacyNote').textContent=tr('Existing equipment: {name} - still counts in your combat profile.',{name:tr(legacyItem.name)});
   renderPicker(workshop);
-  const items=data.inventory.filter(item=>item.owned),list=$('soldierCollectionList');$('soldierCollectionEmpty').hidden=items.length>0;list.replaceChildren();for(const item of items){const row=document.createElement('li'),heading=document.createElement('div'),name=document.createElement('strong'),statusTag=document.createElement('span'),effect=document.createElement('p');row.className='soldier-collection-item';if(item.equipped)row.classList.add('is-equipped');name.textContent=tr(item.name);statusTag.textContent=tr(item.equipped?'EQUIPPED':'UNLOCKED');heading.append(name,statusTag);effect.textContent=tr(item.description);const art=artOf(`legacy-${item.id}`);if(art){row.classList.add('has-art');const img=document.createElement('img');img.className='soldier-choice-art';img.src=art;img.alt='';const body=document.createElement('div');body.append(heading,effect);row.append(img,body);}else row.append(heading,effect);list.append(row);}
+  renderInventory(data,workshop);
  }
  function close(){if(dialog.open)dialog.close();}
+ for(const [filter,id] of Object.entries({all:'soldierInvTabAll',weapon:'soldierInvTabWeapon',gear:'soldierInvTabGear',gadget:'soldierInvTabGadget'}))
+  $(id).onclick=()=>{invFilter=filter;render();};
+ $('soldierInventorySearch').oninput=event=>{invQuery=event.target?event.target.value||'':'';render();};
  for(const [place,buttonId] of Object.entries(PLACE_BUTTONS)){
   const slot=PLACE_SLOT[place],button=$(buttonId);
   button.onclick=()=>{if(openSlot===slot)openSlot=null;else openSlot=slot;status='';render();};
   button.onkeydown=event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();button.onclick();}};
  }
  $('soldierClose').onclick=close;$('soldierArmory').onclick=()=>{close();onArmory();};$('soldierSkills').onclick=()=>{close();onSkills();};dialog.addEventListener('cancel',e=>{e.preventDefault();close();});bindDialogBackdrop(dialog,close);
- return {open(){if(!getProfile())return;openSlot=null;render();if(!dialog.open)dialog.showModal();},refresh(){if(dialog.open)render();},close};
+ return {open(){if(!getProfile())return;openSlot=null;invFilter='all';invQuery='';invSelected=null;$('soldierInventorySearch').value='';render();if(!dialog.open)dialog.showModal();},refresh(){if(dialog.open)render();},close};
 }

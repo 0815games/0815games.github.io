@@ -2,9 +2,9 @@
 // the SAME account transaction that commits the completed-wave receipt. This function does not verify that a
 // client actually finished a wave, and must not be connected until migration,
 // rules and mixed-client protection have been reviewed.
-import {WAVE_COUNT,MAX_WAVE_MASK,bossForWave} from '../core/combat.mjs?v=20261121-dossier1';
-import {readArmory} from '../core/armory.mjs?v=20261121-dossier1';
-import {validLegacy,validateWorkshop} from './workshop-model.mjs?v=20261121-dossier1';
+import {WAVE_COUNT,MAX_WAVE_MASK,bossForWave} from '../core/combat.mjs?v=20261121-inventory1';
+import {readArmory} from '../core/armory.mjs?v=20261121-inventory1';
+import {validLegacy,validateWorkshop} from './workshop-model.mjs?v=20261121-inventory1';
 
 export const BOSS_SCRAP=20;
 export const BOSS_COMPONENTS=1;

@@ -6,7 +6,7 @@ aber ersetzt weder Git noch die GitHub-PR-Historie. Die dazugehörige
 [Arbeitsanweisung](../../AGENTS.md) verlangt, dieses Log vor der Arbeit zu lesen
 und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
 
-Die Einträge IPL-0001 bis IPL-0119 stehen im
+Die Einträge IPL-0001 bis IPL-0120 stehen im
 [Archiv](PATCH-LOG-ARCHIV.md); hier stehen die neuesten 20. Beide Dateien
 zusammen sind lückenlos und doppelfrei - `../scripts/patch.mjs` (Unterbefehl `check`) und
 `../tests/patch-log-archive.test.mjs` prüfen das.
@@ -58,19 +58,6 @@ jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderl
 
 
 
-## IPL-0120 – Start-Requests vermessen, Bundling-Entscheidung: kein Umbau (keine Welle, kein Browser-Code)
-- **Zeit / Quelle:** 2026-11-23 UTC; Betreiber: „Is published" (Sechs-Stellen-Regeln live; Punkt 5 in `AUSBAU-PLAN.md` abgehakt, Doku-Commit auf diesem Branch), danach „Let's go" – Punkt 6 der Reihenfolge: erst messen, dann entscheiden, nicht vorschnell umbauen.
-- **Block / Ziel:** Die ~180 Modul-Requests aus dem Rundum-Check mit realen Zahlen unterlegen und die Bundling-Frage an Daten statt Gefühl entscheiden.
-- **Branch / Basis:** `arena/2c6e1584-0815games-github-io` ab `8360f7d49907f2b8d70302639297af91fd372a75` (`main`, Merge PR `#381`) plus Doku-Commit „Punkt 5 abgehakt".
-- **Änderungen / Dateien:**
-  - `IronPath/scripts/measure-startup.mjs` (neu): Statische Graph-Analyse ab `index.html` (der Graph, den der Browser läuft — jeder Import ist ein literaler Pfad mit Cache-Token). Phasen wie beim echten Start (drei Einstiegs-Skripte = Boot, dynamischer `account.js`-Import = App), eindeutige Module/Bytes/Gzip/Tiefe, Lazy-Kanten und unaufgelöste Imports als eigene Zeilen; `--json` für Rohdaten.
-  - `IronPath/docs/START-REQUESTS-MESSUNG.md` (neu): Messbericht und Entscheidung. Gemessen: **191 Module, 1.932 KB roh / ~666 KB gzip, 1 HTML + 11 CSS (419 KB) + 191 Module = 203 Requests eigenem Host + 3 Firebase-CDN; Wasserfall-Tiefe 6 (91+80 Module auf den Stufen 2–3); Boot-Phase 34 Module / ~183 KB gzip; keine unaufgelösten Imports.** Entscheidung **kein Bundling**: GitHub Pages liefert HTTP/2 (flacher, paralleler Wasserfall), die Bytes dominieren die Request-Zahl, ein Bundle gewönne einstellige Prozente und baute dafür die pfadbasierten Test-Harnische, das Cache-Token-System und die Modulstruktur der Phasen 1–2 ab. Drei billigere Hebel (`patch-notes.mjs` lazy, Spiel-Graph nach Login, CSS zusammenlegen) sind dokumentiert, aber nicht gebaut.
-  - `IronPath/tests/startup-measurement.test.mjs` (neu, 2 Tests): Invarianten der Messung (Graph löst vollständig auf, Phasen konsistent) plus bewusste Wachstums-Bänder (150–300 Module, 400–900 KB gzip, Tiefe 4–9) — gerissen wird die Bundling-Frage erneut gestellt.
-  - `AUSBAU-PLAN.md`: Punkt 6 abgehakt mit Entscheidungsverweis. Kein Browser-Code, keine Feldnotizen, keine Cache-Welle (Werkzeug + Test + Doku wie bei `IPL-0115`).
-  - Log-Rotation `IPL-0100` ins Archiv (Haupt `IPL-0101…IPL-0120`, Archiv bis `IPL-0100`).
-- **Prüfungen:** `startup-measurement` 2/2; Messlauf selbst reproduzierbar per Skript. Schnelltor und Gesamtsuite folgen auf dem Commit-Stand.
-- **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet`. Commit, Push, PR `#382`, CI, Merge und Pages-Auslieferung (nur Doku/Werkzeug — die Live-Seite ändert sich für Spieler nicht) werden als Ereignis nachgetragen.
-- **Offen / nächster Schritt:** Punkt 7: Block-Übersicht in `PATCH-BLOECKE.md` auf den echten Stand ziehen. Die Reihe ist danach vollständig; neue Punkte beschließt der Betreiber.
 
 ## IPL-0121 – Punkt 7: Block-Übersicht in `PATCH-BLOECKE.md` auf den echten Stand gezogen (keine Cache-Welle, kein Browser-Code)
 
@@ -323,3 +310,13 @@ Nur Darstellung, kein Sim-State, kein Wire-Format, statisch im Terrain-Cache (Re
 - **Prüfung:** Suite 1368 pass / 1 skipped (Shallow-Checkout-Skip, lokal ohne vollen Git-Checkout), 0 fail; `soldier-screen.test.mjs` pinnt die fünf Plätze und den Boots-Platz; Browser-Pins (`soldierSlot*Name`, Sammlungsliste) unverändert grün; `schnelltor` „Kein Fehler".
 - **Git / PR / Release:** Branch `arena/d9f74ff0-0815games-github-io` ab `3fb0923`; Commits `f16c0eb` (Plätze + Artwork, 109 Dateien mit den zehn Legacy-Bildern), `e2d0ea2` (PR-Nummer), Merge-Basis `cdb84850` nach Parallel-Merge #489 (der erste CI-Lauf scheiterte am verschobenen `origin/main`-Basisvergleich), Push, PR `#491`, CI grün, Merge `2c3115c2`. Nachlauf `#493` (Craft + sechs Prestige, Merge `07dc2ea4`) und Abschluss-PR (letzte sechs Prestige) komplettieren die 26 Bilder.
 - **Offen / nächster Schritt:** Craft- und Prestige-Artwork nachliefern; danach die Skills-Optik.
+
+## IPL-0140 – Inventar-Look: EQUIPMENT-Plätze, INVENTORY-Raster, ITEM DETAILS in Dossier und Werkstatt (Welle `20261121-inventory1`, PR `#—`)
+
+- **Was:** Aus dem `ask_user` drei verbindliche Antworten zum Referenz-Board (Desktop + Mobile): **Scope = Dossier + Werkstatt**, **voll interaktiv** (Kategorie-Tabs filtern echt, Suche filtert nach Namen, Zellenklick öffnet ITEM DETAILS mit großem Bild, Typ, Effekt und ANZIEHEN/ANGEZOGEN-Toggle über den bestehenden Workshop-Service), **alle 26 Stücke als Fortschrittsraster** (besessen gefüllt, fehlend gestrichelt mit Herkunfts-Hinweis: Welle/Werkstatt/Mission).
+- **Dossier:** Die fünf Plätze werden zu runden Messing-Slots mit Nummern-Badges (1–5) um die Figur; Panel 03 wird zum INVENTORY mit Tab-Leiste (ALLE/WAFFE/AUSRÜSTUNG/GERÄT), Suchfeld, Zellenraster und ITEM-DETAILS-Panel darunter. Dialogbreite `min(1180px,95vw)`, Desktop zweispaltig (Last-Loadout+Profil links, Inventar rechts), Phone weiter gestapelt. Namens-Captions unter den Plätzen bleiben, Effekt zieht mit in die Details.
+- **Werkstatt:** Gleiche Panel-Sprache – geschraubte Panels, DIN-Header, Messingrahmen, gemaltes Artwork auf Karten (gemeinsames `ui/item-art.mjs`), grüne EQUIP-Buttons; alle gepinnten Texte/Buttons (PREPARE/CRAFT/TAKE/MODIFY/INSTALLED/RETRY) bleiben.
+- **Mechanik unangetastet:** `slotOf`, Toggle (0137), Fund (0138), Craft-Bestätigungen, alter Ein-Slot-Armory-Pfad – nur Darstellung.
+- **Prüfung:** Suite **1370 pass / 0 fail / 1 skip** (Shallow-Checkout-Skip lokal; zwei Fails nur am `pr:0`-Platzhalter bis zur PR-Nummer) – neu: Filter-/Details-Tests im `soldier-screen.test.mjs` (Tabs, Suche, Herkunfts-Hinweise, Toggle über den Service), Browser-Pins zeigen26 Zellen + `.is-owned` + Details; `workshop-view.test.mjs` unverändert grün; `schnelltor` ohne Fehler (gleicher Platzhalter).
+- **Git / PR / Release:** Branch `arena/2f95b5e0-0815games-github-io` ab `4871272d`; Push, PR `#—`, CI, Merge – wird nachgetragen.
+- **Offen / nächster Schritt:** Skills-Optik.

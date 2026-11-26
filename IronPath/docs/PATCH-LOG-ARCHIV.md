@@ -1,6 +1,6 @@
 # Iron Path – Patch-Log: Archiv
 
-Ältere Einträge IPL-0001 bis IPL-0119. Die neuesten 20 stehen in
+Ältere Einträge IPL-0001 bis IPL-0120. Die neuesten 20 stehen in
 [PATCH-LOG.md](PATCH-LOG.md); die Regeln für beide Dateien dort und in
 [`../../AGENTS.md`](../../AGENTS.md). Beim Verschieben wandert ein Eintrag immer
 vollständig einschließlich seiner Ereignis-Nachträge.
@@ -4727,3 +4727,16 @@ sie geprüft wurde.
 - **Prüfungen:** `party-code-six` 4/4, `party-codes-six-rules` 3/3, `firebase-four-lobby` + `party-toggle` grün (Emulator-Beweis läuft als CI-Schritt `test:party-six`). `patch.mjs check --fast`: 0 Fehler. Gesamtsuite 1333 Tests, 1332 bestanden + 1 bekannter Flachklon-Skip (`release-pages-site` nach Unshallow 6/6) – effektiv 1333/1333.
 - **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet`. Commit, Push, PR `#381`, CI, Merge und Pages-Auslieferung werden als Ereignis nachgetragen. Der sechsstellige Raum wird erst mit der Regel-Veröffentlichung durch den Betreiber voll wirksam (Anleitung `PARTY-CODES-SIX-ROLLOUT.md`, Rückfall = `PRESTIGE-EFFORT-TO-PUBLISH.json`); bis dahin greift der Client-Rückfall.
 - **Offen / nächster Schritt:** Betreiber veröffentlicht die Regeln; danach Punkt 6: Start-Requests erst messen (Ladezeit/Netz), dann über Bundling entscheiden.
+## IPL-0120 – Start-Requests vermessen, Bundling-Entscheidung: kein Umbau (keine Welle, kein Browser-Code)
+- **Zeit / Quelle:** 2026-11-23 UTC; Betreiber: „Is published" (Sechs-Stellen-Regeln live; Punkt 5 in `AUSBAU-PLAN.md` abgehakt, Doku-Commit auf diesem Branch), danach „Let's go" – Punkt 6 der Reihenfolge: erst messen, dann entscheiden, nicht vorschnell umbauen.
+- **Block / Ziel:** Die ~180 Modul-Requests aus dem Rundum-Check mit realen Zahlen unterlegen und die Bundling-Frage an Daten statt Gefühl entscheiden.
+- **Branch / Basis:** `arena/2c6e1584-0815games-github-io` ab `8360f7d49907f2b8d70302639297af91fd372a75` (`main`, Merge PR `#381`) plus Doku-Commit „Punkt 5 abgehakt".
+- **Änderungen / Dateien:**
+  - `IronPath/scripts/measure-startup.mjs` (neu): Statische Graph-Analyse ab `index.html` (der Graph, den der Browser läuft — jeder Import ist ein literaler Pfad mit Cache-Token). Phasen wie beim echten Start (drei Einstiegs-Skripte = Boot, dynamischer `account.js`-Import = App), eindeutige Module/Bytes/Gzip/Tiefe, Lazy-Kanten und unaufgelöste Imports als eigene Zeilen; `--json` für Rohdaten.
+  - `IronPath/docs/START-REQUESTS-MESSUNG.md` (neu): Messbericht und Entscheidung. Gemessen: **191 Module, 1.932 KB roh / ~666 KB gzip, 1 HTML + 11 CSS (419 KB) + 191 Module = 203 Requests eigenem Host + 3 Firebase-CDN; Wasserfall-Tiefe 6 (91+80 Module auf den Stufen 2–3); Boot-Phase 34 Module / ~183 KB gzip; keine unaufgelösten Imports.** Entscheidung **kein Bundling**: GitHub Pages liefert HTTP/2 (flacher, paralleler Wasserfall), die Bytes dominieren die Request-Zahl, ein Bundle gewönne einstellige Prozente und baute dafür die pfadbasierten Test-Harnische, das Cache-Token-System und die Modulstruktur der Phasen 1–2 ab. Drei billigere Hebel (`patch-notes.mjs` lazy, Spiel-Graph nach Login, CSS zusammenlegen) sind dokumentiert, aber nicht gebaut.
+  - `IronPath/tests/startup-measurement.test.mjs` (neu, 2 Tests): Invarianten der Messung (Graph löst vollständig auf, Phasen konsistent) plus bewusste Wachstums-Bänder (150–300 Module, 400–900 KB gzip, Tiefe 4–9) — gerissen wird die Bundling-Frage erneut gestellt.
+  - `AUSBAU-PLAN.md`: Punkt 6 abgehakt mit Entscheidungsverweis. Kein Browser-Code, keine Feldnotizen, keine Cache-Welle (Werkzeug + Test + Doku wie bei `IPL-0115`).
+  - Log-Rotation `IPL-0100` ins Archiv (Haupt `IPL-0101…IPL-0120`, Archiv bis `IPL-0100`).
+- **Prüfungen:** `startup-measurement` 2/2; Messlauf selbst reproduzierbar per Skript. Schnelltor und Gesamtsuite folgen auf dem Commit-Stand.
+- **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet`. Commit, Push, PR `#382`, CI, Merge und Pages-Auslieferung (nur Doku/Werkzeug — die Live-Seite ändert sich für Spieler nicht) werden als Ereignis nachgetragen.
+- **Offen / nächster Schritt:** Punkt 7: Block-Übersicht in `PATCH-BLOECKE.md` auf den echten Stand ziehen. Die Reihe ist danach vollständig; neue Punkte beschließt der Betreiber.
