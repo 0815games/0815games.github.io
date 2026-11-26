@@ -91,7 +91,7 @@ const GRUND = {
 
 // Ab hier nur noch Darstellung. `document` und `window` sind Parameter, damit
 // die Datei ohne Browser pruefbar ist.
-export function createUpdateUI({document, window, fetcher = window?.fetch?.bind(window)} = {}) {
+export function createUpdateUI({document, window, fetcher = window?.fetch?.bind(window), reload = () => window.location.reload(), replace = url => window.location.replace(url)} = {}) {
   const meta = document.querySelector('meta[name="pipboy-build"]');
   const build = meta ? meta.getAttribute('content') : null;
   const balken = document.getElementById('update-banner');
@@ -137,7 +137,8 @@ export function createUpdateUI({document, window, fetcher = window?.fetch?.bind(
       text.className = 'popup-text text-yellow-400 animate-pulse';
       jetzt.hidden = true;
     } else if (zustand.art === 'geladen') {
-      text.textContent = sagen('geladen', {build: zustand.build});
+      const gruende = zustand.blocker || [];
+      text.textContent = sagen('geladen', {build: zustand.build}) + (gruende.length ? ' - ' + gruende.map(g => GRUND[g] || g).join(', ') : '');
       text.className = 'popup-text text-[#39ff14]';
       jetzt.hidden = true;
     } else if (zustand.art === 'aktuell') {
@@ -170,7 +171,7 @@ export function createUpdateUI({document, window, fetcher = window?.fetch?.bind(
     adresse.searchParams.set('_pb_nonce', String(Date.now()));
     zustand = {art: 'laedt'};
     zeichnen();
-    window.location.replace(adresse.href);
+    replace(adresse.href);
     return true;
   }
 
@@ -196,6 +197,9 @@ export function createUpdateUI({document, window, fetcher = window?.fetch?.bind(
     pruefungLaeuft = true;
     try {
       const ergebnis = await probe();
+      // Die Bestaetigung darf durch eine gleichzeitige Sonde weder
+      // verschwinden noch durch einen Netzfehler ueberschrieben werden.
+      if (zustand && (zustand.art === 'geladen' || zustand.art === 'laedt')) return false;
       if (ergebnis.art === 'aktuell') {
         // Nach einem Update nicht sofort ausblenden - der Spieler soll sehen,
         // dass etwas passiert ist.
@@ -206,15 +210,8 @@ export function createUpdateUI({document, window, fetcher = window?.fetch?.bind(
         const blocker = updateBlockers();
         zustand = {art: 'veraltet', build: ergebnis.build, blocker};
         ziel = ergebnis.build;
-        // Schleifenbremse: haben wir diesen Build schon einmal zu laden
-        // versucht und sind immer noch auf dem alten, dann nicht wieder.
-        const adresse = new URL(window.location.href);
-        const versucht = adresse.searchParams.get('_pb_auf');
-        if (blocker.length === 0 && versucht !== ergebnis.build) {
-          // Freiwillig erst nach einer kurzen Pause, damit der Balken nicht
-          // im selben Atemzug erscheint und verschwindet.
-          window.setTimeout(() => neuLaden(ergebnis.build), 1200);
-        }
+        // Erst nach ausdruecklicher Bestaetigung laden. So bleibt die
+        // Auswahl sichtbar und ein spaeterer Zustand wird nicht uebergangen.
         zeichnen();
         return true;
       }
@@ -245,9 +242,22 @@ export function createUpdateUI({document, window, fetcher = window?.fetch?.bind(
     window.removeEventListener('pageshow', beiSichtbarkeit);
   }
 
-  if (jetzt) jetzt.onclick = () => { if (ziel) neuLaden(ziel); };
+  if (jetzt) jetzt.onclick = () => {
+    if (!ziel || !zustand || zustand.art !== 'veraltet') return;
+    const blocker = updateBlockers();
+    if (blocker.length) { zustand = {...zustand, blocker}; zeichnen(); return; }
+    neuLaden(ziel);
+  };
   if (spaeter) spaeter.onclick = () => {
-    if (zustand && zustand.art === 'geladen') zustand = null;
+    if (zustand && zustand.art === 'laedt') return;
+    if (zustand && zustand.art === 'geladen') {
+      const blocker = updateBlockers();
+      if (blocker.length) { zustand = {...zustand, blocker}; zeichnen(); return; }
+      zustand = {art: 'laedt'};
+      zeichnen();
+      reload();
+      return;
+    }
     balken.hidden = true;
     sperreAktualisieren();
   };

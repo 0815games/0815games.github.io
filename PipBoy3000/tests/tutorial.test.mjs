@@ -20,6 +20,7 @@ const read = (...p) => readFileSync(join(ROOT, ...p), 'utf8');
 
 function mitTutorial() {
   const dom = new JSDOM(`<!DOCTYPE html><html><body>
+      <div id="main-content"></div>
       <button id="btn-menu-toggle"></button>
       <div id="main-nav" class="hidden"></div>
       <button id="btn-inv"></button>
@@ -174,7 +175,13 @@ test('steht der Spieler schon in der Ziel-Ansicht, schliesst sich das Menue trot
 test('die Sprechblase steht ueber der Karte und laesst Klicks durch', () => {
   const css = read('shell', 'style.css');
   const feld = css.slice(css.indexOf('#tutorial-feld'), css.indexOf('#tutorial-feld') + 1200);
-  assert.match(feld, /position:\s*fixed/);
+  assert.match(feld, /position:\s*absolute/);
+  assert.match(feld, /bottom:\s*1rem/);
+  assert.match(feld, /margin:\s*0 auto/);
+  const umg = mitTutorial();
+  umg.w.Tutorial.start();
+  assert.equal(umg.feld().parentElement.id, 'main-content');
+  umg.dom.window.close();
   assert.match(feld, /z-index:\s*10040/);
   // Der Zeiger darf keine Klicks abfangen - sonst trifft man das Ziel nicht.
   const zeiger = css.slice(css.indexOf('#tutorial-zeiger'), css.indexOf('#tutorial-zeiger') + 600);

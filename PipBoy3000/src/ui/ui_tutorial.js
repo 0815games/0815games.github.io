@@ -163,7 +163,7 @@ const TUTORIAL = {
         <span class="tut-warten" data-tut-warten hidden>WARTE AUF DICH...</span>
         <button type="button" class="action-button tut-weiter" data-tut-weiter></button>
       </div>`;
-    document.body.appendChild(el);
+    (document.getElementById('main-content') || document.body).appendChild(el);
     el.querySelector('[data-tut-weiter]').onclick = () => this.weiter();
     el.querySelector('[data-tut-ueberspringen]').onclick = () => this.beenden();
     return el;

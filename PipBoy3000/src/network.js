@@ -214,12 +214,6 @@ const Network = window.Network = {
         updates[`saves/${this.myId}/${slotIndex}`] = saveObj;
         
         this.db.ref().update(updates)
-            .then(() => { 
-                if(typeof UI !== 'undefined') {
-                    const displayName = (gameState && gameState.playerName) ? gameState.playerName : ("SLOT " + (slotIndex+1));
-                    UI.log(displayName + " GESPEICHERT.", "text-cyan-400"); 
-                }
-            })
             .catch(e => {
                 if(e.code !== 'PERMISSION_DENIED') console.error("Save Error:", e);
             });

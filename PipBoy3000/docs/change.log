@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v14.0.27 (Update-Bestätigung, Tutorial und Speicher-Meldungen, 2026-11-26)
+- [FIX] Update wartet auf JETZT LADEN. Nach erfolgreichem Versionswechsel zeigt das Popup OK; dieser Klick lädt die Seite einmal ohne Update-Marker neu. Aktive Speicherungen, Dialoge und Kämpfe blockieren Reloads weiterhin.
+- [FIX] Tutorial-Feld liegt unten mittig innerhalb von #main-content und nicht mehr rechts außerhalb des Spielfelds.
+- [FIX] Automatische Cloud-Speicherungen bleiben unverändert, aber wiederholte Erfolgsmeldungen im Spiellog entfallen; Fehler werden weiterhin protokolliert.
+
 ## v14.0.26 (Neues Pip-Boy-App-Icon, 2026-11-26)
 - [NEU] Das gewählte grüne P auf einem Retro-Terminal ersetzt den Roboter als App- und Browser-Icon; mit iOS- und maskable Android-Varianten.
 - [FIX] Neue Cachekennungen für Manifest und Icons; bestehende Installationen können das alte Symbol noch zwischenspeichern.
