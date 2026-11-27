@@ -29,10 +29,10 @@ for(const method of ['login','register']){const original=cloud[method].bind(clou
   // Hier darf NICHT abgemeldet werden – sonst waere das Passwort umsonst.
   if(e&&e.code==='SESSION_BUSY'&&candidate){pending={ref:candidate,listener,user,method};throw e;}
   if(candidate&&listener&&candidate!==ref)candidate.off('value',listener);
-  const denied=String(e.code||'').toUpperCase().includes('PERMISSION_DENIED');
+  const denied=String(e.code||'').toUpperCase().replace(/[-_]/g,'').includes('PERMISSIONDENIED');
   const error=denied?new Error('Sitzungszugriff verweigert. Bitte Firebase-Regeln prüfen.'):e;
   await failedLogin(error);throw error;}finally{busy=false;if(button)button.disabled=false;}};}
-cloud.loadAllSlots=async function(){try{if(!await verify())throw new Error('Keine bestätigte Spielsitzung. Bitte erneut anmelden.');const uid=this.auth.currentUser?.uid;if(!uid||state.user?.uid!==uid)throw new Error('Anmeldesitzung hat sich geändert.');const snapshot=await this.db.ref(`dark_rpg/saves/${uid}`).once('value');if(this.auth.currentUser?.uid!==uid)throw new Error('Anmeldesitzung hat sich geändert.');const data=snapshot.val()||{};return Array.from({length:4},(_,i)=>data[`slot_${i}`]||null);}catch(e){const denied=String(e.code||'').toUpperCase().includes('PERMISSION_DENIED');const error=denied?new Error('Zugriff auf Charaktere verweigert. Bitte Firebase-Regeln prüfen.'):e;await failedLogin(error);throw error;}};
+cloud.loadAllSlots=async function(){try{if(!await verify())throw new Error('Keine bestätigte Spielsitzung. Bitte erneut anmelden.');const uid=this.auth.currentUser?.uid;if(!uid||state.user?.uid!==uid)throw new Error('Anmeldesitzung hat sich geändert.');const snapshot=await this.db.ref(`dark_rpg/saves/${uid}`).once('value');if(this.auth.currentUser?.uid!==uid)throw new Error('Anmeldesitzung hat sich geändert.');const data=snapshot.val()||{};return Array.from({length:4},(_,i)=>data[`slot_${i}`]||null);}catch(e){const denied=String(e.code||'').toUpperCase().replace(/[-_]/g,'').includes('PERMISSIONDENIED');const error=denied?new Error('Zugriff auf Charaktere verweigert. Bitte Firebase-Regeln prüfen.'):e;await failedLogin(error);throw error;}};
 // --- Uebernahme einer fremden Sitzung -------------------------------------
 // Der Spieler entscheidet bewusst: "Hier weiterspielen". Die fremde Sitzung
 // wird beendet, dieses Fenster uebernimmt. Das andere Geraet merkt es bei

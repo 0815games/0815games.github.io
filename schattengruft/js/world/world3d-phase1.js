@@ -255,8 +255,10 @@ body:not(.world3d-combat) #combat-stage{display:none}
   }
  }
 
- // Vergleichbar mit wants3D, aber ohne eigene UI: die Vorliebe verwaltet das Spiel.
- choose(wants3D(location.search));
+ // Die Vorliebe wird vom UI verwaltet (Schalter, ?view=...). Der Engine-Start
+ // verändert sie nicht – sonst würde der Schalter beim ersten Laden sofort
+ // wieder auf 2D springen, wenn die URL keinen ?view=-Parameter trägt.
+ if(enabled)show(true);
  return api;
 }
 
