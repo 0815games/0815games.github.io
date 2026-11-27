@@ -14,7 +14,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { createTown, advance, placeBuilding, upgradeBuilding, plantField, renewField, BIOMES } from '../src/domain/engine.js';
 import { checkPlacement, fieldsOf, plantableNeighbours, fieldSlots } from '../src/domain/placement.js';
-import { soilOf, sellPrice } from '../src/domain/economy.js';
+import { soilOf } from '../src/domain/economy.js';
 import { buildCost, productionMultiplier, storageCap, soilFactor as soilFactorOf } from '../src/domain/economy.js';
 import { BASE_MAP, START_MAP, MAX_MAP, keyOf, isUnlocked, sizeOf } from '../src/domain/grid.js';
 import { charterGain } from '../src/domain/charters.js';
@@ -46,6 +46,8 @@ const HOUSE_NEED = 0.6;
 const HOUSE_MIN_PRODUCERS = 8;
 const HOUSE_LAND_RESERVE = 10;
 const HOUSE_MIN_LEVEL = 5;
+// Wert einer nicht verkaufbaren Ware im Vergleich zum Grundpreis (Schätzung für den Händler).
+const UNSOLD_VALUE = 0.3;
 
 // Korridore aus GAME_PLAN 4.17 (kumuliert). Die Einheit steht bei jedem Meilenstein.
 const CORRIDOR = {
@@ -80,8 +82,9 @@ function botAct(state, ctx) {
  * Ohne diese Regel baut der Bot nur Getreide und bleibt bei 63 Gebäuden stehen.
  */
 function producerScore(s, d, def, rate, cost) {
-  // Karg-Ressourcen werden zu einem Teil des Preises verkauft (economy.sell.scarceSellFactor).
-  const price = sellPrice(def.resource, d, s.biome);
+  // Karg-Ressourcen verkauft das Rathaus nicht automatisch (nur Händler). Ihr Wert ist deshalb klein.
+  const sellable = s.sellEnabled?.[def.resource] !== false;
+  const price = d.resources[def.resource].basePrice * (sellable ? 1 : UNSOLD_VALUE);
   const have = s.stock[def.resource] ?? 0;
   const demand = 1 / (1 + have / 50);
   return (rate * price * demand) / cost.coins;

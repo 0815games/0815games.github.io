@@ -167,8 +167,7 @@ test('wages come out of the coins only for workers who are employed', () => {
   const built = placeBuilding({ ...t, stock: { ...t.stock, lumber: 500 } }, { x: nx, y: ny, buildingId: 'farm' }, ctx).state;
   const staffed = setWorkerAssignment(built, { producer: near, house, n: 1 }, ctx).state;
   const before = staffed.coins;
-  // Verkauf aus, damit nur der Lohn das Konto ändert (Karg-Waren werden seit TTT-0082 auch verkauft).
-  const after = advance({ ...staffed, sellEnabled: {} }, staffed.lastTick + 1440 * 60_000, ctx).state;
+  const after = advance(staffed, staffed.lastTick + 1440 * 60_000, ctx).state;
   assert.equal(Math.round(after.coins), Math.round(before - cfg.wagePerWorkerPerDay), 'ein Arbeiter kostet einen Tageslohn');
 });
 

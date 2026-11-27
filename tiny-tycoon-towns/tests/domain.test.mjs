@@ -54,7 +54,7 @@ test('town starts with 10x10 tiles, hall in the middle, scarce resources kept', 
   assert.equal(Object.keys(t.tiles).length, 100);
   assert.equal(t.tiles['4,4'].building.id, 'townHall');
   assert.equal(t.coins, 150);
-  assert.equal(t.sellEnabled.stone, true);    // scarce in riverlands, sold at a share of the price (TTT-0082)
+  assert.equal(t.sellEnabled.stone, false);   // scarce in riverlands
   assert.equal(t.sellEnabled.grain, true);    // abundant
   assert.equal(t.sellEnabled.iron, true);     // neutral
 });
@@ -195,8 +195,7 @@ test('storage cap grows with warehouse levels and clamps production', () => {
 test('selling keeps the reserve of 20 and respects the sell switch', () => {
   let t = townFor('riverlands');
   t.stock.fish = 30;   // abundant, sell on
-  t.stock.stone = 80;  // scarce, switch off
-  t.sellEnabled.stone = false;
+  t.stock.stone = 80;  // scarce, sell off
   t.stock.grain = 10;  // below reserve
   t.stock.lumber = 0;
   t.sellEnabled.lumber = true;
@@ -246,7 +245,7 @@ test('clock going backwards never produces time', () => {
 test('toggleSell flips the switch', () => {
   const t = townFor('riverlands');
   const r = toggleSell(t, { resource: 'stone' });
-  assert.equal(r.state.sellEnabled.stone, false, 'Stein startet auf verkaufen (Karg, TTT-0082), Schalter schaltet aus');
+  assert.equal(r.state.sellEnabled.stone, true);
   assert.equal(toggleSell(t, { resource: 'nope' }).error, 'unknownResource');
 });
 
@@ -321,15 +320,4 @@ test('levelUp is reported when XP crosses a threshold', () => {
   const lu = r.events.find((e) => e.type === 'levelUp');
   assert.ok(lu);
   assert.equal(r.state.townLevel, 2);
-});
-
-test('Karg-Waren werden automatisch verkauft, aber zu scarceSellFactor des Preises (TTT-0082)', async () => {
-  const { sellPrice } = await import('../src/domain/economy.js');
-  const factor = data.economy.sell.scarceSellFactor;
-  assert.equal(factor, 0.5);
-  assert.equal(sellPrice('stone', data, 'riverlands'), data.resources.stone.basePrice * factor);
-  assert.equal(sellPrice('grain', data, 'riverlands'), data.resources.grain.basePrice, 'abundant: voller Preis');
-  assert.equal(sellPrice('stone', data), data.resources.stone.basePrice, 'ohne Biom (Händler): voller Preis');
-  const t = townFor('riverlands');
-  assert.equal(t.sellEnabled.stone, true, 'neue Städte verkaufen Karg-Waren');
 });

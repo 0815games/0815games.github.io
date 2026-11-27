@@ -1329,3 +1329,10 @@ Ereignis ergänzt.
 - Versuch 2: wie 1, aber nur Waren mit Erzeuger zählen: 62 Verstöße (verworfen).
 - Bot zurückgesetzt auf den Stand von TTT-0083 (53 Verstöße). Nicht erneut versuchen, ohne die Verkaufsreihenfolge zu klären.
 - Befund: Karg-Waren bekommen mit der Stufenlogik kaum Durchsatz, weil die normalen Waren ihn zuerst aufbrauchen. Ein Bot, der Karg nach Anteil bewertet, baut dann die falschen Gebäude. Die eigentliche Frage ist die Verkaufsreihenfolge, nicht die Bot-Formel.
+
+### TTT-0085 – Karg-Verkauf zurückgenommen (Entscheidung A)
+
+- Karg-Verkauf (TTT-0082), Stufenlogik und Schwelle 2.000.000 (TTT-0083) zurückgenommen. Code, Konfiguration und Tests auf dem Stand von TTT-0081 (`b063737`). Die Dokumentation der Versuche bleibt.
+- Tests: 197 von 197 grün.
+- Balance (60 Szenarien, 30 Tage): 8 Verstöße, Invarianten 0. Nicht grün, aber nah am Korridor.
+- Offen: Karg-Verkauf als Option statt automatisch (Designentscheidung), Balance-Abstimmung der Kartengrößen.

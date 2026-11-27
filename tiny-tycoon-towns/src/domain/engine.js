@@ -39,8 +39,8 @@ export function createTown({ name, biome, seed, now, data, mapSize = BASE_MAP })
   const sellEnabled = {};
   for (const r of Object.keys(data.resources)) {
     stock[r] = data.economy.startStockPerResource;
-    // Karg-Ressourcen werden auch automatisch verkauft, aber zu einem Teil des Preises (TTT-0082).
-    sellEnabled[r] = true;
+    // Karg-Ressourcen are kept for building unless the player opts in.
+    sellEnabled[r] = classOf(biome, r, data) !== 'scarce';
   }
 
   return {
@@ -390,33 +390,28 @@ function produce(s, dt, data, events, wf) {
   events.push({ type: 'produced', amounts: produced });
 }
 
-/** Sell with throughput shared evenly among eligible resources (normal first, Karg with the rest); reserve is kept. */
+/** Sell with throughput shared evenly among eligible resources; reserve is kept. */
 function sell(s, dt, data, events) {
   const reserve = data.economy.sell.reserve;
   let budget = throughputPerMin(s, data) * dt / 60;
   let coins = 0;
   let units = 0;
 
-  // Zwei Stufen: Erst die normalen Waren (abundant, neutral), dann Karg-Waren mit dem Rest.
-  // So bremsen Karg-Waren die normale Wirtschaft nicht aus (TTT-0083).
-  const isKarg = (r) => !!s.biome && classOf(s.biome, r, data) === 'scarce';
-  for (const karg of [false, true]) {
-    for (let pass = 0; pass < 8 && budget > 1e-9; pass++) {
-      const eligible = Object.keys(s.stock).filter(
-        (r) => s.sellEnabled[r] && isKarg(r) === karg && s.stock[r] - reserve > 1e-9,
-      );
-      if (!eligible.length) break;
-      const share = budget / eligible.length;
-      let used = 0;
-      for (const r of eligible) {
-        const amt = Math.min(share, s.stock[r] - reserve);
-        s.stock[r] -= amt;
-        coins += amt * sellPrice(r, data, s.biome);
-        used += amt;
-      }
-      budget -= used;
-      units += used;
+  for (let pass = 0; pass < 8 && budget > 1e-9; pass++) {
+    const eligible = Object.keys(s.stock).filter(
+      (r) => s.sellEnabled[r] && s.stock[r] - reserve > 1e-9,
+    );
+    if (!eligible.length) break;
+    const share = budget / eligible.length;
+    let used = 0;
+    for (const r of eligible) {
+      const amt = Math.min(share, s.stock[r] - reserve);
+      s.stock[r] -= amt;
+      coins += amt * sellPrice(r, data);
+      used += amt;
     }
+    budget -= used;
+    units += used;
   }
 
   if (units > 0) {
