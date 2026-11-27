@@ -90,8 +90,16 @@ Object.assign(UI, {
         if(this.els.expBarTop) this.els.expBarTop.style.width = `${expPct}%`;
         
         if(this.els.caps) this.els.caps.textContent = `${Game.state.caps}`;
-        const ammoItem = Game.state.inventory ? Game.state.inventory.find(i => i.id === 'ammo') : null;
-        if(this.els.ammo) this.els.ammo.textContent = ammoItem ? ammoItem.count : 0;
+        const weapon = Game.state.equip && Game.state.equip.weapon;
+        const weaponDef = weapon && Game.items && Game.items[weapon.id];
+        const ammoType = weapon && (weapon.ammoType || (weaponDef && weaponDef.ammoType));
+        const ammoName = ammoType && Game.items && Game.items[ammoType] ? Game.items[ammoType].name : ammoType;
+        const ammoCount = ammoType ? (Game.state.inventory || []).reduce((sum, item) => sum + (item.id === ammoType ? (Number(item.count) || 0) : 0), 0) : 0;
+        if(this.els.ammo) {
+            this.els.ammo.textContent = ammoType ? String(ammoCount) : '–';
+            this.els.ammo.parentElement.title = ammoType ? `Munition: ${ammoName}` : 'Aktuelle Waffe benötigt keine Munition';
+            this.els.ammo.setAttribute('aria-label', ammoType ? `${ammoName}: ${ammoCount}` : 'Keine Munition benötigt');
+        }
 
         // Camp Button
         const campBtn = document.getElementById('btn-camp-overlay');

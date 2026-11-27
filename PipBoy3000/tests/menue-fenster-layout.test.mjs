@@ -558,6 +558,7 @@ test('Statusleiste zeigt Spielwerte, behaelt Char- und Menue-Aktionen und ein re
     }
     Object.assign(window.Game.state, {playerName: 'EIN_SEHR_LANGER_SPIELERNAME', lvl: 7, caps: 12345, hp: 30, maxHp: 100, rads: 10, xp: 40});
     window.Game.state.inventory = [{id: 'ammo', count: 87}];
+    window.Game.state.equip.weapon = {id: 'pipe_pistol'};
     window.UI.update();
     assert.equal(document.getElementById('val-name').textContent, 'EIN_SEHR_LANGER_SPIELERNAME');
     assert.equal(document.getElementById('val-lvl').textContent, '7');
@@ -626,5 +627,67 @@ test('SPECIAL- und Perk-Reiter leuchten nur bei eigenen offenen Punkten und aktu
     window.UI.update();
     assert.equal(istMarkiert('special'), true);
     assert.equal(istMarkiert('perks'), false);
+  } finally { await schliesse(); }
+});
+
+test('HUD zeigt nur Munition der ausgerüsteten Waffe inklusive aller Stapel', async () => {
+  const {window, document, schliesse} = await starteEchteOberflaeche({imSpiel: true});
+  try {
+    const state = window.Game.state;
+    state.inventory = [{id: 'ammo', count: 90}, {id: 'ammo_10mm', count: 10}, {id: 'ammo_10mm', count: 6}, {id: 'ammo_cell', count: 3}];
+    state.equip.weapon = {id:'pistol_10mm'};
+    window.UI.update();
+    const anzeige = document.getElementById('val-ammo');
+    assert.equal(anzeige.textContent, '16');
+    assert.match(anzeige.getAttribute('aria-label'), /10mm/);
+    state.equip.weapon = {id:'laser_pistol'};
+    window.UI.update(); assert.equal(anzeige.textContent, '3');
+    state.equip.weapon = {id:'shotgun'};
+    window.UI.update(); assert.equal(anzeige.textContent, '0');
+    state.equip.weapon = {id:'fists'};
+    window.UI.update(); assert.equal(anzeige.textContent, '–');
+    assert.match(anzeige.getAttribute('aria-label'), /Keine Munition/);
+  } finally { await schliesse(); }
+});
+
+test('Brunnen-Dialog bestätigt Wasser und Abbrechen bleibt folgenlos', async () => {
+  const {window, document, schliesse} = await starteEchteOberflaeche({imSpiel: true});
+  try {
+    const game = window.Game, state = game.state;
+    game.saveGame = () => {};
+    state.view = 'map'; state.dungeonLevel = 0; state.inDialog = false;
+    state.hp = 40; state.maxHp = 100; state.rads = 0; state.radRest = 0;
+    state.player = {x: 5, y: 5};
+    state.currentMap = Array.from({length: 10}, () => Array(10).fill('.'));
+    state.currentMap[5][6] = 'b';
+    window.UI.showWaterSource(6, 5, 'b');
+    assert.match(document.getElementById('ui-dialog-overlay').textContent, /5 RAD/);
+    document.querySelector('[data-cancel]').click();
+    assert.equal(state.hp, 40); assert.equal(state.rads, 0);
+    window.UI.showWaterSource(6, 5, 'b');
+    document.querySelector('[data-drink]').click();
+    assert.equal(state.hp, 60); assert.equal(state.rads, 5);
+    assert.equal(state.inDialog, false);
+  } finally { await schliesse(); }
+});
+
+test('Lagertruhe hat ein Bild und lagert Items per Oberfläche ein und aus', async () => {
+  const {window, document, schliesse} = await starteEchteOberflaeche({imSpiel: true});
+  try {
+    const game = window.Game, state = game.state;
+    game.saveGame=()=>{};
+    state.camp={level:1,sector:{...state.sector},x:25,y:25,storage:[]};
+    state.inventory=[{id:'stimpack',count:3}];
+    await window.UI.switchView('camp');
+    const truhenknopf = [...document.querySelectorAll('#camp-main-actions button')].find(b=>b.textContent.includes('TRUHE'));
+    assert.ok(truhenknopf); assert.match(truhenknopf.querySelector('img').getAttribute('src'), /lagertruhe\.png/);
+    truhenknopf.click();
+    assert.equal(document.getElementById('camp-storage-view').classList.contains('hidden'), false);
+    let buttons=[...document.querySelectorAll('#camp-storage-list button')];
+    buttons.find(b=>b.textContent==='EINLAGERN').click();
+    assert.equal(state.camp.storage[0].count,3);
+    buttons=[...document.querySelectorAll('#camp-storage-list button')];
+    buttons.find(b=>b.textContent==='ENTNEHMEN').click();
+    assert.equal(state.inventory[0].count,3); assert.equal(state.camp.storage.length,0);
   } finally { await schliesse(); }
 });

@@ -3,7 +3,7 @@
 Erzeugt von `node tools/balance.mjs --write`. Nicht von Hand ändern —
 die Zahlen kommen aus dem gebauten Bündel und dem Quelltext.
 
-Stand: Version 14.0.32
+Stand: Version 14.0.33
 
 ## 1. Waffen
 
@@ -119,12 +119,12 @@ Alle 10 Perks werden im Code gelesen.
 
 | Wert | gelesen an | Anzahl | Boni aus Rüstung |
 |---|---|---:|---:|
-| STR | `src/game/game_combat.js:253` | 1 | 11 |
+| STR | `src/game/game_combat.js:254` | 1 | 11 |
 | PER | `src/data/data_minigames.js:191`<br>`src/game/game_combat.js:193` | 2 | 3 |
 | END | `src/game/game_core.js:141` | 1 | 44 |
-| CHA | `src/game/game_world_logic.js:333` | 1 | 0 |
+| CHA | `src/game/game_world_logic.js:359` | 1 | 0 |
 | INT | `src/data/data_minigames.js:17`<br>`src/data/data_minigames.js:277` | 2 | 4 |
-| AGI | `src/data/data_minigames.js:190`<br>`src/game/game_combat.js:311` | 2 | -2 |
+| AGI | `src/data/data_minigames.js:190`<br>`src/game/game_combat.js:312` | 2 | -2 |
 | LUC | `src/data/data_minigames.js:144`<br>`src/game/game_core.js:147`<br>`src/ui/ui_render_minigames.js:276` | 3 | 0 |
 
 ## 5. Verbrauchsgüter
@@ -133,11 +133,11 @@ Alle 10 Perks werden im Code gelesen.
 |---|---|---:|---:|---:|---:|
 | Gegrillte Kakerlake | heal_rad | 15 | 2 | 10 | 1.50 |
 | Gegrillte Fliege | heal_rad | 15 | 2 | 10 | 1.50 |
+| Nuka Cola | heal | 15 | 0 | 10 | 1.50 |
 | Hunde-Steak | heal_rad | 28 | 3 | 22 | 1.27 |
 | Ratten-Steak | heal_rad | 25 | 3 | 20 | 1.25 |
 | Mirelurk-Happen | heal_rad | 35 | 4 | 30 | 1.17 |
 | Skorpion-Überraschung | heal_rad | 45 | 5 | 40 | 1.13 |
-| Nuka Cola | heal | 10 | 0 | 10 | 1.00 |
 | Nuka Quantum | heal | 100 | 0 | 100 | 1.00 |
 | Yao Guai Steak | heal_rad | 50 | 6 | 55 | 0.91 |
 | Super-Stimpack | heal | 100 | 0 | 120 | 0.83 |

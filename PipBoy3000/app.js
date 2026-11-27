@@ -323,7 +323,7 @@
     super_stimpack: { name: "Super-Stimpack", type: "consumable", effect: "heal", val: 100, cost: 120, desc: "Starke Heilung (+100 HP)." },
     radaway: { name: "RadAway", type: "consumable", effect: "rad", val: -50, cost: 40, desc: "Entfernt Strahlung." },
     radx: { name: "Rad-X", type: "consumable", effect: "buff", bonus: { RAD_RESIST: 20 }, cost: 40, desc: "Erhöht Strahlungsresistenz." },
-    nuka_cola: { name: "Nuka Cola", type: "consumable", effect: "heal", val: 10, cost: 10, desc: "Koffeinhaltig. +10 HP, +5 RAD" },
+    nuka_cola: { name: "Nuka Cola", type: "consumable", effect: "heal", val: 15, cost: 10, desc: "Koffeinhaltig. +15 HP, +5 RAD" },
     nuka_quantum: { name: "Nuka Quantum", type: "consumable", effect: "heal", val: 100, cost: 100, desc: "Leuchtet blau. +100 HP, +20 RAD, +AP" },
     jet: { name: "Jet", type: "consumable", effect: "buff", bonus: { AP: 20 }, cost: 30, desc: "Zeitlupeneffekt. (Macht süchtig)" },
     buffout: { name: "Buffout", type: "consumable", effect: "buff", bonus: { STR: 2, END: 2 }, cost: 40, desc: "Mehr Muckis." },
@@ -374,11 +374,11 @@
     // Pipe Weapons (Schrott)
     pipe_pistol: { name: "Rohrpistole", type: "weapon", slot: "weapon", baseDmg: 5, cost: 15, desc: "Selbstgebaut.", usesAmmo: true, ammoType: "ammo", ammoCost: 1 },
     pipe_rifle: { name: "Rohrgewehr", type: "weapon", slot: "weapon", baseDmg: 7, cost: 30, desc: "Längerer Lauf.", usesAmmo: true, ammoType: "ammo", ammoCost: 1 },
-    pipe_revolver: { name: "Rohrrevolver", type: "weapon", slot: "weapon", baseDmg: 9, cost: 45, desc: "Kaliber .45.", usesAmmo: true, ammoType: "ammo", ammoCost: 1 },
+    pipe_revolver: { name: "Rohrrevolver", type: "weapon", slot: "weapon", baseDmg: 9, cost: 45, desc: "Nutzt selbstgegossene Schrott-Munition (.38).", usesAmmo: true, ammoType: "ammo", ammoCost: 1 },
     pipe_sniper: { name: "Rohr-Sniper", type: "weapon", slot: "weapon", baseDmg: 12, cost: 60, desc: "Mit Zielfernrohr.", usesAmmo: true, ammoType: "ammo", ammoCost: 2 },
     // Conventional
     pistol_10mm: { name: "10mm Pistole", type: "weapon", slot: "weapon", baseDmg: 12, cost: 150, desc: "Verlässlich.", usesAmmo: true, ammoType: "ammo_10mm", ammoCost: 1 },
-    revolver_44: { name: ".44 Revolver", type: "weapon", slot: "weapon", baseDmg: 25, cost: 250, desc: "Dirty Harry Style.", usesAmmo: true, ammoType: "ammo_308", ammoCost: 1 },
+    revolver_44: { name: ".44 Revolver", type: "weapon", slot: "weapon", baseDmg: 25, cost: 250, desc: "Dirty Harry Style. Nutzt .308-Munition.", usesAmmo: true, ammoType: "ammo_308", ammoCost: 1 },
     smg: { name: "Maschinenpistole", type: "weapon", slot: "weapon", baseDmg: 10, cost: 55, desc: "Schnellfeuer.", usesAmmo: true, ammoType: "ammo_10mm", ammoCost: 3 },
     hunting_rifle: { name: "Jagdgewehr", type: "weapon", slot: "weapon", baseDmg: 20, cost: 230, desc: "Präzise.", usesAmmo: true, ammoType: "ammo_308", ammoCost: 1 },
     sniper_rifle: { name: "Scharfschützengewehr", type: "weapon", slot: "weapon", baseDmg: 45, cost: 1150, desc: "Tödlich auf Distanz.", usesAmmo: true, ammoType: "ammo_308", ammoCost: 1 },
@@ -2590,7 +2590,7 @@
           if (!this.state.completedQuests) this.state.completedQuests = [];
           if (!this.state.quests) this.state.quests = [];
           if (!this.state.knownRecipes) this.state.knownRecipes = [];
-          ["craft_ammo", "craft_stimpack_simple", "rcp_camp", "craft_bp_frame", "craft_bp_leather", "craft_bp_metal", "craft_bp_military", "craft_bp_cargo"].forEach((r) => {
+          ["craft_ammo", "craft_ammo_10mm", "craft_ammo_308", "craft_ammo_shell", "craft_ammo_micro", "craft_ammo_cell", "craft_stimpack_simple", "rcp_camp", "craft_bp_frame", "craft_bp_leather", "craft_bp_metal", "craft_bp_military", "craft_bp_cargo"].forEach((r) => {
             if (!this.state.knownRecipes.includes(r)) this.state.knownRecipes.push(r);
           });
           if (!this.state.perks) this.state.perks = {};
@@ -2641,7 +2641,7 @@
             visitedSectors: [`${startSector.x},${startSector.y}`],
             activeQuests: [],
             completedQuests: [],
-            knownRecipes: ["craft_ammo", "craft_stimpack_simple", "rcp_camp", "craft_bp_frame", "craft_bp_leather", "craft_bp_metal", "craft_bp_military", "craft_bp_cargo"],
+            knownRecipes: ["craft_ammo", "craft_ammo_10mm", "craft_ammo_308", "craft_ammo_shell", "craft_ammo_micro", "craft_ammo_cell", "craft_stimpack_simple", "rcp_camp", "craft_bp_frame", "craft_bp_leather", "craft_bp_metal", "craft_bp_military", "craft_bp_cargo"],
             hiddenItems: {},
             shop: { nextRestock: 0, stock: {}, merchantCaps: 1e3 },
             startTime: Date.now()
@@ -2722,6 +2722,10 @@
         if (typeof UI !== "undefined") UI.log(`Gefunden!`, "text-yellow-400 font-bold");
         if (typeof UI !== "undefined" && UI.shakeView) UI.shakeView();
         delete this.state.hiddenItems[pk];
+      }
+      if (!this.state.dungeonLevel && (t === "b" || t === "p")) {
+        if (typeof UI !== "undefined" && UI.showWaterSource) UI.showWaterSource(nx, ny, t);
+        return;
       }
       if (t === "X") {
         if (this.state.dungeonLevel >= 3) {
@@ -2854,6 +2858,7 @@
         this.worldData[key] = { layout: map, biome };
       }
       this.state.currentMap = this.worldData[key].layout;
+      if (typeof WorldGen !== "undefined" && WorldGen.placeWaterSources) WorldGen.placeWaterSources(this.state.currentMap, sx, sy);
       if (!this.state.visitedSectors.includes(key)) this.state.visitedSectors.push(key);
       this.state.hiddenItems = {};
       if (Math.random() < 0.3) {
@@ -3269,6 +3274,7 @@
           else if (t === "Y") this.drawHighMountain(ctx, x, y);
           else if (t === "=") this.drawRoad(ctx, x, y);
           else if (t === "+") this.drawBridge(ctx, x, y);
+          else if (t === "b" || t === "p") this.drawWaterSource(ctx, x, y, t);
           else if (t === "~") {
             ctx.fillStyle = "#0d47a1";
             ctx.fillRect(x * this.TILE, y * this.TILE, this.TILE, this.TILE);
@@ -3314,6 +3320,34 @@
         ctx.fillStyle = "#333";
         ctx.fillRect(px + rand * ts, py + (1 - rand) * ts, 2, 2);
       }
+    },
+    drawWaterSource: function(ctx, x, y, type) {
+      const ts = this.TILE, px = x * ts, py = y * ts;
+      ctx.save();
+      if (type === "b") {
+        ctx.fillStyle = "#657c6b";
+        ctx.fillRect(px + ts * 0.16, py + ts * 0.38, ts * 0.68, ts * 0.42);
+        ctx.strokeStyle = "#b6d2a1";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(px + ts * 0.16, py + ts * 0.38, ts * 0.68, ts * 0.42);
+        ctx.fillStyle = "#63c79d";
+        ctx.fillRect(px + ts * 0.25, py + ts * 0.46, ts * 0.5, ts * 0.15);
+        ctx.fillStyle = "#bdd9b0";
+        ctx.fillRect(px + ts * 0.22, py + ts * 0.08, ts * 0.09, ts * 0.34);
+        ctx.fillRect(px + ts * 0.69, py + ts * 0.08, ts * 0.09, ts * 0.34);
+        ctx.fillRect(px + ts * 0.22, py + ts * 0.08, ts * 0.56, ts * 0.08);
+      } else {
+        ctx.fillStyle = "#306d59";
+        ctx.beginPath();
+        ctx.ellipse(px + ts * 0.5, py + ts * 0.6, ts * 0.4, ts * 0.22, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "#85d7a7";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.fillStyle = "#c1f4cd";
+        ctx.fillRect(px + ts * 0.35, py + ts * 0.53, ts * 0.25, ts * 0.05);
+      }
+      ctx.restore();
     },
     drawRoad: function(ctx, x, y) {
       const ts = this.TILE;
@@ -4338,6 +4372,38 @@
       }
       return map;
     },
+    // Deterministisch und ohne bestehende Orte/Wege zu ueberschreiben. Auch
+    // bereits erzeugte Sektoren koennen so beim Laden nachgeruestet werden.
+    placeWaterSources: function(map, sx, sy) {
+      if (!Array.isArray(map) || map.length < 12 || !map[0] || map[0].length < 12) return;
+      if (map.some((row) => row && row.some((tile) => tile === "b" || tile === "p"))) return;
+      const h = map.length, w = map[0].length;
+      const seed = (this._seed || 1) + sx * 7919 + sy * 104729;
+      const zufall = (n) => this.noise(seed * 1e-3 + n * 31.73, sx * 19.37 + sy * 47.19 + n);
+      if (zufall(1) >= 0.6) return;
+      const type = zufall(2) < 0.5 ? "b" : "p";
+      const frei = (t) => [".", ",", "_", ";", '"', "=", "+"].includes(t);
+      const startX = Math.min(w - 1, 25), startY = Math.min(h - 1, 25);
+      const queue = [[startX, startY]], erreichbar = /* @__PURE__ */ new Set([`${startX},${startY}`]);
+      for (let j = 0; j < queue.length; j++) {
+        const [x, y] = queue[j];
+        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+          const nx = x + dx, ny = y + dy, key = `${nx},${ny}`;
+          if (nx < 0 || ny < 0 || nx >= w || ny >= h || erreichbar.has(key) || !frei(map[ny][nx])) continue;
+          erreichbar.add(key);
+          queue.push([nx, ny]);
+        }
+      }
+      for (let i = 0; i < 80; i++) {
+        const x = 3 + Math.floor(zufall(3 + i * 2) * (w - 6));
+        const y = 3 + Math.floor(zufall(4 + i * 2) * (h - 6));
+        if (Math.abs(x - 25) + Math.abs(y - 25) < 5) continue;
+        if (![".", ",", "_", ";", '"'].includes(map[y][x])) continue;
+        if (![[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => erreichbar.has(`${x + dx},${y + dy}`))) continue;
+        map[y][x] = type;
+        return;
+      }
+    },
     placeHouseRuin: function(map, x, y) {
       const w = 3 + Math.floor(this.rand() * 2);
       const h = 3 + Math.floor(this.rand() * 2);
@@ -4664,6 +4730,20 @@
           return;
         }
       }
+      if (recipe.type === "ammo") {
+        const id = recipe.out === "AMMO" ? "ammo" : recipe.out;
+        const limit = this.getStackLimit(id);
+        const freed = Object.entries(recipe.req).filter(([reqId, needed]) => {
+          const stack = this.state.inventory.find((i) => i.id === reqId);
+          return stack && stack.count === needed;
+        }).length;
+        const freeInStacks = this.state.inventory.filter((i) => i.id === id && !i.props && !i.uid).reduce((n, i) => n + Math.max(0, limit - i.count), 0);
+        const freeSlots = Math.max(0, this.getMaxSlots() - this.getUsedSlots() + freed);
+        if (recipe.count > freeInStacks + freeSlots * limit) {
+          UI.log("Nicht genug Platz für die hergestellte Munition.", "text-red-500");
+          return;
+        }
+      }
       for (let reqId in recipe.req) {
         const countNeeded = recipe.req[reqId];
         const invItem = this.state.inventory.find((i) => i.id === reqId);
@@ -4680,6 +4760,8 @@
         Game.updateQuestProgress("collect", recipe.out, recipe.count);
       }
       this.updateWeight();
+      this.saveGame();
+      if (typeof UI.update === "function") UI.update();
       if (recipe.type === "cooking") {
         if (typeof UI.renderCampCooking === "function") UI.renderCampCooking();
       } else {
@@ -4787,12 +4869,14 @@
       }
       if (invItem.id === "nuka_cola") {
         const effectiveMax = this.state.maxHp - (this.state.rads || 0);
-        this.state.hp = Math.min(this.state.hp + 15, effectiveMax);
+        this.state.hp = Math.min(this.state.hp + itemDef.val, effectiveMax);
         this.state.caps += 1;
         this.addRadiation(5);
         UI.log("Nuka Cola: Erfrischend... und strahlend.", "text-blue-400");
         this.removeFromInventory("nuka_cola", 1);
         UI.update();
+        if (this.state.view === "inventory") UI.renderInventory();
+        this.saveGame();
         return;
       }
       if (invItem.id === "radaway") {
@@ -4899,7 +4983,7 @@
         if (!def) return;
         const type = def.type ? def.type.toLowerCase() : "";
         const isWeaponType = type === "weapon" || type === "melee" || type === "weapon_melee" || type.includes("weapon");
-        const needsAmmo = (item.ammoType || def.ammo) && (item.ammoType || def.ammo) !== "none";
+        const needsAmmo = (item.ammoType || def.ammoType) && (item.ammoType || def.ammoType) !== "none";
         if (isWeaponType && !needsAmmo) {
           let dmg = def.baseDmg || def.dmg || item.dmg || 0;
           if (item.props && item.props.dmgMult) dmg *= item.props.dmgMult;
@@ -5155,49 +5239,85 @@
     getCampStorageUsed: function() {
       return this.getCampStorage().length;
     },
+    // Nur ganz einfache Stapel zusammenlegen; Sonderdaten bleiben erhalten.
+    campEinfach: function(item) {
+      return Object.keys(item).every((k) => ["id", "count", "isNew"].includes(k));
+    },
     storeInCamp: function(invIndex, amount) {
-      if (!this.state || !this.state.camp) {
-        UI.log("Kein Lager aufgeschlagen.", "text-red-500");
-        return false;
-      }
+      if (!this.state || !this.state.camp) return false;
       const item = this.state.inventory[invIndex];
       if (!item) return false;
-      const lager = this.getCampStorage();
-      if (lager.length >= this.getCampStorageSlots()) {
-        UI.log("Lagerschrank ist voll!", "text-red-500 font-bold");
+      if (item.id === "camp_kit") {
+        UI.log("Der wiederverwendbare Zelt-Bausatz bleibt im Rucksack.", "text-yellow-400");
         return false;
       }
-      const menge = Math.min(item.count, amount || item.count);
-      if (menge <= 0) return false;
-      const vorhanden = lager.find((e) => e.id === item.id && !e.props && !e.isLegendary);
-      if (vorhanden && !item.props && !item.isLegendary) {
-        vorhanden.count += menge;
-      } else {
-        const kopie = { ...item, count: menge };
-        lager.push(kopie);
+      const menge = amount === void 0 ? item.count : Math.min(item.count, Math.floor(Number(amount)));
+      if (!Number.isFinite(menge) || menge <= 0) return false;
+      const lager = this.getCampStorage();
+      const vorhanden = this.campEinfach(item) ? lager.find((e) => e.id === item.id && this.campEinfach(e)) : null;
+      if (!vorhanden && lager.length >= this.getCampStorageSlots()) {
+        UI.log("Lagertruhe ist voll!", "text-red-500 font-bold");
+        return false;
       }
+      if (vorhanden) vorhanden.count += menge;
+      else lager.push(JSON.parse(JSON.stringify({ ...item, count: menge })));
       item.count -= menge;
       if (item.count <= 0) this.state.inventory.splice(invIndex, 1);
-      UI.log(`${menge}x ${item.name || this.items[item.id] && this.items[item.id].name || item.id} eingelagert.`, "text-blue-300");
+      UI.log(`${menge}x ${item.name || this.items[item.id] && this.items[item.id].name || item.id} eingelagert.`, "text-green-300");
       this.updateWeight();
+      if (typeof UI.update === "function") UI.update();
       this.saveGame();
       return true;
     },
     takeFromCamp: function(storageIndex, amount) {
       if (!this.state || !this.state.camp) return false;
       const lager = this.getCampStorage();
-      const eintrag = lager[storageIndex];
-      if (!eintrag) return false;
-      if (this.getUsedSlots() >= this.getMaxSlots()) {
+      const item = lager[storageIndex];
+      if (!item) return false;
+      const menge = amount === void 0 ? item.count : Math.min(item.count, Math.floor(Number(amount)));
+      if (!Number.isFinite(menge) || menge <= 0) return false;
+      const inventar = this.state.inventory;
+      const limit = this.getStackLimit(item.id);
+      const einfach = this.campEinfach(item);
+      const stapel = einfach ? inventar.filter((e) => e.id === item.id && this.campEinfach(e) && e.count < limit) : [];
+      const freiImStapel = stapel.reduce((n, e) => n + Math.max(0, limit - e.count), 0);
+      const fehlend = Math.max(0, menge - freiImStapel);
+      const neuePlaetze = Math.ceil(fehlend / limit);
+      if (inventar.length + neuePlaetze > this.getMaxSlots()) {
         UI.log("Inventar voll! Erst Platz schaffen.", "text-red-500");
         return false;
       }
-      const menge = Math.min(eintrag.count, amount || eintrag.count);
-      this.addToInventory(eintrag.id, menge);
-      eintrag.count -= menge;
-      if (eintrag.count <= 0) lager.splice(storageIndex, 1);
-      UI.log(`${menge}x ${this.items[eintrag.id] ? this.items[eintrag.id].name : eintrag.id} entnommen.`, "text-blue-300");
+      let rest = menge;
+      for (const e of stapel) {
+        const n = Math.min(rest, limit - e.count);
+        e.count += n;
+        rest -= n;
+        if (!rest) break;
+      }
+      while (rest > 0) {
+        const n = Math.min(rest, limit);
+        inventar.push(JSON.parse(JSON.stringify({ ...item, count: n })));
+        rest -= n;
+      }
+      item.count -= menge;
+      if (item.count <= 0) lager.splice(storageIndex, 1);
+      UI.log(`${menge}x ${item.name || this.items[item.id] && this.items[item.id].name || item.id} entnommen.`, "text-green-300");
       this.updateWeight();
+      if (typeof UI.update === "function") UI.update();
+      this.saveGame();
+      return true;
+    },
+    trinkWasser: function(type) {
+      if (!this.state || this.state.isGameOver || !["b", "p"].includes(type)) return false;
+      const dosis = type === "b" ? 5 : 10;
+      this.addRadiation(dosis);
+      if (!this.state.isGameOver) {
+        const max = Math.max(0, this.state.maxHp - (this.state.rads || 0));
+        const vorher = this.state.hp;
+        this.state.hp = Math.min(max, this.state.hp + 20);
+        UI.log(`Getrunken: +${Math.max(0, this.state.hp - vorher)} TP, Wasser ist verstrahlt.`, "text-green-300");
+        UI.update();
+      }
       this.saveGame();
       return true;
     },
@@ -5369,6 +5489,15 @@
       if (Game.state.caps < totalCost) {
         if (typeof UI !== "undefined") UI.error("Nicht genug Kronkorken!");
         return;
+      }
+      if (item.type === "ammo") {
+        const limit = this.getStackLimit(id);
+        const stapelFrei = this.state.inventory.filter((i) => i.id === id && !i.props && !i.uid).reduce((sum, i) => sum + Math.max(0, limit - i.count), 0);
+        const slotsFrei = Math.max(0, this.getMaxSlots() - this.getUsedSlots());
+        if (totalItemsReceived > stapelFrei + slotsFrei * limit) {
+          if (typeof UI !== "undefined") UI.error("Nicht genug Platz für das Munitionspaket.");
+          return;
+        }
       }
       Game.state.caps -= totalCost;
       Game.state.shop.merchantCaps += totalCost;
@@ -5743,7 +5872,8 @@
       const stats = this.getWeaponStats(wpn);
       const wId = wpn.id.toLowerCase();
       if (stats.ammoType && wId !== "alien_blaster") {
-        const hasAmmo = Game.removeFromInventory(stats.ammoType, stats.ammoCost);
+        const verfuegbar = (Game.state.inventory || []).reduce((sum, item) => sum + (item.id === stats.ammoType ? Number(item.count) || 0 : 0), 0);
+        const hasAmmo = verfuegbar >= stats.ammoCost && Game.removeFromInventory(stats.ammoType, stats.ammoCost);
         if (!hasAmmo) {
           if (typeof UI.showCombatEffect === "function") {
             UI.showCombatEffect("* KLICK *", "MUNITION LEER!", "red", 2300);
@@ -7289,7 +7419,7 @@
             if (hasKit || hasBuilt) return;
           }
           knownCount++;
-          const outItem = (recipe.out === "AMMO" ? { name: "15x Munition" } : Game.items[recipe.out]) || { name: "Unbekanntes Item" };
+          const outItem = (recipe.out === "AMMO" ? { name: "10x Munition" } : Game.items[recipe.out]) || { name: "Unbekanntes Item" };
           let reqHtml = "";
           let canCraft = true;
           for (let reqId in recipe.req) {
@@ -8157,7 +8287,7 @@
                 ${rows}
             </div>
             <div class="text-[10px] text-gray-500 text-center italic">
-                Höhere Stufen heilen effektiver und vergrößern den Lagerschrank<br>
+                Höhere Stufen heilen effektiver und vergrößern den Lagertruhe<br>
                 (10 Plätze auf Stufe 1, +5 je Stufe). Strahlung (+5) beim Schlafen bleibt konstant.
             </div>
         `;
@@ -8265,11 +8395,11 @@
       if (!liste) return;
       const belegt = Game.getCampStorageUsed();
       const plaetze = Game.getCampStorageSlots();
-      if (kopf) kopf.textContent = `Belegt: ${belegt} / ${plaetze} Plätze · Schrank wächst mit der Lagerstufe`;
+      if (kopf) kopf.textContent = `Belegt: ${belegt} / ${plaetze} Plätze · Truhe wächst mit der Lagerstufe`;
       liste.innerHTML = "";
       const lager = Game.getCampStorage();
       if (lager.length === 0) {
-        liste.innerHTML = '<div class="text-gray-500 italic text-center mt-6">Der Schrank ist leer.</div>';
+        liste.innerHTML = '<div class="text-gray-500 italic text-center mt-6">Die Truhe ist leer.</div>';
       } else {
         lager.forEach((eintrag, i) => {
           const def = Game.items[eintrag.id] || {};
@@ -8279,13 +8409,20 @@
                     <div class="flex items-center gap-2 overflow-hidden">
                         ${UI.itemSymbol(eintrag.id, def.type, "klein")}
                         <div class="flex flex-col">
-                            <span class="font-bold text-cyan-300">${eintrag.name || def.name || eintrag.id}</span>
+                            <span class="font-bold text-cyan-300">${eintrag.name || eintrag.props && eintrag.props.name || def.name || eintrag.id}</span>
                             <span class="text-xs text-cyan-600">${eintrag.count}x</span>
                         </div>
                     </div>
-                    <button class="border border-cyan-500 text-cyan-400 px-3 py-1 text-sm font-bold hover:bg-cyan-900/40">ENTNEHMEN</button>
+                    <div class="flex gap-1 shrink-0">
+                        <button data-einzeln class="border border-cyan-500 text-cyan-400 px-2 py-1 text-sm" aria-label="Ein Stück entnehmen">1x</button>
+                        <button data-alle class="border border-cyan-500 text-cyan-400 px-3 py-1 text-sm font-bold hover:bg-cyan-900/40">ENTNEHMEN</button>
+                    </div>
                 `;
-          div.querySelector("button").onclick = () => {
+          div.querySelector("[data-einzeln]").onclick = () => {
+            Game.takeFromCamp(i, 1);
+            this.renderCampStorage();
+          };
+          div.querySelector("[data-alle]").onclick = () => {
             Game.takeFromCamp(i);
             this.renderCampStorage();
           };
@@ -8306,13 +8443,20 @@
                 <div class="flex items-center gap-2 overflow-hidden">
                     ${UI.itemSymbol(item.id, def.type, "klein")}
                     <div class="flex flex-col">
-                        <span class="text-green-300">${item.name || def.name || item.id}</span>
+                        <span class="text-green-300">${item.name || item.props && item.props.name || def.name || item.id}</span>
                         <span class="text-xs text-gray-500">${item.count}x</span>
                     </div>
                 </div>
-                <button class="border border-green-700 text-green-500 px-3 py-1 text-sm font-bold hover:bg-green-900/40">EINLAGERN</button>
+                <div class="flex gap-1 shrink-0">
+                    <button data-einzeln class="border border-green-700 text-green-500 px-2 py-1 text-sm" aria-label="Ein Stück einlagern">1x</button>
+                    <button data-alle class="border border-green-700 text-green-500 px-3 py-1 text-sm font-bold hover:bg-green-900/40">EINLAGERN</button>
+                </div>
             `;
-        div.querySelector("button").onclick = () => {
+        div.querySelector("[data-einzeln]").onclick = () => {
+          Game.storeInCamp(i, 1);
+          this.renderCampStorage();
+        };
+        div.querySelector("[data-alle]").onclick = () => {
           Game.storeInCamp(i);
           this.renderCampStorage();
         };
@@ -8450,8 +8594,16 @@
       if (this.els.xpTxt) this.els.xpTxt.textContent = expPct;
       if (this.els.expBarTop) this.els.expBarTop.style.width = `${expPct}%`;
       if (this.els.caps) this.els.caps.textContent = `${Game.state.caps}`;
-      const ammoItem = Game.state.inventory ? Game.state.inventory.find((i) => i.id === "ammo") : null;
-      if (this.els.ammo) this.els.ammo.textContent = ammoItem ? ammoItem.count : 0;
+      const weapon = Game.state.equip && Game.state.equip.weapon;
+      const weaponDef = weapon && Game.items && Game.items[weapon.id];
+      const ammoType = weapon && (weapon.ammoType || weaponDef && weaponDef.ammoType);
+      const ammoName = ammoType && Game.items && Game.items[ammoType] ? Game.items[ammoType].name : ammoType;
+      const ammoCount = ammoType ? (Game.state.inventory || []).reduce((sum, item) => sum + (item.id === ammoType ? Number(item.count) || 0 : 0), 0) : 0;
+      if (this.els.ammo) {
+        this.els.ammo.textContent = ammoType ? String(ammoCount) : "–";
+        this.els.ammo.parentElement.title = ammoType ? `Munition: ${ammoName}` : "Aktuelle Waffe benötigt keine Munition";
+        this.els.ammo.setAttribute("aria-label", ammoType ? `${ammoName}: ${ammoCount}` : "Keine Munition benötigt");
+      }
       const campBtn = document.getElementById("btn-camp-overlay");
       if (campBtn) {
         const hasKit = Game.state.inventory && Game.state.inventory.some((i) => i.id === "camp_kit");
@@ -10211,6 +10363,33 @@
       }
       document.getElementById("btn-cancel").onclick = () => UI.leaveDialog();
     },
+    showWaterSource: function(x, y, type) {
+      const state = Game.state;
+      if (!state || state.inDialog || state.view !== "map" || state.dungeonLevel) return;
+      const name = type === "b" ? "BRUNNEN" : "PFÜTZE";
+      const dosis = type === "b" ? 5 : 10;
+      const sx = state.sector.x, sy = state.sector.y;
+      const overlay = this.restoreOverlay();
+      overlay.style.display = "flex";
+      state.inDialog = true;
+      this._trapEscKey();
+      const box = document.createElement("div");
+      box.className = "bg-black border-2 border-green-500 p-5 max-w-sm text-center pointer-events-auto";
+      box.onclick = (e) => e.stopPropagation();
+      box.innerHTML = `<h2 class="text-3xl text-green-400 font-bold">${name}</h2>
+            <p class="text-green-200 my-3">Trinken heilt bis zu 20 TP. Das Wasser ist verstrahlt: +${dosis} RAD pro Schluck (Schutz kann die Dosis senken).</p>
+            <div class="flex gap-3 justify-center"><button type="button" data-drink class="action-button">TRINKEN</button><button type="button" data-cancel class="action-button">ABBRECHEN</button></div>`;
+      overlay.appendChild(box);
+      box.querySelector("[data-cancel]").onclick = () => this.leaveDialog();
+      box.querySelector("[data-drink]").onclick = () => {
+        if (Game.state !== state || !state.inDialog || state.view !== "map" || state.dungeonLevel || state.sector.x !== sx || state.sector.y !== sy || !state.currentMap[y] || state.currentMap[y][x] !== type || Math.abs(state.player.x - x) + Math.abs(state.player.y - y) !== 1) {
+          this.leaveDialog();
+          return;
+        }
+        this.leaveDialog();
+        Game.trinkWasser(type);
+      };
+    },
     showDungeonWarning: function(callback) {
       const overlay = this.restoreOverlay();
       overlay.style.display = "flex";
@@ -10675,11 +10854,20 @@
   window.GameData = window.GameData || {};
   window.GameData.offenePunkte = [
     "Geräteabnahme: die Ansichten wurden im Browser mit Test-Doubles und als gerenderte Bilder geprüft, nicht auf einem echten Telefon.",
-    "Befund 8 aus docs/BEFUNDE.md: *.log in .gitignore trifft auch docs/change.log, der build.json-Hash deckt style.css nicht ab, src/admin.js hat keine Tests.",
-    "deployCamp verbraucht den Bausatz nicht; Nuka Cola heilt 15 statt der angegebenen 10.",
-    "Der RAD-Balken nutzt noch einen Platzhalter (+1000) statt des echten Strahlungswerts."
+    "Befund 8 aus docs/BEFUNDE.md: *.log in .gitignore trifft auch docs/change.log, der build.json-Hash deckt style.css nicht ab, src/admin.js hat keine Tests."
   ];
   window.GameData.RELEASED_PATCHES = [
+    {
+      version: "14.0.33",
+      datum: "2026-11-24",
+      title: "Wasser, Munition und Lagertruhe",
+      punkte: [
+        "Die Munitionsanzeige zählt nur die Sorte der ausgerüsteten Waffe. Munitionsrezepte sind nun verfügbar; bei zu wenig Platz oder Munition geht nichts verloren.",
+        "Brunnen und Pfützen im Ödland bieten freiwillige Heilung gegen Strahlung. Das Tutorial erklärt die Wasserstellen.",
+        "Der bisherige Lagerschrank ist als Truhe mit eigenem Bild erkennbar. Beim Ein- und Auslagern bleiben auch besondere Gegenstände erhalten.",
+        "Nuka Cola heilt wie angegeben 15 TP. Der Zelt-Bausatz bleibt wiederverwendbar und die Truhe reist beim Abbau mit."
+      ]
+    },
     {
       version: "14.0.32",
       datum: "2026-11-24",
@@ -11477,7 +11665,7 @@
     {
       id: "inventar",
       titel: "DEIN ZEUG",
-      text: "Im Inventar liegen Stimpacks und Munition. Ein Stimpack heilt - heb eines für einen schlechten Moment auf.",
+      text: "Im Inventar liegen Stimpacks und Munition. Ein Stimpack heilt. In der Welt findest du gelegentlich Brunnen und Pfützen: Bewege dich dagegen und bestätige TRINKEN. Das heilt, verursacht aber bei jedem Schluck RAD.",
       ziel: "#btn-inv",
       weiter: "INVENTAR ÖFFNEN",
       // 'inventory', nicht 'inv': das Template heisst templates/inventory.html.

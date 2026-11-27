@@ -323,7 +323,7 @@
     super_stimpack: { name: "Super-Stimpack", type: "consumable", effect: "heal", val: 100, cost: 120, desc: "Starke Heilung (+100 HP)." },
     radaway: { name: "RadAway", type: "consumable", effect: "rad", val: -50, cost: 40, desc: "Entfernt Strahlung." },
     radx: { name: "Rad-X", type: "consumable", effect: "buff", bonus: { RAD_RESIST: 20 }, cost: 40, desc: "Erhöht Strahlungsresistenz." },
-    nuka_cola: { name: "Nuka Cola", type: "consumable", effect: "heal", val: 10, cost: 10, desc: "Koffeinhaltig. +10 HP, +5 RAD" },
+    nuka_cola: { name: "Nuka Cola", type: "consumable", effect: "heal", val: 15, cost: 10, desc: "Koffeinhaltig. +15 HP, +5 RAD" },
     nuka_quantum: { name: "Nuka Quantum", type: "consumable", effect: "heal", val: 100, cost: 100, desc: "Leuchtet blau. +100 HP, +20 RAD, +AP" },
     jet: { name: "Jet", type: "consumable", effect: "buff", bonus: { AP: 20 }, cost: 30, desc: "Zeitlupeneffekt. (Macht süchtig)" },
     buffout: { name: "Buffout", type: "consumable", effect: "buff", bonus: { STR: 2, END: 2 }, cost: 40, desc: "Mehr Muckis." },
@@ -374,11 +374,11 @@
     // Pipe Weapons (Schrott)
     pipe_pistol: { name: "Rohrpistole", type: "weapon", slot: "weapon", baseDmg: 5, cost: 15, desc: "Selbstgebaut.", usesAmmo: true, ammoType: "ammo", ammoCost: 1 },
     pipe_rifle: { name: "Rohrgewehr", type: "weapon", slot: "weapon", baseDmg: 7, cost: 30, desc: "Längerer Lauf.", usesAmmo: true, ammoType: "ammo", ammoCost: 1 },
-    pipe_revolver: { name: "Rohrrevolver", type: "weapon", slot: "weapon", baseDmg: 9, cost: 45, desc: "Kaliber .45.", usesAmmo: true, ammoType: "ammo", ammoCost: 1 },
+    pipe_revolver: { name: "Rohrrevolver", type: "weapon", slot: "weapon", baseDmg: 9, cost: 45, desc: "Nutzt selbstgegossene Schrott-Munition (.38).", usesAmmo: true, ammoType: "ammo", ammoCost: 1 },
     pipe_sniper: { name: "Rohr-Sniper", type: "weapon", slot: "weapon", baseDmg: 12, cost: 60, desc: "Mit Zielfernrohr.", usesAmmo: true, ammoType: "ammo", ammoCost: 2 },
     // Conventional
     pistol_10mm: { name: "10mm Pistole", type: "weapon", slot: "weapon", baseDmg: 12, cost: 150, desc: "Verlässlich.", usesAmmo: true, ammoType: "ammo_10mm", ammoCost: 1 },
-    revolver_44: { name: ".44 Revolver", type: "weapon", slot: "weapon", baseDmg: 25, cost: 250, desc: "Dirty Harry Style.", usesAmmo: true, ammoType: "ammo_308", ammoCost: 1 },
+    revolver_44: { name: ".44 Revolver", type: "weapon", slot: "weapon", baseDmg: 25, cost: 250, desc: "Dirty Harry Style. Nutzt .308-Munition.", usesAmmo: true, ammoType: "ammo_308", ammoCost: 1 },
     smg: { name: "Maschinenpistole", type: "weapon", slot: "weapon", baseDmg: 10, cost: 55, desc: "Schnellfeuer.", usesAmmo: true, ammoType: "ammo_10mm", ammoCost: 3 },
     hunting_rifle: { name: "Jagdgewehr", type: "weapon", slot: "weapon", baseDmg: 20, cost: 230, desc: "Präzise.", usesAmmo: true, ammoType: "ammo_308", ammoCost: 1 },
     sniper_rifle: { name: "Scharfschützengewehr", type: "weapon", slot: "weapon", baseDmg: 45, cost: 1150, desc: "Tödlich auf Distanz.", usesAmmo: true, ammoType: "ammo_308", ammoCost: 1 },

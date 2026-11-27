@@ -5,6 +5,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {join, dirname} from 'node:path';
+import {readFileSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 import {loadBundle} from './helpers/load-bundle.mjs';
 
@@ -196,4 +197,77 @@ test('jede Munitionsart hat ein Rezept', () => {
   // craft_ammo schreibt historisch 'AMMO' groß - das zählt für 'ammo'.
   const missing = ammoTypes.filter(id => !produced.has(id));
   assert.deepEqual(missing, [], `ohne Rezept: ${missing.join(', ')}`);
+});
+
+test('alle Munitionsarten besitzen registrierte Bilddateien', async () => {
+  const {game} = freshGame();
+  const {access} = await import('node:fs/promises');
+  for (const [id, def] of Object.entries(game.items)) {
+    if (def.type !== 'ammo') continue;
+    const pfad = game.itemBildPfad(id);
+    assert.ok(pfad, `Bildregistrierung fehlt: ${id}`);
+    await access(join(ROOT, pfad));
+  }
+});
+
+test('automatischer Nahkampfwechsel wählt keine weitere Feuerwaffe', () => {
+  const {game, state, window} = freshGame();
+  window.UI.log = () => {}; window.UI.update = () => {};
+  state.equip.weapon = {id:'pistol_10mm'};
+  state.inventory = [{id:'minigun',count:1}, {id:'knife',count:1}];
+  game.switchToBestMelee();
+  assert.equal(state.equip.weapon.id, 'knife');
+});
+
+test('zu wenig Munition für einen Schuss geht beim KLICK nicht verloren', () => {
+  const {window, combat, state} = freshGame();
+  state.equip.weapon = {id:'minigun'};
+  state.inventory = [{id:'ammo_micro', count:4}];
+  combat.log=()=>{}; window.UI.showCombatEffect=()=>{};
+  const timer = window.setTimeout; window.setTimeout=()=>0;
+  try { combat.playerAttack(); } finally { window.setTimeout=timer; }
+  assert.equal(state.inventory[0].count,4);
+});
+
+test('Munitionsrezepte sind für neue und alte Spielstände freigeschaltet', () => {
+  const source = readFileSync(join(ROOT, 'src/game/game_core.js'), 'utf8');
+  for(const id of ['craft_ammo_10mm','craft_ammo_308','craft_ammo_shell','craft_ammo_micro','craft_ammo_cell']) {
+    assert.equal(source.split(`'${id}'`).length-1,2, `${id} muss im neuen Spiel und bei Migration freigeschaltet sein`);
+  }
+});
+
+test('Munitionskauf bei zu wenig Platz zieht keine Kronkorken oder Waren ab', () => {
+  const {window, game, state} = freshGame();
+  window.UI.log = () => {}; window.UI.error = () => {}; window.UI.update=()=>{};
+  game.saveGame = () => {}; game.checkShopRestock();
+  state.caps = 1000; state.inventory = []; game.getMaxSlots = () => 0;
+  const bestand = state.shop.ammoStockByType.ammo_10mm;
+  game.buyItem('ammo_10mm', 1);
+  assert.equal(state.caps, 1000);
+  assert.equal(state.shop.ammoStockByType.ammo_10mm, bestand);
+  assert.equal(state.inventory.length, 0);
+});
+
+test('Munitionsrezepte stellen die richtige Sorte her und speichern', () => {
+  const {game, state, window} = freshGame();
+  window.UI.log=()=>{}; window.UI.update=()=>{}; window.UI.renderCrafting=()=>{};
+  let saved=0; game.saveGame=()=>{saved++};
+  game.getMaxSlots=()=>50; state.lvl=10;
+  for(const recipe of game.recipes.filter(r=>r.type==='ammo')) {
+    state.inventory=Object.entries(recipe.req).map(([id,count])=>({id,count}));
+    game.craftItem(recipe.id);
+    const id=recipe.out==='AMMO'?'ammo':recipe.out;
+    assert.equal(state.inventory.find(i=>i.id===id)?.count,recipe.count,recipe.id);
+  }
+  assert.ok(saved >= 6);
+});
+
+test('Munition herstellen ohne Platz bewahrt das Material', () => {
+  const {game,state,window} = freshGame();
+  window.UI.log=()=>{}; window.UI.update=()=>{}; game.saveGame=()=>{};
+  state.lvl=10; game.getMaxSlots=()=>1;
+  state.inventory=[{id:'junk_metal',count:3}];
+  game.craftItem('craft_ammo');
+  assert.equal(state.inventory.length,1);
+  assert.equal(state.inventory[0].count,3);
 });
