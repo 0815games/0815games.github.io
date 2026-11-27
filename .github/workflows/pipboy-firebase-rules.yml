@@ -27,4 +27,12 @@ jobs:
           distribution: temurin
           java-version: '21'
       - run: npm ci --no-audit --no-fund
-      - run: npm test
+      - name: Emulator-Tests
+        shell: bash
+        run: |
+          if npm test > /tmp/pipboy-rules.log 2>&1; then
+            cat /tmp/pipboy-rules.log
+          else
+            cat /tmp/pipboy-rules.log
+            python3 -c "from pathlib import Path; s=Path('/tmp/pipboy-rules.log').read_text()[-7000:]; print('::error title=Firebase rules test::'+s.replace('%','%25').replace('\r','%0D').replace('\n','%0A'))"
+            exit 1
