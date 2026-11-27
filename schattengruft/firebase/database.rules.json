@@ -1,0 +1,113 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "dark_rpg": {
+      "saves": {
+        "$uid": {
+          ".read": "auth !== null && auth.uid === $uid",
+          "$slot": {
+            ".write": "auth !== null && auth.uid === $uid && ($slot === 'slot_0' || $slot === 'slot_1' || $slot === 'slot_2' || $slot === 'slot_3')",
+            ".validate": "newData.hasChildren(['player', 'world', 'meta', 'currentSlot'])",
+            "player": {
+              ".validate": "newData.hasChildren(['name', 'level', 'hp', 'maxHp', 'mp', 'maxMp', 'xp', 'nextXp', 'gold'])",
+              "name": {
+                ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 16"
+              },
+              "level": {
+                ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() % 1 === 0"
+              },
+              "hp": {
+                ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= newData.parent().child('maxHp').val()"
+              },
+              "maxHp": {
+                ".validate": "newData.isNumber() && newData.val() > 0"
+              },
+              "mp": {
+                ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= newData.parent().child('maxMp').val()"
+              },
+              "maxMp": {
+                ".validate": "newData.isNumber() && newData.val() >= 0"
+              },
+              "xp": {
+                ".validate": "newData.isNumber() && newData.val() >= 0"
+              },
+              "nextXp": {
+                ".validate": "newData.isNumber() && newData.val() > 0"
+              },
+              "gold": {
+                ".validate": "newData.isNumber() && newData.val() >= 0"
+              }
+            },
+            "world": {
+              ".validate": "newData.hasChildren(['depth'])",
+              "depth": {
+                ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() % 1 === 0"
+              }
+            },
+            "meta": {
+              ".validate": "newData.hasChildren(['gold', 'bestDepth'])",
+              "gold": {
+                ".validate": "newData.isNumber() && newData.val() >= 0"
+              },
+              "bestDepth": {
+                ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() % 1 === 0"
+              }
+            },
+            "currentSlot": {
+              ".validate": "newData.isNumber() && (($slot === 'slot_0' && newData.val() === 0) || ($slot === 'slot_1' && newData.val() === 1) || ($slot === 'slot_2' && newData.val() === 2) || ($slot === 'slot_3' && newData.val() === 3))"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        }
+      },
+      "sessions": {
+        "$uid": {
+          ".read": "auth !== null && auth.uid === $uid",
+          ".write": "auth !== null && auth.uid === $uid && (!newData.exists() || !data.exists() || data.child('expiresAt').val() <= now || newData.child('id').val() === data.child('id').val())",
+          ".validate": "newData.hasChildren(['id', 'expiresAt'])",
+          "id": {
+            ".validate": "newData.isString() && newData.val().length === 32"
+          },
+          "expiresAt": {
+            ".validate": "newData.isNumber() && newData.val() > now && newData.val() <= now + 150000"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      },
+      "leaderboard": {
+        ".read": "auth !== null && query.orderByChild === 'bestDepth' && query.limitToLast !== null && query.limitToLast > 0 && query.limitToLast <= 50",
+        ".indexOn": ["bestDepth"],
+        "$entry": {
+          ".write": "auth !== null && ((newData.exists() && newData.child('uid').val() === auth.uid && (!data.exists() || data.child('uid').val() === auth.uid)) || (!newData.exists() && data.child('uid').val() === auth.uid))",
+          ".validate": "newData.hasChildren(['uid', 'slot', 'name', 'heroClass', 'level', 'bestDepth']) && $entry === auth.uid + '_' + newData.child('slot').val() && newData.child('name').val() === root.child('dark_rpg').child('saves').child(auth.uid).child(newData.child('slot').val()).child('player').child('name').val() && newData.child('heroClass').val() === root.child('dark_rpg').child('saves').child(auth.uid).child(newData.child('slot').val()).child('player').child('heroClass').val() && newData.child('level').val() === root.child('dark_rpg').child('saves').child(auth.uid).child(newData.child('slot').val()).child('player').child('level').val() && newData.child('bestDepth').val() === root.child('dark_rpg').child('saves').child(auth.uid).child(newData.child('slot').val()).child('meta').child('bestDepth').val()",
+          "uid": {
+            ".validate": "newData.isString() && newData.val() === auth.uid"
+          },
+          "slot": {
+            ".validate": "newData.isString() && (newData.val() === 'slot_0' || newData.val() === 'slot_1' || newData.val() === 'slot_2' || newData.val() === 'slot_3')"
+          },
+          "name": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 16"
+          },
+          "heroClass": {
+            ".validate": "newData.isString() && (newData.val() === 'warrior' || newData.val() === 'mage' || newData.val() === 'rogue')"
+          },
+          "level": {
+            ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() % 1 === 0"
+          },
+          "bestDepth": {
+            ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() % 1 === 0"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      }
+    }
+  }
+}

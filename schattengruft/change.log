@@ -1,5 +1,48 @@
 # CHANGELOG – Chroniken der Schattengruft
 
+## 2026-11-27 – App-Icon, Web-Icon und OG-Bild (0.10.2)
+
+### Icon-Set für App, Browser und iOS
+
+- Neues einheitliches Icon-Set für **Schattengruft**, erzeugt aus dem neuen
+  Skript `tools/make-icons.py` (Pillow, reproduzierbar, keine externen
+  Bilddateien):
+
+  | Datei | Verwendung |
+  |---|---|
+  | `assets/icons/favicon.svg` | Browser-Favicon (Vektor, skaliert sauber) |
+  | `assets/icons/favicon.ico` | Altgeräte-Favicon, 16/32/48/64 px in einem ICO |
+  | `assets/icons/apple-touch-icon.png` | iOS Home-Screen-Icon (180×180) |
+  | `assets/icons/icon-192.png` / `icon-512.png` | PWA-Icons |
+  | `assets/icons/icon-512-maskable.png` | Icon mit 80 % Masken-Sicherheitszone |
+  | `assets/icons/og-image.jpg/.png` | Share-Bild (1200×630) |
+  | `assets/icons/manifest.webmanifest` | Web-Manifest mit allen Icons |
+
+- Design: Dunkles Quadrat (Theme-Farbe `#08090e`), goldner Doppelring,
+  darin eine Fackel mit rot-goldner Flamme – verwandt mit der alten
+  Favicon-Palette.
+- `index.html` jetzt mit allen Tags: Favicon (SVG + ICO), Apple-Touch-Icon,
+  Manifest, `application-name`, OG- und Twitter-Tags für das Share-Bild.
+- Das alte 32×32-Favicon (`favicon.ico` im Ordner-Wurzel) wurde durch das
+  neue Set ersetzt.
+
+### Firebase-Regeln liegen jetzt im Repo
+
+- Die Security-Regeln für `dark_rpg/saves`, `dark_rpg/sessions` und
+  `dark_rpg/leaderboard` liegen jetzt unter
+  **`firebase/database.rules.json`** im Repository und sind versioniert
+  auditierbar. Bisher waren sie nur im Firebase-Kontingent, nicht im Repo.
+- `ANALYSE.md` wurde korrigiert: das Punkt „Fehlende Security-Regeln" ist
+  geschlossen, TODO-Punkt 7 als erledigt markiert.
+
+### Tests
+
+- Neu: `tests/icon-assets.mjs` (10/10) – prüft Referenzen in `index.html`,
+  PNG-Größen, ICO-Format, Manifest und das Erzeugungs-Skript.
+- Grenzen: Keine visuelle Abnahme des Icons. Pillow-Ausgabe wurde per
+  Pixel-Analyse geprüft, die endgültige Gestaltung bitte auf einem
+  Gerät/dem Home-Screen bestätigen.
+
 ## 2026-11-27 – Schwarzer Bildschirm, Doppel-Login und Sitzungsübernahme (0.10.2)
 
 ### Schwarzer Bildschirm nach dem Einloggen (Handy)
