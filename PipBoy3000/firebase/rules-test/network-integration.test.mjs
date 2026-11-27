@@ -30,18 +30,23 @@ function client(name, confirm) {
 
 const timeout = (p, ms = 8000) => Promise.race([p, new Promise((_, reject) => setTimeout(() => reject(new Error('Zeitüberschreitung')), ms))]);
 
-test('echter Firebase-8-Client: Abbruch und bestätigte Übernahme mit zwei unabhängigen Sitzungen', async () => {
+test('echter Firebase-8-Client: Abbruch und bestätigte Übernahme mit zwei unabhängigen Sitzungen', {timeout: 25000}, async () => {
   let allow = false;
   const a = client('a', () => true), b = client('b', () => allow);
   const email = 'session-test@example.invalid', password = 'test-password-123';
   try {
-    const user = (await a.auth.createUserWithEmailAndPassword(email, password)).user;
-    await a.network.login(email, password);
-    await a.network.saveToSlot(0, {playerName:'Ada', lvl:3});
-    await assert.rejects(b.network.login(email, password), /abgebrochen/);
+    console.log('STEP create user');
+    const user = (await timeout(a.auth.createUserWithEmailAndPassword(email, password))).user;
+    console.log('STEP login A');
+    await timeout(a.network.login(email, password));
+    console.log('STEP save A');
+    await timeout(a.network.saveToSlot(0, {playerName:'Ada', lvl:3}));
+    console.log('STEP decline B');
+    await assert.rejects(timeout(b.network.login(email, password)), /abgebrochen/);
     assert.ok(a.network.sessionId);
     const still = await a.db.ref('saves/' + user.uid + '/0').once('value');
     assert.equal(still.val().lvl, 3);
+    console.log('STEP takeover B');
     allow = true;
     const saves = await timeout(b.network.login(email, password));
     assert.equal(saves[0].lvl, 3);
@@ -52,10 +57,11 @@ test('echter Firebase-8-Client: Abbruch und bestätigte Übernahme mit zwei unab
     assert.equal((await b.db.ref('saves/' + user.uid + '/0').once('value')).val().lvl, 4);
     await b.network.deleteSlot(0);
     assert.equal((await b.db.ref('saves/' + user.uid + '/0').once('value')).val()._deleted, true);
-    await b.network.disconnect();
+    console.log('STEP disconnect B');
+    await timeout(b.network.disconnect());
   } finally {
-    await a.network.disconnect();
-    if (b.network.sessionId) await b.network.disconnect();
-    await Promise.all([a.app.delete(), b.app.delete()]);
+    await timeout(a.network.disconnect()).catch(() => {});
+    if (b.network.sessionId) await timeout(b.network.disconnect()).catch(() => {});
+    await timeout(Promise.all([a.app.delete(), b.app.delete()])).catch(() => {});
   }
 });

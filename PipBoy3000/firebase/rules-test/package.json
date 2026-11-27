@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "firebase emulators:exec --only auth,database --project demo-pipboy --config ../firebase.emulator.json 'node --test session-rules.test.mjs && node --test network-integration.test.mjs'"
+    "test": "firebase emulators:exec --only auth,database --project demo-pipboy --config ../firebase.emulator.json 'node --test session-rules.test.mjs && node --test --test-force-exit network-integration.test.mjs'"
   },
   "dependencies": {
     "@firebase/rules-unit-testing": "3.0.4",
