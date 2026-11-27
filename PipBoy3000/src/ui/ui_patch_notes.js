@@ -33,6 +33,16 @@ window.GameData.offenePunkte = [
 // nicht mit dem, was geplant war.
 window.GameData.RELEASED_PATCHES = [
   {
+    version: '14.0.35',
+    datum: '2026-11-24',
+    title: 'Übersichtliches Pip-Boy-Menü',
+    punkte: [
+      'Inventar, Charakter, Weltkarte, Aufgaben, Wiki und Speichern bleiben direkt erreichbar. Vault Legends, Patch-Notizen, Bug melden und Logout stehen unter SYSTEM.',
+      'Das Wiki enthält jetzt das Handbuch und einen Zugang zum Tutorial. Unfertige Tutorials lassen sich weiterhin über Aufgaben fortsetzen.',
+      'Die Anleitung auf dem Login-Bildschirm bleibt erhalten; das Systemmenü hat einen Zurück-Knopf und unterstützt ESC.'
+    ]
+  },
+  {
     version: '14.0.34',
     datum: '2026-11-24',
     title: 'Update-Fenster korrigiert',

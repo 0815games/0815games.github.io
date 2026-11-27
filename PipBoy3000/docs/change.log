@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v14.0.35 (Übersichtliches Pip-Boy-Menü, 2026-11-24)
+- [MENÜ] Häufige Aktionen direkt im Burger-Menü; Vault Legends, Patch-Notizen, Bug melden und Logout im System-Untermenü. Zurück und ESC führen zur Hauptseite.
+- [WIKI] Handbuch als eigener Reiter aus derselben Datei wie die Login-Anleitung; Tutorial lässt sich dort starten oder fortsetzen und öffnet zuvor die Karte. Die Tutorial-Mission bleibt erhalten.
+- [FIX] Handbuch-Text wird vor der Darstellung escaped; Ladefehler sind wiederholbar und verspätete Antworten überschreiben keinen anderen Wiki-Reiter.
+- [TEST] Echte UI prüft Menüseiten, Overlay-Aktionen, Speichern/Logout, Wiki-Reiter, Handbuch-Ladevorgänge und Tutorial-Fortschritt.
+
 ## v14.0.34 (Update-Fenster korrigiert, 2026-11-24)
 - [FIX] Bestätigter Versionssprung schließt das Update-Fenster automatisch, entfernt die Update-Marker und erfordert keinen zweiten Reload. Ein nicht geladener Zielbuild wird nicht als Erfolg gewertet.
 - [FIX] Versteckte Update-Knöpfe werden auch mit den Action-Button-Styles wirklich ausgeblendet; die Spielsperre wird korrekt aufgehoben.

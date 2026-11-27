@@ -1556,7 +1556,17 @@
       const ziel = this.spielFensterZiel();
       if (ziel && el.parentElement !== ziel) ziel.appendChild(el);
     },
+    menueSeite: function(system) {
+      const main = document.getElementById("menu-main");
+      const unter = document.getElementById("menu-system");
+      const knopf = document.getElementById("btn-menu-system");
+      if (main) main.hidden = !!system;
+      if (unter) unter.hidden = !system;
+      if (knopf) knopf.setAttribute("aria-expanded", String(!!system));
+      if (typeof this.refreshFocusables === "function") this.refreshFocusables();
+    },
     schliesseMenue: function() {
+      this.menueSeite(false);
       const nav = this.els && this.els.navMenu || document.getElementById("main-nav");
       if (nav) {
         nav.classList.add("hidden");
@@ -6382,6 +6392,16 @@
           this.toggleMenu();
         };
       }
+      const systemKnopf = document.getElementById("btn-menu-system");
+      const zurueckKnopf = document.getElementById("btn-menu-back");
+      if (systemKnopf) systemKnopf.onclick = () => {
+        this.menueSeite(true);
+        if (zurueckKnopf) zurueckKnopf.focus();
+      };
+      if (zurueckKnopf) zurueckKnopf.onclick = () => {
+        this.menueSeite(false);
+        if (systemKnopf) systemKnopf.focus();
+      };
       const btnCharHeader = document.getElementById("header-char-info");
       if (btnCharHeader) {
         btnCharHeader.onclick = () => {
@@ -6532,8 +6552,13 @@
         }
         if (Game.state.inDialog) return;
         if (this.els.playerList?.style.display === "flex") this.togglePlayerList();
-        else if (this.els.navMenu && !this.els.navMenu.classList.contains("hidden")) this.toggleMenu();
-        else if (Game.state.view === "city") Game.leaveCity();
+        else if (this.els.navMenu && !this.els.navMenu.classList.contains("hidden")) {
+          const system = document.getElementById("menu-system");
+          if (system && !system.hidden) {
+            this.menueSeite(false);
+            document.getElementById("btn-menu-system")?.focus();
+          } else this.toggleMenu();
+        } else if (Game.state.view === "city") Game.leaveCity();
         else if (["shop", "clinic", "crafting"].includes(Game.state.view)) UI.renderCity?.();
         else if (Game.state.view !== "map") this.switchView("map");
         else this.toggleMenu();
@@ -6703,11 +6728,13 @@
       if (!this.els.navMenu) return;
       const isHidden = this.els.navMenu.classList.contains("hidden");
       if (isHidden) {
+        this.menueSeite(false);
         this.els.navMenu.classList.remove("hidden");
         this.els.navMenu.style.display = "flex";
       } else {
         this.els.navMenu.classList.add("hidden");
         this.els.navMenu.style.display = "none";
+        this.menueSeite(false);
       }
       this.focusIndex = -1;
       this.refreshFocusables();
@@ -7921,7 +7948,7 @@
       ensureButton("wiki-btn-perks", "PERKS", "perks");
       ensureButton("wiki-btn-quests", "QUESTS", "quests");
       const getIcon = (type) => UI.itemTypEmoji(type);
-      const categories = ["monsters", "items", "crafting", "locs", "perks", "quests"];
+      const categories = ["manual", "monsters", "items", "crafting", "locs", "perks", "quests"];
       categories.forEach((cat) => {
         const btn = document.getElementById(`wiki-btn-${cat}`);
         if (btn) {
@@ -7934,6 +7961,23 @@
           }
         }
       });
+      content.dataset.wikiCategory = category;
+      if (category === "manual") {
+        content.innerHTML = `<section class="wiki-handbuch">
+                <div class="wiki-tutorial-box"><div><strong>TUTORIAL</strong><p>Grundlagen lernen oder an deinem gespeicherten Fortschritt weitermachen.</p></div>
+                <button type="button" id="wiki-tutorial-start" class="action-button">TUTORIAL STARTEN / FORTSETZEN</button></div>
+                <div id="wiki-handbuch-text" role="status">Lade Handbuch...</div></section>`;
+        content.querySelector("#wiki-tutorial-start").onclick = () => UI.starteTutorialAusWiki();
+        const ziel = content.querySelector("#wiki-handbuch-text");
+        UI.ladeHandbuch().then((html2) => {
+          if (document.getElementById("wiki-handbuch-text") === ziel && content.dataset.wikiCategory === "manual") ziel.innerHTML = html2;
+        }).catch(() => {
+          if (document.getElementById("wiki-handbuch-text") === ziel && content.dataset.wikiCategory === "manual") {
+            ziel.textContent = "Handbuch konnte nicht geladen werden. Wähle den Reiter erneut, um es noch einmal zu versuchen.";
+          }
+        });
+        return;
+      }
       let html = "";
       if (category === "monsters") {
         const list = Object.values(Game.monsters || {}).sort((a, b) => a.minLvl - b.minLvl);
@@ -8087,6 +8131,11 @@
         }
       }
       content.innerHTML = html;
+    },
+    starteTutorialAusWiki: async function() {
+      const spielstand = Game.state;
+      await UI.switchView("map");
+      if (Game.state === spielstand && spielstand && spielstand.view === "map") UI.starteTutorial();
     },
     renderQuests: function() {
       const list = document.getElementById("quest-list");
@@ -10599,6 +10648,14 @@
       };
       document.addEventListener("keydown", this._eigenerEscHandler);
     },
+    ladeHandbuch: async function() {
+      const verDisplay = document.getElementById("version-display");
+      const ver = verDisplay ? verDisplay.textContent.trim() : Date.now();
+      const res = await fetch(`docs/README.md?v=${ver}`);
+      if (!res.ok) throw new Error("Handbuch nicht verfügbar");
+      const text = await res.text();
+      return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/^### (.*$)/gim, '<h3 class="text-xl font-bold text-green-300 mt-2 mb-1">$1</h3>').replace(/^## (.*$)/gim, '<h2 class="text-2xl font-bold text-green-400 mt-4 mb-2">$1</h2>').replace(/^# (.*$)/gim, '<h1 class="text-3xl font-bold text-yellow-400 mb-2 border-b border-yellow-500">$1</h1>').replace(/\*\*(.*?)\*\*/g, "<b>$1</b>").replace(/\n/g, "<br>");
+    },
     showManualOverlay: async function() {
       const overlay = document.getElementById("manual-overlay");
       const content = document.getElementById("manual-content");
@@ -10620,21 +10677,11 @@
         content.innerHTML = '<div class="text-center animate-pulse">Lade Handbuch...</div>';
         overlay.style.display = "flex";
         overlay.classList.remove("hidden");
-        const verDisplay = document.getElementById("version-display");
-        const ver = verDisplay ? verDisplay.textContent.trim() : Date.now();
         try {
-          const res = await fetch(`docs/README.md?v=${ver}`);
-          if (!res.ok) throw new Error("Manual not found");
-          let text = await res.text();
-          text = text.replace(/^# (.*$)/gim, '<h1 class="text-3xl font-bold text-yellow-400 mb-2 border-b border-yellow-500">$1</h1>');
-          text = text.replace(/^## (.*$)/gim, '<h2 class="text-2xl font-bold text-green-400 mt-4 mb-2">$1</h2>');
-          text = text.replace(/^### (.*$)/gim, '<h3 class="text-xl font-bold text-green-300 mt-2 mb-1">$1</h3>');
-          text = text.replace(/\*\*(.*)\*\*/gim, "<b>$1</b>");
-          text = text.replace(/\n/gim, "<br>");
-          text += '<br><button class="action-button w-full mt-4 border-red-500 text-red-500" onclick="UI.schliesseHandbuch()">SCHLIESSEN (ESC)</button>';
-          content.innerHTML = text;
+          const html = await UI.ladeHandbuch();
+          content.innerHTML = html + '<br><button class="action-button w-full mt-4 border-red-500 text-red-500" onclick="UI.schliesseHandbuch()">SCHLIESSEN (ESC)</button>';
         } catch (e) {
-          content.innerHTML = `<div class="text-red-500">Fehler beim Laden: ${e.message}</div>`;
+          content.textContent = "Fehler beim Laden des Handbuchs. Bitte erneut versuchen.";
         }
       }
     },
@@ -10857,6 +10904,16 @@
     "Befund 8 aus docs/BEFUNDE.md: *.log in .gitignore trifft auch docs/change.log, der build.json-Hash deckt style.css nicht ab, src/admin.js hat keine Tests."
   ];
   window.GameData.RELEASED_PATCHES = [
+    {
+      version: "14.0.35",
+      datum: "2026-11-24",
+      title: "Übersichtliches Pip-Boy-Menü",
+      punkte: [
+        "Inventar, Charakter, Weltkarte, Aufgaben, Wiki und Speichern bleiben direkt erreichbar. Vault Legends, Patch-Notizen, Bug melden und Logout stehen unter SYSTEM.",
+        "Das Wiki enthält jetzt das Handbuch und einen Zugang zum Tutorial. Unfertige Tutorials lassen sich weiterhin über Aufgaben fortsetzen.",
+        "Die Anleitung auf dem Login-Bildschirm bleibt erhalten; das Systemmenü hat einen Zurück-Knopf und unterstützt ESC."
+      ]
+    },
     {
       version: "14.0.34",
       datum: "2026-11-24",

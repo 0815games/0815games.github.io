@@ -34,10 +34,10 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js" crossorigin="anonymous"
             onerror="window.scriptLoadError='firebase-database.js';"></script>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
-    <meta name="pipboy-build" content="14.0.34">
+    <meta name="pipboy-build" content="14.0.35">
     
-    <link rel="stylesheet" href="app.css?v=14.0.34">
-    <link rel="stylesheet" href="style.css?v=14.0.34">
+    <link rel="stylesheet" href="app.css?v=14.0.35">
+    <link rel="stylesheet" href="style.css?v=14.0.35">
     
     <style>
         @keyframes spin-reverse { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
@@ -385,19 +385,24 @@ ${window.logBuffer.slice(-10).join('\n') || '(leer - Fehler trat vor dem ersten 
 
         <div id="main-content">
             <div id="main-nav" class="hidden absolute top-0 right-0 z-[1000] flex-col bg-black border-2 border-[#39ff14] p-2 gap-2 shadow-[0_5px_15px_#000] w-56 max-h-full overflow-y-auto custom-scroll">
-                <button id="btn-inv" class="action-button w-full text-left">INVENTAR</button>
-                <button id="btn-char" class="action-button w-full text-left">CHARAKTER</button>
-                <button id="btn-map" class="action-button w-full text-left">WELT</button>
-                <button id="btn-quests" class="action-button w-full text-left">AUFGABEN</button>
-                <button id="btn-highscores-game" class="action-button w-full text-left" onclick="UI.showHighscoreBoard()">VAULT LEGENDS</button>
-                <button id="btn-wiki" class="action-button w-full text-left">WIKI</button>
-                <button id="btn-manual-game" class="action-button w-full text-left text-yellow-400 border-yellow-400" onclick="UI.showManualOverlay()">HANDBUCH</button>
-                <button id="btn-tutorial-start" class="action-button w-full text-left" onclick="UI.starteTutorial()">TUTORIAL</button>
-                <button id="btn-patch-notes" class="action-button w-full text-left" onclick="UI.showPatchNotes()">PATCH-NOTIZEN</button>
-                <button id="btn-bug-report" class="action-button w-full text-left border-red-500 text-red-400 hover:bg-red-900/20">BUG MELDEN</button>
-                <div class="border-t border-green-900 my-1"></div>
-                <button id="btn-menu-save" class="action-button w-full text-left border-yellow-400 text-yellow-400">SPEICHERN</button>
-                <button id="btn-logout" class="action-button w-full text-left text-red-400 border-red-500">LOGOUT</button>
+                <div id="menu-main" class="menu-seite">
+                    <div class="menu-kopf">PIP-BOY // MENÜ</div>
+                    <button id="btn-inv" class="action-button w-full text-left">INVENTAR</button>
+                    <button id="btn-char" class="action-button w-full text-left">CHARAKTER</button>
+                    <button id="btn-map" class="action-button w-full text-left">WELTKARTE</button>
+                    <button id="btn-quests" class="action-button w-full text-left">AUFGABEN</button>
+                    <button id="btn-wiki" class="action-button w-full text-left">WIKI &amp; HANDBUCH</button>
+                    <button id="btn-menu-save" class="action-button w-full text-left border-yellow-400 text-yellow-400">SPEICHERN</button>
+                    <button id="btn-menu-system" type="button" class="action-button w-full text-left" aria-controls="menu-system" aria-expanded="false">SYSTEM ›</button>
+                </div>
+                <div id="menu-system" class="menu-seite" hidden>
+                    <div class="menu-kopf">PIP-BOY // SYSTEM</div>
+                    <button id="btn-menu-back" type="button" class="action-button w-full text-left">‹ ZURÜCK</button>
+                    <button id="btn-highscores-game" class="action-button w-full text-left" onclick="UI.showHighscoreBoard()">VAULT LEGENDS</button>
+                    <button id="btn-patch-notes" class="action-button w-full text-left" onclick="UI.showPatchNotes()">PATCH-NOTIZEN</button>
+                    <button id="btn-bug-report" class="action-button w-full text-left border-red-500 text-red-400 hover:bg-red-900/20">BUG MELDEN</button>
+                    <button id="btn-logout" class="action-button w-full text-left text-red-400 border-red-500">LOGOUT</button>
+                </div>
                 <div class="text-[10px] text-center text-green-600 mt-1 flex justify-between px-2">
                     <span>v<span id="version-display">...</span></span>
                     <span id="val-players" class="cursor-pointer hover:text-yellow-400">? USER</span>
@@ -638,6 +643,6 @@ ${window.logBuffer.slice(-10).join('\n') || '(leer - Fehler trat vor dem ersten 
     };
 </script>
 
-    <script src="app.js?v=14.0.34"></script>
+    <script src="app.js?v=14.0.35"></script>
 </body>
 </html>

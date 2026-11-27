@@ -226,7 +226,6 @@ test('jedes Burger-Menue-Fenster oeffnet unter dem Header in #main-content und s
     // 2. Alle Unterfenster-Overlays aus dem Burger-Menue
     const unterfenster = [
       {name: 'VAULT LEGENDS', btn: 'btn-highscores-game', fensterId: 'ui-dialog-overlay'},
-      {name: 'HANDBUCH', btn: 'btn-manual-game', fensterId: 'manual-overlay'},
       {name: 'PATCH-NOTIZEN', btn: 'btn-patch-notes', fensterId: 'patch-notes-overlay'},
       {name: 'BUG MELDEN', btn: 'btn-bug-report', fensterId: 'bug-report-overlay'},
       {name: 'SIGNALE (? USER)', btn: 'val-players', fensterId: 'player-list-overlay'}
@@ -235,6 +234,7 @@ test('jedes Burger-Menue-Fenster oeffnet unter dem Header in #main-content und s
     for (const {name, btn, fensterId} of unterfenster) {
       window.UI.toggleMenu();
       assert.equal(istSichtbar(window, nav), true, `${name}: Menue ging nicht auf`);
+      if (btn !== 'val-players') document.getElementById('btn-menu-system').click();
 
       document.getElementById(btn).click();
       await pause(120);
@@ -263,15 +263,15 @@ test('jedes Burger-Menue-Fenster oeffnet unter dem Header in #main-content und s
 
     assert.equal(document.getElementById('btn-navigation'), null, 'Navigation ist kein separater Burger-Menuepunkt mehr');
 
-    // 3. TUTORIAL schliesst ebenfalls das Burger-Menue und laesst kein
-    //    offenes Unterfenster darunter stehen.
-    window.UI.toggleMenu();
-    document.getElementById('btn-tutorial-start').click();
-    await pause(40);
-    assert.equal(istSichtbar(window, nav), false, 'TUTORIAL: Burger-Menue blieb offen');
+    // 3. Tutorial liegt im Wiki-Handbuch und kehrt vor dem Start zur Karte zurück.
+    await window.UI.switchView('wiki');
+    document.getElementById('wiki-btn-manual').click();
+    document.getElementById('wiki-tutorial-start').click();
+    await pause(80);
+    assert.equal(window.Game.state.view, 'map');
+    assert.equal(window.Tutorial.offen, true);
     for (const {fensterId} of unterfenster) {
-      const f = document.getElementById(fensterId);
-      assert.equal(istSichtbar(window, f), false, `TUTORIAL: #${fensterId} blieb darunter offen`);
+      assert.equal(istSichtbar(window, document.getElementById(fensterId)), false, `TUTORIAL: #${fensterId} blieb darunter offen`);
     }
     window.Tutorial.beenden();
 
@@ -689,5 +689,119 @@ test('Lagertruhe hat ein Bild und lagert Items per Oberfläche ein und aus', asy
     buttons=[...document.querySelectorAll('#camp-storage-list button')];
     buttons.find(b=>b.textContent==='ENTNEHMEN').click();
     assert.equal(state.inventory[0].count,3); assert.equal(state.camp.storage.length,0);
+  } finally { await schliesse(); }
+});
+
+test('Burger-Menü zeigt Hauptseite und System-Untermenü mit Zurück und Escape', async () => {
+  const {window, document, schliesse} = await starteEchteOberflaeche({imSpiel:true});
+  try {
+    const nav=document.getElementById('main-nav');
+    const main=document.getElementById('menu-main');
+    const system=document.getElementById('menu-system');
+    const knopf=document.getElementById('btn-menu-system');
+    document.getElementById('btn-menu-toggle').click();
+    assert.equal(window.getComputedStyle(main).display,'flex');
+    assert.equal(window.getComputedStyle(system).display,'none');
+    for(const id of ['btn-inv','btn-char','btn-map','btn-quests','btn-wiki','btn-menu-save','btn-menu-system']) assert.ok(main.contains(document.getElementById(id)), id);
+    assert.equal(document.getElementById('btn-manual-game'),null);
+    knopf.click();
+    assert.equal(window.getComputedStyle(main).display,'none');
+    assert.equal(window.getComputedStyle(system).display,'flex');
+    assert.equal(knopf.getAttribute('aria-expanded'),'true');
+    for(const id of ['btn-highscores-game','btn-patch-notes','btn-bug-report','btn-logout']) assert.ok(system.contains(document.getElementById(id)), id);
+    document.getElementById('btn-menu-back').click();
+    assert.equal(system.hidden,true);
+    assert.equal(knopf.getAttribute('aria-expanded'),'false');
+    knopf.click();
+    document.dispatchEvent(new window.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
+    assert.equal(system.hidden,true, 'Escape führt zur Hauptseite');
+    assert.equal(istSichtbar(window,nav),true);
+    knopf.click();
+    document.getElementById('btn-menu-toggle').click();
+    document.getElementById('btn-menu-toggle').click();
+    assert.equal(system.hidden,true,'Menü startet wieder auf Hauptseite');
+  } finally { await schliesse(); }
+});
+
+test('Wiki integriert das echte Handbuch und behält Bestiarium, Items, Baupläne und Orte', async () => {
+  const {window, document, schliesse} = await starteEchteOberflaeche({imSpiel:true});
+  try {
+    await window.UI.switchView('wiki');
+    document.getElementById('wiki-btn-manual').click();
+    await new Promise(r=>setTimeout(r,100));
+    const inhalt=document.getElementById('wiki-handbuch-text');
+    assert.ok(inhalt);
+    assert.match(inhalt.textContent,/ÖDLAND-ÜBERLEBENSHANDBUCH/);
+    assert.equal(document.getElementById('wiki-btn-manual').classList.contains('bg-green-500'),true);
+    assert.ok(document.getElementById('wiki-tutorial-start'));
+    for(const id of ['monsters','items','crafting','locs','perks','quests']) {
+      document.getElementById(`wiki-btn-${id}`).click();
+      assert.equal(document.getElementById('wiki-content').dataset.wikiCategory,id);
+      assert.equal(document.getElementById(`wiki-btn-${id}`).classList.contains('bg-green-500'),true);
+    }
+  } finally { await schliesse(); }
+});
+
+test('Späte oder gescheiterte Handbuch-Ladevorgänge überschreiben keinen anderen Wiki-Reiter', async () => {
+  const {window, document, schliesse} = await starteEchteOberflaeche({imSpiel:true});
+  try {
+    await window.UI.switchView('wiki');
+    let resolve;
+    window.UI.ladeHandbuch=()=>new Promise(r=>{resolve=r});
+    document.getElementById('wiki-btn-manual').click();
+    document.getElementById('wiki-btn-monsters').click();
+    const vorher=document.getElementById('wiki-content').innerHTML;
+    resolve('VERSPÄTET'); await new Promise(r=>setTimeout(r,0));
+    assert.equal(document.getElementById('wiki-content').innerHTML,vorher);
+    window.UI.ladeHandbuch=()=>Promise.reject(new Error('offline'));
+    document.getElementById('wiki-btn-manual').click();
+    await new Promise(r=>setTimeout(r,0));
+    assert.match(document.getElementById('wiki-handbuch-text').textContent,/nicht geladen/);
+    assert.ok(document.getElementById('wiki-tutorial-start'));
+  } finally { await schliesse(); }
+});
+
+test('Speichern und Logout bleiben nach der Umstrukturierung bedienbar', async () => {
+  const {window, document, schliesse} = await starteEchteOberflaeche({imSpiel:true});
+  try {
+    let save=0, logout=0;
+    window.UI.handleSaveClick=()=>{save++}; window.UI.logout=()=>{logout++};
+    document.getElementById('btn-menu-toggle').click();
+    document.getElementById('btn-menu-save').click();
+    assert.equal(save,1);
+    document.getElementById('btn-menu-system').click();
+    document.getElementById('btn-logout').click();
+    assert.equal(logout,1);
+  } finally { await schliesse(); }
+});
+
+test('Tutorial aus dem Wiki setzt bestehenden Fortschritt nach Rückkehr zur Karte fort', async () => {
+  const {window, document, schliesse} = await starteEchteOberflaeche({imSpiel:true});
+  try {
+    window.Game.saveGame=()=>{};
+    window.Game.state.tutorial='pausiert';
+    window.Game.state.tutorialSchritt=3;
+    await window.UI.switchView('wiki');
+    document.getElementById('wiki-btn-manual').click();
+    document.getElementById('wiki-tutorial-start').click();
+    await new Promise(r=>setTimeout(r,80));
+    assert.equal(window.Game.state.view,'map');
+    assert.equal(window.Game.state.tutorial,'laeuft');
+    assert.equal(window.Game.state.tutorialSchritt,3);
+    assert.match(document.querySelector('[data-tut-titel]').textContent,/DEIN ZEUG/);
+    window.Tutorial.pausieren();
+  } finally { await schliesse(); }
+});
+
+test('Handbuchtext wird als Text formatiert und kann keine HTML-Skripte einschleusen', async () => {
+  const {window, schliesse} = await starteEchteOberflaeche({imSpiel:true});
+  try {
+    const orig=window.fetch;
+    window.fetch=async()=>({ok:true,text:async()=>'## ÜBERSCHRIFT\n<img src=x onerror="evil()">'});
+    const html=await window.UI.ladeHandbuch();
+    window.fetch=orig;
+    assert.match(html,/<h2/);
+    assert.match(html,/&lt;img/);
+    assert.doesNotMatch(html,/<img/);
   } finally { await schliesse(); }
 });

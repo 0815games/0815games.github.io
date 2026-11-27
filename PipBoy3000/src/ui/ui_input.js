@@ -172,6 +172,11 @@ Object.assign(UI, {
             };
         }
 
+        const systemKnopf = document.getElementById('btn-menu-system');
+        const zurueckKnopf = document.getElementById('btn-menu-back');
+        if(systemKnopf) systemKnopf.onclick = () => { this.menueSeite(true); if(zurueckKnopf) zurueckKnopf.focus(); };
+        if(zurueckKnopf) zurueckKnopf.onclick = () => { this.menueSeite(false); if(systemKnopf) systemKnopf.focus(); };
+
         const btnCharHeader = document.getElementById('header-char-info');
         if(btnCharHeader) {
             btnCharHeader.onclick = () => {
@@ -354,7 +359,11 @@ Object.assign(UI, {
             }
             if (Game.state.inDialog) return;
             if(this.els.playerList?.style.display === 'flex') this.togglePlayerList();
-            else if(this.els.navMenu && !this.els.navMenu.classList.contains('hidden')) this.toggleMenu();
+            else if(this.els.navMenu && !this.els.navMenu.classList.contains('hidden')) {
+                const system = document.getElementById('menu-system');
+                if(system && !system.hidden) { this.menueSeite(false); document.getElementById('btn-menu-system')?.focus(); }
+                else this.toggleMenu();
+            }
             else if(Game.state.view === 'city') Game.leaveCity();
             else if(['shop', 'clinic', 'crafting'].includes(Game.state.view)) UI.renderCity?.();
             else if(Game.state.view !== 'map') this.switchView('map');
@@ -536,11 +545,13 @@ Object.assign(UI, {
         if(!this.els.navMenu) return;
         const isHidden = this.els.navMenu.classList.contains('hidden');
         if(isHidden) {
+            this.menueSeite(false);
             this.els.navMenu.classList.remove('hidden');
             this.els.navMenu.style.display = 'flex';
         } else {
             this.els.navMenu.classList.add('hidden');
             this.els.navMenu.style.display = 'none';
+            this.menueSeite(false);
         }
         this.focusIndex = -1;
         this.refreshFocusables();

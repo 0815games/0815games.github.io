@@ -188,7 +188,18 @@ const UI = {
         if (ziel && el.parentElement !== ziel) ziel.appendChild(el);
     },
 
+    menueSeite: function(system) {
+        const main = document.getElementById('menu-main');
+        const unter = document.getElementById('menu-system');
+        const knopf = document.getElementById('btn-menu-system');
+        if(main) main.hidden = !!system;
+        if(unter) unter.hidden = !system;
+        if(knopf) knopf.setAttribute('aria-expanded', String(!!system));
+        if(typeof this.refreshFocusables === 'function') this.refreshFocusables();
+    },
+
     schliesseMenue: function() {
+        this.menueSeite(false);
         const nav = (this.els && this.els.navMenu) || document.getElementById('main-nav');
         if (nav) {
             nav.classList.add('hidden');
