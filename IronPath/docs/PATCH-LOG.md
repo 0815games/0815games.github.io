@@ -292,7 +292,7 @@ Nur Darstellung, kein Sim-State, kein Wire-Format, statisch im Terrain-Cache (Re
 - **Git / PR / Release:** Branch `arena/840f9060-0815games-github-io` ab `f8de8cfb`; Commits `40ba8e6` (Art/Bump/Notes) + `821cfc1` (pr:538), **PR `#538`**, CI `46047353033` grün (erster Lauf `46047345103` nur pr:0-Platzhalter-Rot), **Merge `54442cf0`**, Pages `46048914316` success auf `54442cf0`.
 - **Offen / nächster Schritt:** Betreiber-Sichtprüfung der neuen Platte auf allen fünf Boden-Themen nach hartem Neu-Laden; danach Backlog-Punkte AFK-Popup/„ausgeloggt"-Meldung und Admin-Panel-Vollintegration.
 
-## IPL-0149 – Sitzung: die Inaktivitäts-Karte in jedem Tab, unverschluckbar (Welle `20261121-afkmsg1`, PR `#000`)
+## IPL-0149 – Sitzung: die Inaktivitäts-Karte in jedem Tab, unverschluckbar (Welle `20261121-afkmsg1`, PR `#543`)
 
 - **Zeit / Quelle:** Sitzungsdatum 2026-11-21 UTC; Betreiber-Auftrag (4-Punkte-Nachricht): „richtiges popup bei AFK SEIN und meldung das man ausgeloggt wurde".
 - **Block / Ziel:** Kein Spiel-Block; Sitzungs-/Anmelde-UI. Die Karte selbst stammt aus IPL-0046 (PR `#306`, gemalte PAUSE-IM-FELD-Szene, im Browser-/Handy-Test abgenommen) - dieser Schritt macht sie zuverlässig sichtbar. Keine Mechanik-Änderung:30-Minuten-Frist, Safety-Gates und Wortlaute unverändert.
@@ -303,5 +303,5 @@ Nur Darstellung, kein Sim-State, kein Wire-Format, statisch im Terrain-Cache (Re
   - `IronPath/patch-notes.mjs`: Eintrag `afkmsg1` an die Spitze (pr-Platzhalter bis zur PR-Nummer).
   - Cache-Welle `20261121-afkmsg1` (`bump … --from 20261121-padart1 --apply`,96 Dateien,7/7 Anker).
 - **Prüfung:** `afk-rest`-Suite nach dem Einbau grün (7/7); Gesamtlauf und Endstand mit PR-Nummer werden nachgetragen.
-- **Git / PR / Release:** Branch `arena/840f9060-0815games-github-io` ab `f8de8cfb`; Push, **PR `#000`**, CI, Merge – wird nachgetragen.
+- **Git / PR / Release:** Branch `arena/840f9060-0815games-github-io` ab `f8de8cfb`; Push, **PR `#543`**, CI, Merge – wird nachgetragen.
 - **Offen / nächster Schritt:** Betreiber-Prüfung (inaktiv melden, auch mit zweitem Tab desselben Browsers); danach letzter Backlog-Punkt Admin-Panel-Vollintegration.
