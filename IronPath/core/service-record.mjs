@@ -1,4 +1,4 @@
-import {readArmory} from './armory.mjs?v=20261121-menu1';
+import {readArmory} from './armory.mjs?v=20261121-padart1';
 import {characterProgress} from './progression.mjs?v=20261105-prestige1';
 // Derived from existing saved data: no new profile fields or Firebase rules.
 export function serviceMedals(profile){
