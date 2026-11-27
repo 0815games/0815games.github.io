@@ -1,4 +1,8 @@
-const CACHE='schattengruft-v0.10.2';
+// Der Cache-Name haengt NICHT an der Anzeige-Version. Sonst bliebe ein alter
+// Cache fuer immer liegen, wenn die Version (wie in Phase 5 bewusst) nicht
+// erhoeht wird. Steigt CACHE_REVISION, raeumt activate() die alten Staende weg.
+const CACHE_REVISION=2;
+const CACHE='schattengruft-cache-r'+CACHE_REVISION;
 const SCOPE=new URL(self.registration.scope).pathname;
 self.addEventListener('install',event=>event.waitUntil(self.skipWaiting()));
 self.addEventListener('activate',event=>{event.waitUntil((async()=>{try{const keys=await caches.keys();await Promise.all(keys.filter(k=>k.startsWith('schattengruft-')&&k!==CACHE).map(k=>caches.delete(k)));}catch(error){console.warn('Spielcache konnte nicht bereinigt werden:',error);}await self.clients.claim();})());});

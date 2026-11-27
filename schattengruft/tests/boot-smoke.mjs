@@ -1,6 +1,13 @@
 // Startet den echten Bootstrap (js/main.js) in einem DOM-Stub.
 // Zweck: Erkennen, ob das Spiel nach dem Laden der Module überhaupt hochkommt –
 // genau der Schritt, der am 2026-10-29 ausgefallen ist (TypeError in UIManager).
+//
+// Zusatz (2026-11-27): Das Spiel hing am Handy beim Laden, sichtbar blieb nur
+// das Intro mit „v0.10.2“. Ursache war eine Endlosschleife über Mikrotasks:
+// die 3D-Darstellung schrieb am eigenen Schalter und weckte darüber ihren
+// eigenen MutationObserver. Der Test prüft deshalb zusätzlich, dass ein Start
+// mit gespeicherter 3D-Vorliebe zur Ruhe kommt.
+//
 // Grenze: kein Canvas-/WebGL-/Firebase-Test, nur Bootstrap und API-Bereitstellung.
 
 import assert from 'node:assert/strict';
@@ -16,6 +23,10 @@ const html = await readFile(resolve(root, 'index.html'), 'utf8');
 const byId = new Map();
 const listeners = {};
 const missingIds = [];
+
+// Zaehlt DOM-Schreibvorgaenge, damit die Selbstausloesung messbar wird.
+const mutationState = {pending: 0, takeRecords: 0, observers: []};
+function noteMutation(){ mutationState.pending++; }
 
 class ClassList {
   constructor(el) { this.el = el; this.set = new Set(); }
@@ -34,7 +45,7 @@ class El {
     this.style = {setProperty() {}};
     this.dataset = {};
     this.attrs = {};
-    this.textContent = '';
+    this._text = '';
     this._html = '';
     this.value = '';
     this.disabled = false;
@@ -46,6 +57,13 @@ class El {
     this.className = '';
     if (id) byId.set(id, this);
   }
+  get textContent() { return this._text; }
+  // Wie im Browser: Zuweisung ersetzt den Knoten -> immer eine Mutation.
+  set textContent(value) {
+    this._text = String(value);
+    noteMutation();
+  }
+
   set className(v) {
     this._class = String(v);
     this.classList.set = new Set(String(v).split(/\s+/).filter(Boolean));
@@ -71,7 +89,12 @@ class El {
   setAttribute(k, v) { this.attrs[k] = String(v); if (k === 'id') { this.id = String(v); byId.set(this.id, this); } }
   getAttribute(k) { return this.attrs[k] ?? null; }
   removeAttribute(k) { delete this.attrs[k]; }
-  appendChild(n) { this.children.push(n); if (n) { n.parentNode = this; if (n.id) byId.set(n.id, n); } return n; }
+  appendChild(n) {
+    this.children.push(n);
+    if (n) { n.parentNode = this; if (n.id) byId.set(n.id, n); }
+    noteMutation();
+    return n;
+  }
   append(...n) { n.forEach((x) => this.appendChild(x)); }
   prepend(...n) { this.children.unshift(...n); }
   insertBefore(n) { this.children.push(n); return n; }
@@ -137,7 +160,18 @@ globalThis.document = {
 globalThis.addEventListener = (t, f) => {(listeners[t] ??= []).push(f);};
 globalThis.removeEventListener = () => {};
 globalThis.localStorage = {getItem: () => null, setItem() {}, removeItem() {}};
-globalThis.MutationObserver = class { constructor(f) { this.fn = f; } observe() { return this; } disconnect() {} takeRecords() { return []; } };
+// Browser-treu: nimmt Datensaetze an, takeRecords() liefert und leert sie.
+globalThis.MutationObserver = class {
+  constructor(fn) { this.fn = fn; this.active = false; mutationState.observers.push(this); }
+  observe() { this.active = true; return this; }
+  disconnect() { this.active = false; }
+  takeRecords() {
+    mutationState.takeRecords++;
+    const out = mutationState.pending;
+    mutationState.pending = 0;
+    return new Array(out).fill({});
+  }
+};
 globalThis.ResizeObserver = class { observe() {} unobserve() {} disconnect() {} };
 globalThis.IntersectionObserver = class { observe() {} unobserve() {} disconnect() {} };
 globalThis.matchMedia = () => ({matches: false, addEventListener() {}, addListener() {}});
@@ -191,11 +225,80 @@ const dynamic = new Set([
 const unexpected = [...new Set(missingIds)].filter((id) => !dynamic.has(id));
 assert.deepEqual(unexpected, [], `index.html fehlen IDs, die der Bootstrap sofort braucht: ${unexpected.join(', ')}`);
 
+/* ---------- Zusatz: Start mit gespeichertem 3D (Haenger vom 27.11.) ---------- */
+
+// main.js laedt das 3D-Modul dynamisch nach dem Setzen von window.__rpg.
+// Ohne echtes Warten waere der Test hier blind – deshalb Mikrotasks abarbeiten.
+const tick = () => new Promise((resolve) => setImmediate(resolve));
+for (let i = 0; i < 8; i++) await tick();
+
+// Die 3D-Vorliebe lag beim Nutzer im Speicher. Der Stub oben liefert immer
+// null; hier wird der Merker gesetzt und das Modul frisch geladen.
+globalThis.localStorage = {
+  getItem: (key) => (key === 'schattengruft-3d' ? 'on' : null),
+  setItem() {}, removeItem() {}
+};
+
+const mode = await import(
+  new URL('../js/systems/world3d-mode.js', import.meta.url).href
+);
+mode.reset3DModeForTests();
+
+// Ohne WebGL/CDN bleibt 3D zwar aus, aber der Schalter wird trotzdem
+// dargestellt. Genau dabei lief die Schleife: paint() schreibt am Schalter,
+// der Beobachter sieht es und ruft paint() erneut.
+const fakeRenderer = {
+  active: false,
+  error: false,
+  canvas: null,
+  subscribe() { return () => {}; },
+  setEnabled() {},
+  canvasMoved() {},
+  render() { return false; }
+};
+globalThis.window.__rpg = Object.assign(globalThis.window.__rpg ?? {}, {
+  renderer: Object.assign(globalThis.window.__rpg?.renderer ?? {}, {
+    world3d: fakeRenderer
+  })
+});
+
+mode.install3DMode({ inCombat: false });
+
+// Was der Browser nach einer Mutation tut: Datensaetze zustellen, Callbacks
+// laufen lassen, Mikrotasks abarbeiten. Eine Selbstausloesung endet nie.
+let rounds = 0;
+const LIMIT = 300;
+while (rounds < LIMIT) {
+  const anstehend = mutationState.pending;
+  mutationState.pending = 0;
+  if (!anstehend) break;
+  rounds++;
+
+  // Der Browser uebergibt die Datensaetze an jeden aktiven Beobachter.
+  for (const observer of mutationState.observers) {
+    if (!observer.active) continue;
+    observer.fn([]);
+  }
+  await tick();
+}
+
+assert.ok(
+  rounds < LIMIT,
+  `Start mit 3D laeuft aus (${rounds} Runden ohne Ruhe) – ` +
+  'die 3D-Darstellung weckt sich vermutlich selbst'
+);
+assert.ok(
+  mutationState.takeRecords > 0,
+  'eigene Schreibvorgaenge werden verworfen statt erneut auszuloesen'
+);
+assert.ok(rounds <= 4, `Start wird zuegig ruhig (${rounds} Runden)`);
+
 console.log(JSON.stringify({
-  checks: 5,
-  passed: 5,
+  checks: 6,
+  passed: 6,
   api: Object.keys(globalThis.window.__rpg),
   registeredIds: byId.size,
   dynamicallyBuilt: [...new Set(missingIds)].length,
-  scope: 'Bootstrap von js/main.js im DOM-Stub; kein Canvas-, WebGL-, Firebase- oder Gerätetest.'
+  threeDRounds: rounds,
+  scope: 'Bootstrap von js/main.js im DOM-Stub, auch mit gespeicherter 3D-Vorliebe; kein Canvas-, WebGL-, Firebase- oder Gerätetest.'
 }));
