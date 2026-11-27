@@ -1,14 +1,14 @@
-import {soldierProfile} from '../core/soldier-profile.mjs?v=20261121-pwa1';
+import {soldierProfile} from '../core/soldier-profile.mjs?v=20261121-skills2';
 import {characterProgress} from '../core/progression.mjs?v=20261105-prestige1';
-import {renderRankInsignia,rankForLevel,rankTooltip} from '../core/rank-insignia.mjs?v=20261121-pwa1';
+import {renderRankInsignia,rankForLevel,rankTooltip} from '../core/rank-insignia.mjs?v=20261121-skills2';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
-import {decodeWorkshop} from '../workshop/workshop-wire.mjs?v=20261121-pwa1';
-import {slotOf,RECIPES} from '../workshop/workshop-model.mjs?v=20261121-pwa1';
+import {decodeWorkshop} from '../workshop/workshop-wire.mjs?v=20261121-skills2';
+import {slotOf,RECIPES} from '../workshop/workshop-model.mjs?v=20261121-skills2';
 import {WORKSHOP_CATALOG} from '../workshop/workshop-catalog.mjs?v=20261108-balance2';
 import {PRESTIGE,PRESTIGE_IDS,isPrestige,prestigeEarned} from '../core/prestige.mjs?v=20261112-pressure1';
 import {CAMPAIGN} from '../core/campaign.mjs?v=20261112-pressure1';
-import {readArmory,ITEMS} from '../core/armory.mjs?v=20261121-pwa1';
-import {artOf} from './item-art.mjs?v=20261121-pwa1';
+import {readArmory,ITEMS} from '../core/armory.mjs?v=20261121-skills2';
+import {artOf} from './item-art.mjs?v=20261121-skills2';
 // The Field Dossier is the character hub: the soldier stands between her
 // three loadout slots (paper doll), each card names what she wears and opens
 // an inline picker. Every change goes through the account workshop service -

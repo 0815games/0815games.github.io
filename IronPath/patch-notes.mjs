@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see docs/PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261121-pwa1';
+import {getLanguage} from './language.mjs?v=20261121-skills2';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,17 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'skills2',build:'20261121-skills2',pr:518,
+    title:{en:'Skills · Numbered Chapter Plates, Path A/B Column Headers, Progress Chips',de:'Skills · Nummerierte Kapitel-Plaketten, Pfad-A/B-Spaltenköpfe, Fortschritts-Chips'},
+    shipped:[
+      {en:'The class tree reads as four numbered chapters (01 Training, 02 Specialist paths, 03 Mastery, 04 Class combos), each in its own recessed panel with a brass number plate, a readable purpose line and a progress chip. The two specialist lanes get real column headers (PATH A / PATH B with the specialist name), so doctrines no longer float between the paths. Mechanic untouched: same cards, same states, same draft flow.',de:'Der Klassenbaum liest sich als vier nummerierte Kapitel (01 Training, 02 Spezialistenpfade, 03 Meisterschaft, 04 Klassenkombos), jedes in einem eigenen vertieften Panel mit Messing-Nummernplakette, lesbarem Zweck-Text und Fortschritts-Chip. Die beiden Spezialisten-Spalten echte Spaltenköpfe (PFAD A / PFAD B mit Spezialisten-Namen) — Doktrinen schweben nicht mehr zwischen den Pfaden. Mechanik unberührt: gleiche Karten, gleiche Zustände, gleicher Entwurfsfluss.'},
+      {en:'Cache wave 20261121-skills2.',de:'Cache-Welle 20261121-skills2.'},
+    ],
+    open:[
+      {en:'Hierarchy order of the optics ladder is complete through the skills board; further readability tweaks wait for the operator review.',de:'Hierarchie-Reihenfolge der Optik-Leiter bis zum Fähigkeiten-Brett vollständig; weitere Lesbarkeits-Feinheiten warten auf die Sichtung.'},
+    ]
+  },
   {
     id:'pwa1',build:'20261121-pwa1',pr:514,
     title:{en:'Iron Path · Home-Screen Icon Opens the Game, Not assets/index.html',de:'Iron Path · Home-Screen-Icon öffnet das Spiel, nicht assets/index.html'},

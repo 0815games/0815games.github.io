@@ -74,6 +74,23 @@ assert.ok(branchSection,'class tree renders dual specialist & doctrine branch la
 const branchGrid=branchSection.children[1];
 assert.equal(branchGrid.children.filter(c=>c.dataset?.lane==='a').length,3,'Lane A carries 3 nodes (Specialist + T1 + T2)');
 assert.equal(branchGrid.children.filter(c=>c.dataset?.lane==='b').length,3,'Lane B carries 3 nodes (Specialist + T1 + T2)');
+// IPL-0143: every sub-category is a numbered chapter plate with a progress
+// chip, and the two specialist lanes carry real PATH A / PATH B headers.
+const sections=board.children.filter(n=>n.className?.includes('skill-tree-section'));
+assert.equal(sections.length,4,'four sub-category chapters render');
+assert.deepEqual(sections.map(sec=>sec.children[0].children[0].textContent),['01','02','03','04'],'chapters are numbered in order');
+for(const sec of sections){
+  const heading=sec.children[0];
+  assert.equal(heading.children[1].className,'skill-chapter-title','title box holds title + purpose line');
+  assert.match(heading.children[2].textContent,/^\d+\/\d+$/,'progress chip shows unlocked/total');
+}
+const laneHeads=branchGrid.children.filter(n=>n.className?.includes('skill-lane-head'));
+assert.equal(laneHeads.length,2,'Path A and Path B column headers');
+assert.deepEqual(laneHeads.map(h=>h.children[0].textContent),['Path A','Path B'],'lane headers name the paths');
+assert.ok(laneHeads.every(h=>h.children.length===2),'each header adds the specialist name');
+assert.equal(branchGrid.children[0],laneHeads[0],'headers sit above their columns');
+assert.equal(laneHeads[0].className,'skill-lane-head skill-lane-head--a');
+assert.equal(laneHeads[1].className,'skill-lane-head skill-lane-head--b');
 const chooseDossiers=chooseBoard.children[0].children[1].children.map(shell=>shell.children[0].children[0].children.find(n=>n.tag==='img'));
 assert.equal(chooseDossiers.filter(Boolean).length,6,'all 6 class choice cards show class artwork');
 console.log('V2 two-phase skill tree, 6 class badges and armory illustrations passed.');

@@ -1,8 +1,8 @@
-import {nodeMatches} from '../core/skill-planner.mjs?v=20261121-pwa1';
+import {nodeMatches} from '../core/skill-planner.mjs?v=20261121-skills2';
 // Presentation only: all progression and transactions remain in the existing models.
-import {SKILL_PATHS,SKILL_PATH_MAP,pointsLeft,classNodes,webReady,webRequirement} from '../core/skills.mjs?v=20261121-pwa1';
-import {CAPSTONES} from '../core/skill-combos.mjs?v=20261121-pwa1';
-import {TOWER_CLASS_PATHS} from '../core/tower-class-paths.mjs?v=20261121-pwa1';
+import {SKILL_PATHS,SKILL_PATH_MAP,pointsLeft,classNodes,webReady,webRequirement} from '../core/skills.mjs?v=20261121-skills2';
+import {CAPSTONES} from '../core/skill-combos.mjs?v=20261121-skills2';
+import {TOWER_CLASS_PATHS} from '../core/tower-class-paths.mjs?v=20261121-skills2';
 const NS='http://www.w3.org/2000/svg';
 export const CLASS_COLORS={
   assault:'#d89970',
@@ -40,7 +40,7 @@ function classArtElement(document,classId,cls='class-art-img'){
   const src=CLASS_ARTWORKS[classId];
   if(!src)return null;
   const img=document.createElement('img');
-  img.src=`${src}?v=20261121-pwa1`;
+  img.src=`${src}?v=20261121-skills2`;
   img.alt='';
   img.className=cls;
   img.setAttribute('aria-hidden','true');
@@ -66,6 +66,7 @@ export function towerClassIcon(document,classId,size=26){
 // Phase 2 renders a dedicated branching tree for the selected soldier class.
 export function renderSkillTree({document,container,build,level,selected,onSelect,filter='all',pathFilter='all',inspector=null,inspectorHome=null,translate=(text,values={})=>text.replace(/\{([A-Za-z]+)\}/g,(m,key)=>values[key]??m)}){
   const scrollTop=container.scrollTop,left=pointsLeft(build,level);
+  let chapterNo=0;
   if(inspector&&inspectorHome){inspectorHome.append(inspector);inspector.hidden=true;}
   const board=document.createElement('div');
   board.className='skills-catalogue';
@@ -76,7 +77,8 @@ export function renderSkillTree({document,container,build,level,selected,onSelec
     const heading=document.createElement('div');heading.className='skill-group-heading';
     const h3=document.createElement('h3');h3.textContent=translate('Choose your soldier class');
     const desc=document.createElement('p');desc.textContent=translate(level<2?'Reach soldier level 2 to choose one class and unlock its specialization tree.':'Pick one of six classes to unlock its active ability, focused tree, and class tower path.');
-    heading.append(h3,desc);intro.append(heading);
+    const titleBox=document.createElement('div');titleBox.className='skill-chapter-title';titleBox.append(h3,desc);
+    heading.append(titleBox);intro.append(heading);
     const grid=document.createElement('div');grid.className='skill-card-grid class-picker-grid';
     for(const path of SKILL_PATHS){
       if(pathFilter!=='all'&&pathFilter!==path.id)continue;
@@ -159,11 +161,33 @@ export function renderSkillTree({document,container,build,level,selected,onSelec
 
   function addGroup(title,subtitle,items,treeKind='grid'){
     const visible=items.filter(item=>nodeMatches(build,level,item.path,item.rank,filter,path.id));if(!visible.length)return;
+    chapterNo+=1;
     const section=document.createElement('section'),heading=document.createElement('div'),name=document.createElement('h3'),desc=document.createElement('p'),grid=document.createElement('div');
     section.className=`skill-group skill-tree-section skill-tree--${treeKind}`;section.dataset.skillGroup=path.id;section.style.setProperty('--path-color',CLASS_COLORS[path.id]);
-    heading.className='skill-group-heading';name.textContent=title;desc.textContent=translate(subtitle);heading.append(name,desc);
+    heading.className='skill-group-heading';name.textContent=title;desc.textContent=translate(subtitle);
+    // A numbered brass plate makes each sub-category a scannable chapter; the
+    // chip shows how much of it is unlocked (numbers only, no new copy).
+    const chapter=document.createElement('span');chapter.className='skill-chapter-no';chapter.setAttribute('aria-hidden','true');chapter.textContent=String(chapterNo).padStart(2,'0');
+    const titleBox=document.createElement('div');titleBox.className='skill-chapter-title';titleBox.append(name,desc);
+    const progress=document.createElement('span');progress.className='skill-chapter-progress';
+    progress.textContent=`${visible.filter(item=>item.unlocked).length}/${visible.length}`;
+    heading.append(chapter,titleBox,progress);
     grid.className=`skill-card-grid skill-tree-grid skill-tree-grid--${treeKind}`;
     section.append(heading,grid);board.append(section);
+    // Specialist lanes get real column headers so doctrines sit under a named
+    // path instead of floating between the two branches.
+    if(treeKind==='branches'){
+      for(const [laneIdx,lane] of ['a','b'].entries()){
+        const laneItems=visible.filter(item=>item.lane===lane);
+        if(!laneItems.length)continue;
+        const head=document.createElement('div');head.className=`skill-lane-head skill-lane-head--${lane}`;
+        const laneName=document.createElement('strong');laneName.textContent=translate(laneIdx===0?'Path A':'Path B');
+        head.append(laneName);
+        const specialist=laneItems.find(item=>item.rank===5+laneIdx);
+        if(specialist){const who=document.createElement('span');who.textContent=translate(specialist.title);head.append(who);}
+        grid.append(head);
+      }
+    }
     for(const item of visible){
       const shell=document.createElement('article'),button=document.createElement('button'),top=document.createElement('span'),tag=document.createElement('span'),state=document.createElement('span'),label=document.createElement('strong'),requirement=document.createElement('span');
       const active=item.active,unlocked=item.unlocked,available=item.available,expanded=selected.path===item.path&&selected.rank===item.rank,locked=!active&&!unlocked&&!available;
