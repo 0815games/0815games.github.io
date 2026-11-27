@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see docs/PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261121-menu1';
+import {getLanguage} from './language.mjs?v=20261121-padart1';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -45,6 +45,17 @@ export const PATCH_LABELS=Object.freeze({
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
   {
+    id:'padart1',build:'20261121-padart1',pr:538,
+    title:{en:'Field · Build Pads Re-Issued in the Tower Art Style',de:'Spielfeld · Build Pads im Turm-Stil neu ausgestattet'},
+    shipped:[
+      {en:'Operator backlog item "Optik anpassen beim rest - Build Pads": the emplacement plate under every tower was still the old V2 gunpit while the towers, bunker and all field dressing had already been re-issued in the tower style (wave towerdeco1). The plate is now regenerated in that same language - thick ink contours, painterly concrete slabs, earth-and-stone plinth with sandbags, dark dugout pit - cut out with the established white-to-alpha pipeline and shipped under the same file name. Cache wave 20261121-padart1 so returning players get the new plate too.',de:'Backlog-Punkt des Betreibers „Optik anpassen beim Rest - Build Pads": die Geschützstellungs-Platte unter jedem Turm war noch die alte V2-gunpit, während Türme, Bunker und gesamtes Feld-Dressing längst im Turm-Stil neu ausgestattet waren (Welle towerdeco1). Die Platte ist jetzt in derselben Sprache neu erzeugt - dicke Tusche-Konturen, malerische Betonplatten, Erd-und-Stein-Plinth mit Sandsäcken, dunkler Schützengraben - mit der etablierten Weiß-Alpha-Pipeline freigestellt und unter demselben Dateinamen ausgeliefert. Cache-Welle 20261121-padart1, damit auch wiederkommende Spieler die neue Platte sehen.'},
+      {en:'Pure art swap: no draw-code, handler, id or mechanic changes; the BUILD label, selection ring, level badge and chevrons stay exactly as tested.',de:'Reiner Art-Tausch: keine Zeichen-, Handler-, ID- oder Mechanik-Änderungen; BUILD-Schrift, Auswahlring, Level-Badge und Rangkeile bleiben exakt wie getestet.'},
+    ],
+    open:[
+      {en:'Operator visual check after hard refresh that the new build-pad plate reads correctly on all five ground themes.',de:'Betreiber-Sichtprüfung nach hartem Neu-Laden, dass die neue Build-Pad-Platte auf allen fünf Boden-Themen korrekt wirkt.'},
+    ]
+  },
+  {
     id:'menu1',build:'20261121-menu1',pr:533,
     title:{en:'Command Center · Tidy Two-Column HQ with a Real Gap Above Settings',de:'Kommandozentrale · Aufgeräumtes Zwei-Spalten-HQ mit echter Lücke über den Einstellungen'},
     shipped:[
@@ -52,7 +63,7 @@ export const RELEASED_PATCHES=Object.freeze([
       {en:'Pure layout: no handler, id or feature-gate changes.',de:'Reines Layout: keine Handler-, ID- oder Feature-Gate-Änderungen.'},
     ],
     open:[
-      {en:'Build-pad optics and admin integration follow in the operator backlog.',de:'Build-Pad-Optik und Admin-Integration folgen in der Betreiber-Backlog.'},
+      {en:'Admin integration follows in the operator backlog; build-pad optics shipped with 20261121-padart1.',de:'Die Admin-Integration folgt im Betreiber-Backlog; die Build-Pad-Optik ist mit 20261121-padart1 ausgeliefert.'},
     ]
   },
   {
