@@ -1247,3 +1247,12 @@ Ereignis ergänzt.
 - Tests: `npm test` 189/189 grün. `npm run check` ohne Fehler.
 - Nachweis: Die neuen Tests prüfen die Engine. Die Anzeige in `workersHtml` ist nicht per Test abgedeckt und nicht im Browser geprüft.
 - Offen: Ein Durchlauf im echten Spiel (Haus mit einem Bewohner, Hof, „+“).
+
+### TTT-0076 – Welle 20261127-info1: Stadtlevel-Info, Grund bei gesperrtem Arbeiter-+
+
+- Anlass: Rückmeldung, dass die Erfahrungsleiste nichts tut und das Arbeiter-+ nicht geht. Die Live-Welle `20261126-arbeit1` ist ausgerollt, die Ursache am + ist im Test nicht nachstellbar.
+- Änderung 1: Ein Tipp auf die Stadtlevel-Pille öffnet ein Infofenster (Fortschritt, nächstes Raster, Erfahrungsquellen aus `data/economy.json`). Das Tutorial-Ziel „Stadtlevel“ zählt weiter.
+- Änderung 2: Ist das + gesperrt, steht der Grund daneben („Kein freier Bewohner in diesem Haus“ oder „Betrieb ist voll“).
+- Dateien: `src/main.js` (`openLevelInfo`, Pillen-Klick, `workersHtml`), `src/patch-notes.mjs` (Welle `20261127-info1`, DE/EN), Welle per `scripts/patch.mjs bump --apply`.
+- Tests: `npm test` 189/189 grün. `npm run check` ohne Fehler.
+- Offen: Das + im echten Spiel nicht reproduziert. Genaue Situation vom Nutzer nötig (Anzeige: grau oder aktiv, welcher Text steht bei Haus und Betrieb).

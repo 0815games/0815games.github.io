@@ -4,6 +4,20 @@
 
 export const RELEASED_PATCHES = [
   {
+    build: '20261127-info1',
+    date: '2026-11-27',
+    items: [
+      {
+        de: 'Stadtlevel: Ein Tipp auf die Stadtlevel-Leiste öffnet ein Infofenster mit Fortschritt, nächstem Raster und den Erfahrungsquellen.',
+        en: 'Town level: tapping the town level bar opens an info window with progress, the next grid size and the sources of experience.',
+      },
+      {
+        de: 'Arbeiter: Ist das + gesperrt, steht daneben der Grund (kein freier Bewohner oder Betrieb voll).',
+        en: 'Workers: when + is disabled, the reason is shown next to it (no free resident or building full).',
+      },
+    ],
+  },
+  {
     build: '20261126-arbeit1',
     date: '2026-11-26',
     items: [

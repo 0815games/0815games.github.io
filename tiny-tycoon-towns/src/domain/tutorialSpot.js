@@ -1,6 +1,6 @@
 // Tutorial: ein freies, passendes Feld für ein Gebäude finden. Nur Lesen, verändert den Stand nicht.
-import { HALL, parseKey, isUnlocked } from './grid.js?v=20261126-arbeit1';
-import { checkPlacement } from './placement.js?v=20261126-arbeit1';
+import { HALL, parseKey, isUnlocked } from './grid.js?v=20261127-info1';
+import { checkPlacement } from './placement.js?v=20261127-info1';
 
 /**
  * Das nächste freie Feld am Rathaus, auf dem `buildingId` gebaut werden darf.

@@ -1,7 +1,7 @@
 // DOM-Brücke für die Weltansicht: Canvas, Kamera (Ziehen, Zoom), Tastatur, Animation.
 // Der Spielzustand kommt von außen (main.js). Diese Datei verändert ihn nie.
-import { toScreen } from './iso.js?v=20261126-arbeit1';
-import { renderWorld, pickTile, makeFx, stepFx, produceIcons, coinGain, dayFactor, GRID_SIZE, HALL } from './scene.js?v=20261126-arbeit1';
+import { toScreen } from './iso.js?v=20261127-info1';
+import { renderWorld, pickTile, makeFx, stepFx, produceIcons, coinGain, dayFactor, GRID_SIZE, HALL } from './scene.js?v=20261127-info1';
 
 const DRAG_PX = 6;
 const K_MIN = 0.45;
