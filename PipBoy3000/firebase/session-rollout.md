@@ -54,6 +54,7 @@ Sitzung, beispielsweise ein Backend mit passenden Authentifizierungs-Claims.
    veröffentlichen. Offene alte Tabs vor der Umstellung schließen. Bei
    Problemen kein weiteres Spiel speichern, sondern Backup wiederherstellen.
 
-Es gibt zurzeit **keine fertigen neuen Regeln und keine implementierte
-Sitzungsübernahme**. `database.rules.current.json` enthält nur die vom
-Betreiber bereitgestellten bisherigen Regeln.
+Es gibt einen Client- und Regelentwurf auf dem Arbeitsbranch. Der Regelentwurf
+wurde noch nicht im Firebase-Emulator oder gegen eine Testdatenbank geprüft
+und ist nicht für die produktive Umstellung freigegeben.
+`database.rules.current.json` enthält die bisherigen Regeln.

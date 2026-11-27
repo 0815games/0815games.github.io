@@ -382,8 +382,11 @@ Object.assign(UI, {
         if(this.els.charSlotsList) this.els.charSlotsList.innerHTML = '';
         
         if (!this.deleteSaveSlot) {
-            this.deleteSaveSlot = function(index) {
-                if (typeof Game.deleteSave === 'function') Game.deleteSave(index);
+            this.deleteSaveSlot = async function(index) {
+                if (typeof Network !== 'undefined' && Network.active && Network.myId) {
+                    try { await Network.deleteSlot(index); }
+                    catch (e) { this.els.loginStatus.textContent = 'LÖSCHEN FEHLGESCHLAGEN: ' + e.message; return; }
+                } else if (typeof Game.deleteSave === 'function') Game.deleteSave(index);
                 else {
                     localStorage.removeItem('save_' + index);
                     localStorage.removeItem('slot_' + index);

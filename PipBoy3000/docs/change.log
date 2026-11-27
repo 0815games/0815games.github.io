@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v14.0.36 (Sitzungsübernahme, 2026-11-24)
+- [NEU] Bestehende Sitzung beim Login nach Bestätigung übernehmen; die verdrängte Sitzung beendet das Spiel ohne abschließendes Cloud-Speichern.
+- [SPEICHERN] Sitzungsmarker bei Cloud-Saves und Löschmarkierungen; passende Regeln sind Voraussetzung. Alte Presence wird nicht mehr mit onDisconnect entfernt.
+- [TEST] Sitzungsübernahme und Abbruch mit Netzwerk-Testdoubles. Firebase-Regeln noch nicht im Emulator getestet.
+
 ## v14.0.35 (Übersichtliches Pip-Boy-Menü, 2026-11-24)
 - [MENÜ] Häufige Aktionen direkt im Burger-Menü; Vault Legends, Patch-Notizen, Bug melden und Logout im System-Untermenü. Zurück und ESC führen zur Hauptseite.
 - [WIKI] Handbuch als eigener Reiter aus derselben Datei wie die Login-Anleitung; Tutorial lässt sich dort starten oder fortsetzen und öffnet zuvor die Karte. Die Tutorial-Mission bleibt erhalten.
