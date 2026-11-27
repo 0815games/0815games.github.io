@@ -1292,3 +1292,10 @@ Ereignis ergänzt.
 - Befund: Die Streuung der Stufe-10-Zeit ist noch etwa 4 h (10 bis 14,3 h). Das Korridorfenster ist 2 h. Ein Mittelwert-Hebel reicht nicht.
 - Status: NICHT grün, 8 von 60 außerhalb. Nächster Schritt: Verkaufsbewertung im Bot (Vorrat sitzt immer bei der Reserve von 20, daher blind), und die Karg-Frage (Designentscheidung).
 - Tests: `npm test` siehe Commit.
+
+### TTT-0081 – Versuch: Sättigung je Ware im Bot (verworfen)
+
+- Versuch 1: Wert eines Erzeugers sinkt mit der Zahl schon gebauter Erzeuger derselben Ware (Halbwert bei 6), Vorratsbezug entfernt. Ergebnis: 43 Verstöße. Flussland bleibt bei Stufe 8 stehen.
+- Versuch 2: Sättigung bei 20. Ergebnis: 43 Verstöße, gleiches Muster.
+- Versuch 3: Vorratsbezug beibehalten, Sättigung bei 20 als zusätzlicher Faktor. Ergebnis: 23 Verstöße, Hochland zu schnell (ca. 10 h statt 12), Flussland teils zu langsam.
+- Entscheidung: Alle drei verworfen. Der Stand aus TTT-0080 (8 Verstöße) bleibt. Der Vorrat ist für den Bot ein wichtiges Signal, auch wenn er nahe der Reserve liegt.
