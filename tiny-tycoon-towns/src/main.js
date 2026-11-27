@@ -1312,7 +1312,9 @@ function workersHtml(b, x, y) {
       const free = Math.max(0, pop - boundElsewhere(hk));
       // Warum das + gesperrt ist, steht direkt daneben.
       const blockedWhy = mine < free && n < cfg.workSlots ? '' :
-        (n >= cfg.workSlots ? 'Betrieb ist voll' : 'Kein freier Bewohner in diesem Haus');
+        (n >= cfg.workSlots ? 'Betrieb ist voll'
+          : free === 0 && pop > 0 ? 'Alle Bewohner dieses Hauses sind fest anderen Betrieben zugewiesen. Dort mit − einen lösen.'
+          : 'Kein freier Bewohner in diesem Haus');
       html += `<li class="friend-card"><span>Haus ${hx + 1}, ${hy + 1} · ${pop} Bewohner · ${free} für diesen Betrieb</span>
         <span class="friend-actions">
           <button type="button" class="ghost" data-action="worker" data-tx="${hx}" data-ty="${hy}" data-n="${Math.max(0, mine - 1)}" ${mine > 0 ? '' : 'disabled'} aria-label="Einen Arbeiter weniger">−</button>

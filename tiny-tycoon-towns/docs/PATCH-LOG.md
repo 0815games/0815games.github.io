@@ -1256,3 +1256,9 @@ Ereignis ergänzt.
 - Dateien: `src/main.js` (`openLevelInfo`, Pillen-Klick, `workersHtml`), `src/patch-notes.mjs` (Welle `20261127-info1`, DE/EN), Welle per `scripts/patch.mjs bump --apply`.
 - Tests: `npm test` 189/189 grün. `npm run check` ohne Fehler.
 - Offen: Das + im echten Spiel nicht reproduziert. Genaue Situation vom Nutzer nötig (Anzeige: grau oder aktiv, welcher Text steht bei Haus und Betrieb).
+
+### TTT-0077 – Arbeiter-Hinweis bei voll gebundenem Haus
+
+- Rückmeldung: Haus 4/4 Bewohner, 0 frei, „+“ grau. Ursache: Alle vier sind manuell anderen Betrieben zugewiesen. Das ist so gewollt (manuell vor Automatik), der Hinweis war aber unklar.
+- Änderung: Der Hinweis nennt jetzt den Grund: „Alle Bewohner dieses Hauses sind fest anderen Betrieben zugewiesen. Dort mit − einen lösen.“
+- Tests: `npm test` 189/189 grün. `npm run check` ohne Fehler.
