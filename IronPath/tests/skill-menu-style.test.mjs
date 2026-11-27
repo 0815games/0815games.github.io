@@ -81,6 +81,14 @@ test('desktop rows stay readable: words break and the sidebar stacks under 1100p
   assert.match(css.slice(stackAt,phoneAt),/skills-sidebar\{position:static;width:100%\}/,'sidebar goes full width');
 });
 
+test('owned badges are clear field green; grey stays for locked and available',()=>{
+  // Reported with screenshot: "wieso steht überall 'Freigeschaltet' in grau".
+  assert.match(css,/\.is-unlocked:not\(\.is-active\) \.skill-card-state\{background:#3f7a33;color:#f4ffec\}/,'owned = clear green');
+  assert.match(css,/\.is-locked \.skill-card-state\{background:#35443b;color:#c2cdc1\}/,'locked keeps grey');
+  assert.match(css,/skill-card-state\{display:inline-block;[^}]*background:#2a3a32/,'available keeps the neutral base badge');
+  assert.ok(!css.includes('#456b49'),'the muted olive badge is gone');
+});
+
 test('the phone scroll architecture from the reported fixes stays',()=>{
   assert.match(css,/\/\* Reported: "Bei den Skills hat man 2 Scrollbalken/,'the original scroll report is still documented');
   assert.match(css,/#skillDialog\[open\]\{display:flex;flex-direction:column;overflow:hidden/,'the phone dialog never scrolls itself');

@@ -94,7 +94,7 @@
 #skillDialog .skill-card-tag,#skillDialog .skill-card-state{display:inline-block;padding:4px 7px;border-radius:2px;background:#2a3a32;color:#d5e3d6;font-size:10px;line-height:1.2;font-weight:800;letter-spacing:.06em;font-family:'Arial Narrow','DIN Alternate',Arial,sans-serif;overflow-wrap:break-word}
 #skillDialog .is-main-ability .skill-card-tag{background:#e8c15e;color:#30270e}
 #skillDialog .is-active .skill-card-state{background:#70dfc0;color:#11372d}
-#skillDialog .is-unlocked:not(.is-active) .skill-card-state{background:#456b49;color:#e8f7df}
+#skillDialog .is-unlocked:not(.is-active) .skill-card-state{background:#3f7a33;color:#f4ffec}
 #skillDialog .is-locked .skill-card-state{background:#35443b;color:#c2cdc1}
 #skillDialog .is-locked .skill-card-name{color:#b9c5b9}
 #skillDialog .skill-card-name{font-size:15px;line-height:1.25;overflow-wrap:break-word}

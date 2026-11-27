@@ -6,7 +6,7 @@ aber ersetzt weder Git noch die GitHub-PR-Historie. Die dazugehörige
 [Arbeitsanweisung](../../AGENTS.md) verlangt, dieses Log vor der Arbeit zu lesen
 und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
 
-Die Einträge IPL-0001 bis IPL-0125 stehen im
+Die Einträge IPL-0001 bis IPL-0126 stehen im
 [Archiv](PATCH-LOG-ARCHIV.md); hier stehen die neuesten 20. Beide Dateien
 zusammen sind lückenlos und doppelfrei - `../scripts/patch.mjs` (Unterbefehl `check`) und
 `../tests/patch-log-archive.test.mjs` prüfen das.
@@ -64,17 +64,6 @@ jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderl
 
 
 
-## IPL-0126 – Lebendiges Feld, Ambiente: Wolkschatten, Windgut und Vogelschar (Cache-Welle folgt im selben PR)
-
-- **Zeit / Quelle:** 2026-11-23 UTC; Betreiber nach Sichtung von `IPL-0125`: „Es können wir noch verbessern grafisch“ — als Paket gewählt: **Lebendiges Ambiente** (Wolkschatten, Windgut, aufscheuchende Vögel).
-- **Block / Ziel:** Kein Spiel-Block; reine Darstellung. Keine Simulations-, Snapshot-, Protokoll- oder Regeländerung — die drei Ebenen werden aus Uhr und Schussliste gezeichnet, die jeder Betrachter ohnehin hat; kein neuer Zustand, kein neues Feld auf dem Draht.
-- **Branch / Basis:** `arena/c8f23493-0815games-github-io` ab `ee9daa42eda08c220e3d9d93df56d3b8a914f00d` (`main`, Merge PR `#387`).
-- **Änderungen / Dateien:**
-  - `IronPath/core/cartoon-art.mjs`: Neuer Helfer `ambientAlarm()` (exportiert) — liest die Alarmlage aus der Schussliste (frischester Schuss nach derselben Rechnung wie der Tracer, Lebensdauer minus Snapshot-Alter, plus Schussdichte, geklemmt auf 0…1); ohne Schüsse 0, jede Ansicht startet zum selben Moment. Neue Funktion `ambientLife()`: zwei weiche Wolkschatten ziehen langsam übers Feld, Windgut (Heu/Blätter/Schnee je nach Biome) wirbelt tief übers Terrain, und eine Vogelschar aus sechs Vögeln kreuzt den Himmel — bei frischen Schüssen steigen sie und schlagen schneller (Höhe und Flügelschlag skaliert mit dem Alarm), bei Ruhe gleiten sie. Beides hinter dem bestehenden Wetter-Schalter (`weatherEffects`) und `reducedMotion`.
-  - `IronPath/tests/ambient-life.test.mjs` (neu): `ambientAlarm`-Regel (keine Schüsse → 0, frischer Schuss > 0,5, gealterter Schuss → 0, klammert bei 1, dichtes Feld klammert, alternder Schuss wird leiser); Wolken/Windgut malen mit dem Wetter und schweigen bei Wetter aus und bei reduzierter Bewegung; die Schar steigt bei frischen Schüssen sichtbar (jeder Vogel höher als in der Ruhe-Szene) und die Malerei berührt die Schussliste nie.
-- **Prüfungen:** `ambient-life` 3/3; Nachbar-Harnische (`battle-art-redesign`, `cartoon-art`, `field-visuals`, `tower-heads`, `soldier-motion`, `terrain`, `story-map-art`) 20/20; Schnelltor „Kein Fehler, 2 Hinweis(e)“; Gesamtsuite **1353 Tests, 1352 bestanden, 0 Fehler, 1 übersprungen**.
-- **Git / PR / Release:** Code-Commit + Push, PR `#388`; zweiter Commit: Cache-Welle `20261123-aim5` mit Feldnotizen `aim5` (79 Dateien, Muster `IPL-0104`). CI, Merge und Pages-Auslieferung werden als Ereignis nachgetragen. **Betreiber-Sichtung auf `20261123-aim5`:** Wolkschatten müssen übers Feld ziehen, Windgut muss wirbeln, und beim Schuss muss die Vogelschar auffliegen.
-- **Offen / nächster Schritt:** Reihe „Lebendiges Feld“ vollständig (Scheibe 1 + 2, Feinschliff, mehr Leben, Ambiente). Neue Punkte beschließt der Betreiber.
 
 ## IPL-0127 – Rückbau des entfernten Testprojekts `ironpathtest`
 
@@ -308,3 +297,14 @@ Nur Darstellung, kein Sim-State, kein Wire-Format, statisch im Terrain-Cache (Re
 - **Prüfung:** `skill-menu-style.test.mjs` pinnt Umbruch-Regeln (alle selektierten Selektoren), Lane-Head-Umbruch und Stack-Block vor Phone-Block; Pin-Gruppe 9/0, Suite 1377+2 pr-Platzhalter/1, Schnelltor nur pr-Platzhalter.
 - **Git / PR / Release:** Branch `arena/a1f52e38-0815games-github-io` ab `f9ca23e6`; Push, **PR `#529`**, Suite 1377+2 pr-Platzhalter, CI (`game-regressions`/`interface-browser-smoke`/`database-rules`/party-finalization) — alle Checks grün, **Merge `4c594e3a` auf `main`**. Doku-PR im Anschluss.
 - **Offen / nächster Schritt:** Betreiber-Screenshot zur „Freigeschaltet"-Frage abwarten.
+
+## IPL-0146 – Skills Badge-Farbe: „Freigeschaltet" in klarem Feldgrün statt Oliv-Grau (Welle `20261121-skills5`, PR `#531`)
+
+- **Was:** Screenshot des Betreibers (Logistik Rang 3/3, Stufe 11, 0 Punkte): „wieso steht überall 'Freigeschaltet' in grau wenn ich die Fähigkeit nicht habe?" Analyse:
+  - **Daten korrekt, kein Auto-Grant:** Stufe 11 = `min(17, 10)` = 10 Punkte gesamt; 0 übrig + Rang 3 → **7 Knoten gesetzt**. Schreib-Pfade geprüft: nur die drei Inspector-Buttons (`account.js` UPGRADE/UNLOCK/UNLOCK&SELECT) und der Klassenwahl-Click (`v2;…;1;0;…`) ändern Rang/Bits; Migration schreibt ausschließlich `v2;none`; V2-Regex streng; Tutorial gibt den ersten Punkt bewusst selbst aus (`first-run-ending.mjs`).
+  - **Der echte Fehler war die Farbe:** `UNLOCKED`-Badge nutzte `#456b49`/`#e8f7df` — gedämpftes Oliv-Grau, das wie „deaktiviert/nicht meins" las. **Fix:** Badge `background:#3f7a33;color:#f4ffec` (klar grün, Kontrast ≈4,9:1). Grau bleibt den echten Nicht-Besitz-Zuständen: `GESPERRT` (`#35443b/#c2cdc1`) und `VERFÜGBAR` (Basis `#2a3a32/#d5e3d6`); `✓ AUSGERÜSTET` teal bleibt.
+- **Mechanik unangetastet:** Texte (`FREIGESCHALTET`), Draft/Save/Reset, Punktelogik, Pins.
+- **Desktop-Schnitt (Rückmeldung1):** Fix via IPL-0145 (`20261121-skills4`) live — Wortumbruch + Sidebar-Stapelung ≤1100px; Betreiber soll hart neu laden (Screenshot zeigt Stand mit Scroll-Fold unter der Aktionsleiste).
+- **Prüfung:** Style-Pin auf die neue Badge-Farbe · Suite … · Schnelltor … (vor Merge final).
+- **Git / PR / Release:** Branch `arena/ea2bdfd4-0815games-github-io` ab `cd2f5d06`; Push, **PR `#531`**, CI, Merge – wird nachgetragen.
+- **Offen / nächster Schritt:** Bestätigung nach hartem Neu-Laden, dass die skills4-Desktop-Fixes sichtbar sind.
