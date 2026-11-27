@@ -16,8 +16,7 @@ import { createTown, advance, placeBuilding, upgradeBuilding, plantField, renewF
 import { checkPlacement, fieldsOf, plantableNeighbours, fieldSlots } from '../src/domain/placement.js';
 import { soilOf } from '../src/domain/economy.js';
 import { buildCost, productionMultiplier, storageCap, soilFactor as soilFactorOf } from '../src/domain/economy.js';
-import { BASE_MAP, keyOf, isUnlocked } from '../src/domain/grid.js';
-const GRID = BASE_MAP; // TODO Balance-Schritt: alle Kartengrößen 8 bis 16 durchlaufen
+import { BASE_MAP, START_MAP, MAX_MAP, keyOf, isUnlocked, sizeOf } from '../src/domain/grid.js';
 import { charterGain } from '../src/domain/charters.js';
 import { houseCapacity } from '../src/domain/settlement.js';
 
@@ -98,8 +97,8 @@ function bestAction(s, ctx) {
     const cost = buildCost(id, 0, d);
     if (s.coins < cost.coins || (s.stock[cost.material.resource] ?? 0) < cost.material.amount) continue;
     if (!def.resource) continue; // Lager und Markt: eigene Regel unten
-    for (let y = 0; y < GRID; y++) for (let x = 0; x < GRID; x++) {
-      if (!isUnlocked(x, y, level, d)) continue;
+    for (let y = 0; y < sizeOf(s); y++) for (let x = 0; x < sizeOf(s); x++) {
+      if (!isUnlocked(x, y, level, d, sizeOf(s))) continue;
       const tile = s.tiles[keyOf(x, y)];
       if (!tile || tile.building) continue;
       const place = checkPlacement(s, x, y, id, d);
@@ -121,8 +120,8 @@ function bestAction(s, ctx) {
     const producers = slots / sett.workSlots;
     const freeLand = Object.entries(s.tiles).filter(([k, t]) => !t.building && isUnlocked(...k.split(',').map(Number), level, d)).length;
     if (hAfford && producers >= HOUSE_MIN_PRODUCERS && freeLand > HOUSE_LAND_RESERVE && residents < slots * HOUSE_NEED) {
-      for (let y = 0; y < GRID; y++) for (let x = 0; x < GRID; x++) {
-        if (!isUnlocked(x, y, level, d) || s.tiles[keyOf(x, y)]?.building) continue;
+      for (let y = 0; y < sizeOf(s); y++) for (let x = 0; x < sizeOf(s); x++) {
+        if (!isUnlocked(x, y, level, d, sizeOf(s)) || s.tiles[keyOf(x, y)]?.building) continue;
         if (!checkPlacement(s, x, y, 'house', d).ok) continue;
         return { kind: 'build', id: 'house', x, y, score: 0.5 };
       }
@@ -142,7 +141,7 @@ function bestAction(s, ctx) {
   // Felder der Farm: jedes Feld liefert die Grundrate der Farm.
   const fieldCost = d.economy.fields;
   if (s.coins >= fieldCost.coins && (s.stock[fieldCost.material.resource] ?? 0) >= fieldCost.material.amount) {
-    for (let y = 0; y < GRID; y++) for (let x = 0; x < GRID; x++) {
+    for (let y = 0; y < sizeOf(s); y++) for (let x = 0; x < sizeOf(s); x++) {
       const b = s.tiles[keyOf(x, y)]?.building;
       if (!b || b.id !== 'farm' || fieldsOf(s, x, y).length >= fieldSlots(b.level)) continue;
       const rate = d.buildings.farm.baseRatePerMin * productionMultiplier(s, x, y, 'farm', d);
@@ -156,7 +155,7 @@ function bestAction(s, ctx) {
   // Ausgelaugte Felder erneuern, wenn der Boden unter die Schwelle fällt.
   const renewBelow = d.economy.ecology.soil.renewBelow;
   if (s.coins >= fieldCost.coins && (s.stock[fieldCost.material.resource] ?? 0) >= fieldCost.material.amount) {
-    for (let y = 0; y < GRID; y++) for (let x = 0; x < GRID; x++) {
+    for (let y = 0; y < sizeOf(s); y++) for (let x = 0; x < sizeOf(s); x++) {
       const t = s.tiles[keyOf(x, y)];
       if (!t?.field || soilOf(t) >= renewBelow) continue;
       const farm = t.field.owner.split(',').map(Number);
@@ -168,7 +167,7 @@ function bestAction(s, ctx) {
   }
 
   // Upgrades bestehender Produktion: Gewinn je Stufe / Kosten. Farm: nur wenn alle Felder belegt sind.
-  for (let y = 0; y < GRID; y++) for (let x = 0; x < GRID; x++) {
+  for (let y = 0; y < sizeOf(s); y++) for (let x = 0; x < sizeOf(s); x++) {
     const b = s.tiles[keyOf(x, y)]?.building;
     if (!b || !d.buildings[b.id].resource) continue;
     const def = d.buildings[b.id];
@@ -192,14 +191,14 @@ function bestAction(s, ctx) {
     const markets = Object.values(s.tiles).filter((t) => t.building?.id === 'marketSquare');
     const mcost = buildCost('marketSquare', 0, d);
     if (markets.length === 0 && level >= mk.unlockTownLevel && s.coins >= mcost.coins && (s.stock[mcost.material.resource] ?? 0) >= mcost.material.amount) {
-      for (let y = 0; y < GRID; y++) for (let x = 0; x < GRID; x++) {
-        if (!isUnlocked(x, y, level, d) || s.tiles[keyOf(x, y)]?.building) continue;
+      for (let y = 0; y < sizeOf(s); y++) for (let x = 0; x < sizeOf(s); x++) {
+        if (!isUnlocked(x, y, level, d, sizeOf(s)) || s.tiles[keyOf(x, y)]?.building) continue;
         if (!checkPlacement(s, x, y, 'marketSquare', d).ok) continue;
         consider(0.6, { kind: 'build', id: 'marketSquare', x, y });
         return best;
       }
     }
-    for (let y = 0; y < GRID; y++) for (let x = 0; x < GRID; x++) {
+    for (let y = 0; y < sizeOf(s); y++) for (let x = 0; x < sizeOf(s); x++) {
       const b = s.tiles[keyOf(x, y)]?.building;
       if (!b || b.id !== 'marketSquare' || b.level >= mk.maxLevel) continue;
       const uc = buildCost('marketSquare', b.level, d);
@@ -216,8 +215,8 @@ function bestAction(s, ctx) {
     const wh = d.buildings.warehouse;
     const cost = buildCost('warehouse', 0, d);
     if (s.coins >= cost.coins && (s.stock[cost.material.resource] ?? 0) >= cost.material.amount) {
-      for (let y = 0; y < GRID; y++) for (let x = 0; x < GRID; x++) {
-        if (!isUnlocked(x, y, level, d) || s.tiles[keyOf(x, y)]?.building) continue;
+      for (let y = 0; y < sizeOf(s); y++) for (let x = 0; x < sizeOf(s); x++) {
+        if (!isUnlocked(x, y, level, d, sizeOf(s)) || s.tiles[keyOf(x, y)]?.building) continue;
         if (!checkPlacement(s, x, y, 'warehouse', d).ok) continue;
         consider(0.5, { kind: 'build', id: 'warehouse', x, y });
         return best;
@@ -236,10 +235,10 @@ function previewMultiplier(s, x, y, id, mode, d) {
 }
 
 /** Eine Simulation eines Bioms. Gibt Meilensteine zurück. */
-export function simulate({ biome, days }) {
+export function simulate({ biome, days, mapSize = BASE_MAP, seed = 1234 }) {
   let now = 0;
   const ctx = { data, maxElapsedSec: data.economy.offline.baseCapHours * 3600, dateKey: null };
-  let state = createTown({ name: 'Sim', biome, seed: 1234, now, data });
+  let state = createTown({ name: 'Sim', biome, seed, now, data, mapSize });
 
   const m = {
     firstBuildWall: null,
@@ -301,8 +300,21 @@ export function simulate({ biome, days }) {
   }
 
   const wallH = (ms) => (ms === null ? null : ms / HOUR);
+  // Diagnose: wie viel Land im freigeschalteten Bereich frei und nutzbar ist, und was der Vorrat ist.
+  const open = { meadowFree: 0, forest: 0, rock: 0, water: 0, sand: 0, mountain: 0 };
+  for (let y = 0; y < sizeOf(state); y++) for (let x = 0; x < sizeOf(state); x++) {
+    if (!isUnlocked(x, y, state.townLevel, data, sizeOf(state))) continue;
+    const t = state.tiles[keyOf(x, y)];
+    if (t.building) continue;
+    if (t.terrain === 'meadow') open.meadowFree++;
+    else if (open[t.terrain] !== undefined) open[t.terrain]++;
+  }
+  const diag = { open, stock: Object.fromEntries(Object.entries(state.stock).map(([k, v]) => [k, Math.floor(v)])), townXp: Math.floor(state.townXp) };
   return {
     biome,
+    mapSize,
+    seed,
+    diag,
     buildings: countBuildings(state),
     townLevel: state.townLevel,
     coins: Math.floor(state.coins),
@@ -337,34 +349,59 @@ function inCorridor(key, v) {
   return true;
 }
 
+// Szenarien: jede Kartengröße (8 bis 16, Schritt 2), jedes Biom, drei Startseeds.
+const SIZES = [8, 10, 12, 14, 16];
+const SEEDS = [1234, 777, 2024];
+
+function argValue(name, fallback) {
+  const i = process.argv.indexOf(name);
+  return i > -1 ? process.argv[i + 1] : fallback;
+}
+
 function main() {
-  const argDays = process.argv.indexOf('--days');
-  const days = argDays > -1 ? Number(process.argv[argDays + 1]) : 30;
+  const days = Number(argValue('--days', 30));
   if (!Number.isInteger(days) || days < 1 || days > 365) {
     console.error('--days muss zwischen 1 und 365 liegen');
     process.exit(2);
   }
-  const rows = BIOMES.map((biome) => simulate({ biome, days }));
+  const sizes = argValue('--sizes', SIZES.join(',')).split(',').map(Number);
+  const seeds = Number(argValue('--seeds', SEEDS.length));
+  const useSeeds = SEEDS.slice(0, seeds);
+  const stress = process.argv.includes('--stress');
+
+  console.log(`Balance-Simulation: ${days} Tage, 2 × 15 min aktiv pro Tag, Offline-Obergrenze ${data.economy.offline.baseCapHours} h`);
+  console.log(`Szenarien: Karten ${sizes.join(', ')} × Biome ${BIOMES.length} × Seeds ${useSeeds.length}\n`);
+
   let failed = 0;
-  for (const r of rows) failed += r.violations;
-  console.log(`Balance-Simulation: ${days} Tage, 2 × 15 min aktiv pro Tag, Offline-Obergrenze ${data.economy.offline.baseCapHours} h\n`);
-  for (const r of rows) {
-    console.log(`Biom ${r.biome}: ${r.buildings} Gebäude, Stadtlevel ${r.townLevel}, Münzen ${r.coins}, Gesamtertrag ${r.lifetimeCoins}`);
-    for (const key of Object.keys(CORRIDOR)) {
-      const v = r[key];
-      const ok = inCorridor(key, v);
-      if (!ok) failed++;
-      console.log(`  ${ok ? 'ok ' : 'AUS'}  ${CORRIDOR[key].label}: ${fmt(v)}  (Korridor ${CORRIDOR[key].min ?? 0} bis ${CORRIDOR[key].max})`);
+  let violations = 0;
+  const worst = {}; // key -> { size, biome, value, seed }
+  for (const size of sizes) {
+    for (const biome of BIOMES) {
+      for (const seed of useSeeds) {
+        const r = simulate({ biome, days, mapSize: size, seed });
+        violations += r.violations;
+        const line = [];
+        for (const key of Object.keys(CORRIDOR)) {
+          const v = r[key];
+          const ok = inCorridor(key, v);
+          if (!ok) failed++;
+          line.push(`${ok ? 'ok ' : 'AUS'} ${fmt(v)}`);
+          const bad = !ok ? 'AUS' : 'ok';
+          const prev = worst[`${size}|${key}`];
+          if (!prev || !ok || (v !== null && prev.value !== null && Math.abs(v - CORRIDOR[key].target ?? 0) > Math.abs(prev.value - (CORRIDOR[key].target ?? 0)))) {
+            worst[`${size}|${key}`] = { size, key, value: v, seed, biome, bad };
+          }
+        }
+        console.log(`Karte ${size} · ${biome} · Seed ${seed}: Gebäude ${r.buildings}, Stufe ${r.townLevel}, Gesamtertrag ${r.lifetimeCoins}, Verstöße ${r.violations}`);
+        console.log(`   ${line.join(' | ')}`);
+        if (process.argv.includes('--diag')) console.log(`   Diagnose: ${JSON.stringify(r.diag)}`);
+      }
     }
-    console.log(`  --   Diagnose: Stadtlevel 10 nach ${fmt(r.level10ActiveHours)} h aktiv (Kalender ${fmt(r.level10WallHours)} h), 100.000 Gesamtertrag nach ${fmt(r.coins100kHours)} h Kalenderzeit`);
   }
-  for (const r of rows) if (r.violations) console.log(`Invariante verletzt in ${r.biome}: ${r.violations} Mal`);
-  console.log('\nNicht simuliert: Händlerpreis (4.17), Perk-Punkte in 2 bis 4 Wochen, Offline-Obergrenze als Spürbarkeit.');
-  if (failed > 0) {
-    console.log(`\n${failed} Meilenstein(e) außerhalb des Korridors.`);
-    process.exit(1);
-  }
-  console.log('\nAlle geprüften Meilensteine im Korridor.');
+  console.log(`\nInvarianten verletzt: ${violations}`);
+  console.log(`Meilensteine außerhalb des Korridors: ${failed}`);
+  if (failed > 0 || violations > 0) process.exit(1);
+  console.log('\nAlle geprüften Meilensteine im Korridor, keine Invariante verletzt.');
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) main();

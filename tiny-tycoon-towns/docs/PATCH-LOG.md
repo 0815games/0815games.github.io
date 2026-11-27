@@ -1273,3 +1273,13 @@ Ereignis ergänzt.
 - Dateien: `src/domain/grid.js`, `terrain.js`, `engine.js`, `economy.js`, `placement.js`, `tutorialSpot.js`, `src/main.js`, `src/admin.js`, `src/world/scene.js`, `src/world/board.js`, `firebase/database.rules.json`, `src/patch-notes.mjs`, Welle `20261127-karten1`.
 - Tests: `npm test` mit neuem `tests/mapsize.test.mjs` grün. `npm run check` ohne Fehler.
 - Offen: Die Freischaltung innerhalb der Karte folgt weiter `gridSizeByTownLevel` (max. 10 × 10). Auf 12 bis 16 großen Karten bleibt damit ein Rand gesperrt. Die Balance (Schritt 2 des Auftrags) ist noch nicht gemacht. Der Browser-Test ist noch nicht gemacht.
+
+### TTT-0079 – Balance-Simulation über alle Kartengrößen (Teilstand)
+
+- Anlass: Nutzer-Auftrag „mach alles fertig“ (Balance und Stresstest über alle Karten und Szenarien).
+- Szenarien: Karten 8, 10, 12, 14, 16 × Biome 4 × Seeds 3, je 30 Tage (`node scripts/simulate-balance.mjs --days 30`). Diagnose mit `--diag`.
+- Befund 1 (behoben): Auf großen Küstenkarten lag das Wasser außerhalb des freischaltbaren Bereichs. Ohne Fischerei und Salz blieb der Bot bei 28 Gebäuden auf Stufe 4 hängen. Fix: die Küste rückt auf Karten über 10 Feldern nach innen (Versatz `floor((n-10)/2)`). Auf 10×10 unverändert.
+- Befund 2 (behoben): Viele Karten hatten fast keinen Fels und Berg, also keinen Stein und kein Eisen. Die Wirtschaft stand (z. B. 10×10 Wald, Seed 777: Stufe 9 nach 30 Tagen). Fix: im freischaltbaren Bereich (ohne Startfläche) mindestens 6 Fels und 3 Berg (`ensureRing`). Bei 10×10 ändert sich dadurch das Gelände neuer Städte; bestehende Städte bleiben unverändert.
+- Befund 3 (offen): Die Zeit bis Stufe 10 streut stark nach Seed und Biom (ca. 8 bis 15 h), das Ziel ist 11 bis 13 h. Ein einzelner Stellhebel (Schwelle `townLevelThresholds[9]`, XP-Faktor `riverlands`) verschiebt das Mittel, aber nicht die Streuung. Stand bester Lauf: 12 Verstöße von 60 Szenarien. Die Ausgangswirtschaft hat mit den Terrain-Fixes 19 Verstöße.
+- Status: NICHT grün. Die Wirtschaft ist nicht fertig nachjustiert. Nächster Schritt: Ursache der Streuung im Bot oder in der Startphase finden, nicht nur Zahlen verschieben.
+- Tests: `npm test` 197/197 grün.

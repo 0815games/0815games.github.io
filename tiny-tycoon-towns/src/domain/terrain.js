@@ -40,14 +40,17 @@ export function generateTerrain(biome, seed, size = BASE_MAP) {
     }
     case 'coast': {
       // Sea on one side, a sandy shore just inside it.
+      // Auf großen Karten rückt die Küste nach innen, damit das Wasser im freischaltbaren Bereich liegt
+      // (Mitte 10 × 10). Auf 10 × 10 und kleiner bleibt sie am Rand wie bisher.
+      const off = Math.max(0, Math.floor((G.n - 10) / 2));
       const left = rnd() < 0.5;
       for (let y = 0; y < G.n; y++) {
         const wobble = rnd() < 0.3 ? 1 : 0;
         for (let i = 0; i < 2 + wobble; i++) {
-          const x = left ? i : G.n - 1 - i;
+          const x = left ? i + off : G.n - 1 - off - i;
           g[y][x] = 'water';
         }
-        const sx = left ? 2 + wobble : G.n - 3 - wobble;
+        const sx = left ? 2 + wobble + off : G.n - 3 - wobble - off;
         g[y][sx] = 'sand';
       }
       scatter(g, rnd, 0.05, 'forest');
@@ -67,9 +70,35 @@ export function generateTerrain(biome, seed, size = BASE_MAP) {
   // Startlayout entschärfen: nicht zu viel Wasser, genug Wiese für Farmen.
   limitStartWater(g, 4);
   ensureStartMeadow(g, 12);
+  // Stein und Eisen: im freischaltbaren Bereich mindestens so viel Fels und Berg, dass Steinbruch und Mine Arbeit haben.
+  ensureRing(g, rnd, 'rock', 6);
+  ensureRing(g, rnd, 'mountain', 3);
 
   g[G.hy][G.hx] = 'meadow';
   return g;
+}
+
+/**
+ * Der größte freischaltbare Bereich (10 × 10 um das Rathaus, auf der Karte) ohne die Startfläche.
+ * Dort werden fehlende Fels- und Bergkacheln als Wiese umgewandelt, bis `min` erreicht ist.
+ */
+function ensureRing(g, rnd, terrain, min) {
+  const x0 = Math.max(0, G.hx - 4), x1 = Math.min(G.n - 1, G.hx + 5);
+  const y0 = Math.max(0, G.hy - 4), y1 = Math.min(G.n - 1, G.hy + 5);
+  const inStart = (x, y) => Math.abs(x - G.hx) <= 2 && Math.abs(y - G.hy) <= 2;
+  const cells = [];
+  for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+    if (!inStart(x, y)) cells.push([x, y]);
+  }
+  const have = cells.filter(([x, y]) => g[y][x] === terrain).length;
+  let need = min - have;
+  const meadows = cells.filter(([x, y]) => g[y][x] === 'meadow');
+  while (need > 0 && meadows.length) {
+    const i = Math.floor(rnd() * meadows.length);
+    const [x, y] = meadows.splice(i, 1)[0];
+    g[y][x] = terrain;
+    need--;
+  }
 }
 
 function scatter(g, rnd, prob, terrain) {
