@@ -295,7 +295,7 @@ Nur Darstellung, kein Sim-State, kein Wire-Format, statisch im Terrain-Cache (Re
 - **Git / PR / Release:** Branch `arena/ea2bdfd4-0815games-github-io` ab `cd2f5d06`; Push, **PR `#531`**, Suite 1378+2 pr-Platzhalter, CI (`game-regressions`/`interface-browser-smoke`/`database-rules`/party-finalization) — alle Checks grün, **Merge `c9309f27` auf `main`**. Doku-PR im Anschluss.
 - **Offen / nächster Schritt:** Bestätigung nach hartem Neu-Laden, dass die skills4-Desktop-Fixes sichtbar sind.
 
-## IPL-0147 – Hauptmenü: aufgeräumtes Zwei-Spalten-HQ, echte Lücke über den Einstellungen (Welle `20261121-menu1`, PR `#—`)
+## IPL-0147 – Hauptmenü: aufgeräumtes Zwei-Spalten-HQ, echte Lücke über den Einstellungen (Welle `20261121-menu1`, PR `#533`)
 
 - **Was:** Rückmeldung des Betreibers („Hauptmenü passt immer noch nicht ! WICHTIG. Alles sauber hinrücken. Viel platz über den 3 Spielmodi, lücke unter waffen freunde bestenliste zu einstellungen buttons hin."):
   1. **Linke Schiene als eigene Spalte:** SOLDAT-Karte, Schnellaktionen (Waffen/Fähigkeiten/Freunde/Bestenliste), SETTINGS/SIGN OUT und die Speicherzeilen stecken jetzt in `.command-home-side` (eigene Flex-Spalte, `grid-row:1/span 12`) — die alte zeilenfeste Platzierung (`utilities=row4`) kippte, sobald Resume/Ergebnis/Feldschule zusätzliche Zeilen belegten.
@@ -304,5 +304,5 @@ Nur Darstellung, kein Sim-State, kein Wire-Format, statisch im Terrain-Cache (Re
   4. Rechte Spalte (Kopf/Resume/Modi/Ergebnis/Feldschule) räumt automatisch in Spalte2 ein — keine expliziten `grid-row` mehr. Mobil (≤859px) behält den Flex-Stapel (Reihenfolge: Soldat → Aktionen → Einstellungen → Einsatzkopf → Modi).
 - **Pins respektiert:** `command-home-layout` bleibt `minmax(0,1fr)` (Test „single column - no side dossier"), Dokumentreihenfolge `card<actions<head<modes` ✓, Utilities-Content `[menuSettings,menuLogout]` ✓ (Test), Resume<Modi<Results ✓, SHOW-TASK-Pille bleibt rechts (kein Overlap) ✓, Handler/IDs unverändert.
 - **Prüfung:** neue Struktur-/Abstands-Pins · Suite … · Schnelltor … (vor Merge final).
-- **Git / PR / Release:** Branch `arena/e8c58d12-0815games-github-io` ab `716dc9d6`; Push, PR `#—`, CI, Merge – wird nachgetragen.
+- **Git / PR / Release:** Branch `arena/e8c58d12-0815games-github-io` ab `716dc9d6`; Push, **PR `#533`**, CI, Merge – wird nachgetragen.
 - **Offen / nächster Schritt:** Betreiber-Backlog danach: Build-Pad-Optik, AFK-Popup/Logout-Meldung, Admin-Integration.
