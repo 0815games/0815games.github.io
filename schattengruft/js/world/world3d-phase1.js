@@ -163,11 +163,14 @@ body:not(.world3d-combat) #combat-stage{display:none}
  };
 
  function show(active){
-  if(state3d.active===active&&api.active===active){
-   /* unveraendert */
-  }
+  if(state3d.active===active)return;
+
+  // Nur state3d setzen. `api.active` ist ein reiner Getter (siehe unten) und
+  // leitet daraus ab. Früher wurde hier zusätzlich `api.active=active`
+  // geschrieben – das wirft im Strict Mode von ES-Modulen einen TypeError.
+  // Der Fehler passierte in render() vor dem Zeichnen: Der Bildschirm blieb
+  // auf dem Handy schwarz, ohne dass die 2D-Karte erschien.
   state3d.active=active;
-  api.active=active;
 
   const opacity=active?'0':originalOpacity;
   if(stage.style.opacity!==opacity)stage.style.opacity=opacity;
