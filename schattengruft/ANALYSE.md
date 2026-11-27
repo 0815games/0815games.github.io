@@ -10,7 +10,7 @@
 > veraltete Doku und `rpg/`-Pfade (§5f) und die zwei wirkungslosen Workflows (§5g).
 > Ergänzt: `html-assets.mjs`, `boot-smoke.mjs`, `name-escaping.mjs` und der CI-Workflow
 > `schattengruft-tests.yml`. Stand: **22 Suiten, 22 grün**, 73 Module, alle erreichbar.
-> **Weiter offen:** fehlende Firebase-Regeln (§7), Versionspflege an sechs Stellen (§5e) und
+> **Weiter offen:** Versionspflege an sechs Stellen (§5e) und
 > die fragile Patch-Kette (§5d). Die Abschnitte unten beschreiben den Zustand *vor* der Behebung.
 
 ---
@@ -296,7 +296,7 @@ Deutlich über dem Niveau typischer Hobby-Browser-Spiele:
 | Punkt | Bewertung |
 |---|---|
 | Firebase-Web-Config im Code | Normal für Firebase (keine Secrets). Projekt `rpg01-793eb`, RTDB `europe-west1`. |
-| **Fehlende Security-Regeln im Repo** | **Offen.** Die App nutzt `dark_rpg/saves`, `dark_rpg/leaderboard`, `dark_rpg/sessions`, es liegt aber **keine** `database.rules.json` mehr im Repository (der Root-Eintrag wurde beim Aufräumen am 2026-10-29 entfernt). Regeln sind damit nicht auditierbar. |
+| **Security-Regeln im Repo** | **Geschlossen.** Die Regeln liegen als `firebase/database.rules.json` im Repository (seit 2026-11-27) und sind damit auditierbar und versioniert. Sie decken `dark_rpg/saves`, `dark_rpg/sessions` und `dark_rpg/leaderboard`. Wichtiger Hinweis: die `leaderboard`-`.validate`-Regel verlangt `player.heroClass` im Spielstand, die `saves`-`player.validate` führt `heroClass` aber nicht in `hasChildren`. Extra-Kinder sind ohne `$other: false` erlaubt, also technisch möglich – aber wenn der Client `heroClass` nicht in den Save schreibt, scheitern Leaderboard-Schreibzugriffe. |
 | **HTML-Injection über Heldnamen** | **Vorhanden, niedrig.** `index.html` begrenzt per `maxlength="16"`, aber `renderSlots()` (`js/main.js:52`) setzt `${p.name}` per `innerHTML` ein, ohne Escaping. Ein manipulierter Spielstand (Konsole/RTDB) könnte Markup einschleusen. `hud()` nutzt korrekt `textContent`. |
 | Auth | Firebase E-Mail/Passwort v8.10.1, `Persistence.NONE` (kein „angemeldet bleiben“), Fehlermeldungen sauber gemappt. |
 | Passwort-Mindestlänge | 6 Zeichen (Firebase-Default, schwach, aber bewusst). |
@@ -352,9 +352,11 @@ Weltgrafik 0.8.0 und 3D-Phasen 1–4.
 **Mittelfristig (Tage)**
 6. `schattengruft/game/js/` (16 Module) und die 11 unreachable Module in `js/` löschen – nach einem
    `grep`-Nachweis, dass nichts mehr darauf zeigt. Vorher im `change.log` dokumentieren.
-7. Firebase-Regeln für `dark_rpg/**` ins Repo legen (`schattengruft/firebase/database.rules.json`)
-   und dokumentieren: `saves/{uid}` nur für `auth.uid === uid`, `leaderboard` lesbar/„write-once“-artig,
-   `sessions` transaktional.
+7. **Erledigt (2026-11-27):** Firebase-Regeln für `dark_rpg/**` liegen im Repo unter
+   `schattengruft/firebase/database.rules.json` und sind in der Tabelle oben dokumentiert.
+   `saves/{uid}` ist nur für `auth.uid === uid` lesbar, `sessions` transaktional, `leaderboard`
+   „write-once“-artig und liesbar mit limitToLast ≤ 50. Bei Änderungen an Datenmodellen
+   diese Regeln mit anpassen – es ist die einzige auditierbare Quelle.
 8. `change.log` chronologisch ordnen (neueste zuerst), `to-do.md` auf v0.10.2 ziehen,
    alle 13 `rpg/`-Verweise auf `schattengruft/` umstellen, die zwei toten Workflows löschen.
 9. Patch-Kette in `version.js` durch explizite Registrierung ersetzen (z. B. `installX()`-Aufrufe in
@@ -371,8 +373,10 @@ Weltgrafik 0.8.0 und 3D-Phasen 1–4.
 - **Die Live-Auslieferung** wurde per Abruf von `index.html`, `game/js/main.js`, `js/main.js`,
   `js/systems/mobile.js` geprüft (GitHub Pages baut aus `main`, Status `built`). `http/tls`-Direktabruf
   aus der Sandbox scheiterte an TLS; die Abrufe erfolgten über den Seiten-Fetcher.
-- **Firebase-Verhalten** (Regeln, Auth-Domain-Freigaben, tatsächliche Lese-/Schreibrechte) ist
-  ungeprüft – ohne Regeln im Repo auch nicht statisch prüfbar.
+- **Firebase-Verhalten** (Auth-Domain-Freigaben, tatsächliche Lese-/Schreibrechte) ist
+  ungeprüft. Die Regeln liegen seit 2026-11-27 im Repo (`firebase/database.rules.json`),
+  können also statisch geprüft werden – eine Laufzeit-Abnahme der realistischen
+  Datenpakete steht aber noch aus.
 - **Keine Aussage zur Balance** (Kurven wirken plausibel: +24 % TP/+18 % ATK pro Ebene, EP +12 %,
   Gold +8 %, Boss alle 5 Ebenen). Ohne Spieltests ist das nicht bewertbar.
 - Es wurden **keine Dateien des Spiels verändert**; dieses Dokument ist die einzige neue Datei.
