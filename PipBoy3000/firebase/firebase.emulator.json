@@ -1,4 +1,17 @@
 {
-  "database": {"rules": "database.rules.session-candidate.json"},
-  "emulators": {"database": {"port": 9000}, "ui": {"enabled": false}, "singleProjectMode": true}
+  "database": {
+    "rules": "database.rules.session-candidate.json"
+  },
+  "emulators": {
+    "database": {
+      "port": 9000
+    },
+    "ui": {
+      "enabled": false
+    },
+    "singleProjectMode": true,
+    "auth": {
+      "port": 9099
+    }
+  }
 }
