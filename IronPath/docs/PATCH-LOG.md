@@ -305,6 +305,6 @@ Nur Darstellung, kein Sim-State, kein Wire-Format, statisch im Terrain-Cache (Re
   - **Der echte Fehler war die Farbe:** `UNLOCKED`-Badge nutzte `#456b49`/`#e8f7df` — gedämpftes Oliv-Grau, das wie „deaktiviert/nicht meins" las. **Fix:** Badge `background:#3f7a33;color:#f4ffec` (klar grün, Kontrast ≈4,9:1). Grau bleibt den echten Nicht-Besitz-Zuständen: `GESPERRT` (`#35443b/#c2cdc1`) und `VERFÜGBAR` (Basis `#2a3a32/#d5e3d6`); `✓ AUSGERÜSTET` teal bleibt.
 - **Mechanik unangetastet:** Texte (`FREIGESCHALTET`), Draft/Save/Reset, Punktelogik, Pins.
 - **Desktop-Schnitt (Rückmeldung1):** Fix via IPL-0145 (`20261121-skills4`) live — Wortumbruch + Sidebar-Stapelung ≤1100px; Betreiber soll hart neu laden (Screenshot zeigt Stand mit Scroll-Fold unter der Aktionsleiste).
-- **Prüfung:** Style-Pin auf die neue Badge-Farbe · Suite … · Schnelltor … (vor Merge final).
-- **Git / PR / Release:** Branch `arena/ea2bdfd4-0815games-github-io` ab `cd2f5d06`; Push, **PR `#531`**, CI, Merge – wird nachgetragen.
+- **Prüfung:** Style-Pin (owned=grün, locked=grau, Oliv-Grau weg); Pin-Gruppe 10/0, Suite 1378+2 pr-Platzhalter/1, Schnelltor nur pr-Platzhalter.
+- **Git / PR / Release:** Branch `arena/ea2bdfd4-0815games-github-io` ab `cd2f5d06`; Push, **PR `#531`**, Suite 1378+2 pr-Platzhalter, CI (`game-regressions`/`interface-browser-smoke`/`database-rules`/party-finalization) — alle Checks grün, **Merge `c9309f27` auf `main`**. Doku-PR im Anschluss.
 - **Offen / nächster Schritt:** Bestätigung nach hartem Neu-Laden, dass die skills4-Desktop-Fixes sichtbar sind.
