@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see docs/PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261121-padart1';
+import {getLanguage} from './language.mjs?v=20261121-afkmsg1';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,17 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'afkmsg1',build:'20261121-afkmsg1',pr:0,
+    title:{en:'Session · The Inactivity Card Shows in Every Tab and Cannot Be Missed',de:'Sitzung · Die Inaktivitäts-Karte erscheint in jedem Tab und kann nicht mehr untergehen'},
+    shipped:[
+      {en:'Reported: "richtiges popup bei AFK SEIN und meldung das man ausgeloggt wurde". The card itself shipped with IPL-0046 (painted FIELD BREAK scene, "Du wurdest abgemeldet…", accepted in the browser/phone tests) - what was missing was reliability: the notice lived in sessionStorage, so when Firebase LOCAL persistence signed the whole browser out, the tab the player was actually looking at stayed silently on the sign-in screen; and the card was only attempted from the idle sign-out itself, after several awaits, gated on a `user` reference that can still be stale at that moment. The notice is now browser-wide (localStorage, cleared on dismiss and on the next sign-in), the auth landing path shows the card as well, and the auth state alone decides - a stale reference can no longer swallow the message. Cache wave 20261121-afkmsg1.',de:'Gemeldet: „richtiges popup bei AFK SEIN und meldung das man ausgeloggt wurde". Die Karte selbst lief mit IPL-0046 (gemalte PAUSE-IM-FELD-Szene, „Du wurdest abgemeldet…", in den Browser-/Handy-Tests abgenommen) - es fehlte die Zuverlässigkeit: der Vermerk lag in sessionStorage, wenn Firebase LOCAL persistence den ganzen Browser abmeldet, saß der Tab, den der Spieler wirklich ansieht, still auf dem Anmeldebildschirm; und die Karte wurde nur aus der Inaktivitäts-Abmeldung selbst versucht, nach mehreren Awaits, bedingt über eine `user`-Referenz, die dort noch veraltet sein kann. Der Vermerk ist jetzt browserweit (localStorage, beim Wegklicken und bei der nächsten Anmeldung gelöscht), der Auth-Landing-Pfad zeigt die Karte ebenfalls, und allein der Auth-Status entscheidet - eine verweise Referenz kann die Meldung nicht mehr schlucken. Cache-Welle 20261121-afkmsg1.'},
+      {en:'No mechanic changes: the30-minute delay, the safety gates and the card wording stay exactly as tested.',de:'Keine Mechanik-Änderungen: die30-Minuten-Frist, die Safety-Gates und die Karten-Wortlaute bleiben exakt wie getestet.'},
+    ],
+    open:[
+      {en:'Operator check: idle sign-out shows the card in the tab in question, including a second tab of the same browser.',de:'Betreiber-Prüfung: Die Inaktivitäts-Abmeldung zeigt die Karte im betroffenen Tab, auch bei einem zweiten Tab desselben Browsers.'},
+    ]
+  },
   {
     id:'padart1',build:'20261121-padart1',pr:538,
     title:{en:'Field · Build Pads Re-Issued in the Tower Art Style',de:'Spielfeld · Build Pads im Turm-Stil neu ausgestattet'},

@@ -6,7 +6,7 @@ aber ersetzt weder Git noch die GitHub-PR-Historie. Die dazugehörige
 [Arbeitsanweisung](../../AGENTS.md) verlangt, dieses Log vor der Arbeit zu lesen
 und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
 
-Die Einträge IPL-0001 bis IPL-0128 stehen im
+Die Einträge IPL-0001 bis IPL-0129 stehen im
 [Archiv](PATCH-LOG-ARCHIV.md); hier stehen die neuesten 20. Beide Dateien
 zusammen sind lückenlos und doppelfrei - `../scripts/patch.mjs` (Unterbefehl `check`) und
 `../tests/patch-log-archive.test.mjs` prüfen das.
@@ -66,22 +66,6 @@ jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderl
 
 
 
-## IPL-0129 – Balancing der Welle-11-Kante und verknüpftes Feld-Report-Werkzeug (Welle `20261124-aim7`, PR `#425`)
-- **Zeit / Quelle:** Sitzungsdatum 2026-11-21 UTC, Umgebungsuhr 2026-11-24 UTC (getrennt genannt); Balancing-Auftrag des Betreibers aus der Auftragsnotiz, wörtlich: „die ersten zehn Wellen gehen Butter, weich durch und ab Welle elf sobald die Karte wechselt, wird es abnormal schwer" — verlangt: ordentlicher Test mit allen Klassenvarianten, Ausrüstungen, Skills und Turm-Szenarien plus Stress-Paket, und eine wiederverwendbare Auswertungsdatei, die alle Auswertungen verknüpft auswertet und Änderungen austauschbar/revertierbar hält (Formulierung „Barth Bankingpaket" in der Notiz unklar, als Balance-Testpaket umgesetzt).
-- **Block / Ziel:** Kein Spiel-Block; Balancing + Prüfwerkzeug. Diagnose vor dem Fix: Kliff ab Welle 11 aus dem Stapel 60-%-Rücklage, gelöschte Türme, größere neue Karte, Sektor-2-Formation (jede dritte Bodeneinheit → Panzer) mit MG-0,4×-Panzer-Malus, Wellen-HP-Kurve `hp = Typ-HP × (1 + (Welle−1) · 0,23)` (Welle 11 = 3,3×) und Bunker-Patch auf 75 %; die Öffnung blieb beim Autopiloten ohne Schaden. Bewusst verworfen: frühe HP-Rampe für Wellen 6–10 (bis +20 %) — ein Nur-Bauer-Fixtures starb schon ab +4 % in Welle 10; die Messsäule (`early`) steht im Report, die Entscheidung bleibt Betreiber-Sache.
-- **Branch / Basis:** `arena/e4e6ddef-0815games-github-io` ab `b2bf68e` (`main`, Merge PR `#410`).
-- **Änderungen / Dateien:**
-  - `IronPath/core/match.mjs`: `advanceSector` — Rücklage `.6` → `.8` (80 % der Tower- und Klassen-Investition), `state.sectorGraceWave = state.wave + 1`.
-  - `IronPath/core/simulation.mjs`: Spawn-Gate `grace` — solange `wave <= sectorGraceWave` laufen Lean-Formation und `effectiveSector` auf Sektor 1 (kein Panzer-Lean, kein +12 % HP / +5 % Tempo); Layer-Reihenfolge Wellen-Kurve → Sektor-Bonus hält das 1,12-Verhältnis exakt; Notiz an der Stelle, an der künftig früher Endlos-Druck ansetzen würde.
-  - `IronPath/tests/balance-harness.mjs` (nur additiv, Default-Pfade byte-identisch): `runSoloTrace` mit Wellen-Trace (HP/Vorrat/Türme/Level/Karte je Wellenstart, Wellenende, Advance-Ereignisse, Tick-Stempel); Trace-Lauf vor dem Piloten, damit Wellen-Enden sichtbar werden; `placementOrder` mit `coverage` (Default) / `roadside` / `bunker` / `spread`; `CLASS_VARIANTS` und `classGear` für Klassenvarianten-Läufe.
-  - `IronPath/tests/balance-field-report.mjs` (neu): das verknüpfte Auswertungswerkzeug — Matrix (GEARS × Klassenvarianten × Turm-Placements × Endlos-/Sektorfelder + Coop-Reihen), Tabelle mit Cliff-/Grace-/Rebuild-/Butter-Säulen, `--write-baseline` (bewusster Tausch, in Git committen), `--check` (Exit 1 bei Regression), `--quick`, `--with-stress` (Stresspaket als Report-Sektion), schreibt `balance-report-latest.json` (ignoriert).
-  - `IronPath/tests/balance-baseline.json` (neu): kommittete Baseline, 34 Szenarien — Differenz-Auswertung und revertierbarer Snapshot in einem.
-  - `IronPath/tests/balance-transition.test.mjs` (neu): Grace-Pin (Welle 11 spawnt im alten Rhythmus, Welle 12 volle neue Bedrohung) und Überlebensfenster der Rookie-Retreat-Partie (`g3-0b9f45231`, Cliff-Schaden ≤ 12 HP, ≥ 10 Türme bis Welle 12, laufend bis 16).
-  - Pins bewusst nachgezogen: `sector-campaign` 72 → 96 (80 % von 120), `tower-class-paths` `.6` → `.8`, `balance-suite` armory-Pin `<35` bei Cap 40 → `<45` bei Cap 60 (Vest-Ladung nach +80 % Rücklage und Grace gemessen tot in Welle 41; Ladung ohne Item weiter tot in Welle 30).
-  - `.gitignore`: `IronPath/tests/balance-report-latest.json`.
-- **Prüfungen:** `node --test tests/*.test.mjs` → **1354 Tests, 1353 bestanden, 1 übersprungen, 0 Fehler**, Exit 0. `npm run test:stress` → grün. `node IronPath/tests/balance-field-report.mjs --check --with-stress` → **34/34 ok**, Exit 0. Kanten-Nachweis aus dem Report: 16 Retreat-Läufe, mittlerer Cliff-Schaden (Grace + zwei Wellen) **0 HP**, Grace-Welle in allen Läufen 0 Schaden, Wiederaufbau 4 Türme in der Grace-Welle und 14 bis Welle 12. Nicht geprüft: Gerät/Emulator und manuelle Spielfahrt — Sichtprüfung macht der Betreiber.
-- **Git / PR / Release:** Code-Commit `a0572fd` auf dem genannten Branch, Push, PR `#425`; zweiter Commit: Doku (dieser Eintrag, Archiv-Schiebung `IPL-0109`, AUSBAU-Zeile 14, Feldnotizen `aim7` mit `pr: 425`) und Cache-Welle `20261124-aim7` (`bump 20261124-aim7 --from 20261123-aim6 --apply`, 7/7 Anker). CI, Merge und Pages werden als Ereignis nachgetragen.
-- **Offen / nächster Schritt:** CI zu PR `#425`, Merge, Pages-Nachweis, Nachtragskommentar; danach Sichtung durch den Betreiber (Welle 1–10 gegen Report-Säule `early`, Rückzug nach Welle 10 ohne HP-Abgrund). Offene Balancing-Entscheidung: früher Druck in Wellen 6–10 — Ein-Zeiler an der notierten Stelle in `simulation.mjs`, danach `balance-field-report --write-baseline` neu committen.
 ## IPL-0130 – Spielmap im Turm-Design: 38 Deko-Sprites, Zonen mit Tiefe, Totholz (Welle `20261124-aim8`, PR `#438`)
 - **Zeit / Quelle:** Sitzungsdatum 2026-11-21 UTC; Betreiber-Auftrag 2026-11-21: „Das Turm Design fänd ich an sich ganz nice … nur die Spielmap, nicht das ganze Spiel"; danach „totes Leben … Maps voller wirken lassen, aber nicht aktiv voll" und „Eiswasser und Sumpf … teilweise einfach nur braun und hingemalt … es muss Tiefe haben".
 - **Block / Ziel:** Kein Spiel-Block; reine Darstellung auf der Spielmap. Kein neuer Zustand auf dem Draht; Reduced-Motion und Wetter-Schalter unberührt. Sichtung macht der Betreiber („Mach alles Live, ich teste dann").
@@ -307,3 +291,17 @@ Nur Darstellung, kein Sim-State, kein Wire-Format, statisch im Terrain-Cache (Re
 - **Prüfung:** Pins unverändert grün (`fillText('BUILD')`, Verbot von `#ffed70`, Zeichen-Code unangetastet); Suite-Endstand mit `pr:538` belegt durch grünes CI `game-regressions` auf Lauf `46047353033` (lokal `patch-notes`-/Archiv-Tests nach dem Nachtrag grün); Schnelltor nach dem Nachtrag ohne Fehler; `check --fast` ohne Fehler. Der Stand vor dem Nachtrag zeigte die zwei bekannten pr:0-Platzhalter-Rots (1379/2/1).
 - **Git / PR / Release:** Branch `arena/840f9060-0815games-github-io` ab `f8de8cfb`; Commits `40ba8e6` (Art/Bump/Notes) + `821cfc1` (pr:538), **PR `#538`**, CI `46047353033` grün (erster Lauf `46047345103` nur pr:0-Platzhalter-Rot), **Merge `54442cf0`**, Pages `46048914316` success auf `54442cf0`.
 - **Offen / nächster Schritt:** Betreiber-Sichtprüfung der neuen Platte auf allen fünf Boden-Themen nach hartem Neu-Laden; danach Backlog-Punkte AFK-Popup/„ausgeloggt"-Meldung und Admin-Panel-Vollintegration.
+
+## IPL-0149 – Sitzung: die Inaktivitäts-Karte in jedem Tab, unverschluckbar (Welle `20261121-afkmsg1`, PR `#000`)
+
+- **Zeit / Quelle:** Sitzungsdatum 2026-11-21 UTC; Betreiber-Auftrag (4-Punkte-Nachricht): „richtiges popup bei AFK SEIN und meldung das man ausgeloggt wurde".
+- **Block / Ziel:** Kein Spiel-Block; Sitzungs-/Anmelde-UI. Die Karte selbst stammt aus IPL-0046 (PR `#306`, gemalte PAUSE-IM-FELD-Szene, im Browser-/Handy-Test abgenommen) - dieser Schritt macht sie zuverlässig sichtbar. Keine Mechanik-Änderung:30-Minuten-Frist, Safety-Gates und Wortlaute unverändert.
+- **Branch / Basis:** `arena/840f9060-0815games-github-io` ab `f8de8cfb` (`main`).
+- **Änderungen / Dateien:**
+  - `IronPath/account.js`: (1) `afkNotice` nutzt jetzt `localStorage` statt `sessionStorage` - Firebase LOCAL persistence meldet den ganzen Browser ab, der Tab, den der Spieler ansieht, ist oft nicht der inaktive Tab, der die Abmeldung auslöste; der Vermerk ist browserweit und wird beim Wegklicken und bei der nächsten Anmeldung gelöscht. (2) `maybeShowAfkCard` entscheidet allein über `!auth.currentUser` - die veraltete `user`-Referenz mittendrin in der Abmeldung darf die Karte nicht mehr schlucken. (3) Der Auth-Landing-Pfad (`if(!currentUser)`) ruft `maybeShowAfkCard()` zusätzlich auf - der eine Ort, der von Timing-Rennen nicht erreicht werden kann; die Karte öffnet sich damit in jedem Tab, der auf dem Anmeldebildschirm landet.
+  - `IronPath/tests/afk-rest.test.mjs`: neuer Pin - Notice in `localStorage` (nicht `sessionStorage`), Gate ohne `!user`, Landing-Pfad ruft die Karte auf, frische Anmeldung löscht den Vermerk.
+  - `IronPath/patch-notes.mjs`: Eintrag `afkmsg1` an die Spitze (pr-Platzhalter bis zur PR-Nummer).
+  - Cache-Welle `20261121-afkmsg1` (`bump … --from 20261121-padart1 --apply`,96 Dateien,7/7 Anker).
+- **Prüfung:** `afk-rest`-Suite nach dem Einbau grün (7/7); Gesamtlauf und Endstand mit PR-Nummer werden nachgetragen.
+- **Git / PR / Release:** Branch `arena/840f9060-0815games-github-io` ab `f8de8cfb`; Push, **PR `#000`**, CI, Merge – wird nachgetragen.
+- **Offen / nächster Schritt:** Betreiber-Prüfung (inaktiv melden, auch mit zweitem Tab desselben Browsers); danach letzter Backlog-Punkt Admin-Panel-Vollintegration.

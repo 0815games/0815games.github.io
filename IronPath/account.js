@@ -1,86 +1,86 @@
-import {createWorkshopAccount} from './workshop/workshop-account.mjs?v=20261121-padart1';
-import {createWorkshopView} from './workshop/workshop-view.mjs?v=20261121-padart1';
-import {createSoldierScreen} from './ui/soldier-screen.mjs?v=20261121-padart1';
-import {localizeSkillSummary} from './core/skill-summary-localization.mjs?v=20261121-padart1';
+import {createWorkshopAccount} from './workshop/workshop-account.mjs?v=20261121-afkmsg1';
+import {createWorkshopView} from './workshop/workshop-view.mjs?v=20261121-afkmsg1';
+import {createSoldierScreen} from './ui/soldier-screen.mjs?v=20261121-afkmsg1';
+import {localizeSkillSummary} from './core/skill-summary-localization.mjs?v=20261121-afkmsg1';
 import {renderSkillIndicators} from './ui/skill-indicator.mjs?v=20261104-skillindicator1';
-import {setupLanguage,translate,translateText,onLanguageChange,getLanguage} from './language.mjs?v=20261121-padart1';
+import {setupLanguage,translate,translateText,onLanguageChange,getLanguage} from './language.mjs?v=20261121-afkmsg1';
 import {setupFullscreen} from './core/fullscreen.mjs?v=20261104-fullscreen1';
-import {setupFieldMenu} from './ui/field-menu.mjs?v=20261121-padart1';
-import {createSettings,readSettings} from './core/settings.mjs?v=20261121-padart1';
-import {createPasswordChange} from './core/password-change.mjs?v=20261121-padart1';
+import {setupFieldMenu} from './ui/field-menu.mjs?v=20261121-afkmsg1';
+import {createSettings,readSettings} from './core/settings.mjs?v=20261121-afkmsg1';
+import {createPasswordChange} from './core/password-change.mjs?v=20261121-afkmsg1';
 // Field notes: the patch log as a screen. Read-only, so it is wired next to the
 // settings dialog and nothing else in the account has to know about it.
-import {createPatchNotes} from './patch-notes.mjs?v=20261121-padart1';
+import {createPatchNotes} from './patch-notes.mjs?v=20261121-afkmsg1';
 import {bindDisclosureDismiss} from './ui/disclosure-dismiss.mjs?v=20261104-dismissall1';
 import {bindDialogBackdrop} from './ui/dialog-dismiss.mjs?v=20261104-dismiss1';
-import {setupLeaderboard} from './ui/leaderboards-ui.mjs?v=20261121-padart1';
-import {createLeaderboardService,createScoreReporter,waveFromMask} from './core/leaderboards.mjs?v=20261121-padart1';
-import {setupFriends} from './ui/friends-ui.mjs?v=20261121-padart1';
-import {createMultiplayerPrompts} from './core/multiplayer-prompts.mjs?v=20261121-padart1';
+import {setupLeaderboard} from './ui/leaderboards-ui.mjs?v=20261121-afkmsg1';
+import {createLeaderboardService,createScoreReporter,waveFromMask} from './core/leaderboards.mjs?v=20261121-afkmsg1';
+import {setupFriends} from './ui/friends-ui.mjs?v=20261121-afkmsg1';
+import {createMultiplayerPrompts} from './core/multiplayer-prompts.mjs?v=20261121-afkmsg1';
 import {createCharacterDeletion} from './core/character-deletion.mjs?v=20261031-patch8';
-import {validateCharacterName,characterNameKey} from './core/character-name.mjs?v=20261121-padart1';
-import {createCharacterNameClaim} from './core/character-name-claim.mjs?v=20261121-padart1';
-import {createCharacterNameConflictHandler} from './core/character-name-conflict.mjs?v=20261121-padart1';
-import {createDischargeNotice,createDischargeSignOut,DISCHARGE_MESSAGE} from './ui/discharge-notice.mjs?v=20261121-padart1';
-import {createCommandCenter} from './core/command-center.mjs?v=20261121-padart1';
+import {validateCharacterName,characterNameKey} from './core/character-name.mjs?v=20261121-afkmsg1';
+import {createCharacterNameClaim} from './core/character-name-claim.mjs?v=20261121-afkmsg1';
+import {createCharacterNameConflictHandler} from './core/character-name-conflict.mjs?v=20261121-afkmsg1';
+import {createDischargeNotice,createDischargeSignOut,DISCHARGE_MESSAGE} from './ui/discharge-notice.mjs?v=20261121-afkmsg1';
+import {createCommandCenter} from './core/command-center.mjs?v=20261121-afkmsg1';
 import {featureEnabled} from './core/features.mjs?v=20261112-endless1';
-import {createEndlessLauncher,readLastEndlessRun,sanitizeEndlessLastRun,writeLastEndlessRun,ENDLESS_LAST_RUN_KEY} from './core/endless-launcher.mjs?v=20261121-padart1';
-import {initializeWireWorkshop,applyWireWorkshopCommand} from './workshop/workshop-wire.mjs?v=20261121-padart1';
+import {createEndlessLauncher,readLastEndlessRun,sanitizeEndlessLastRun,writeLastEndlessRun,ENDLESS_LAST_RUN_KEY} from './core/endless-launcher.mjs?v=20261121-afkmsg1';
+import {initializeWireWorkshop,applyWireWorkshopCommand} from './workshop/workshop-wire.mjs?v=20261121-afkmsg1';
 // Story completion writes progress and the mission's prestige trophy together.
-import {completeStoryMission,meltPrestige,decodeWorkshop as decodeWorkshopSafe} from './workshop/workshop-wire.mjs?v=20261121-padart1';
-import {captureWorkshopLoadout,workshopEffects} from './workshop/workshop-effects.mjs?v=20261121-padart1';
+import {completeStoryMission,meltPrestige,decodeWorkshop as decodeWorkshopSafe} from './workshop/workshop-wire.mjs?v=20261121-afkmsg1';
+import {captureWorkshopLoadout,workshopEffects} from './workshop/workshop-effects.mjs?v=20261121-afkmsg1';
 import {missingPrestige} from './core/prestige.mjs?v=20261112-pressure1';
-import {donateWarEffort as donateWarEffortCore,readWarEffort,warEffortTier,WAR_EFFORT_DONATION,WAR_EFFORT_TIER_COST,WAR_EFFORT_GOAL,WAR_EFFORT_MAX_TIER} from './core/war-effort.mjs?v=20261121-padart1';
-import {recordPrestigeClear as recordPrestigeClearCore} from './core/campaign-prestige.mjs?v=20261121-padart1';
-import {createFirebaseRecoverableGame} from './net/firebase-recoverable-game.mjs?v=20261121-padart1';
-import {createFourPlayerPanel} from './net/firebase-four-panel.mjs?v=20261121-padart1';
-import {watchFriendPortrait} from './core/friend-portrait.mjs?v=20261121-padart1';
-import {createFirebaseFourLobby} from './net/firebase-four-lobby.mjs?v=20261121-padart1';
-import {skillBuildSummary,canSaveSkillDraft} from './core/skill-planner.mjs?v=20261121-padart1';
-import {setupAuthForm} from './core/auth-form.mjs?v=20261121-padart1';
-import {applyLoginScene} from './ui/login-scene.mjs?v=20261121-padart1';
+import {donateWarEffort as donateWarEffortCore,readWarEffort,warEffortTier,WAR_EFFORT_DONATION,WAR_EFFORT_TIER_COST,WAR_EFFORT_GOAL,WAR_EFFORT_MAX_TIER} from './core/war-effort.mjs?v=20261121-afkmsg1';
+import {recordPrestigeClear as recordPrestigeClearCore} from './core/campaign-prestige.mjs?v=20261121-afkmsg1';
+import {createFirebaseRecoverableGame} from './net/firebase-recoverable-game.mjs?v=20261121-afkmsg1';
+import {createFourPlayerPanel} from './net/firebase-four-panel.mjs?v=20261121-afkmsg1';
+import {watchFriendPortrait} from './core/friend-portrait.mjs?v=20261121-afkmsg1';
+import {createFirebaseFourLobby} from './net/firebase-four-lobby.mjs?v=20261121-afkmsg1';
+import {skillBuildSummary,canSaveSkillDraft} from './core/skill-planner.mjs?v=20261121-afkmsg1';
+import {setupAuthForm} from './core/auth-form.mjs?v=20261121-afkmsg1';
+import {applyLoginScene} from './ui/login-scene.mjs?v=20261121-afkmsg1';
 import {createAccountServices,requiresAccountGuard} from './core/account-services.mjs?v=20261031-releaseguard1';
-import {createVersionUI} from './ui/version-ui.mjs?v=20261121-padart1';
-import {createWriteTracker} from './core/version-check.mjs?v=20261121-padart1';
+import {createVersionUI} from './ui/version-ui.mjs?v=20261121-afkmsg1';
+import {createWriteTracker} from './core/version-check.mjs?v=20261121-afkmsg1';
 import {createAfkTimer,createSessionTabLock} from './core/afk-session.mjs?v=20261031-update3';
-import {createActiveSessionManager,createSameBrowserSessionMonitor,createWindowSessionId} from './core/active-session.mjs?v=20261121-padart1';
+import {createActiveSessionManager,createSameBrowserSessionMonitor,createWindowSessionId} from './core/active-session.mjs?v=20261121-afkmsg1';
 import {drawAfkRestScene} from './ui/afk-rest-scene.mjs?v=20261117-afkart1';
 import {createMaintenanceUI} from './ui/maintenance-ui.mjs?v=20261031-update3';
 import {getMaintenanceBoot} from './core/maintenance-bootstrap.mjs?v=20261031-update3';
 import {MAINTENANCE_PATH,createMaintenanceMonitor,isSessionAfterCutoff} from './core/maintenance-check.mjs?v=20261031-update3';
 import {serviceMedals} from './core/service-record.mjs?v=20261112-tagless1';
-import {createConfirmation} from './ui/confirmation.mjs?v=20261121-padart1';
-import {renderSkillTree,armoryIcon} from './ui/development-ui.mjs?v=20261121-padart1';
-import {runFirstRunEnding,endingDone,markEndingDone,createEndingHandoffs,FIELD_SCHOOL_ENTRIES} from './ui/first-run-ending.mjs?v=20261121-padart1';
-import {createGuide,forgetGuideSeen} from './ui/first-run-guide.mjs?v=20261121-padart1';
-import {initialOfferedTutorial,shouldAutoPresentTutorial,tutorialResumeTarget,shouldPayTutorialReward,createTutorialSync} from './core/tutorial-sync.mjs?v=20261121-padart1';
-import {createGeneralRadio} from './core/general-radio.mjs?v=20261121-padart1';
-import {createTutorialDossier} from './core/tutorial-dossier.mjs?v=20261121-padart1';
-import {createMenuTour} from './ui/menu-tour.mjs?v=20261121-padart1';
-import {mountOverlayPopover} from './ui/popover-host.mjs?v=20261121-padart1';
-import {ITEMS,readArmory,rewardWave,upgradeArmory,equipArmory,encodeLoadout} from './core/armory.mjs?v=20261121-padart1';
-import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement,webBonuses} from './core/skills.mjs?v=20261121-padart1';
-import {migrateSkillsProfile,needsSkillMigration,readLegacySkillBackup,summarizeSkillMigration} from './core/skills-migration.mjs?v=20261121-padart1';
-import {rewardDelta} from './core/run-results.mjs?v=20261121-padart1';
-import {createCoopRewardQueue} from './core/coop-rewards.mjs?v=20261121-padart1';
-import {createPartyEndCoordinator} from './core/party-end-coordinator.mjs?v=20261121-padart1';
-import {createPartySignOut} from './core/party-signout.mjs?v=20261121-padart1';
+import {createConfirmation} from './ui/confirmation.mjs?v=20261121-afkmsg1';
+import {renderSkillTree,armoryIcon} from './ui/development-ui.mjs?v=20261121-afkmsg1';
+import {runFirstRunEnding,endingDone,markEndingDone,createEndingHandoffs,FIELD_SCHOOL_ENTRIES} from './ui/first-run-ending.mjs?v=20261121-afkmsg1';
+import {createGuide,forgetGuideSeen} from './ui/first-run-guide.mjs?v=20261121-afkmsg1';
+import {initialOfferedTutorial,shouldAutoPresentTutorial,tutorialResumeTarget,shouldPayTutorialReward,createTutorialSync} from './core/tutorial-sync.mjs?v=20261121-afkmsg1';
+import {createGeneralRadio} from './core/general-radio.mjs?v=20261121-afkmsg1';
+import {createTutorialDossier} from './core/tutorial-dossier.mjs?v=20261121-afkmsg1';
+import {createMenuTour} from './ui/menu-tour.mjs?v=20261121-afkmsg1';
+import {mountOverlayPopover} from './ui/popover-host.mjs?v=20261121-afkmsg1';
+import {ITEMS,readArmory,rewardWave,upgradeArmory,equipArmory,encodeLoadout} from './core/armory.mjs?v=20261121-afkmsg1';
+import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement,webBonuses} from './core/skills.mjs?v=20261121-afkmsg1';
+import {migrateSkillsProfile,needsSkillMigration,readLegacySkillBackup,summarizeSkillMigration} from './core/skills-migration.mjs?v=20261121-afkmsg1';
+import {rewardDelta} from './core/run-results.mjs?v=20261121-afkmsg1';
+import {createCoopRewardQueue} from './core/coop-rewards.mjs?v=20261121-afkmsg1';
+import {createPartyEndCoordinator} from './core/party-end-coordinator.mjs?v=20261121-afkmsg1';
+import {createPartySignOut} from './core/party-signout.mjs?v=20261121-afkmsg1';
 import {creditSoloWave} from './workshop/workshop-solo-credit.mjs?v=20261112-tagless1';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import { getDatabase, ref, onValue, runTransaction as firebaseRunTransaction, get, remove as firebaseRemove, set as firebaseSet, update as firebaseUpdate, goOffline, onDisconnect, serverTimestamp, query, orderByKey, startAfter, limitToFirst, orderByChild, limitToLast } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
-import { createFirebasePartyLobby } from './net/firebase-party-lobby.mjs?v=20261121-padart1';
-import { createFourDigitPanel } from './net/firebase-four-digit-panel.mjs?v=20261121-padart1';
+import { createFirebasePartyLobby } from './net/firebase-party-lobby.mjs?v=20261121-afkmsg1';
+import { createFourDigitPanel } from './net/firebase-four-digit-panel.mjs?v=20261121-afkmsg1';
 import { createFourDigitLobby } from './net/firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
-import { startGame } from './game.js?v=20261121-padart1';
-import { createFirebasePartyGame } from './net/firebase-party-game.mjs?v=20261121-padart1';
-import { createPlayer } from './core/match.mjs?v=20261121-padart1';
-import { bunkerStart } from './core/solo-deployment.mjs?v=20261121-padart1';
+import { startGame } from './game.js?v=20261121-afkmsg1';
+import { createFirebasePartyGame } from './net/firebase-party-game.mjs?v=20261121-afkmsg1';
+import { createPlayer } from './core/match.mjs?v=20261121-afkmsg1';
+import { bunkerStart } from './core/solo-deployment.mjs?v=20261121-afkmsg1';
 import { resolveAvatar,encodeAvatar,AVATAR_STORAGE_KEY } from './core/avatar.mjs?v=20261119-avatar3';
 import { composePortrait,facePortrait } from './core/avatar-layers.mjs?v=20261119-avatar3';
 import { createAvatarSync } from './core/avatar-sync.mjs?v=20261119-avatar3';
-import { setupRecruitScreen } from './ui/recruit-screen.mjs?v=20261121-padart1';
-import { renderRankInsignia } from './core/rank-insignia.mjs?v=20261121-padart1';
+import { setupRecruitScreen } from './ui/recruit-screen.mjs?v=20261121-afkmsg1';
+import { renderRankInsignia } from './core/rank-insignia.mjs?v=20261121-afkmsg1';
 import { characterProgress } from './core/progression.mjs?v=20261105-prestige1';
 
 // Firebase's actual write promises remain pending while offline, including when
@@ -874,10 +874,15 @@ function normalReleaseSafety(){
 }
 releaseSafety=()=>afkTransition?'saving':normalReleaseSafety();
 const AFK_NOTICE_KEY='ironpath:afk-signed-out';
+// Browser-wide, not per-tab: Firebase LOCAL persistence signs the whole
+// browser out together, so the tab the player is actually looking at may be a
+// different one than the idle tab that triggered the sign-out. localStorage
+// carries the notice across tabs; sessionStorage would leave every other tab
+// silently on the sign-in screen with no explanation.
 function afkNotice(value){try{
- if(value===true)window.sessionStorage.setItem(AFK_NOTICE_KEY,'1');
- else if(value===false)window.sessionStorage.removeItem(AFK_NOTICE_KEY);
- else return window.sessionStorage.getItem(AFK_NOTICE_KEY)==='1';
+ if(value===true)window.localStorage.setItem(AFK_NOTICE_KEY,'1');
+ else if(value===false)window.localStorage.removeItem(AFK_NOTICE_KEY);
+ else return window.localStorage.getItem(AFK_NOTICE_KEY)==='1';
 }catch{}return false;}
 const afkText=(en,de)=>getLanguage()==='de'?de:en;
 function renderAfkText(){
@@ -913,7 +918,10 @@ onLanguageChange(()=>{renderAfkText();if($('afkRestDialog')?.open)paintAfkRestCa
 // and again after a reload (the notice lives in sessionStorage). Never from
 // inside the sign-out itself - that is the moment the page is held inert and a
 // version probe is still to come.
-function maybeShowAfkCard(){if(afkNotice()&&!user&&!auth.currentUser)showAfkRestCard();}
+// Only the auth state decides whether the player is out - a stale `user`
+// reference mid-sign-out must never swallow the card, and the card must not
+// depend on this one call site: the auth landing path shows it too.
+function maybeShowAfkCard(){if(afkNotice()&&!auth.currentUser)showAfkRestCard();}
 maybeShowAfkCard();
 $('afkRestAccept').onclick=()=>{try{$('afkRestDialog').close();}catch{}afkNotice(false);try{$('email').focus();}catch{}};
 $('afkSessionFailure').addEventListener('cancel',event=>event.preventDefault());
@@ -1126,8 +1134,13 @@ if(!accountTerminated)accountServices.observe(currentUser=>{
   else if(conflict==='taken-over')message(SESSION_TAKEN_OVER_MESSAGE);
   if($('sessionTakeoverField'))$('sessionTakeoverField').hidden=conflict!=='occupied';
   if($('sessionTakeoverCheck'))$('sessionTakeoverCheck').checked=false;
+  // The inactivity card is shown from here as well as from the idle sign-out
+  // itself: this landing runs whenever the browser-wide session ends, in any
+  // tab, and it is the one path that cannot be missed by a timing race.
+  maybeShowAfkCard();
   return;
  }
+ afkNotice(false);
  void releaseActiveSession({removeRemote:false});
  activateSignedInUser(currentUser,version);
 },error=>{if(!accountTerminated){display('auth');message(errorText(error));}});

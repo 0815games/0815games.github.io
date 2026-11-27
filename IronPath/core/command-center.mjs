@@ -1,5 +1,5 @@
-import {translate,translateText} from '../language.mjs?v=20261121-padart1';
-import {renderRankInsignia} from './rank-insignia.mjs?v=20261121-padart1';
+import {translate,translateText} from '../language.mjs?v=20261121-afkmsg1';
+import {renderRankInsignia} from './rank-insignia.mjs?v=20261121-afkmsg1';
 import {characterProgress} from './progression.mjs?v=20261105-prestige1';
 import {campaignProgress,CAMPAIGN} from './campaign.mjs?v=20261112-pressure1';
 import {featureEnabled} from './features.mjs?v=20261112-endless1';

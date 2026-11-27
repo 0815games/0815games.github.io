@@ -92,3 +92,28 @@ test('the card does not block an automatic reload',()=>{
   assert.ok(guard,'the release safety still refuses to reload over an open dialog');
   assert.match(guard,/dialog\[open\]:not\(#afkRestDialog\)/,'but the rest card is exempt: it survives a reload by design');
 });
+
+// The notice is browser-wide: Firebase LOCAL persistence signs the whole
+// browser out together, so the tab the player looks at may not be the idle
+// tab that triggered the sign-out. And the landing path is the one place that
+// cannot miss the card - the idle sign-out's own call sits after several
+// awaits and used to require a nulled `user` that may still be stale there.
+test('the signed-out notice survives a tab switch and cannot be swallowed',()=>{
+  const source=readFileSync(new URL('../account.js',import.meta.url),'utf8');
+  const notice=source.slice(source.indexOf('function afkNotice'),source.indexOf('const afkText'));
+  assert.match(notice,/window\.localStorage\.setItem\(AFK_NOTICE_KEY/,'the notice lives where every tab can read it');
+  assert.doesNotMatch(notice,/sessionStorage/,'per-tab storage would leave the other tabs silently signed out');
+  const gate=source.split('\n').find(row=>row.includes('function maybeShowAfkCard'))||'';
+  assert.match(gate,/afkNotice\(\)&&!auth\.currentUser/,'the auth state alone decides, a stale user cannot block the card');
+  assert.doesNotMatch(gate,/&&!user/,'...');
+  // The auth landing shows the card too, whatever path ended the session.
+  const landingIdx=source.indexOf('if(!currentUser){');
+  assert.ok(landingIdx>0,'the auth landing branch exists');
+  const landing=source.slice(landingIdx,landingIdx+1200);
+  assert.match(landing,/maybeShowAfkCard\(\)/,'every landing on the sign-in screen checks the notice');
+  // Signing in again clears a leftover notice, so it cannot pop later.
+  const signedInIdx=source.lastIndexOf('activateSignedInUser(currentUser,version)');
+  assert.ok(signedInIdx>0,'the signed-in hand-off exists');
+  const before=source.slice(Math.max(0,signedInIdx-120),signedInIdx);
+  assert.match(before,/afkNotice\(false\)/,'a fresh sign-in starts without a stale card');
+});
