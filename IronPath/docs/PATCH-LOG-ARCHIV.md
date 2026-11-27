@@ -1,6 +1,6 @@
 # Iron Path – Patch-Log: Archiv
 
-Ältere Einträge IPL-0001 bis IPL-0124. Die neuesten 20 stehen in
+Ältere Einträge IPL-0001 bis IPL-0125. Die neuesten 20 stehen in
 [PATCH-LOG.md](PATCH-LOG.md); die Regeln für beide Dateien dort und in
 [`../../AGENTS.md`](../../AGENTS.md). Beim Verschieben wandert ein Eintrag immer
 vollständig einschließlich seiner Ereignis-Nachträge.
@@ -4790,3 +4790,14 @@ sie geprüft wurde.
 - **Prüfungen:** `tower-heads` 4/4, `tower-aim` 9/9, `soldier-motion` 3/3; Schnelltor „Kein Fehler, 2 Hinweis(e)“; Gesamtsuite **1349 Tests, 1348 bestanden, 0 Fehler, 1 übersprungen**.
 - **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet`. Commit, Push, PR `#386`, danach Cache-Welle `20261123-aim3` mit Feldnotizen `aim3` als zweiter Commit (Muster `IPL-0104`), CI, Merge und Pages-Auslieferung werden als Ereignis nachgetragen. **Betreiber-Sichtung auf `20261123-aim3`:** Köpfe müssen weich einrasten und nur das Rohr darf zurückstoßen.
 - **Offen / nächster Schritt:** `IPL-0125` „Mehr Lebendigkeit“ (Mündungsfeuer, Hülsen) folgt als eigener Eintrag.
+## IPL-0125 – Lebendiges Feld, mehr Leben: Mündungsfeuer und Hülsen aus dem Rückstoß (Cache-Welle folgt im selben PR)
+
+- **Zeit / Quelle:** 2026-11-23 UTC; Betreiber: „Erst Feinschliff, dann mehr Lebendigkeit.“ Dieses Paket ist der zweite Teil: Mündungsfeuer und Hülsenauswurf an den drehenden Köpfen aus `IPL-0122`–`IPL-0124`.
+- **Block / Ziel:** Kein Spiel-Block; reine Darstellung. Keine Simulations-, Snapshot-, Protokoll- oder Regeländerung — Feuer und Hülsen werden aus dem Rückstoßwert gezeichnet, den der Tracker ohnehin liefert; kein neuer Zustand, keine Uhr, kein Netz.
+- **Branch / Basis:** `arena/76a1f074-0815games-github-io` ab `44190a1f03c8c30903a3b912976dfa4c7df957c6` (`main`, Merge PR `#386`).
+- **Änderungen / Dateien:**
+  - `IronPath/core/cartoon-art.mjs`: Neuer Helfer `muzzleFx()` — Mündungsfeuer (zwei Sterne in der Emblem-Sprache: außen `#ff9a3c`, Kern `#ffd75c`, Deckkraft aus dem Rückstoß) an der Mündung, solange der Tritt frisch ist (Rückstoß > 0,5); Hülsenauswurf (Messing-Oval) aus der Auswurföffnung, der mit abklingendem Rückstoß nach oben-hinten fliegt und verblasst. Alle vier Maler rufen ihn mit ihren Mündungs- und Öffnungspositionen (Flak: zwei Mündungen). Reduzierte Bewegung sieht nichts davon, weil der Tracker dort Rückstoß 0 liefert.
+  - `IronPath/tests/tower-heads.test.mjs`: Differential-Test — bei vollem Rückstoß kommen je Typ genau die FX-Striche dazu (MG/Kanone/Sniper +3, Flak +5 für zwei Mündungen), unter der Feuerschwelle fliegt nur die Hülse (+1).
+- **Prüfungen:** `tower-heads` 5/5, `tower-aim` 9/9; Schnelltor „Kein Fehler, 2 Hinweis(e)“; Gesamtsuite **1350 Tests, 1349 bestanden, 0 Fehler, 1 übersprungen**.
+- **Git / PR / Release:** Code-Commit + Push, PR `#387`; zweiter Commit: Cache-Welle `20261123-aim4` mit Feldnotizen `aim4` (79 Dateien, Muster `IPL-0104`). CI, Merge und Pages-Auslieferung werden als Ereignis nachgetragen. **Betreiber-Sichtung auf `20261123-aim4`:** Jeder Schuss muss am Rohr aufblitzen und eine Hülse auswerfen.
+- **Offen / nächster Schritt:** Die Reihe „Lebendiges Feld“ ist damit vollständig (Scheibe 1 + 2, Feinschliff, mehr Leben). Neue Punkte beschließt der Betreiber.

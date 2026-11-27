@@ -5,7 +5,7 @@
 import {createHash} from 'node:crypto';
 import {initializeWireWorkshop,applyWireWorkshopCommand,decodeWorkshop} from '../workshop/workshop-wire.mjs';
 import {validLegacy} from '../workshop/workshop-model.mjs';
-import {readArmory,upgradeArmory} from '../core/armory.mjs?v=20261121-skills3';
+import {readArmory,upgradeArmory} from '../core/armory.mjs?v=20261121-skills4';
 import {characterProgress} from '../core/progression.mjs?v=20261105-prestige1';
 import {canSaveSkillDraft} from '../core/skill-planner.mjs?v=20261104-doctrines1';
 const MAX_REQUESTS=4096,MAX_TOKEN=8192;

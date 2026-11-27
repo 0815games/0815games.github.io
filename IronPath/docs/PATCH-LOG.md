@@ -6,7 +6,7 @@ aber ersetzt weder Git noch die GitHub-PR-Historie. Die dazugehörige
 [Arbeitsanweisung](../../AGENTS.md) verlangt, dieses Log vor der Arbeit zu lesen
 und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
 
-Die Einträge IPL-0001 bis IPL-0124 stehen im
+Die Einträge IPL-0001 bis IPL-0125 stehen im
 [Archiv](PATCH-LOG-ARCHIV.md); hier stehen die neuesten 20. Beide Dateien
 zusammen sind lückenlos und doppelfrei - `../scripts/patch.mjs` (Unterbefehl `check`) und
 `../tests/patch-log-archive.test.mjs` prüfen das.
@@ -63,17 +63,6 @@ jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderl
 
 
 
-## IPL-0125 – Lebendiges Feld, mehr Leben: Mündungsfeuer und Hülsen aus dem Rückstoß (Cache-Welle folgt im selben PR)
-
-- **Zeit / Quelle:** 2026-11-23 UTC; Betreiber: „Erst Feinschliff, dann mehr Lebendigkeit.“ Dieses Paket ist der zweite Teil: Mündungsfeuer und Hülsenauswurf an den drehenden Köpfen aus `IPL-0122`–`IPL-0124`.
-- **Block / Ziel:** Kein Spiel-Block; reine Darstellung. Keine Simulations-, Snapshot-, Protokoll- oder Regeländerung — Feuer und Hülsen werden aus dem Rückstoßwert gezeichnet, den der Tracker ohnehin liefert; kein neuer Zustand, keine Uhr, kein Netz.
-- **Branch / Basis:** `arena/76a1f074-0815games-github-io` ab `44190a1f03c8c30903a3b912976dfa4c7df957c6` (`main`, Merge PR `#386`).
-- **Änderungen / Dateien:**
-  - `IronPath/core/cartoon-art.mjs`: Neuer Helfer `muzzleFx()` — Mündungsfeuer (zwei Sterne in der Emblem-Sprache: außen `#ff9a3c`, Kern `#ffd75c`, Deckkraft aus dem Rückstoß) an der Mündung, solange der Tritt frisch ist (Rückstoß > 0,5); Hülsenauswurf (Messing-Oval) aus der Auswurföffnung, der mit abklingendem Rückstoß nach oben-hinten fliegt und verblasst. Alle vier Maler rufen ihn mit ihren Mündungs- und Öffnungspositionen (Flak: zwei Mündungen). Reduzierte Bewegung sieht nichts davon, weil der Tracker dort Rückstoß 0 liefert.
-  - `IronPath/tests/tower-heads.test.mjs`: Differential-Test — bei vollem Rückstoß kommen je Typ genau die FX-Striche dazu (MG/Kanone/Sniper +3, Flak +5 für zwei Mündungen), unter der Feuerschwelle fliegt nur die Hülse (+1).
-- **Prüfungen:** `tower-heads` 5/5, `tower-aim` 9/9; Schnelltor „Kein Fehler, 2 Hinweis(e)“; Gesamtsuite **1350 Tests, 1349 bestanden, 0 Fehler, 1 übersprungen**.
-- **Git / PR / Release:** Code-Commit + Push, PR `#387`; zweiter Commit: Cache-Welle `20261123-aim4` mit Feldnotizen `aim4` (79 Dateien, Muster `IPL-0104`). CI, Merge und Pages-Auslieferung werden als Ereignis nachgetragen. **Betreiber-Sichtung auf `20261123-aim4`:** Jeder Schuss muss am Rohr aufblitzen und eine Hülse auswerfen.
-- **Offen / nächster Schritt:** Die Reihe „Lebendiges Feld“ ist damit vollständig (Scheibe 1 + 2, Feinschliff, mehr Leben). Neue Punkte beschließt der Betreiber.
 
 ## IPL-0126 – Lebendiges Feld, Ambiente: Wolkschatten, Windgut und Vogelschar (Cache-Welle folgt im selben PR)
 
@@ -308,3 +297,14 @@ Nur Darstellung, kein Sim-State, kein Wire-Format, statisch im Terrain-Cache (Re
 - **Prüfung:** `skill-menu-style.test.mjs` pinnt Default-Akzent, Header-Band/-Tönung, Rahmen-Mix, Aktions-Haarlinie, Kicker, themed-only-Opt-in und `[hidden]`-Guard; Pin-Gruppe 8/0, Suite 1376+2 pr-Platzhalter/1, Schnelltor nur pr-Platzhalter.
 - **Git / PR / Release:** Branch `arena/02764ced-0815games-github-io` ab `d3ab5029`; Push, **PR `#525`**, Suite 1376+2 pr-Platzhalter, CI (`game-regressions`/`interface-browser-smoke`/`database-rules`/party-finalization) — alle Checks grün (ein Flake in `party-offline-modes` des ersten Laufes, Gegenlauf grün), **Merge `9b8c7041` auf `main`**. Doku-PR im Anschluss.
 - **Offen / nächster Schritt:** Sichtung; auf Wunsch Intensität der Klassentönung nachjustieren.
+
+## IPL-0145 – Skills Desktop-Lesbarkeit: Wörter brechen statt abschneiden, Sidebar stapelt unter 1100px (Welle `20261121-skills4`, PR `#—`)
+
+- **Was:** Rückmeldung des Betreibers (Screenshot-Batch zeigte kein Skills-Fenster): „auf der Desktop anwendung sind schriften abgeschnitten und nach rechts und links kann man nicht alles lesen wenn die fähigkeiten von links nach rechts ausgebaut werden". Zwei Ursachen in `skill-menu.css`:
+  1. **Lange deutsche Komposita laufen über die Spalte** — `overflow-wrap:break-word` jetzt auf `.skill-card-name`, `.skill-card-description`, `.skill-card-requirement`, `.skill-card-tag`/`.skill-card-state`, `.skill-group-heading p`, `.skill-chapter-title` und `.skill-lane-head span` (Spaltenkopf bricht statt Ellipsis-Schnitt). Nicht betroffen: `#skillDetailText`/`#skillStatus`/`.skill-card-name` bleiben ohne `text-transform` (innerText-Pins).
+  2. **Die 285px-Sidebar drückt unter 1100px die Trunk-/Komboreihen in unlesbare Spalten** — neuer `@media(max-width:1100px)`-Block (bewusst VOR dem ≤700-Block platziert): `.skills-workspace` wird Flex-Spalte, `.skills-sidebar` statisch/vollbreit — dieselbe gebilligte Mobil-Anordnung; ≤700px gewinnt weiterhin mit identischen Werten.
+- **Mechanik unangetastet:** nur Layout/CSS; Draft/Save/Reset, Badges, Zustände, aria-Pins, Mobile-Scroll-Fixes unverändert.
+- **Zweite Meldung (offen):** „wieso steht überall 'Freigeschaltet' in grau wenn ich die Fähigkeit nicht habe?" — Badge+Button laut Betreiber betroffen; Übersetzungen geprüft (UNLOCKED→FREIGESCHALTET, AVAILABLE→VERFÜGBAR, LOCKED→GESPERRT, Merge-Reihenfolge sauber), Auto-Spend/Regex/Migration geprüft, **frisch gewählter Render zeigt korrekt GESPERRT/VERFÜGBAR** — Nachweis-Screenshot steht aus, eigenes Ticket/Wellen-Nachtrag.
+- **Prüfung:** `skill-menu-style.test.mjs` pinnt Umbruch-Regeln + Stack-Block · Suite … · Schnelltor … (vor Merge final).
+- **Git / PR / Release:** Branch `arena/a1f52e38-0815games-github-io` ab `f9ca23e6`; Push, PR `#—`, CI, Merge – wird nachgetragen.
+- **Offen / nächster Schritt:** Betreiber-Screenshot zur „Freigeschaltet"-Frage abwarten.

@@ -65,6 +65,22 @@ test('a chosen class themes the chrome, and the class row disappears',()=>{
   assert.match(css,/\.skills-tabs\[hidden\]\{display:none\}/,'the class row vanishes once a class is decided');
 });
 
+test('desktop rows stay readable: words break and the sidebar stacks under 1100px',()=>{
+  // Reported: "Schriften abgeschnitten ... nach rechts und links kann man nicht
+  // alles lesen wenn die fähigkeiten von links nach rechts ausgebaut werden".
+  for(const sel of ['skill-card-name','skill-card-description','skill-card-requirement','skill-group-heading p','skill-chapter-title']){
+    assert.match(css,new RegExp(sel.replace(/[.-]/g,'\\$&')+'\\{[^}]*overflow-wrap:break-word'),'long compounds break: '+sel);
+  }
+  assert.match(css,/skill-lane-head span\{[^}]*overflow-wrap:break-word/,'lane header wraps instead of ellipsis-cut');
+  assert.match(css,/skill-card-tag,#skillDialog \.skill-card-state\{[^}]*overflow-wrap:break-word/,'badges break when truly narrow');
+  // The stack block must sit BEFORE the phone block so <=700px keeps winning.
+  const stackAt=css.indexOf('@media(max-width:1100px){');
+  const phoneAt=css.indexOf('@media(max-width:700px){');
+  assert.ok(stackAt>0&&phoneAt>stackAt,'stack block precedes the phone block');
+  assert.match(css.slice(stackAt,phoneAt),/skills-workspace\{display:flex;flex-direction:column/,'workspace stacks like the phone');
+  assert.match(css.slice(stackAt,phoneAt),/skills-sidebar\{position:static;width:100%\}/,'sidebar goes full width');
+});
+
 test('the phone scroll architecture from the reported fixes stays',()=>{
   assert.match(css,/\/\* Reported: "Bei den Skills hat man 2 Scrollbalken/,'the original scroll report is still documented');
   assert.match(css,/#skillDialog\[open\]\{display:flex;flex-direction:column;overflow:hidden/,'the phone dialog never scrolls itself');
