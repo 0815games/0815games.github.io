@@ -302,6 +302,6 @@ Nur Darstellung, kein Sim-State, kein Wire-Format, statisch im Terrain-Cache (Re
   - `IronPath/tests/afk-rest.test.mjs`: neuer Pin - Notice in `localStorage` (nicht `sessionStorage`), Gate ohne `!user`, Landing-Pfad ruft die Karte auf, frische Anmeldung löscht den Vermerk.
   - `IronPath/patch-notes.mjs`: Eintrag `afkmsg1` an die Spitze (pr-Platzhalter bis zur PR-Nummer).
   - Cache-Welle `20261121-afkmsg1` (`bump … --from 20261121-padart1 --apply`,96 Dateien,7/7 Anker).
-- **Prüfung:** `afk-rest`-Suite nach dem Einbau grün (7/7); Gesamtlauf und Endstand mit PR-Nummer werden nachgetragen.
-- **Git / PR / Release:** Branch `arena/840f9060-0815games-github-io` ab `f8de8cfb`; Push, **PR `#543`**, CI, Merge – wird nachgetragen.
+- **Prüfung:** `afk-rest`-Suite nach dem Einbau grün (7/7, neue Pins für Notice/Gate/Landing/Anmeldung); Gesamtlauf vor dem PR **1380 grün /2 rot (nur pr:0-Platzhalter) /1 übersprungen**, Endstand mit `pr:543` belegt durch grünes CI `game-regressions` auf Lauf `46053631772`; Schnelltor und `check --fast` nach dem Nachtrag ohne Fehler; Patch-Log-Rotation auf IPL-0149 (149 Einträge) vom Archiv-Test grün abgesichert.
+- **Git / PR / Release:** Branch `arena/840f9060-0815games-github-io` ab `f8de8cfb`; Commits `58f0944` (Code/Test/Bump/Notes) + `70c7ece` (pr:543), **PR `#543`**, CI `46053631772` grün, **Merge `38aa60dd`**, Pages `46055550543` success auf `38aa60dd`.
 - **Offen / nächster Schritt:** Betreiber-Prüfung (inaktiv melden, auch mit zweitem Tab desselben Browsers); danach letzter Backlog-Punkt Admin-Panel-Vollintegration.
