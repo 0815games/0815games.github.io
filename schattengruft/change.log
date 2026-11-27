@@ -1,5 +1,61 @@
 # CHANGELOG – Chroniken der Schattengruft
 
+## 2026-11-27 – Schwarzer Bildschirm, Doppel-Login und Sitzungsübernahme (0.10.2)
+
+### Schwarzer Bildschirm nach dem Einloggen (Handy)
+
+- **Fehlerbild:** Nach dem Anmelden blieb der Bildschirm schwarz, keine Karte, kein Spiel.
+- **Ursache:** `show()` in `js/world/world3d-phase1.js` schrieb `api.active=active`.
+  `active` ist in der öffentlichen API aber ein **reiner Getter**. In ES-Modulen
+  (Strict Mode) wirft diese Zuweisung einen `TypeError`. Der Aufruf steht in
+  `render()` und lief bei **jedem** Frame – auch bei ausgeschaltetem 3D. Der Fehler
+  flog aus `draw()` heraus, **bevor** die 2D-Karte gezeichnet wurde. Ergebnis:
+  Bildschirm schwarz. Das erklärt auch, warum es unabhängig von der 3D-Einstellung
+  auftrat.
+- **Behebung:** `show()` setzt nur noch `state3d.active`. Die öffentliche API leitet
+  den Wert über den Getter ab.
+- **Warum es niemandem auffiel:** Der Fehler war seit `02e2054` live. Kein Test
+  benutzte `show()`, weil die Tests die Datei nur als Text prüfen.
+
+### Doppel-Login: Zurückspringen zum Login nach der Charakterauswahl
+
+- **Fehlerbild:** Nach der Charakterauswahl sprang das Spiel zurück zum Login –
+  „man muss sich gefühlt doppelt einloggen“.
+- **Ursache:** `verify()` lehnte sofort ab, solange die Firebase-Verbindung noch
+  nicht gemeldet war (`connected === false`). Diese Meldung kommt asynchron über
+  `.info/connected`. `waitConnected()` löst außerdem sofort auf, wenn `connected`
+  aus einer früheren Sitzung noch `true` war. Dann schlug die Prüfung fehl,
+  `loadAllSlots()` warf und `failedLogin()` schickte den Spieler zurück.
+- **Behebung:** `verify()` wartet jetzt kurz auf die Verbindung, statt sofort
+  `false` zurückzugeben. Erst wenn sie auch nach dem Warten fehlt, wird
+  abgelehnt.
+
+### Sitzung auf einem anderen Gerät übernehmen
+
+- Bisher war ein zweites Gerät hart gesperrt („Bitte dort zuerst abmelden“),
+  ohne Weg zurück.
+- Jetzt: Scheitert die Anmeldung an einer fremden Sitzung, **bleibt die Anmeldung
+  offen** (kein Abmelden, kein erneutes Passwort) und es erscheint der Knopf
+  **„Hier weiterspielen“**. Ein Klick beendet die fremde Sitzung und übernimmt
+  hier.
+- Das verdrängte Gerät merkt es bei seiner nächsten Prüfung (alle 25 s) und zeigt:
+  „Dieses Konto wurde auf einem anderen Gerät angemeldet.“
+- Die Sperre bleibt bei **120 Sekunden**; nach einem geschlossenen Fenster ist das
+  Konto also weiterhin nach spätestens zwei Minuten frei.
+- Nach der Übernahme wird **nicht** neu geladen: Die Anmeldung lebt nur in diesem
+  Fenster (Persistenz `NONE`) und wäre danach weg. Stattdessen öffnet `main.js`
+  direkt die Charakterauswahl.
+
+### Tests
+
+- Neu: `tests/three-show-getter.mjs` (schwarzer Bildschirm),
+  `tests/session-reconnect.mjs` (Doppel-Login),
+  `tests/session-takeover.mjs` (Übernahme).
+- Alle drei wurden per Gegenprobe geprüft: Ohne den jeweiligen Fix scheitern sie.
+- Grenzen: DOM-Stub und Quelltextprüfung. Kein Firebase-, WebGL-, Browser- oder
+  echter Handy-Test. Die Firebase-Regeln liegen nicht im Repo und konnten nicht
+  geprüft werden.
+
 ## 2026-11-27 – Lade-Hänger am Handy behoben (0.10.2)
 
 - **Fehlerbild:** Am Handy blieb das Spiel beim Laden stehen; sichtbar war nur das
