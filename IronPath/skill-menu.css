@@ -12,7 +12,7 @@
 #skillDialog .skills-tabs button[aria-pressed=true]{background:linear-gradient(180deg,#d8c488,#c3ad6c);border-color:#e8d69a;color:#1a2a20;box-shadow:inset 0 1px #fff5}
 #skillDialog .skills-filter{display:flex;align-items:center;gap:9px;padding:8px 24px 0}#skillDialog .skills-filter label{font-size:10px;letter-spacing:.1em;color:#8fa79a;font-weight:bold}#skillDialog .skills-filter select:not([hidden]){width:auto;min-height:38px;margin:0;padding:6px 30px 6px 10px;background:#203029;border:1px solid #4b6354;color:#e4eadf;border-radius:5px;font-size:12px}#skillDialog select[hidden]{display:none}
 #skillDialog .skills-workspace{display:grid;grid-template-columns:minmax(0,1fr) 285px;align-items:start;gap:18px;padding:18px 24px 0}
-#skillDialog .skills-list{min-width:0}#skillDialog .skill-group{margin:0 0 26px}#skillDialog .skill-group-heading{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin:0 0 10px}#skillDialog .skill-group-heading h3{margin:0;color:#efe6c6;font:700 15px/1.15 'Arial Narrow','DIN Alternate',Arial,sans-serif;text-transform:uppercase;letter-spacing:.1em}#skillDialog .skill-group-heading p{margin:0;color:#91a99a;font-size:11px;text-align:right}
+#skillDialog .skills-list{min-width:0}#skillDialog .skill-group{margin:0 0 16px;padding:14px 14px 16px;background:linear-gradient(180deg,#111e18,#0f1a15);border:1px solid #33493d;border-left:3px solid var(--path-color,#839d8d);border-radius:3px}#skillDialog .skill-group-heading{display:flex;align-items:center;gap:10px;margin:0 0 12px}#skillDialog .skill-group-heading h3{margin:0;color:#efe6c6;font:700 15px/1.15 'Arial Narrow','DIN Alternate',Arial,sans-serif;text-transform:uppercase;letter-spacing:.1em}#skillDialog .skill-group-heading p{margin:3px 0 0;color:#9fb4a4;font-size:11.5px;line-height:1.4;text-align:left}
 #skillDialog .skill-card-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 #skillDialog .skills-list .skill-card{position:relative;left:auto;top:auto;transform:none;display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;width:100%;height:auto;min-width:0;min-height:150px;margin:0;padding:14px;text-align:left;white-space:normal;gap:7px;background:#1a2923;color:#e8eee4;border:1px solid #3b5346;border-radius:7px;box-shadow:none;font-family:Arial,sans-serif;letter-spacing:0}
 #skillDialog .skills-list .skill-card:hover{background:#23362c;border-color:#789080}#skillDialog .skills-list .skill-card:active{transform:none}#skillDialog .skills-list .skill-card.is-selected{outline:2px solid #dec994;outline-offset:0;border-color:#dec994;background:#24382c}
@@ -47,7 +47,14 @@
 #skillDialog .skill-legend .legend-equipped::before{background:#63dcc3}
 #skillDialog .skill-legend .legend-unlocked::before{background:#9bc585}
 #skillDialog .skill-legend .legend-viewing::before{background:#fff2ce}
-#skillDialog .skill-group-heading{border-left:4px solid var(--path-color,#839d8d);padding-left:10px}
+#skillDialog .skill-chapter-no{flex:none;display:grid;place-items:center;min-width:34px;height:30px;padding:0 6px;background:linear-gradient(180deg,#d8c488,#c3ad6c);border:1px solid #e8d69a;border-radius:2px;color:#1a2a20;font:800 13px/1 'Arial Narrow','DIN Alternate',Arial,sans-serif;letter-spacing:.08em;box-shadow:inset 0 1px #fff6}
+#skillDialog .skill-chapter-title{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+#skillDialog .skill-chapter-progress{flex:none;padding:4px 8px;border:1px solid #c9b678;border-radius:2px;background:#1d3229;color:#e8d69a;font:800 11px/1 'Arial Narrow','DIN Alternate',Arial,sans-serif;letter-spacing:.08em}
+#skillDialog .skill-lane-head{display:flex;flex-direction:column;gap:2px;padding:8px 10px;background:#1d3229;border:1px solid #61775b;border-left:3px solid var(--path-color,#d8c596);border-radius:2px;min-width:0}
+#skillDialog .skill-lane-head strong{font:800 11px/1.2 'Arial Narrow','DIN Alternate',Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#e6d9ae}
+#skillDialog .skill-lane-head span{font-size:10px;color:#a8c4ad;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#skillDialog .skill-tree-grid--branches>.skill-lane-head--a{grid-column:1;grid-row:1}
+#skillDialog .skill-tree-grid--branches>.skill-lane-head--b{grid-column:2;grid-row:1}
 #skillDialog .skills-list .skill-card.is-main-ability{border-color:#c49d4e;background:#352f21}
 #skillDialog .is-main-ability .skill-card-tag{color:#f5d584}
 #skillDialog .skills-list .skill-card.is-specialist-ability{border-left:4px solid var(--path-color)}
@@ -119,7 +126,8 @@
 #skillDialog .skill-card-shell.is-capstone .skill-card-tag{background:#e4be63;color:#231b08}
 @media(max-width:700px){
   #skillDialog .skills-list .skill-card{min-height:0}
-  #skillDialog .skill-group{margin-bottom:20px}
+  #skillDialog .skill-group{margin-bottom:14px;padding:12px 12px 14px}
+  #skillDialog .skill-tree-grid--branches>.skill-lane-head--a,#skillDialog .skill-tree-grid--branches>.skill-lane-head--b{grid-column:1;grid-row:auto}
   #skillDialog .skill-migration-notice{margin:10px 14px 0}
   #skillDialog .class-picker-grid{grid-template-columns:1fr}
   #skillDialog .class-choice-card{grid-template-columns:72px minmax(0,1fr)!important;min-height:0;gap:10px}

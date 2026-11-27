@@ -6,7 +6,7 @@ aber ersetzt weder Git noch die GitHub-PR-Historie. Die dazugehörige
 [Arbeitsanweisung](../../AGENTS.md) verlangt, dieses Log vor der Arbeit zu lesen
 und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
 
-Die Einträge IPL-0001 bis IPL-0122 stehen im
+Die Einträge IPL-0001 bis IPL-0123 stehen im
 [Archiv](PATCH-LOG-ARCHIV.md); hier stehen die neuesten 20. Beide Dateien
 zusammen sind lückenlos und doppelfrei - `../scripts/patch.mjs` (Unterbefehl `check`) und
 `../tests/patch-log-archive.test.mjs` prüfen das.
@@ -61,18 +61,6 @@ jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderl
 
 
 
-## IPL-0123 – Lebendiges Feld, Scheibe 2: Drehende Köpfe für Kanone, Flak und Scharfschütze (Cache-Welle folgt im selben PR)
-
-- **Zeit / Quelle:** 2026-11-23 UTC; Betreiber nach Sichtung von Scheibe 1: „Stark, der Stil gefällt mir. Mach die restlichen 3.“ — die drei übrigen Turmtypen bekommen dieselben geschichteten Köpfe wie das MG aus `IPL-0122`.
-- **Block / Ziel:** Kein Spiel-Block; reine Darstellung wie Scheibe 1. Keine Simulations-, Snapshot-, Protokoll- oder Regeländerung: Die Köpfe lesen denselben Zielwinkel wie das MG (Zielwahl der Simulation, begrenzter Schwenk, Rückstoß aus den Schuss-Folge-IDs). Mehrspieler malt aus demselben Snapshot dasselbe Bild.
-- **Branch / Basis:** `arena/c606d461-0815games-github-io` ab `56ed636f510aacf6bb8b95edc157a8572e9cf33a` (`main`, Merge PR `#384`).
-- **Änderungen / Dateien:**
-  - `IronPath/core/cartoon-art.mjs`: drei neue Maler im selben Tusche/Oliv-Stil und selben Koordinatenrahmen wie `mgTurret()` — `cannonTurret()` (Betonring statt Sandsäcke, Kastenschwanz, schwerer Lauf mit Mündungsbremse, Rückstoßweg 5), `flakTurret()` (Sandsackring + Munitionskisten als Bodenschmuck, Panzer-Schild, Doppellauf, Rückstoßweg 2), `sniperTurret()` (Tarn-Hügel statt Ring, Zweibein, langer dünner Lauf, Zielfernrohr, Rückstoßweg 1,5). `pad()` wählt den Maler nach `tower.type`, wenn ein Zielwinkel vorliegt; ohne Zielwinkel bleibt das gemalte Artwork (Fallback wie bisher).
-  - `IronPath/core/tower-aim.mjs`: unverändert — der Tracker war bereits typ-agnostisch (Rückstoß über `kind === tower.type`); ein neuer Test pinnt das Typ-Keying.
-  - `IronPath/tests/tower-heads.test.mjs` (neu): Feld-Zeichentest — alle vier Typen mit Zielwinkel tragen ihren gezeichneten Kopf (kein Turm-Artwork auf dem Feld), jeder Kopf schwenkt auf seinen Winkel und stößt entlang seiner Rohrlinie zurück (Rückstoßweg je Typ gepinnt), ohne Zielwinkel landet das Gemälde wie bisher.
-- **Prüfungen:** `tower-heads` 4/4, `tower-aim` 8/8, `soldier-motion` 3/3; Schnelltor „Kein Fehler, 2 Hinweis(e)“; Gesamtsuite **1348 Tests, 1347 bestanden, 0 Fehler, 1 übersprungen**.
-- **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet`. Commit, Push, PR `#385`, danach Cache-Welle `20261123-aim2` mit Feldnotizen `aim2` als zweiter Commit (Muster `IPL-0104`), CI, Merge und Pages-Auslieferung werden als Ereignis nachgetragen. **Betreiber-Sichtung auf `20261123-aim2`:** alle vier Turmtypen auf einer Karte mit Gegnern aus mehreren Richtungen — jeder Kopf muss sichtbar nachführen und beim Feuern zurückstoßen.
-- **Offen / nächster Schritt:** Die Ausbaureihe „Lebendiges Feld“ ist damit vollständig (Scheibe 1 + 2). Neue Punkte beschließt der Betreiber.
 
 ## IPL-0124 – Lebendiges Feld, Feinschliff: sanftes Einrasten, Rückstoß nur im Rohr (Cache-Welle folgt im selben PR)
 
@@ -310,3 +298,14 @@ Nur Darstellung, kein Sim-State, kein Wire-Format, statisch im Terrain-Cache (Re
 - **Prüfung:** Neuer Pin `pwa-manifest.test.mjs` (löst start_url/scope wie ein Browser gegen die Manifest-URL auf und fällt bei jedem Rücksprung unter `/IronPath/assets/`; vier Asset-Links teilen einen Token); Pin-Gruppe 17/0, Suite 1374+2 pr-Platzhalter/1, Schnelltor nur pr-Platzhalter.
 - **Git / PR / Release:** Branch `arena/32003763-0815games-github-io` ab `998e234`; Push, **PR `#514`**, Suite 1374+2 pr-Platzhalter, CI (`game-regressions`/`interface-browser-smoke`/`database-rules`/party-finalization) — alle Checks grün, **Merge `9d5527ec` auf `main`**. Doku-PR im Anschluss.
 - **Offen / nächster Schritt:** Nach dem Deploy das alte Home-Screen-Icon einmal entfernen und neu hinzufügen — iOS hält die am Icon gespeicherte URL fest.
+
+## IPL-0143 – Skills-Hierarchie: nummerierte Kapitel, Pfad-A/B-Spaltenköpfe, Fortschritts-Chips (Welle `20261121-skills2`, PR `#—`)
+
+- **Was:** Rückmeldung des Betreibers nach IPL-0141 — „Skills sieht immer noch sehr unübersichtlich aus, vorallem die Unterkategorien in den Hauptkategorien." Struktur-Redesign des Klassenbaums (Phase 2) in `ui/development-ui.mjs` + `skill-menu.css`, **Mechanik unangetastet** (Entwurf/Save/Reset, `parseBuild`, Tabs/Filter, Zustands-Semantik + Legend, Daten-Attribute `data-path`/`data-rank`/`data-phase`/`data-lane`/`data-tier` bleiben):
+  1. **Jede Unterkategorie wird ein nummeriertes Kapitel** im eigenen vertieften Panel (Pfad-Kante am Panel): 01 Training · 02 Spezialistenpfade · 03 Meisterschaft · 04 Klassenkombos — Messing-Nummernplakette, Zweck-Zeile linksbündig unter dem DIN-Titel, Fortschritts-Chip (`2/3`, nur Zahlen, keine neuen Strings).
+  2. **Spezialisten-Pfade bekommen echte Spaltenköpfe** `PFAD A` / `PFAD B` (+ Spezialisten-Name) über den jeweiligen Spalten — Doktrinen hängen sichtbar unter ihrem Pfad statt zwischen den Pfaden zu schweben (Karten bleiben direkte Grid-Kinder, Connectoren/`data-lane`-Pins der Tests unverändert).
+  3. Klassenwähler (Phase 1) nutzt dieselbe Titel-Box ohne Nummer/Chip.
+- **i18n:** keine neuen Strings (Pfad A/B, Kapiteltitel, Untertitel existieren in `localization-skills-de.mjs`; `'ACTIVE ABILITY'` liegt in `localization-de.mjs`, `'MASTERY / CAPSTONE'` in `localization-advanced-skills-de.mjs`).
+- **Prüfung:** `development-ui.test.mjs` um Kapitel-/Lane-Struktur ergänzt (17-Buttons-Pin bestätigt weiter) · `skill-menu-style.test.mjs` pinnt Plakette/Panel/Lane-Kopf · Suite … · Schnelltor … (vor Merge final).
+- **Git / PR / Release:** Branch `arena/c694b6c4-0815games-github-io` ab `bbc9f7e5`; Push, PR `#—`, CI, Merge – wird nachgetragen.
+- **Offen / nächster Schritt:** Sichtung durch den Betreiber; bei Bedarf Folge-Feinlesen (z. B. Klappbarkeit).

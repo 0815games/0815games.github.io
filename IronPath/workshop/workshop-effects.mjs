@@ -2,7 +2,7 @@
 // and co-op; competitive modes standardize to neutral. Values are covered by
 // the balance suite. All bonuses belong to the wearer except bunkerHealth,
 // which is shared with their team.
-import {validateWorkshop} from './workshop-model.mjs?v=20261121-pwa1';
+import {validateWorkshop} from './workshop-model.mjs?v=20261121-skills2';
 import {PRESTIGE,isPrestige} from '../core/prestige.mjs?v=20261112-pressure1';
 import {legacyEquipmentEffects} from '../core/equipment-effects.mjs?v=20261107-balance1';
 import {RELICS,isRelic,earnedRelicIds} from '../core/relics.mjs?v=20261112-tagless1';

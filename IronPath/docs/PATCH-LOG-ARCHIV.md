@@ -1,6 +1,6 @@
 # Iron Path – Patch-Log: Archiv
 
-Ältere Einträge IPL-0001 bis IPL-0122. Die neuesten 20 stehen in
+Ältere Einträge IPL-0001 bis IPL-0123. Die neuesten 20 stehen in
 [PATCH-LOG.md](PATCH-LOG.md); die Regeln für beide Dateien dort und in
 [`../../AGENTS.md`](../../AGENTS.md). Beim Verschieben wandert ein Eintrag immer
 vollständig einschließlich seiner Ereignis-Nachträge.
@@ -4766,3 +4766,15 @@ sie geprüft wurde.
 - **Prüfungen:** `tower-aim` 7/7 und `soldier-motion` 3/3 neu bzw. erweitert (Zielwahl, Drehbegrenzung, Rückstoß-Fenster, Reduzierte-Bewegung/Pause, Atmung, Bedrohungs-Facing); Schnelltor „Kein Fehler, 3 Hinweis(e)“; Gesamtsuite **1343 Tests, 1342 bestanden, 0 Fehler, 1 übersprungen**.
 - **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet`. Commit, Push, PR `#384`, danach Cache-Welle `20261123-aim1` mit Feldnotizen `aim1` als zweiter Commit (Muster `IPL-0104`), CI, Merge und Pages-Auslieferung werden als Ereignis nachgetragen. **Betreiber-Sichtung auf `20261123-aim1`:** MG-Turm muss Gegner sichtbar nachführen und beim Feuern zurückstoßen; danach Folgepaket für Kanone/Flak/Sniper entscheiden.
 - **Offen / nächster Schritt:** Nach Betreiber-Sichtung: drehende Köpfe für Kanone, Flak und Scharfschütze (eigener Eintrag), ggf. Feinschliff an Drehgeschwindigkeit/Rückstoß über zwei Konstanten in `tower-aim.mjs`/`cartoon-art.mjs`.
+## IPL-0123 – Lebendiges Feld, Scheibe 2: Drehende Köpfe für Kanone, Flak und Scharfschütze (Cache-Welle folgt im selben PR)
+
+- **Zeit / Quelle:** 2026-11-23 UTC; Betreiber nach Sichtung von Scheibe 1: „Stark, der Stil gefällt mir. Mach die restlichen 3.“ — die drei übrigen Turmtypen bekommen dieselben geschichteten Köpfe wie das MG aus `IPL-0122`.
+- **Block / Ziel:** Kein Spiel-Block; reine Darstellung wie Scheibe 1. Keine Simulations-, Snapshot-, Protokoll- oder Regeländerung: Die Köpfe lesen denselben Zielwinkel wie das MG (Zielwahl der Simulation, begrenzter Schwenk, Rückstoß aus den Schuss-Folge-IDs). Mehrspieler malt aus demselben Snapshot dasselbe Bild.
+- **Branch / Basis:** `arena/c606d461-0815games-github-io` ab `56ed636f510aacf6bb8b95edc157a8572e9cf33a` (`main`, Merge PR `#384`).
+- **Änderungen / Dateien:**
+  - `IronPath/core/cartoon-art.mjs`: drei neue Maler im selben Tusche/Oliv-Stil und selben Koordinatenrahmen wie `mgTurret()` — `cannonTurret()` (Betonring statt Sandsäcke, Kastenschwanz, schwerer Lauf mit Mündungsbremse, Rückstoßweg 5), `flakTurret()` (Sandsackring + Munitionskisten als Bodenschmuck, Panzer-Schild, Doppellauf, Rückstoßweg 2), `sniperTurret()` (Tarn-Hügel statt Ring, Zweibein, langer dünner Lauf, Zielfernrohr, Rückstoßweg 1,5). `pad()` wählt den Maler nach `tower.type`, wenn ein Zielwinkel vorliegt; ohne Zielwinkel bleibt das gemalte Artwork (Fallback wie bisher).
+  - `IronPath/core/tower-aim.mjs`: unverändert — der Tracker war bereits typ-agnostisch (Rückstoß über `kind === tower.type`); ein neuer Test pinnt das Typ-Keying.
+  - `IronPath/tests/tower-heads.test.mjs` (neu): Feld-Zeichentest — alle vier Typen mit Zielwinkel tragen ihren gezeichneten Kopf (kein Turm-Artwork auf dem Feld), jeder Kopf schwenkt auf seinen Winkel und stößt entlang seiner Rohrlinie zurück (Rückstoßweg je Typ gepinnt), ohne Zielwinkel landet das Gemälde wie bisher.
+- **Prüfungen:** `tower-heads` 4/4, `tower-aim` 8/8, `soldier-motion` 3/3; Schnelltor „Kein Fehler, 2 Hinweis(e)“; Gesamtsuite **1348 Tests, 1347 bestanden, 0 Fehler, 1 übersprungen**.
+- **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet`. Commit, Push, PR `#385`, danach Cache-Welle `20261123-aim2` mit Feldnotizen `aim2` als zweiter Commit (Muster `IPL-0104`), CI, Merge und Pages-Auslieferung werden als Ereignis nachgetragen. **Betreiber-Sichtung auf `20261123-aim2`:** alle vier Turmtypen auf einer Karte mit Gegnern aus mehreren Richtungen — jeder Kopf muss sichtbar nachführen und beim Feuern zurückstoßen.
+- **Offen / nächster Schritt:** Die Ausbaureihe „Lebendiges Feld“ ist damit vollständig (Scheibe 1 + 2). Neue Punkte beschließt der Betreiber.

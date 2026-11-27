@@ -36,6 +36,20 @@ test('pinned copy is never uppercased by the stylesheet',()=>{
   }
 });
 
+test('each sub-category reads as a numbered chapter inside its own panel',()=>{
+  // Reported: "Skills sieht immer noch sehr unübersichtlich aus, vorallem die
+  // Unterkategorien in den Hauptkategorien." (IPL-0143)
+  assert.match(css,/\.skill-group\{[^}]*border-left:3px solid var\(--path-color,#839d8d\)/,'the chapter panel carries the path edge');
+  assert.match(css,/\.skill-group\{[^}]*background:linear-gradient\(180deg,#111e18,#0f1a15\)/,'recessed chapter panel');
+  assert.match(css,/skill-chapter-no\{[^}]*linear-gradient\(180deg,#d8c488,#c3ad6c\)/,'brass number plate');
+  assert.match(css,/skill-chapter-progress\{[^}]*border:1px solid #c9b678/,'progress chip');
+  assert.match(css,/skill-lane-head\{[^}]*border-left:3px solid var\(--path-color/,'lane header');
+  assert.match(css,/skill-lane-head--a\{grid-column:1;grid-row:1\}/,'Path A keeps column one');
+  assert.match(css,/skill-lane-head--b\{grid-column:2;grid-row:1\}/,'Path B keeps column two');
+  // The chapter layout must also collapse cleanly on phones.
+  assert.match(css,/skill-lane-head--b\{grid-column:1;grid-row:auto\}/,'mobile stacks the lane headers');
+});
+
 test('the phone scroll architecture from the reported fixes stays',()=>{
   assert.match(css,/\/\* Reported: "Bei den Skills hat man 2 Scrollbalken/,'the original scroll report is still documented');
   assert.match(css,/#skillDialog\[open\]\{display:flex;flex-direction:column;overflow:hidden/,'the phone dialog never scrolls itself');
