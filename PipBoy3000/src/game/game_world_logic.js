@@ -133,34 +133,30 @@ Object.assign(Game, {
         return this.getCampStorage().length;
     },
 
+    // Nur ganz einfache Stapel zusammenlegen; Sonderdaten bleiben erhalten.
+    campEinfach: function(item) {
+        return Object.keys(item).every(k => ['id', 'count', 'isNew'].includes(k));
+    },
+
     storeInCamp: function(invIndex, amount) {
-        if(!this.state || !this.state.camp) { UI.log("Kein Lager aufgeschlagen.", "text-red-500"); return false; }
+        if(!this.state || !this.state.camp) return false;
         const item = this.state.inventory[invIndex];
         if(!item) return false;
-
+        if(item.id === 'camp_kit') { UI.log("Der wiederverwendbare Zelt-Bausatz bleibt im Rucksack.", "text-yellow-400"); return false; }
+        const menge = amount === undefined ? item.count : Math.min(item.count, Math.floor(Number(amount)));
+        if(!Number.isFinite(menge) || menge <= 0) return false;
         const lager = this.getCampStorage();
-        if(lager.length >= this.getCampStorageSlots()) {
-            UI.log("Lagerschrank ist voll!", "text-red-500 font-bold");
-            return false;
+        const vorhanden = this.campEinfach(item) ? lager.find(e => e.id === item.id && this.campEinfach(e)) : null;
+        if(!vorhanden && lager.length >= this.getCampStorageSlots()) {
+            UI.log("Lagertruhe ist voll!", "text-red-500 font-bold"); return false;
         }
-
-        const menge = Math.min(item.count, amount || item.count);
-        if(menge <= 0) return false;
-
-        // Bestehenden Stapel im Schrank auffuellen, sonst neuen anlegen.
-        const vorhanden = lager.find(e => e.id === item.id && !e.props && !e.isLegendary);
-        if(vorhanden && !item.props && !item.isLegendary) {
-            vorhanden.count += menge;
-        } else {
-            const kopie = { ...item, count: menge };
-            lager.push(kopie);
-        }
-
+        if(vorhanden) vorhanden.count += menge;
+        else lager.push(JSON.parse(JSON.stringify({...item, count: menge})));
         item.count -= menge;
         if(item.count <= 0) this.state.inventory.splice(invIndex, 1);
-
-        UI.log(`${menge}x ${item.name || (this.items[item.id] && this.items[item.id].name) || item.id} eingelagert.`, "text-blue-300");
+        UI.log(`${menge}x ${item.name || (this.items[item.id] && this.items[item.id].name) || item.id} eingelagert.`, "text-green-300");
         this.updateWeight();
+        if(typeof UI.update === 'function') UI.update();
         this.saveGame();
         return true;
     },
@@ -168,21 +164,51 @@ Object.assign(Game, {
     takeFromCamp: function(storageIndex, amount) {
         if(!this.state || !this.state.camp) return false;
         const lager = this.getCampStorage();
-        const eintrag = lager[storageIndex];
-        if(!eintrag) return false;
-
-        if(this.getUsedSlots() >= this.getMaxSlots()) {
-            UI.log("Inventar voll! Erst Platz schaffen.", "text-red-500");
-            return false;
+        const item = lager[storageIndex];
+        if(!item) return false;
+        const menge = amount === undefined ? item.count : Math.min(item.count, Math.floor(Number(amount)));
+        if(!Number.isFinite(menge) || menge <= 0) return false;
+        const inventar = this.state.inventory;
+        const limit = this.getStackLimit(item.id);
+        const einfach = this.campEinfach(item);
+        const stapel = einfach ? inventar.filter(e => e.id === item.id && this.campEinfach(e) && e.count < limit) : [];
+        const freiImStapel = stapel.reduce((n, e) => n + Math.max(0, limit - e.count), 0);
+        const fehlend = Math.max(0, menge - freiImStapel);
+        const neuePlaetze = Math.ceil(fehlend / limit);
+        if(inventar.length + neuePlaetze > this.getMaxSlots()) {
+            UI.log("Inventar voll! Erst Platz schaffen.", "text-red-500"); return false;
         }
-
-        const menge = Math.min(eintrag.count, amount || eintrag.count);
-        this.addToInventory(eintrag.id, menge);
-        eintrag.count -= menge;
-        if(eintrag.count <= 0) lager.splice(storageIndex, 1);
-
-        UI.log(`${menge}x ${this.items[eintrag.id] ? this.items[eintrag.id].name : eintrag.id} entnommen.`, "text-blue-300");
+        let rest = menge;
+        for(const e of stapel) {
+            const n = Math.min(rest, limit - e.count); e.count += n; rest -= n;
+            if(!rest) break;
+        }
+        while(rest > 0) {
+            const n = Math.min(rest, limit);
+            inventar.push(JSON.parse(JSON.stringify({...item, count: n})));
+            rest -= n;
+        }
+        item.count -= menge;
+        if(item.count <= 0) lager.splice(storageIndex, 1);
+        UI.log(`${menge}x ${item.name || (this.items[item.id] && this.items[item.id].name) || item.id} entnommen.`, "text-green-300");
         this.updateWeight();
+        if(typeof UI.update === 'function') UI.update();
+        this.saveGame();
+        return true;
+    },
+
+    trinkWasser: function(type) {
+        if(!this.state || this.state.isGameOver || !['b', 'p'].includes(type)) return false;
+        const dosis = type === 'b' ? 5 : 10;
+        // Erst Strahlung, dann Heilung bis zum neuen effektiven Maximum.
+        this.addRadiation(dosis);
+        if(!this.state.isGameOver) {
+            const max = Math.max(0, this.state.maxHp - (this.state.rads || 0));
+            const vorher = this.state.hp;
+            this.state.hp = Math.min(max, this.state.hp + 20);
+            UI.log(`Getrunken: +${Math.max(0, this.state.hp - vorher)} TP, Wasser ist verstrahlt.`, "text-green-300");
+            UI.update();
+        }
         this.saveGame();
         return true;
     },
@@ -383,6 +409,18 @@ Object.assign(Game, {
         if (totalItemsReceived > stock) { if(typeof UI !== 'undefined') UI.error("Nicht genug auf Lager."); return; }
         if (Game.state.caps < totalCost) { if(typeof UI !== 'undefined') UI.error("Nicht genug Kronkorken!"); return; }
 
+        // Vor dem Bezahlen pruefen: addToInventory kann sonst nur einen Teil
+        // eines Munitionspakets aufnehmen und dennoch false zurueckgeben.
+        if(item.type === 'ammo') {
+            const limit = this.getStackLimit(id);
+            const stapelFrei = this.state.inventory.filter(i => i.id === id && !i.props && !i.uid)
+                .reduce((sum, i) => sum + Math.max(0, limit - i.count), 0);
+            const slotsFrei = Math.max(0, this.getMaxSlots() - this.getUsedSlots());
+            if(totalItemsReceived > stapelFrei + slotsFrei * limit) {
+                if(typeof UI !== 'undefined') UI.error("Nicht genug Platz für das Munitionspaket.");
+                return;
+            }
+        }
         Game.state.caps -= totalCost;
         Game.state.shop.merchantCaps += totalCost; 
         

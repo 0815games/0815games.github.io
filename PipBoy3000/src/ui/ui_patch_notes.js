@@ -25,15 +25,24 @@ window.GameData = window.GameData || {};
 // veroeffentlichten Eintraegen und bleibt bestehen, bis es erledigt ist.
 window.GameData.offenePunkte = [
     'Geräteabnahme: die Ansichten wurden im Browser mit Test-Doubles und als gerenderte Bilder geprüft, nicht auf einem echten Telefon.',
-    'Befund 8 aus docs/BEFUNDE.md: *.log in .gitignore trifft auch docs/change.log, der build.json-Hash deckt style.css nicht ab, src/admin.js hat keine Tests.',
-    'deployCamp verbraucht den Bausatz nicht; Nuka Cola heilt 15 statt der angegebenen 10.',
-    'Der RAD-Balken nutzt noch einen Platzhalter (+1000) statt des echten Strahlungswerts.'
+    'Befund 8 aus docs/BEFUNDE.md: *.log in .gitignore trifft auch docs/change.log, der build.json-Hash deckt style.css nicht ab, src/admin.js hat keine Tests.'
 ];
 
 // Veroeffentlichte Versionen, neueste zuerst. Nach jedem echten Release wird
 // hier ein Eintrag ergaenzt - mit dem, was tatsaechlich ausgeliefert wurde,
 // nicht mit dem, was geplant war.
 window.GameData.RELEASED_PATCHES = [
+  {
+    version: '14.0.33',
+    datum: '2026-11-24',
+    title: 'Wasser, Munition und Lagertruhe',
+    punkte: [
+      'Die Munitionsanzeige zählt nur die Sorte der ausgerüsteten Waffe. Munitionsrezepte sind nun verfügbar; bei zu wenig Platz oder Munition geht nichts verloren.',
+      'Brunnen und Pfützen im Ödland bieten freiwillige Heilung gegen Strahlung. Das Tutorial erklärt die Wasserstellen.',
+      'Der bisherige Lagerschrank ist als Truhe mit eigenem Bild erkennbar. Beim Ein- und Auslagern bleiben auch besondere Gegenstände erhalten.',
+      'Nuka Cola heilt wie angegeben 15 TP. Der Zelt-Bausatz bleibt wiederverwendbar und die Truhe reist beim Abbau mit.'
+    ]
+  },
   {
     version: '14.0.32',
     datum: '2026-11-24',

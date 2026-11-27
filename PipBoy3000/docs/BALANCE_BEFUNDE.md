@@ -274,12 +274,12 @@ B1 bis B7 sind behoben. Aus B8 bleiben die Punkte, die reine Datenpflege sind:
 
 - „Alte Stiefel" haben einen leeren Bonus (und jetzt `def: 1`, sind also nicht
   mehr funktionslos).
-- Nuka Cola heilt 15 statt der 10 aus den Daten.
+- Nuka Cola: Katalog und Wirkung auf 15 TP vereinheitlicht (v14.0.33).
 - Der Strahlenschutzanzug trägt mit `RAD+1000` einen Platzhalterwert, der im
   Deckel von 90 % verschwindet.
 
 Die Wächter decken die behobenen Befunde ab. Für die drei Punkte oben gibt es
-noch keinen Test, weil sie Geschmacksfragen sind und keinen Fehler darstellen.
+nur für die verbleibenden Datenfragen keine eigenen Tests.
 
 ## Nachtrag — ROHE NAHRUNG
 

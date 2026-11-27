@@ -130,7 +130,7 @@ Object.assign(UI, {
 
                 knownCount++;
 
-                const outItem = (recipe.out === 'AMMO' ? {name: "15x Munition"} : Game.items[recipe.out]) || {name: "Unbekanntes Item"};
+                const outItem = (recipe.out === 'AMMO' ? {name: "10x Munition"} : Game.items[recipe.out]) || {name: "Unbekanntes Item"};
                 let reqHtml = '';
                 let canCraft = true;
                 

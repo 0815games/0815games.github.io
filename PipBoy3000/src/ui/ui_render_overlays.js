@@ -593,6 +593,34 @@ Object.assign(UI, {
         document.getElementById('btn-cancel').onclick = () => UI.leaveDialog();
     },
 
+    showWaterSource: function(x, y, type) {
+        const state = Game.state;
+        if(!state || state.inDialog || state.view !== 'map' || state.dungeonLevel) return;
+        const name = type === 'b' ? 'BRUNNEN' : 'PFÜTZE';
+        const dosis = type === 'b' ? 5 : 10;
+        const sx = state.sector.x, sy = state.sector.y;
+        const overlay = this.restoreOverlay();
+        overlay.style.display = 'flex';
+        state.inDialog = true;
+        this._trapEscKey();
+        const box = document.createElement('div');
+        box.className = 'bg-black border-2 border-green-500 p-5 max-w-sm text-center pointer-events-auto';
+        box.onclick = e => e.stopPropagation();
+        box.innerHTML = `<h2 class="text-3xl text-green-400 font-bold">${name}</h2>
+            <p class="text-green-200 my-3">Trinken heilt bis zu 20 TP. Das Wasser ist verstrahlt: +${dosis} RAD pro Schluck (Schutz kann die Dosis senken).</p>
+            <div class="flex gap-3 justify-center"><button type="button" data-drink class="action-button">TRINKEN</button><button type="button" data-cancel class="action-button">ABBRECHEN</button></div>`;
+        overlay.appendChild(box);
+        box.querySelector('[data-cancel]').onclick = () => this.leaveDialog();
+        box.querySelector('[data-drink]').onclick = () => {
+            // Ein alter Dialog darf nie auf einen anderen Spielstand/Sektor wirken.
+            if(Game.state !== state || !state.inDialog || state.view !== 'map' || state.dungeonLevel || state.sector.x !== sx || state.sector.y !== sy ||
+                !state.currentMap[y] || state.currentMap[y][x] !== type ||
+                Math.abs(state.player.x-x) + Math.abs(state.player.y-y) !== 1) { this.leaveDialog(); return; }
+            this.leaveDialog();
+            Game.trinkWasser(type);
+        };
+    },
+
     showDungeonWarning: function(callback) {
         const overlay = this.restoreOverlay();
         overlay.style.display = 'flex';

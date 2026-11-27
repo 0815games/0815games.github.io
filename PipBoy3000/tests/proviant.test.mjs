@@ -223,3 +223,48 @@ test('ein neu aufgeschlagenes Lager bringt den Schrank zurück', () => {
   assert.equal(Game.getCampStorageUsed(), 1, 'Schrank ist leer');
   assert.equal(Game.getCampStorage()[0].count, 4);
 });
+
+test('Truhe bewahrt legendäre Daten beim Ein- und Auslagern', () => {
+  const {Game, state} = camp();
+  const waffe = {id: 'pistol_10mm', count: 1, uid: 'einzigartig', isLegendary: true, name: 'Stern', dmg: 47, props: {dmgMult: 1.5}};
+  state.inventory = [structuredClone(waffe)];
+  assert.equal(Game.storeInCamp(0), true);
+  assert.equal(Game.takeFromCamp(0), true);
+  assert.deepEqual(JSON.parse(JSON.stringify(state.inventory[0])), waffe);
+});
+
+test('volle Truhe erlaubt vorhandenen Stapel; zu voller Rucksack verliert keine Ware', () => {
+  const {Game, state} = camp();
+  state.camp.storage = Array.from({length: 10}, (_, i) => ({id: i ? `item${i}` : 'ammo_10mm', count: 99}));
+  state.inventory = [{id: 'ammo_10mm', count: 50}];
+  assert.equal(Game.storeInCamp(0), true);
+  assert.equal(state.camp.storage[0].count, 149);
+  Game.getMaxSlots = () => 1;
+  assert.equal(Game.takeFromCamp(0), false);
+  assert.equal(state.camp.storage[0].count, 149);
+  assert.equal(state.inventory.length, 0);
+  assert.equal(Game.takeFromCamp(0, 100), true);
+  assert.equal(state.inventory[0].count, 100);
+  assert.equal(state.camp.storage[0].count, 49);
+});
+
+test('Zeltbausatz ist wiederverwendbar und wird nicht eingelagert', () => {
+  const {Game, state} = camp();
+  state.inventory = [{id: 'camp_kit', count: 1}];
+  assert.equal(Game.storeInCamp(0), false);
+  assert.equal(state.inventory[0].id, 'camp_kit');
+  assert.equal(state.camp.storage.length, 0);
+});
+
+test('Nuka Cola heilt 15 TP wie in den Daten und wird gespeichert', () => {
+  const {Game, state} = freshGame();
+  let speicherungen = 0; Game.saveGame = () => { speicherungen++; };
+  state.hp = 50; state.inventory = [{id: 'nuka_cola', count: 1}];
+  Game.useItem(0);
+  assert.equal(Game.items.nuka_cola.val, 15);
+  assert.match(Game.items.nuka_cola.desc, /\+15 HP/);
+  assert.equal(state.hp, 65);
+  assert.equal(state.rads, 5);
+  assert.equal(state.caps, 1001);
+  assert.ok(speicherungen > 0);
+});

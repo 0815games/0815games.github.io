@@ -69,6 +69,7 @@ Object.assign(Game, {
                 else if(t === 'Y') this.drawHighMountain(ctx, x, y); 
                 else if(t === '=') this.drawRoad(ctx, x, y); 
                 else if(t === '+') this.drawBridge(ctx, x, y); 
+                else if(t === 'b' || t === 'p') this.drawWaterSource(ctx, x, y, t);
                 else if(t === '~') { 
                     ctx.fillStyle = "#0d47a1"; 
                     ctx.fillRect(x*this.TILE, y*this.TILE, this.TILE, this.TILE); 
@@ -110,6 +111,22 @@ Object.assign(Game, {
             }
         }
         if(type === '.' && rand > 0.8) { ctx.fillStyle = "#333"; ctx.fillRect(px+rand*ts, py+(1-rand)*ts, 2, 2); }
+    },
+
+    drawWaterSource: function(ctx, x, y, type) {
+        const ts = this.TILE, px = x * ts, py = y * ts;
+        ctx.save();
+        if(type === 'b') {
+            ctx.fillStyle = '#657c6b'; ctx.fillRect(px+ts*.16, py+ts*.38, ts*.68, ts*.42);
+            ctx.strokeStyle = '#b6d2a1'; ctx.lineWidth = 2; ctx.strokeRect(px+ts*.16, py+ts*.38, ts*.68, ts*.42);
+            ctx.fillStyle = '#63c79d'; ctx.fillRect(px+ts*.25, py+ts*.46, ts*.5, ts*.15);
+            ctx.fillStyle = '#bdd9b0'; ctx.fillRect(px+ts*.22, py+ts*.08, ts*.09, ts*.34); ctx.fillRect(px+ts*.69, py+ts*.08, ts*.09, ts*.34); ctx.fillRect(px+ts*.22, py+ts*.08, ts*.56, ts*.08);
+        } else {
+            ctx.fillStyle = '#306d59'; ctx.beginPath(); ctx.ellipse(px+ts*.5, py+ts*.6, ts*.4, ts*.22, 0, 0, Math.PI*2); ctx.fill();
+            ctx.strokeStyle = '#85d7a7'; ctx.lineWidth = 2; ctx.stroke();
+            ctx.fillStyle = '#c1f4cd'; ctx.fillRect(px+ts*.35, py+ts*.53, ts*.25, ts*.05);
+        }
+        ctx.restore();
     },
 
     drawRoad: function(ctx, x, y) {

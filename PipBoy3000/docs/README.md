@@ -258,3 +258,10 @@ leaderboard/{name}: Highscore-Einträge (Tote & Lebende).
 bug_reports/{id}: Automatisch generierte Fehlerberichte (Neu).
 
 Hinweis: Bei technischen Problemen bitte den "BUG MELDEN" Button im Menü nutzen. Der Bericht hilft uns, das Problem zu beheben.
+
+
+### Wasser und Lagertruhe
+
+Gelegentlich findest du im Ödland Brunnen und Pfützen. Bewege dich dagegen und bestätige TRINKEN: ein Schluck heilt bis zu 20 TP und verursacht Strahlung (Brunnen 5 RAD, Pfütze 10 RAD vor Strahlenschutz). Du kannst abbrechen.
+
+Im Lager findest du die TRUHE für Gegenstände. Ihre Kapazität wächst mit der Lagerstufe. Beim Abbau reisen Inhalt und Lagerstufe mit; der Zelt-Bausatz bleibt wiederverwendbar im Rucksack.

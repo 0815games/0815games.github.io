@@ -218,7 +218,8 @@ window.Combat = {
         const wId = wpn.id.toLowerCase();
 
         if(stats.ammoType && wId !== 'alien_blaster') { 
-             const hasAmmo = Game.removeFromInventory(stats.ammoType, stats.ammoCost);
+             const verfuegbar = (Game.state.inventory || []).reduce((sum, item) => sum + (item.id === stats.ammoType ? (Number(item.count) || 0) : 0), 0);
+             const hasAmmo = verfuegbar >= stats.ammoCost && Game.removeFromInventory(stats.ammoType, stats.ammoCost);
              if(!hasAmmo) {
                  if(typeof UI.showCombatEffect === 'function') {
                      UI.showCombatEffect("* KLICK *", "MUNITION LEER!", "red", 2300);

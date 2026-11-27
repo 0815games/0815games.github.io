@@ -52,6 +52,11 @@ Object.assign(Game, {
             delete this.state.hiddenItems[pk];
         }
 
+        if(!this.state.dungeonLevel && (t === 'b' || t === 'p')) {
+            if(typeof UI !== 'undefined' && UI.showWaterSource) UI.showWaterSource(nx, ny, t);
+            return;
+        }
+
         // NEU: Kisten-Logik ausgelagert (Dungeon Truhen behalten ihr altes System)
         if (t === 'X') { 
             if (this.state.dungeonLevel >= 3) {
@@ -168,6 +173,7 @@ Object.assign(Game, {
             this.worldData[key]={layout:map, biome:biome};
         }
         this.state.currentMap = this.worldData[key].layout;
+        if(typeof WorldGen !== 'undefined' && WorldGen.placeWaterSources) WorldGen.placeWaterSources(this.state.currentMap, sx, sy);
         if(!this.state.visitedSectors.includes(key)) this.state.visitedSectors.push(key);
         
         this.state.hiddenItems = {};

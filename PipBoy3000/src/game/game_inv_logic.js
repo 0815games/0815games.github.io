@@ -238,6 +238,20 @@ Object.assign(Game, {
             const invItem = this.state.inventory.find(i => i.id === reqId);
             if (!invItem || invItem.count < countNeeded) { UI.log(`Material fehlt: ${this.items[reqId].name}`, "text-red-500"); return; }
         }
+        if(recipe.type === 'ammo') {
+            const id = recipe.out === 'AMMO' ? 'ammo' : recipe.out;
+            const limit = this.getStackLimit(id);
+            const freed = Object.entries(recipe.req).filter(([reqId, needed]) => {
+                const stack = this.state.inventory.find(i => i.id === reqId);
+                return stack && stack.count === needed;
+            }).length;
+            const freeInStacks = this.state.inventory.filter(i => i.id === id && !i.props && !i.uid)
+                .reduce((n, i) => n + Math.max(0, limit - i.count), 0);
+            const freeSlots = Math.max(0, this.getMaxSlots() - this.getUsedSlots() + freed);
+            if(recipe.count > freeInStacks + freeSlots * limit) {
+                UI.log("Nicht genug Platz für die hergestellte Munition.", "text-red-500"); return;
+            }
+        }
         for(let reqId in recipe.req) {
             const countNeeded = recipe.req[reqId];
             const invItem = this.state.inventory.find(i => i.id === reqId);
@@ -258,6 +272,8 @@ Object.assign(Game, {
         }
 
         this.updateWeight();
+        this.saveGame();
+        if(typeof UI.update === 'function') UI.update();
 
         if(recipe.type === 'cooking') {
             if(typeof UI.renderCampCooking === 'function') UI.renderCampCooking();
@@ -397,12 +413,14 @@ Object.assign(Game, {
 
         if(invItem.id === 'nuka_cola') {
             const effectiveMax = this.state.maxHp - (this.state.rads || 0);
-            this.state.hp = Math.min(this.state.hp + 15, effectiveMax);
+            this.state.hp = Math.min(this.state.hp + itemDef.val, effectiveMax);
             this.state.caps += 1;
             this.addRadiation(5);
             UI.log("Nuka Cola: Erfrischend... und strahlend.", "text-blue-400");
             this.removeFromInventory('nuka_cola', 1);
             UI.update();
+            if(this.state.view === 'inventory') UI.renderInventory();
+            this.saveGame();
             return;
         }
 
@@ -530,7 +548,7 @@ Object.assign(Game, {
 
             const type = def.type ? def.type.toLowerCase() : '';
             const isWeaponType = type === 'weapon' || type === 'melee' || type === 'weapon_melee' || type.includes('weapon');
-            const needsAmmo = (item.ammoType || def.ammo) && (item.ammoType || def.ammo) !== 'none';
+            const needsAmmo = (item.ammoType || def.ammoType) && (item.ammoType || def.ammoType) !== 'none';
 
             if (isWeaponType && !needsAmmo) {
                 // [FIX] Nutze echte Item Stats - der Katalog führt baseDmg,

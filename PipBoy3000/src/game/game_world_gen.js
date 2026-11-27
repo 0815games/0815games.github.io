@@ -211,6 +211,39 @@ const WorldGen = window.WorldGen = {
         return map;
     },
 
+    // Deterministisch und ohne bestehende Orte/Wege zu ueberschreiben. Auch
+    // bereits erzeugte Sektoren koennen so beim Laden nachgeruestet werden.
+    placeWaterSources: function(map, sx, sy) {
+        if(!Array.isArray(map) || map.length < 12 || !map[0] || map[0].length < 12) return;
+        if(map.some(row => row && row.some(tile => tile === 'b' || tile === 'p'))) return;
+        const h = map.length, w = map[0].length;
+        const seed = (this._seed || 1) + sx * 7919 + sy * 104729;
+        const zufall = n => this.noise(seed * .001 + n * 31.73, sx * 19.37 + sy * 47.19 + n);
+        if(zufall(1) >= 0.60) return;
+        const type = zufall(2) < 0.5 ? 'b' : 'p';
+        // Erreichbar vom Startbereich: nicht in eine abgeschlossene Ruine.
+        const frei = t => ['.', ',', '_', ';', '"', '=', '+'].includes(t);
+        const startX = Math.min(w - 1, 25), startY = Math.min(h - 1, 25);
+        const queue = [[startX, startY]], erreichbar = new Set([`${startX},${startY}`]);
+        for(let j = 0; j < queue.length; j++) {
+            const [x,y] = queue[j];
+            for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
+                const nx=x+dx, ny=y+dy, key=`${nx},${ny}`;
+                if(nx<0 || ny<0 || nx>=w || ny>=h || erreichbar.has(key) || !frei(map[ny][nx])) continue;
+                erreichbar.add(key); queue.push([nx,ny]);
+            }
+        }
+        for(let i = 0; i < 80; i++) {
+            const x = 3 + Math.floor(zufall(3+i*2) * (w - 6));
+            const y = 3 + Math.floor(zufall(4+i*2) * (h - 6));
+            if(Math.abs(x - 25) + Math.abs(y - 25) < 5) continue;
+            if(!['.', ',', '_', ';', '"'].includes(map[y][x])) continue;
+            if(![[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy]) => erreichbar.has(`${x+dx},${y+dy}`))) continue;
+            map[y][x] = type;
+            return;
+        }
+    },
+
     placeHouseRuin: function(map, x, y) {
         const w = 3 + Math.floor(this.rand() * 2); 
         const h = 3 + Math.floor(this.rand() * 2);

@@ -62,7 +62,7 @@ const SCHRITTE = [
   {
     id: 'inventar',
     titel: 'DEIN ZEUG',
-    text: 'Im Inventar liegen Stimpacks und Munition. Ein Stimpack heilt - heb eines für einen schlechten Moment auf.',
+    text: 'Im Inventar liegen Stimpacks und Munition. Ein Stimpack heilt. In der Welt findest du gelegentlich Brunnen und Pfützen: Bewege dich dagegen und bestätige TRINKEN. Das heilt, verursacht aber bei jedem Schluck RAD.',
     ziel: '#btn-inv',
     weiter: 'INVENTAR ÖFFNEN',
     // 'inventory', nicht 'inv': das Template heisst templates/inventory.html.

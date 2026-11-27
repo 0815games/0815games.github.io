@@ -47,7 +47,7 @@ Object.assign(UI, {
                 ${rows}
             </div>
             <div class="text-[10px] text-gray-500 text-center italic">
-                Höhere Stufen heilen effektiver und vergrößern den Lagerschrank<br>
+                Höhere Stufen heilen effektiver und vergrößern den Lagertruhe<br>
                 (10 Plätze auf Stufe 1, +5 je Stufe). Strahlung (+5) beim Schlafen bleibt konstant.
             </div>
         `;
@@ -184,14 +184,14 @@ Object.assign(UI, {
 
         const belegt = Game.getCampStorageUsed();
         const plaetze = Game.getCampStorageSlots();
-        if(kopf) kopf.textContent = `Belegt: ${belegt} / ${plaetze} Plätze · Schrank wächst mit der Lagerstufe`;
+        if(kopf) kopf.textContent = `Belegt: ${belegt} / ${plaetze} Plätze · Truhe wächst mit der Lagerstufe`;
 
         liste.innerHTML = '';
 
         // --- Schrank ---
         const lager = Game.getCampStorage();
         if(lager.length === 0) {
-            liste.innerHTML = '<div class="text-gray-500 italic text-center mt-6">Der Schrank ist leer.</div>';
+            liste.innerHTML = '<div class="text-gray-500 italic text-center mt-6">Die Truhe ist leer.</div>';
         } else {
             lager.forEach((eintrag, i) => {
                 const def = Game.items[eintrag.id] || {};
@@ -201,13 +201,17 @@ Object.assign(UI, {
                     <div class="flex items-center gap-2 overflow-hidden">
                         ${UI.itemSymbol(eintrag.id, def.type, 'klein')}
                         <div class="flex flex-col">
-                            <span class="font-bold text-cyan-300">${eintrag.name || def.name || eintrag.id}</span>
+                            <span class="font-bold text-cyan-300">${eintrag.name || (eintrag.props && eintrag.props.name) || def.name || eintrag.id}</span>
                             <span class="text-xs text-cyan-600">${eintrag.count}x</span>
                         </div>
                     </div>
-                    <button class="border border-cyan-500 text-cyan-400 px-3 py-1 text-sm font-bold hover:bg-cyan-900/40">ENTNEHMEN</button>
+                    <div class="flex gap-1 shrink-0">
+                        <button data-einzeln class="border border-cyan-500 text-cyan-400 px-2 py-1 text-sm" aria-label="Ein Stück entnehmen">1x</button>
+                        <button data-alle class="border border-cyan-500 text-cyan-400 px-3 py-1 text-sm font-bold hover:bg-cyan-900/40">ENTNEHMEN</button>
+                    </div>
                 `;
-                div.querySelector('button').onclick = () => { Game.takeFromCamp(i); this.renderCampStorage(); };
+                div.querySelector('[data-einzeln]').onclick = () => { Game.takeFromCamp(i, 1); this.renderCampStorage(); };
+                div.querySelector('[data-alle]').onclick = () => { Game.takeFromCamp(i); this.renderCampStorage(); };
                 liste.appendChild(div);
             });
         }
@@ -228,13 +232,17 @@ Object.assign(UI, {
                 <div class="flex items-center gap-2 overflow-hidden">
                     ${UI.itemSymbol(item.id, def.type, 'klein')}
                     <div class="flex flex-col">
-                        <span class="text-green-300">${item.name || def.name || item.id}</span>
+                        <span class="text-green-300">${item.name || (item.props && item.props.name) || def.name || item.id}</span>
                         <span class="text-xs text-gray-500">${item.count}x</span>
                     </div>
                 </div>
-                <button class="border border-green-700 text-green-500 px-3 py-1 text-sm font-bold hover:bg-green-900/40">EINLAGERN</button>
+                <div class="flex gap-1 shrink-0">
+                    <button data-einzeln class="border border-green-700 text-green-500 px-2 py-1 text-sm" aria-label="Ein Stück einlagern">1x</button>
+                    <button data-alle class="border border-green-700 text-green-500 px-3 py-1 text-sm font-bold hover:bg-green-900/40">EINLAGERN</button>
+                </div>
             `;
-            div.querySelector('button').onclick = () => { Game.storeInCamp(i); this.renderCampStorage(); };
+            div.querySelector('[data-einzeln]').onclick = () => { Game.storeInCamp(i, 1); this.renderCampStorage(); };
+            div.querySelector('[data-alle]').onclick = () => { Game.storeInCamp(i); this.renderCampStorage(); };
             liste.appendChild(div);
             etwasDa = true;
         });

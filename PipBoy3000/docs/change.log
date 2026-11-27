@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## v14.0.33 (Wasser, Munition und Lagertruhe, 2026-11-24)
+- [FIX] HUD zeigt die Munition der ausgerüsteten Waffe über alle Stapel; bei Nahkampfwaffen einen Strich. Bestehende Munitionsarten besitzen Bilder, Händlerbestände und nun zugängliche levelgebundene Rezepte.
+- [FIX] Ein Schuss ohne ausreichende Munition verbraucht keinen Rest; automatischer Waffenwechsel bevorzugt wirklich Nahkampfwaffen. Munitionskauf mit zu wenig Inventarplatz bricht vor Bezahlung ab. Revolver-Beschreibungen nennen ihre tatsächliche Munition.
+- [NEU] Gelegentlich erreichbare Brunnen und Pfützen in der Welt. Bestätigtes Trinken heilt bis zu 20 TP und gibt vor Schutz 5 bzw. 10 RAD pro Schluck; Tutorial und Handbuch erklären es.
+- [FIX] Nuka Cola im Katalog und in der Wirkung auf 15 TP angeglichen; Verwendung speichert.
+- [LAGER] Vorhandenen Stauraum als Truhe mit Bild erkennbar gemacht. Beim Ein- und Auslagern bleiben Sonderdaten erhalten; Transfers sind bei unzureichendem Platz atomar. Die wiederverwendbare Zeltausrüstung bleibt im Rucksack und der Truheninhalt beim Abbau erhalten.
+- [TEST] Munitionsarten, HUD, Kauf, Wasserstellen, Dialog und Truhentransfers geprüft; veralteten Hinweis zum RAD-Balken entfernt.
+
 ## v14.0.32 (Punkte auf einen Blick, 2026-11-24)
 - [OPTIK] S.P.E.C.I.A.L.- und PERKS-Reiter zeigen verfügbare Punkte unabhängig voneinander mit Leuchten und Anzahl; auch aktiv und bei reduzierter Bewegung sichtbar.
 - [MENÜ] Separaten Navigationspunkt entfernt. Koordinateneingabe bleibt über ZIEL auf der Weltkarte sowie bei aktivem Ziel über den HUD-Pfeil erreichbar; Zielführung unverändert.

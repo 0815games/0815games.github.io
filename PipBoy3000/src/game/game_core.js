@@ -461,7 +461,7 @@ window.Game = {
                 if(!this.state.completedQuests) this.state.completedQuests = [];
                 if(!this.state.quests) this.state.quests = [];
                 if(!this.state.knownRecipes) this.state.knownRecipes = [];
-                ['craft_ammo', 'craft_stimpack_simple', 'rcp_camp', 'craft_bp_frame', 'craft_bp_leather', 'craft_bp_metal', 'craft_bp_military', 'craft_bp_cargo'].forEach(r=>{if(!this.state.knownRecipes.includes(r))this.state.knownRecipes.push(r)});
+                ['craft_ammo', 'craft_ammo_10mm', 'craft_ammo_308', 'craft_ammo_shell', 'craft_ammo_micro', 'craft_ammo_cell', 'craft_stimpack_simple', 'rcp_camp', 'craft_bp_frame', 'craft_bp_leather', 'craft_bp_metal', 'craft_bp_military', 'craft_bp_cargo'].forEach(r=>{if(!this.state.knownRecipes.includes(r))this.state.knownRecipes.push(r)});
                 if(!this.state.perks) this.state.perks = {}; 
                 if(!this.state.shop) this.state.shop = { nextRestock: 0, stock: {}, merchantCaps: 1000 };
                 if(!this.state.equip) this.state.equip = { weapon: null, body: null };
@@ -490,7 +490,7 @@ window.Game = {
                     inventory: [], hp: 100, maxHp: 100, xp: 0, lvl: 1, caps: 50, ammo: 0, statPoints: 0, perkPoints: 0, perks: {}, 
                     camp: null, rads: 0, kills: 0, view: 'map', zone: 'Ödland', inDialog: false, isGameOver: false, 
                     explored: {}, visitedSectors: [`${startSector.x},${startSector.y}`],
-                    activeQuests: [], completedQuests: [], knownRecipes: ['craft_ammo', 'craft_stimpack_simple', 'rcp_camp', 'craft_bp_frame', 'craft_bp_leather', 'craft_bp_metal', 'craft_bp_military', 'craft_bp_cargo'], 
+                    activeQuests: [], completedQuests: [], knownRecipes: ['craft_ammo', 'craft_ammo_10mm', 'craft_ammo_308', 'craft_ammo_shell', 'craft_ammo_micro', 'craft_ammo_cell', 'craft_stimpack_simple', 'rcp_camp', 'craft_bp_frame', 'craft_bp_leather', 'craft_bp_metal', 'craft_bp_military', 'craft_bp_cargo'],
                     hiddenItems: {}, shop: { nextRestock: 0, stock: {}, merchantCaps: 1000 }, startTime: Date.now()
                 };
                 this.state.inventory.push({id: 'stimpack', count: 1, isNew: true});
