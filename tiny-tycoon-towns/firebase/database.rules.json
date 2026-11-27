@@ -29,6 +29,9 @@
             ".read": "auth != null",
             ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 12"
           },
+          "mapSize": {
+            ".validate": "newData.isNumber() && newData.val() >= 8 && newData.val() <= 16"
+          },
           "townXp": {
             ".validate": "newData.isNumber() && newData.val() >= 0"
           },

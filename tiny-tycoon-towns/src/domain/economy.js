@@ -1,6 +1,6 @@
 // Pure formulas from GAME_PLAN.md section 4.5 - 4.7. No state mutation here.
-import { inBounds, keyOf } from './grid.js?v=20261127-info1';
-import { fieldsOf } from './placement.js?v=20261127-info1';
+import { inBounds, keyOf, sizeOf } from './grid.js?v=20261127-karten1';
+import { fieldsOf } from './placement.js?v=20261127-karten1';
 
 export const RESOURCE_CLASSES = ['abundant', 'neutral', 'scarce'];
 
@@ -23,7 +23,7 @@ function neighbourTiles(state, x, y) {
   for (const [dx, dy] of NEIGHBOURS) {
     const nx = x + dx;
     const ny = y + dy;
-    if (!inBounds(nx, ny)) continue;
+    if (!inBounds(nx, ny, sizeOf(state))) continue;
     const t = state.tiles[keyOf(nx, ny)];
     if (t) out.push(t);
   }
@@ -85,7 +85,7 @@ export function fishingGround(state, x, y) {
   for (const [dx, dy] of NEIGHBOURS) {
     const nx = x + dx;
     const ny = y + dy;
-    if (!inBounds(nx, ny)) continue;
+    if (!inBounds(nx, ny, sizeOf(state))) continue;
     const n = state.tiles[keyOf(nx, ny)];
     if (n?.terrain !== 'water') continue;
     const st = fishStock(state, nx, ny);

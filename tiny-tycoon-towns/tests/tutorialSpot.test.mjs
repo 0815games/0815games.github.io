@@ -7,7 +7,8 @@ import { tutorialSpot, builtSpot } from '../src/domain/tutorialSpot.js';
 import { checkPlacement } from '../src/domain/placement.js';
 import { TUTORIAL_STEPS, STATE_TASKS, CHECK_LABELS } from '../src/tutorial.js';
 import { tutorialTaskDone } from '../src/domain/settlement.js';
-import { HALL } from '../src/domain/grid.js';
+import { hallOf } from '../src/domain/grid.js';
+const HALL = hallOf(10);
 
 const load = (n) => JSON.parse(readFileSync(new URL(`../data/${n}.json`, import.meta.url), 'utf8'));
 const data = { resources: load('resources'), biomes: load('biomes'), buildings: load('buildings'), economy: load('economy'), merchant: load('merchant') };

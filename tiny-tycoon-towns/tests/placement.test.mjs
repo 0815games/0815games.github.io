@@ -6,7 +6,8 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 import { generateTerrain } from '../src/domain/terrain.js';
-import { keyOf, HALL } from '../src/domain/grid.js';
+import { keyOf, hallOf } from '../src/domain/grid.js';
+const HALL = hallOf(10);
 import { checkPlacement, fieldsOf, plantableNeighbours } from '../src/domain/placement.js';
 import { createTown, placeBuilding, plantField, removeField, advance } from '../src/domain/engine.js';
 import { ratePerMin, productionMultiplier } from '../src/domain/economy.js';

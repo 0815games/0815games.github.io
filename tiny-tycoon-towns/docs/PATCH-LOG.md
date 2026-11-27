@@ -1262,3 +1262,14 @@ Ereignis ergänzt.
 - Rückmeldung: Haus 4/4 Bewohner, 0 frei, „+“ grau. Ursache: Alle vier sind manuell anderen Betrieben zugewiesen. Das ist so gewollt (manuell vor Automatik), der Hinweis war aber unklar.
 - Änderung: Der Hinweis nennt jetzt den Grund: „Alle Bewohner dieses Hauses sind fest anderen Betrieben zugewiesen. Dort mit − einen lösen.“
 - Tests: `npm test` 189/189 grün. `npm run check` ohne Fehler.
+
+### TTT-0078 – Welle 20261127-karten1: Kartengrößen 8 bis 16
+
+- Anlass: Nutzer-Auftrag „go“: größere Karten. Reihenfolge: erst Karten, danach Balance und Stresstest über alle Karten und Szenarien.
+- Änderung 1: Jede Stadt hat ihre Kartengröße (`state.mapSize`). Neue Städte starten auf 8 × 8. Jeder Freibrief macht die nächste Karte um zwei Felder größer (8, 10, 12, 14, 16), höchstens 16 × 16. Die Größe richtet sich nach der Zahl der Freibrief-Gründungen (`mapSizeFor` in `src/domain/grid.js`).
+- Änderung 2: Bestehende Städte ohne Feld bleiben 10 × 10 (`hydrateTown`). Das Terrain ist für 10 × 10 bitgenau wie vorher (geprüft über 1600 Seeds und Biome).
+- Änderung 3: Rathaus steht in der Mitte der Karte. Startfläche und Terrain-Generator rechnen relativ zum Rathaus. Bau-Prüfung, Tutorial-Feldsuche, Admin und Weltansicht nutzen die Größe der Stadt (`setBoardSize` in `src/world/scene.js`).
+- Änderung 4: Firebase-Regel für `mapSize` (Zahl, 8 bis 16). Die Regel muss mit dem Deploy veröffentlicht werden.
+- Dateien: `src/domain/grid.js`, `terrain.js`, `engine.js`, `economy.js`, `placement.js`, `tutorialSpot.js`, `src/main.js`, `src/admin.js`, `src/world/scene.js`, `src/world/board.js`, `firebase/database.rules.json`, `src/patch-notes.mjs`, Welle `20261127-karten1`.
+- Tests: `npm test` mit neuem `tests/mapsize.test.mjs` grün. `npm run check` ohne Fehler.
+- Offen: Die Freischaltung innerhalb der Karte folgt weiter `gridSizeByTownLevel` (max. 10 × 10). Auf 12 bis 16 großen Karten bleibt damit ein Rand gesperrt. Die Balance (Schritt 2 des Auftrags) ist noch nicht gemacht. Der Browser-Test ist noch nicht gemacht.

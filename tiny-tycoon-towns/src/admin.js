@@ -1,10 +1,10 @@
 // Betreiber-Bereich: Anmeldung, Spielerliste und Stadt-Editor.
 // Sicherheit: Die Datenbankregeln lassen nur Admins fremde Städte lesen und schreiben.
 // Dieser Code zeigt nur an, was die Regeln ohnehin erlauben.
-import * as cloud from './cloud.js?v=20261127-info1';
-import { createLoginScene } from './world/login-scene.js?v=20261127-info1';
-import { checkTownName, townKey } from './town-names.js?v=20261127-info1';
-import { GRID, keyOf, gridSize, isUnlocked } from './domain/grid.js?v=20261127-info1';
+import * as cloud from './cloud.js?v=20261127-karten1';
+import { createLoginScene } from './world/login-scene.js?v=20261127-karten1';
+import { checkTownName, townKey } from './town-names.js?v=20261127-karten1';
+import { keyOf, gridSize, isUnlocked, sizeOf } from './domain/grid.js?v=20261127-karten1';
 
 const HOUR = 3_600_000;
 const TERRAIN_ICON = { meadow: '🌿', forest: '🌲', rock: '🪨', water: '🌊', sand: '🏖️' };
@@ -25,7 +25,7 @@ let scene = null;
 async function loadData() {
   const names = ['resources', 'buildings', 'economy'];
   const parts = await Promise.all(names.map((n) =>
-    fetch(`data/${n}.json?v=20261127-info1`).then((r) => {
+    fetch(`data/${n}.json?v=20261127-karten1`).then((r) => {
       if (!r.ok) throw new Error(`data/${n}.json: HTTP ${r.status}`);
       return r.json();
     })));
@@ -194,10 +194,11 @@ function renderEditor() {
     .join('');
 
   let grid = '';
-  for (let gy = 0; gy < GRID; gy++) {
-    for (let gx = 0; gx < GRID; gx++) {
+  const mapN = sizeOf(draft);
+  for (let gy = 0; gy < mapN; gy++) {
+    for (let gx = 0; gx < mapN; gx++) {
       const tt = draft.tiles[keyOf(gx, gy)];
-      const open = isUnlocked(gx, gy, draft.townLevel, data);
+      const open = isUnlocked(gx, gy, draft.townLevel, data, mapN);
       const icon = tt?.building ? data.buildings[tt.building.id]?.icon ?? '?' : (TERRAIN_ICON[tt?.terrain] ?? '·');
       const on = gx === x && gy === y;
       grid += `<button type="button" class="admin-tile${open ? '' : ' is-closed'}${on ? ' is-on' : ''}" data-act="pick" data-x="${gx}" data-y="${gy}" aria-pressed="${on}" aria-label="Feld ${gx + 1}, ${gy + 1}${open ? '' : ', gesperrt'}">${icon}</button>`;
@@ -252,8 +253,8 @@ function renderEditor() {
 
     <fieldset class="admin-box">
       <legend>Gebäude</legend>
-      <div class="admin-tiles" style="grid-template-columns: repeat(${GRID}, 1fr)">${grid}</div>
-      <p class="small">Feld ${x + 1}, ${y + 1}: ${TERRAIN_ICON[t.terrain] ?? ''} ${esc(t.terrain ?? '')}${isUnlocked(x, y, draft.townLevel, data) ? '' : ' · gesperrt'}</p>
+      <div class="admin-tiles" style="grid-template-columns: repeat(${mapN}, 1fr)">${grid}</div>
+      <p class="small">Feld ${x + 1}, ${y + 1}: ${TERRAIN_ICON[t.terrain] ?? ''} ${esc(t.terrain ?? '')}${isUnlocked(x, y, draft.townLevel, data, mapN) ? '' : ' · gesperrt'}</p>
       <div class="admin-grid2">
         <label>Gebäude <select name="building" ${bId === 'townHall' ? 'disabled' : ''}>${buildingOptions}</select></label>
         <label>Stufe <input type="number" name="level" min="1" max="${maxLevel}" step="1" value="${t.building?.level ?? 1}"></label>

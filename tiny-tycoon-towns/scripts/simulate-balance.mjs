@@ -16,7 +16,8 @@ import { createTown, advance, placeBuilding, upgradeBuilding, plantField, renewF
 import { checkPlacement, fieldsOf, plantableNeighbours, fieldSlots } from '../src/domain/placement.js';
 import { soilOf } from '../src/domain/economy.js';
 import { buildCost, productionMultiplier, storageCap, soilFactor as soilFactorOf } from '../src/domain/economy.js';
-import { GRID, keyOf, isUnlocked } from '../src/domain/grid.js';
+import { BASE_MAP, keyOf, isUnlocked } from '../src/domain/grid.js';
+const GRID = BASE_MAP; // TODO Balance-Schritt: alle Kartengrößen 8 bis 16 durchlaufen
 import { charterGain } from '../src/domain/charters.js';
 import { houseCapacity } from '../src/domain/settlement.js';
 
