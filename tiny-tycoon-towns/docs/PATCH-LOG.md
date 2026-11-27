@@ -1322,3 +1322,10 @@ Ereignis ergänzt.
 - Vergleich: Ohne Karg-Verkauf (Stand TTT-0080) waren es 8 Verstöße.
 - Status: NICHT grün. Für eine grüne Balance braucht es eine Überarbeitung der Erzeuger-Bewertung im Bot (Wert aus tatsächlichem Umsatz statt Vorrat), keine weitere Einzelstellschraube.
 - Tests: `npm test` 198 von 198 grün.
+
+### TTT-0084 – Bot-Bewertung nach verkaufbarem Anteil (verworfen)
+
+- Versuch 1: Erzeuger-Wert = min(Rate, Anteil am Rathaus-Durchsatz), Anteil geteilt durch alle verkaufbaren Waren: 69 Verstöße (verworfen).
+- Versuch 2: wie 1, aber nur Waren mit Erzeuger zählen: 62 Verstöße (verworfen).
+- Bot zurückgesetzt auf den Stand von TTT-0083 (53 Verstöße). Nicht erneut versuchen, ohne die Verkaufsreihenfolge zu klären.
+- Befund: Karg-Waren bekommen mit der Stufenlogik kaum Durchsatz, weil die normalen Waren ihn zuerst aufbrauchen. Ein Bot, der Karg nach Anteil bewertet, baut dann die falschen Gebäude. Die eigentliche Frage ist die Verkaufsreihenfolge, nicht die Bot-Formel.
