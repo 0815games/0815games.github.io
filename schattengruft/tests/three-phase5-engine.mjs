@@ -20,19 +20,26 @@ let reduced=false;
 globalThis.matchMedia=q=>({get matches(){return q.includes('reduced')?reduced:false;}});
 globalThis.devicePixelRatio=1;
 globalThis.drawCharacter=()=>{};globalThis.drawMonster=()=>{};
-const ctx={};for(const k of['fillRect','clearRect','beginPath','moveTo','lineTo','stroke','save','restore','setTransform','scale','strokeText','fillText','measureText'])ctx[k]=()=>({width:10});
+const ctx={};for(const k of['fillRect','clearRect','beginPath','moveTo','lineTo','stroke','save','restore','setTransform','scale','strokeText','fillText','measureText','closePath','fill','arc','ellipse'])ctx[k]=()=>({width:10});
+ctx.createRadialGradient=()=>({addColorStop(){}});
 globalThis.document={createElement(){return{width:128,height:128,getContext:()=>ctx};}};
 
 const helperModule=await import('data:text/javascript;base64,'+Buffer.from(helper).toString('base64'));
 globalThis.__phase2=helperModule;
+const decorModule=await import(
+ new URL('../js/world/world3d-decor.js',import.meta.url)
+);
+globalThis.__decor=decorModule;
 
 let source=raw.replace(
  "import {createFigureFactory} from './world-actors3d.js';",
  'const createFigureFactory=()=>({supports:()=>false,signature:()=>"",create:()=>null,dispose(){}});'
 ).replace(/^import \{(?:drawCharacter|drawMonster)\} from '\.\/(?:character|monster)\.js';$/gm,'')
 .replace(/import \{([^}]*)\} from '\.\/world3d-stage\.js';/, (_,n)=>'const {'+n+'}=globalThis.__stage;')
-.replace("import {createDungeonSurfaces,createDungeonAtmosphere,theme3D,supportsTheme3D} from './world3d-atmosphere.js';",
- 'const {createDungeonSurfaces,createDungeonAtmosphere,theme3D,supportsTheme3D}=globalThis.__phase2;');
+.replace("import {createDungeonSurfaces,createDungeonAtmosphere,theme3D,supportsTheme3D,tileVisible} from './world3d-atmosphere.js';",
+ 'const {createDungeonSurfaces,createDungeonAtmosphere,theme3D,supportsTheme3D,tileVisible}=globalThis.__phase2;')
+.replace("import {wallDecorSites,createWallDecorTextures,createGlowTexture,createVignetteTexture} from './world3d-decor.js';",
+ 'const {wallDecorSites,createWallDecorTextures,createGlowTexture,createVignetteTexture}=globalThis.__decor;');
 
 const m=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 
@@ -50,10 +57,11 @@ class Sun extends Node{constructor(){super();this.target=new Node();this.shadow=
 class GPU{constructor(){this.shadowMap={};this.renders=0;}setPixelRatio(){}setClearColor(){}setSize(){}render(){this.renders++;}dispose(){}}
 const T={WebGLRenderer:GPU,Scene:Node,Group:Node,Color,Fog:class{constructor(){this.color=new Color();}},OrthographicCamera:Cam,
  HemisphereLight:Node,DirectionalLight:Sun,PointLight:Node,BoxGeometry:Geo,OctahedronGeometry:Geo,RingGeometry:Geo,
+ PlaneGeometry:Geo,ConeGeometry:Geo,TorusGeometry:Geo,CylinderGeometry:Geo,SphereGeometry:Geo,
  MeshStandardMaterial:Mat,MeshBasicMaterial:Mat,SpriteMaterial:Mat,Mesh,Sprite,CanvasTexture:R,
  Raycaster:class{constructor(){this.ray={intersectPlane(){return null;}}}setFromCamera(){}},
  Vector2:V,Vector3:V,Plane:class{},SRGBColorSpace:1,NoColorSpace:2,NearestFilter:3,LinearFilter:4,
- PCFSoftShadowMap:5,DoubleSide:6,ACESFilmicToneMapping:7};
+ PCFSoftShadowMap:5,DoubleSide:6,ACESFilmicToneMapping:7,ClampToEdgeWrapping:8};
 
 const freeze=v=>{if(v&&typeof v==='object'){Object.freeze(v);Object.values(v).forEach(freeze);}return v;};
 

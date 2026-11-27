@@ -1,5 +1,6 @@
 import {createFigureFactory} from './world-actors3d.js';
-import {createDungeonSurfaces,createDungeonAtmosphere,theme3D,supportsTheme3D} from './world3d-atmosphere.js';
+import {createDungeonSurfaces,createDungeonAtmosphere,theme3D,supportsTheme3D,tileVisible} from './world3d-atmosphere.js';
+import {wallDecorSites,createWallDecorTextures,createGlowTexture,createVignetteTexture} from './world3d-decor.js';
 import {drawCharacter} from './character.js';
 import {drawMonster} from './monster.js';
 import {stageCenter,stagePositions,cameraTarget,approach,visibleInMode,stageEffectView,stageCells,worldBounds,STAGE} from './world3d-stage.js';
@@ -297,6 +298,38 @@ export function createEngine(T,canvas){
  const lockGeo=new T.BoxGeometry(.12,.14,.05);
  const railGeo=new T.BoxGeometry(.12,.18,1.05);
 
+ // Wanddekoration (Banner/Schilder), Tor-Licht und Vignette. Die 2D-Karte
+ // zeigt all das; die 3D-Ansicht holt es hier nach.
+ const decorGeo=new T.PlaneGeometry(.62,.9);
+ const glowTexture=createGlowTexture(T);
+ const vignetteTexture=createVignetteTexture(T);
+ const decorTextures=new Map();
+
+ const decorMats=[
+  new T.MeshBasicMaterial({
+   map:null,transparent:true,depthWrite:false,
+   side:T.DoubleSide
+  }),
+  new T.MeshBasicMaterial({
+   map:null,transparent:true,depthWrite:false,
+   side:T.DoubleSide
+  })
+ ];
+ const gateMat=new T.SpriteMaterial({
+  map:glowTexture,transparent:true,depthWrite:false,
+  opacity:.55
+ });
+ const vignetteMat=new T.SpriteMaterial({
+  map:vignetteTexture,transparent:true,depthWrite:false,
+  opacity:.5
+ });
+ const vignette=new T.Sprite(vignetteMat);
+ vignette.renderOrder=20;
+ scene.add(vignette);
+
+ const decor=new Map(),gates=new Map();
+ let decorTheme='',decorStamps=null;
+
  const cells=new Map(),actors=new Map(),chests=new Map();
  let tiles=null,seed=null,stairs=null,size='',closed=false,themeKey='';
  let cameraX=null,cameraZ=null;
@@ -318,11 +351,15 @@ export function createEngine(T,canvas){
   for(const entry of cells.values())group.remove(entry.node);
   for(const entry of actors.values())destroyActor(entry);
   for(const entry of chests.values())group.remove(entry.node);
+  for(const entry of decor.values())group.remove(entry.node);
+  for(const entry of gates.values())group.remove(entry.node);
   if(stairs)group.remove(stairs.node);
 
   cells.clear();
   actors.clear();
   chests.clear();
+  decor.clear();
+  gates.clear();
   stairs=null;
 
   // Neuer Grundriss: die Kamera springt, statt quer ueber die Karte zu fliegen.
@@ -393,6 +430,91 @@ export function createEngine(T,canvas){
    if(!retained.has(key)){
     group.remove(entry.node);
     cells.delete(key);
+   }
+  }
+ }
+
+ // Wanddekoration und Tor-Licht der 2D-Karte nachbilden. Standorte werden
+ // nur bei Grundrisswechsel berechnet; pro Frame wird nur der Umkreis um
+ // die Kamera synchronisiert, wie bei den Zellen selbst.
+ let decorPlan=null;
+
+ function synchronizeDecor(w,p,center,stageTiles){
+  if(!decorPlan){
+   decorPlan=wallDecorSites(w.tiles,w.seed);
+  }
+
+  const keep=new Set();
+  const cx=center?center.x:p.x,cz=center?center.z:p.y;
+
+  for(const item of decorPlan){
+   const key=item.x+':'+item.y;
+   // Nur Standorte in der Naehe der Kamera/Buehne synchronisieren.
+   if(Math.abs(item.x+.5-cx)+Math.abs(item.y+.5-cz)>14)continue;
+
+   // Nordwand mit freiem Boden suedlich, alle drei Kacheln sichtbar.
+   const visible=[-1,0,1].every(dx=>
+    tileVisible(w,item.x+dx,item.y,stageTiles)&&
+    tileVisible(w,item.x+dx,item.y+1,stageTiles)
+   );
+   if(!visible)continue;
+
+   keep.add(key);
+   let entry=decor.get(key);
+   if(!entry){
+    const node=new T.Group();
+    node.position.set(item.x+.5,0,item.y+.5);
+    const plane=new T.Mesh(
+     decorGeo,
+     decorMats[item.kind]
+    );
+    plane.position.set(0,.6,.51);
+    node.add(plane);
+    group.add(node);
+    entry={node,plane,kind:item.kind};
+    decor.set(key,entry);
+   }
+  }
+
+  for(const[key,entry]of decor){
+   if(!keep.has(key)){
+    group.remove(entry.node);
+    decor.delete(key);
+   }
+  }
+ }
+
+ // Tor-Kacheln (Tile 2) leuchten wie in der 2D-Karte.
+ function synchronizeGates(w,p,center,stageTiles){
+  const keep=new Set();
+  const cx=center?center.x:p.x,cz=center?center.z:p.y;
+
+  for(let y=0;y<w.tiles.length;y++){
+   const row=w.tiles[y];
+   if(!row)continue;
+   for(let x=0;x<row.length;x++){
+    if(row[x]!==2)continue;
+    if(Math.abs(x+.5-cx)+Math.abs(y+.5-cz)>14)continue;
+    if(!tileVisible(w,x,y,stageTiles))continue;
+
+    const key=x+':'+y;
+    keep.add(key);
+    let entry=gates.get(key);
+    if(!entry){
+     const node=new T.Sprite(gateMat);
+     node.position.set(x+.5,.55,y+.5);
+     node.scale.set(1.15,1.15,1);
+     group.add(node);
+     entry={node};
+     gates.set(key,entry);
+    }
+   }
+  }
+
+  for(const[key,entry]of gates){
+   if(!keep.has(key)){
+    group.remove(entry.node);
+    gates.delete(key);
    }
   }
  }
@@ -673,6 +795,7 @@ export function createEngine(T,canvas){
    reset();
    tiles=w.tiles;
    seed=w.seed;
+   decorPlan=null;
   }
 
   const palette=surfaces.setTheme(w.theme);
@@ -684,6 +807,20 @@ export function createEngine(T,canvas){
    ambient.color?.set(palette.sky);
    ambient.groundColor?.set(palette.floors[0]);
    sun.color?.set(palette.sun);
+
+   // Wandbehang/Schilder wechseln mit dem Thema.
+   if(decorTheme!==themeKey){
+    decorTheme=themeKey;
+    if(decorStamps){
+     decorStamps.forEach(t=>t.dispose());
+    }
+    decorStamps=createWallDecorTextures(T,palette.key);
+    decorMats[0].map=decorStamps[0];
+    decorMats[1].map=decorStamps[1];
+   }
+
+   // Tor-Licht bekommt die Lichtfarbe des Themas.
+   gateMat.color?.set(palette.light);
   }
 
   // Buehne einmal bestimmen und an Zellen, Figuren und Effekte geben.
@@ -701,6 +838,8 @@ export function createEngine(T,canvas){
 
   synchronizeCells(w,p,stageTiles);
   synchronizeObjects(w,p,time,fighting,enemy);
+  synchronizeDecor(w,p,center,stageTiles);
+  synchronizeGates(w,p,center,stageTiles);
 
   atmosphere.update(
    w,p,time,
@@ -740,6 +879,11 @@ export function createEngine(T,canvas){
    camera.updateProjectionMatrix();
   }
 
+  // Vignette folgt der Kamera und deckt das ganze Sichtfeld ab (wie 2D).
+  const halfH=4.8/camera.zoom,aspect=size?parseFloat(size.split(':')[0])/parseFloat(size.split(':')[1]):1.6;
+  vignette.position.set(cameraX,target.height,cameraZ+target.depth);
+  vignette.scale.set(halfH*2*aspect*1.1,halfH*2*1.1,1);
+
   gpu.render(scene,camera);
  }
 
@@ -763,8 +907,17 @@ export function createEngine(T,canvas){
   reset();
 
   for(const geometry of[
-   floorGeo,wallGeo,chestGeo,lidGeo,stepGeo,strapGeo,lidStrapGeo,lockGeo,railGeo
+   floorGeo,wallGeo,chestGeo,lidGeo,stepGeo,strapGeo,lidStrapGeo,lockGeo,railGeo,
+   decorGeo
   ])geometry.dispose();
+
+  for(const m of decorMats)m.dispose();
+  gateMat.dispose();
+  vignetteMat.dispose();
+  scene.remove(vignette);
+  glowTexture.dispose();
+  vignetteTexture.dispose();
+  decorStamps?.forEach(t=>t.dispose());
 
   atmosphere.dispose();surfaces.dispose();
 

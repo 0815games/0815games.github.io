@@ -30,13 +30,21 @@ function known(w,x,y){
   &&!!w.discovered?.[y]?.[x]&&w.tiles?.[y]?.[x]!==undefined;
 }
 
-export function torchSites(w,p,limit){
+// Eine Kachel gilt als sichtbar, wenn sie entdeckt ist – oder wenn sie Teil
+// der aktuellen Kampfbühne ist. Auf der Bühne gelten die Felder der Figuren
+// als sichtbar, auch ohne Aufdeckung (Trefferzahlen müssen dort lesbar sein).
+export function tileVisible(w,x,y,stageTiles){
+ if(known(w,x,y))return true;
+ return stageTiles?.has(x+':'+y)===true;
+}
+
+export function torchSites(w,p,limit,stageTiles=null){
  const candidates=[];
 
  for(let y=0;y<w.tiles.length-1;y++){
   for(let x=0;x<w.tiles[y].length;x++){
-   if(w.tiles[y][x]!==1||!known(w,x,y)
-    ||!known(w,x,y+1)||w.tiles[y+1][x]!==0)continue;
+   if(w.tiles[y][x]!==1||!tileVisible(w,x,y,stageTiles)
+    ||!tileVisible(w,x,y+1,stageTiles)||w.tiles[y+1][x]!==0)continue;
 
    const distance=(x-p.x)**2+(y+1-p.y)**2;
    if(distance>49||visualNoise(x,y,w.seed)%3!==0)continue;
@@ -404,7 +412,7 @@ export function createDungeonAtmosphere(T,scene,gpu,sun){
    }
   }
 
-  themeDetails.update(w,p,profile);
+  themeDetails.update(w,p,profile,effects?.stageTiles);
 
   const still=reduced.matches;
   const t=still?0:time;
@@ -418,7 +426,9 @@ export function createDungeonAtmosphere(T,scene,gpu,sun){
   sun.position.set(fx-5,12,fz+7);
   sun.target.position.set(fx+.5,0,fz+.5);
 
-  const sites=torchSites(w,p,profile.lights);
+  const sites=torchSites(
+   w,p,profile.lights,effects?.stageTiles
+  );
 
   torches.forEach((item,i)=>{
    const site=sites[i];
@@ -612,7 +622,7 @@ export function theme3D(name){
  ];
 }
 
-export function themeDetailSites(w,p,limit=16){
+export function themeDetailSites(w,p,limit=16,stageTiles=null){
  const kind=theme3D(w.theme).key;
  if(kind==='katakomben')return [];
 
@@ -623,7 +633,7 @@ export function themeDetailSites(w,p,limit=16){
   for(let x=Math.max(0,p.x-7);
    x<Math.min(w.tiles[y].length,p.x+8);x++){
 
-   if(!known(w,x,y)||w.tiles[y][x]!==0
+   if(!tileVisible(w,x,y,stageTiles)||w.tiles[y][x]!==0
     ||(x===p.x&&y===p.y))continue;
 
    if(w.stairs?.x===x&&w.stairs?.y===y)continue;
@@ -636,8 +646,8 @@ export function themeDetailSites(w,p,limit=16){
    if(n%4!==0)continue;
 
    if((kind==='pilzwald'||kind==='frostgruft')&&!(
-    known(w,x,y-1)&&w.tiles[y-1][x]===1||
-    known(w,x-1,y)&&w.tiles[y][x-1]===1
+    tileVisible(w,x,y-1,stageTiles)&&w.tiles[y-1][x]===1||
+    tileVisible(w,x-1,y,stageTiles)&&w.tiles[y][x-1]===1
    ))continue;
 
    sites.push({
@@ -761,12 +771,12 @@ export function createThemeDetails(T,scene){
  let closed=false;
 
  return {
-  update(w,p,profile){
+  update(w,p,profile,stageTiles=null){
    if(closed)return;
 
    const key=theme3D(w.theme).key;
    const sites=themeDetailSites(
-    w,p,profile.name==='mobile'?6:16
+    w,p,profile.name==='mobile'?6:16,stageTiles
    );
 
    pools.forEach((item,i)=>{
