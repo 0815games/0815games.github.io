@@ -1299,3 +1299,12 @@ Ereignis ergänzt.
 - Versuch 2: Sättigung bei 20. Ergebnis: 43 Verstöße, gleiches Muster.
 - Versuch 3: Vorratsbezug beibehalten, Sättigung bei 20 als zusätzlicher Faktor. Ergebnis: 23 Verstöße, Hochland zu schnell (ca. 10 h statt 12), Flussland teils zu langsam.
 - Entscheidung: Alle drei verworfen. Der Stand aus TTT-0080 (8 Verstöße) bleibt. Der Vorrat ist für den Bot ein wichtiges Signal, auch wenn er nahe der Reserve liegt.
+
+### TTT-0082 – Karg-Waren werden automatisch verkauft (zum halben Preis)
+
+- Entscheidung des Nutzers: Karg-Waren (z. B. Stein in Flussland, Fisch in Deepwoods) werden automatisch verkauft, aber zu `economy.sell.scarceSellFactor` (0,5) des Preises.
+- Umsetzung: `sellPrice(resource, data, biome)` berechnet den Faktor. Neue Städte starten mit Verkauf an für alle Waren (`sellEnabled`). Der Schalter bleibt erhalten. Bestehende Städte behalten ihren gespeicherten Schalter (Karg-Waren bleiben dort aus, bis der Spieler sie einschaltet).
+- Tests: `npm test` 198 von 198 grün. Angepasst: Startwert des Schalters, Lohn-Test (Verkauf für diesen Test aus), neuer Test für den Preisfaktor.
+- Balance (60 Szenarien, 30 Tage): Mit der neuen Regel 76 Verstöße. Ursache: Der Verkaufsdurchsatz des Rathauses (20/min) wird auf alle verkaufbaren Waren verteilt. Mit mehr verkaufbaren Waren bekommt jede weniger, Stufe 5 und Stufe 10 verlangsamen sich, einige Städte bleiben bei Stufe 8 oder 9 stehen.
+- Gegenversuch: Durchsatz 30/min: 69 Verstöße. Zurückgenommen (bleibt 20).
+- Status: NICHT grün. Die Regel braucht eine Neuabstimmung mehrerer Werte (Durchsatz, Schwelle, Reserve oder Verteilung). Das ist ein größerer Schritt, nicht als Einzelstellschraube.

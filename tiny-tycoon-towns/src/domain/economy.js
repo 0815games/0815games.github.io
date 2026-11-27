@@ -172,8 +172,11 @@ export function throughputPerMin(state, data) {
   return s.townHallThroughputPerMin + s.throughputPerMarketLevel * marketLevels(state);
 }
 
-export function sellPrice(resource, data) {
+export function sellPrice(resource, data, biome = null) {
+  // Karg-Ressourcen des Bioms werden automatisch verkauft, aber zu einem Teil des Preises.
+  const karg = biome && classOf(biome, resource, data) === 'scarce';
+  const factor = karg ? (data.economy.sell.scarceSellFactor ?? 0.5) : 1;
   // Freibrief-Perk „Warenkenner“ wirkt als Faktor (1 = ohne Perk).
-  return data.resources[resource].basePrice * (data.economy.priceMultiplier ?? 1);
+  return data.resources[resource].basePrice * (data.economy.priceMultiplier ?? 1) * factor;
 }
 

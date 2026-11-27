@@ -11,6 +11,7 @@
   },
   "sell": {
     "reserve": 20,
+    "scarceSellFactor": 0.5,
     "townHallThroughputPerMin": 20,
     "throughputPerMarketLevel": 40
   },

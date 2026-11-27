@@ -39,8 +39,8 @@ export function createTown({ name, biome, seed, now, data, mapSize = BASE_MAP })
   const sellEnabled = {};
   for (const r of Object.keys(data.resources)) {
     stock[r] = data.economy.startStockPerResource;
-    // Karg-Ressourcen are kept for building unless the player opts in.
-    sellEnabled[r] = classOf(biome, r, data) !== 'scarce';
+    // Karg-Ressourcen werden auch automatisch verkauft, aber zu einem Teil des Preises (TTT-0082).
+    sellEnabled[r] = true;
   }
 
   return {
@@ -407,7 +407,7 @@ function sell(s, dt, data, events) {
     for (const r of eligible) {
       const amt = Math.min(share, s.stock[r] - reserve);
       s.stock[r] -= amt;
-      coins += amt * sellPrice(r, data);
+      coins += amt * sellPrice(r, data, s.biome);
       used += amt;
     }
     budget -= used;
