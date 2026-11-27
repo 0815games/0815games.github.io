@@ -253,10 +253,13 @@ in `0815games/0815games.github.io` laufen sie nie. Sie können gelöscht werden.
   verwendet – es gibt keinen Gast-Modus.
 - **`living-world.js` und `run.js`** sind abgelöste Vorstufen (v0.8.0 bzw. LocalStorage-Meta) und
   unreachable; `run.js` würde sogar noch `localStorage` statt Firebase nutzen.
-- **3D-Abhängigkeit zur Laufzeit:** `world3d-phase1.js:170` lädt
+- **3D-Abhängigkeit zur Laufzeit:** `world3d-phase1.js` lädt
   `https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js` dynamisch, ohne SRI/Integritätsprüfung.
   Damit hängt der 3D-Modus an einem Fremd-CDN; offline und bei CDN-Ausfall bleibt nur 2D
-  (immerhin sauber abgefangen: Fallback, `webglcontextlost`-Handler, „3D erneut testen“).
+  (sauber abgefangen: Fallback über `webglcontextlost`, Schalter deaktiviert sich, 2D läuft weiter).
+  **Behoben 2026-11-26:** Der Modus ist jetzt im Spiel verdrahtet (`systems/world3d-mode.js`),
+  der Schalter sitzt im Kopfbereich und die Bühne bekommt im Kampf einen eigenen Rahmen,
+  statt hinter dem deckenden `#combat` zu verschwinden.
 - **Service Worker** ist solide gebaut (network-first, Scope-Begrenzung, Cache-Versionierung,
   Aufräumen alter Caches, 503-Fallback). Er würde allerdings im Fehlerfall auch den kaputten
   Zustand cachen.

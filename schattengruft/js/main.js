@@ -319,4 +319,7 @@ el('btn-revive').onclick=()=>{el('death-screen').classList.add('hidden');openGam
 window.onkeydown=e=>{if(['INPUT','TEXTAREA'].includes(e.target?.tagName))return;if(el('game').classList.contains('hidden'))return;const k=e.key.toLowerCase();const dirs={w:[0,-1],arrowup:[0,-1],s:[0,1],arrowdown:[0,1],a:[-1,0],arrowleft:[-1,0],d:[1,0],arrowright:[1,0]};if(dirs[k]){e.preventDefault();move(...dirs[k])}if(k==='e'||k===' '){e.preventDefault();interact()}};
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');el(b.dataset.tab)?.classList.add('active')});
 window.__rpg={move,interact,renderer:gfx};installDiscard({state,cloud,ITEMS,removeItem,hud,log});updateMusicButtons();
+// 3D-Schalter im Spiel (systems/world3d-mode.js). Erst hier aufrufen, weil das
+// Modul window.__rpg und damit den Renderer braucht.
+import('./systems/world3d-mode.js').then(m=>m.autoInstall?.()).catch(error=>console.warn('3D-Modus:',error));
 });

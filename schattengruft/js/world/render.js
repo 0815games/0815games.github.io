@@ -73,7 +73,14 @@ export class Renderer{
  updateCamera(cols,rows){const t=this.tile,w=this.cv.width,h=this.cv.height,ww=cols*t,wh=rows*t,px=(Number.isFinite(state.player.x)?state.player.x:2)*t+t/2,py=(Number.isFinite(state.player.y)?state.player.y:2)*t+t/2;this.camera.x=ww>w?Math.max(0,Math.min(px-w/2,ww-w)):(ww-w)/2;this.camera.y=wh>h?Math.max(0,Math.min(py-h/2,wh-h)):(wh-h)/2;}
  screenToTile(clientX,clientY){if(this.world3d&&this.world3d.active)return this.world3d.screenToTile(clientX,clientY);const r=this.cv.getBoundingClientRect();return{x:Math.floor(((clientX-r.left)*this.cv.width/r.width+this.camera.x)/this.tile),y:Math.floor(((clientY-r.top)*this.cv.height/r.height+this.camera.y)/this.tile)};}
  drawMonster(c,m,x,y){drawMonsterSprite(c,m,x,y,this._visualTime||0);}
- draw(){if(this.world3d?.render())return;drawDungeonWorld(this,state.world,state.player,drawCharacter);}
+ draw(){
+  // Im Kampf liegt #combat deckend über dem Spiel. Die 3D-Bühne bekommt dort
+  // einen eigenen Rahmen und wird weitergezeichnet; im 2D-Fall bleibt der
+  // Kampfbildschirm unverändert ohne Weltzeichnung.
+  if(this.world3d?.render())return;
+  if(state.inCombat&&this.world3d?.active)return;
+  drawDungeonWorld(this,state.world,state.player,drawCharacter);
+ }
 
 }
 installWallDecor(Renderer,state);

@@ -8,6 +8,10 @@ const raw=await readFile(
 const helper=await readFile(
  new URL('../js/world/world3d-atmosphere.js',import.meta.url),'utf8'
 );
+const stageModule=await import(
+ new URL('../js/world/world3d-stage.js',import.meta.url)
+);
+globalThis.__stage=stageModule;
 
 const resources=[],nodes=[];
 let reduced=false,coarse=false;
@@ -51,6 +55,9 @@ const source=raw.replace(
 ).replace(
  "import {createDungeonSurfaces,createDungeonAtmosphere,theme3D,supportsTheme3D} from './world3d-atmosphere.js';",
  'const {createDungeonSurfaces,createDungeonAtmosphere,theme3D,supportsTheme3D}=globalThis.__phase2;'
+).replace(
+ /import \{([^}]*)\} from '\.\/world3d-stage\.js';/,
+ (_,names)=>'const {'+names+'}=globalThis.__stage;'
 );
 
 assert.equal(count,2);
@@ -273,9 +280,16 @@ assert.ok(
  'all owned GPU resources disposed'
 );
 
-assert.ok(raw.includes(
- 'atmosphere.update(w,p,time,effects)'
-));
+// Die Atmosphaere wird weiterhin mit den Effekten gespeist – seit Phase 5
+// ueber die Buehnensicht (stageEffectView), die die 2D-Listen nur kopiert.
+assert.ok(
+ raw.includes('atmosphere.update')&&raw.includes('stageEffectView('),
+ 'Effekte erreichen die Atmosphaere'
+);
+assert.ok(
+ raw.includes('{hero:p,enemy,spots}'),
+ 'Buehnensicht kennt beide Kaempfer'
+);
 assert.ok(raw.includes(
  'entry.floor.visible=!(w.stairs'
 ));

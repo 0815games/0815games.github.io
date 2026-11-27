@@ -2,6 +2,7 @@ import {createFigureFactory} from './world-actors3d.js';
 import {createDungeonSurfaces,createDungeonAtmosphere,theme3D,supportsTheme3D} from './world3d-atmosphere.js';
 import {drawCharacter} from './character.js';
 import {drawMonster} from './monster.js';
+import {stageCenter,stagePositions,cameraTarget,approach,visibleInMode,stageEffectView,stageCells,worldBounds,STAGE} from './world3d-stage.js';
 
 export function discovered(w,x,y){
  return Number.isInteger(x)&&Number.isInteger(y)
@@ -17,102 +18,142 @@ export function supportsWorld(w){
  return !!w?.tiles?.length&&supportsTheme3D(w.theme);
 }
 
+// Welt3D: kapselt Three.js, Kamera und Bühne. Stellt eine kleine API bereit,
+// über die das Spiel die Ansicht ein- und ausschaltet. Die eigentliche
+// Bedienung (Schalter, Speicherung der Vorliebe) liegt in systems/world3d-mode.js.
 export function installWorld3D(renderer,state){
  const stage=renderer.cv,parent=stage.parentElement;
  if(!parent)return null;
 
  const originalOpacity=stage.style.opacity;
- if(getComputedStyle(parent).position==='static'){
-  parent.style.position='relative';
- }
 
- const controls=document.createElement('div');
- controls.className='world3d-controls';
-
- const button=document.createElement('button');
- button.type='button';
- button.textContent='3D testen';
- button.setAttribute('aria-pressed','false');
-
- const status=document.createElement('span');
- status.setAttribute('role','status');
- status.textContent='2D';
-
- const quality=document.createElement('select');
- quality.setAttribute('aria-label','3D-Grafikqualität');
- quality.style.cssText='max-width:130px;min-height:38px;background:#17232b;color:#e7dab6;border:1px solid #a28b5b;border-radius:5px;font:11px system-ui';
- controls.style.maxWidth='calc(100% - 20px)';
- controls.style.flexWrap='wrap';
- for(const[value,label]of [
-  ['auto','Qualität: Auto'],
-  ['mobile','Qualität: Mobil'],
-  ['detail','Qualität: Detail']
- ]){
-  const option=document.createElement('option');
-  option.value=value;
-  option.textContent=label;
-  quality.append(option);
- }
- controls.append(button,quality,status);
- parent.append(controls);
+ // Platzhalter für die Leinwand: sie wird von der Spielführung zwischen
+ // Karte und Kampfbildschirm umgehängt. Ohne Ziel bleibt sie im Kartenbereich.
+ const home=document.createElement('div');
+ home.className='world3d-home';
+ parent.append(home);
 
  if(!document.getElementById('world3d-style')){
   const style=document.createElement('style');
   style.id='world3d-style';
   style.textContent=`
-.world3d-controls{
- position:absolute;right:10px;top:10px;z-index:8;
- display:flex;gap:8px;align-items:center;padding:6px;
- background:#08111de8;border:1px solid #a28b5b;
- border-radius:8px;font:11px system-ui;color:#e7dab6
+.world3d-home{
+position:absolute;inset:0;pointer-events:none;z-index:2
 }
-.world3d-controls button{
- min-height:38px;padding:7px 12px;background:#d6bd85;
- color:#171b1c;border:0;border-radius:5px;
- font:600 11px system-ui;cursor:pointer
+.world3d-home canvas,
+#combat-stage canvas{
+position:absolute;inset:0;width:100%!important;height:100%!important;
+pointer-events:none!important;display:block;border-radius:inherit
 }
-.world3d-controls button:focus-visible{
- outline:3px solid white;outline-offset:3px
+#combat-stage{
+position:relative;width:100%;max-width:720px;margin:0 auto;
+aspect-ratio:16/10;max-height:34dvh;min-height:120px;flex:0 1 auto;
+overflow:hidden;background:#081018;
+border:1px solid #693040;border-radius:12px
 }
-.world3d-canvas{
- position:absolute;pointer-events:none!important;
- z-index:2;display:none;border-radius:inherit
+/* Ohne 3D bleibt der Kampfbildschirm unverändert: kein leerer Rahmen. */
+#combat-stage:empty{display:none}
+body:not(.world3d-combat) #combat-stage{display:none}
+.world3d-on #stage{opacity:0!important}
+.world3d-on #hint{display:none}
+
+/* Im 3D-Kampf muss die Bühne neben Bedienung und Text Platz haben.
+   Die 2D-Ansicht behält ihr bisheriges Layout vollständig. */
+.world3d-combat{gap:10px;padding:12px}
+.world3d-combat h2{font-size:15px}
+.world3d-combat #combat-info{padding:8px;font-size:12px}
+.world3d-combat #combat-log{min-height:44px;padding:8px;font-size:12px}
+.world3d-combat .combat-buttons button{min-height:46px;font-size:14px}
+.world3d-combat #ability-bar .ability-btn{padding:6px;font-size:12px}
+
+@media(max-height:620px){
+ #combat-stage{max-height:28dvh}
+ .world3d-combat{gap:8px;padding:10px}
+ .world3d-combat #combat-log{min-height:36px;font-size:11px}
+ .world3d-combat .combat-buttons button{min-height:42px}
 }`;
   document.head.append(style);
  }
 
- let enabled=false,loading=false,engine=null,overlay=null,ready=false;
+ const listeners=new Set();
+ const state3d={
+  active:false,error:false,canvas:null
+ };
+
+ let enabled=false,loading=false,engine=null,canvas=null,ready=false;
+ let lastHost=null;
+
+ function notify(){
+  for(const fn of listeners){
+   try{fn(state3d);}catch(error){console.error('3D-Zustand:',error);}
+  }
+ }
+
+ // Zielbereich im DOM: im Kampf der Rahmen im Kampfbildschirm, sonst die Karte.
+ // Das Spiel (world3d-mode.js) entscheidet, welches Ziel gilt; hier wird nur
+ // umgehängt, wenn sich das Ziel tatsächlich ändert.
+ function place(target){
+  if(!canvas)return;
+  const next=target||home;
+  if(canvas.parentElement===next)return;
+  next.append(canvas);
+  lastHost=next;
+
+  // Neue Größe nach dem Umhängen (Layout ist erst im nächsten Frame fertig).
+  if(typeof requestAnimationFrame==='function')requestAnimationFrame(()=>resize());
+ }
 
  const api={
-  active:false,
+  get active(){return state3d.active;},
+  get canvas(){return canvas;},
+  get error(){return state3d.error;},
+  get ready(){return ready;},
+  subscribe(fn){
+   listeners.add(fn);
+   return ()=>listeners.delete(fn);
+  },
+  setEnabled(next){
+   choose(!!next);
+  },
+  setHost(target){
+   place(target);
+  },
+  // Die Leinwand wurde umgehängt: Größe neu messen, Puffer ggf. anpassen.
+  canvasMoved(){
+   if(!canvas)return;
+   delete canvas.dataset.size;
+   resize();
+  },
   render(){
    if(!enabled||!ready||!supportsWorld(state.world)){
     show(false);
-    if(enabled&&ready&&status.textContent!=='2D · unbekannte Umgebung'){
-     status.textContent='2D · unbekannte Umgebung';
-    }
     return false;
    }
 
    try{
     if(!resize()){
-     show(false);
-     return false;
+     // Kein Platz zum Zeichnen (etwa noch nicht sichtbarer Bildschirm).
+     // Den Zustand NICHT abschalten – sonst springt die Ansicht bei einem
+     // einzigen 0-Größe-Frame dauerhaft auf 2D. Der nächste Frame misst neu.
+     return true;
     }
+    const fighting=state.inCombat===true
+     &&!!state.activeMonster
+     &&state.activeMonster.hp>0;
+
     engine.render(
-     state.world,state.player,renderer._visualTime||0,renderer
+     state.world,state.player,renderer._visualTime||0,renderer,
+     fighting?'combat':'explore',
+     fighting?state.activeMonster:null
     );
     show(true);
-    const label='3D · '+theme3D(state.world.theme).label;
-    if(status.textContent!==label)status.textContent=label;
     return true;
    }catch(error){
     console.error('3D-Darstellung:',error);
     enabled=false;
+    state3d.error=true;
     show(false);
-    status.textContent='3D-Fehler · 2D bleibt aktiv';
-    button.textContent='3D erneut testen';
-    button.setAttribute('aria-pressed','false');
+    notify();
     return false;
    }
   },
@@ -122,90 +163,90 @@ export function installWorld3D(renderer,state){
  };
 
  function show(active){
+  if(state3d.active===active&&api.active===active){
+   /* unveraendert */
+  }
+  state3d.active=active;
   api.active=active;
+
   const opacity=active?'0':originalOpacity;
   if(stage.style.opacity!==opacity)stage.style.opacity=opacity;
-  if(overlay){
-   const display=active?'block':'none';
-   if(overlay.style.display!==display){
-    overlay.style.display=display;
-   }
-  }
+
+  document.body?.classList.toggle('world3d-on',active);
  }
 
  function resize(){
-  const rect=stage.getBoundingClientRect();
-  const base=parent.getBoundingClientRect();
+  if(!canvas)return false;
+  const host=canvas.parentElement;
+  if(!host)return false;
+
+  const rect=host.getBoundingClientRect();
   if(rect.width<1||rect.height<1)return false;
 
-  overlay.style.left=(
-   rect.left-base.left-parent.clientLeft+parent.scrollLeft
-  )+'px';
-  overlay.style.top=(
-   rect.top-base.top-parent.clientTop+parent.scrollTop
-  )+'px';
-  overlay.style.width=rect.width+'px';
-  overlay.style.height=rect.height+'px';
+  const key=Math.round(rect.width)+':'+Math.round(rect.height);
+  if(canvas.dataset.size===key)return true;
+  canvas.dataset.size=key;
+
+  canvas.style.width='100%';
+  canvas.style.height='100%';
   engine.resize(rect.width,rect.height);
   return true;
  }
 
  async function choose(next){
   enabled=next;
-  button.setAttribute('aria-pressed',String(next));
-  button.textContent=next?'2D wählen':'3D testen';
 
   if(!next){
    show(false);
-   status.textContent='2D';
+   notify();
    return;
   }
-  if(ready||loading)return;
+  if(ready||loading){
+   show(true);
+   notify();
+   return;
+  }
 
   loading=true;
-  status.textContent='3D wird geladen …';
 
   try{
    const THREE=await import(
     'https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js'
    );
-   const canvas=document.createElement('canvas');
-   canvas.className='world3d-canvas';
-   canvas.setAttribute('aria-hidden','true');
+   const node=document.createElement('canvas');
+   node.className='world3d-canvas';
+   node.setAttribute('aria-hidden','true');
 
-   engine=createEngine(THREE,canvas);engine.setQuality(quality.value);
-   overlay=canvas;
-   parent.append(canvas);
+   engine=createEngine(THREE,node);engine.setQuality('auto');
+   canvas=node;state3d.canvas=node;
+   place(null);
    ready=true;
 
-   canvas.addEventListener('webglcontextlost',event=>{
+   node.addEventListener('webglcontextlost',event=>{
     event.preventDefault();
     enabled=false;
     show(false);
-    status.textContent='Grafikkontext verloren · 2D';
-    button.textContent='Seite neu laden für 3D';
-    button.disabled=true;
-    button.setAttribute('aria-pressed','false');
+    state3d.error=true;
+    notify();
    });
 
-   status.textContent=enabled?'3D bereit':'2D';
+   show(true);
   }catch(error){
    engine?.dispose();
    engine=null;
    ready=false;
    enabled=false;
+   canvas=null;
    show(false);
-   button.textContent='3D erneut testen';
-   button.setAttribute('aria-pressed','false');
-   status.textContent='3D nicht verfügbar · 2D';
+   state3d.error=true;
    console.warn('3D-Start:',error);
   }finally{
    loading=false;
+   notify();
   }
  }
 
- quality.addEventListener('change',()=>engine?.setQuality(quality.value));
- button.addEventListener('click',()=>choose(!enabled));
+ // Vergleichbar mit wants3D, aber ohne eigene UI: die Vorliebe verwaltet das Spiel.
  choose(wants3D(location.search));
  return api;
 }
@@ -250,7 +291,9 @@ export function createEngine(T,canvas){
 
  const cells=new Map(),actors=new Map(),chests=new Map();
  let tiles=null,seed=null,stairs=null,size='',closed=false,themeKey='';
+ let cameraX=null,cameraZ=null;
 
+ const reduced=matchMedia('(prefers-reduced-motion: reduce)');
  const ray=new T.Raycaster();
  const pointer=new T.Vector2();
  const plane=new T.Plane(new T.Vector3(0,1,0),0);
@@ -273,14 +316,23 @@ export function createEngine(T,canvas){
   actors.clear();
   chests.clear();
   stairs=null;
+
+  // Neuer Grundriss: die Kamera springt, statt quer ueber die Karte zu fliegen.
+  cameraX=null;
+  cameraZ=null;
+  if(camera){
+   camera.zoom=1;
+   camera.updateProjectionMatrix();
+  }
  }
 
- function synchronizeCells(w,p){
+ function synchronizeCells(w,p,extra=null){
   const retained=new Set();
 
   for(let y=0;y<w.tiles.length;y++){
    for(let x=0;x<w.tiles[y].length;x++){
-    if(!discovered(w,x,y))continue;
+    const onStage=extra?.has(x+':'+y);
+    if(!discovered(w,x,y)&&!onStage)continue;
 
     const key=x+':'+y,type=w.tiles[y][x];
     retained.add(key);
@@ -337,7 +389,32 @@ export function createEngine(T,canvas){
   }
  }
 
- function actor(key,value,hero,time){
+ // Setzt eine Figur auf ihren Buehnenplatz. Der eigene Zustand in der
+ // Actor-Huelle verhindert, dass sich die Figur-Interpolation und die
+ // Buehnenposition gegenseitig ueberschreiben.
+ function stagePlace(entry,spot){
+  if(!spot){
+   entry.stageX=entry.stageZ=null;
+   return false;
+  }
+  const still=reduced.matches;
+  if(entry.stageX===null||entry.stageX===undefined){
+   entry.stageX=spot.x;
+   entry.stageZ=spot.z;
+  }else if(still){
+   entry.stageX=spot.x;
+   entry.stageZ=spot.z;
+  }else{
+   entry.stageX=approach(entry.stageX,spot.x);
+   entry.stageZ=approach(entry.stageZ,spot.z);
+  }
+  entry.node.position.set(
+   entry.stageX,entry.node.position.y,entry.stageZ
+  );
+  return true;
+ }
+
+ function actor(key,value,hero,time,spot=null){
   if(figures.supports(value,hero)){
    const signature=figures.signature(value,hero);
    let entry=actors.get(key);
@@ -356,6 +433,7 @@ export function createEngine(T,canvas){
    }
 
    entry.figure.update(value,time);
+   stagePlace(entry,spot);
    return;
   }
 
@@ -422,19 +500,36 @@ export function createEngine(T,canvas){
    entry.last=time;
   }
 
+  if(stagePlace(entry,spot))return;
   entry.node.position.set(value.x+.5,.035,value.y+.5);
  }
 
- function synchronizeObjects(w,p,time){
+ function synchronizeObjects(w,p,time,fighting=false,enemy=null){
   const live=new Set();
 
-  if(discovered(w,p.x,p.y)){
-   actor('hero',p,true,time);
+  const center=fighting?stageCenter(p,enemy):null;
+  const spots=fighting&&center.valid
+   ?stagePositions(center,worldBounds(w))
+   :null;
+
+  if(fighting||discovered(w,p.x,p.y)){
+   actor('hero',p,true,time,spots?spots.hero:null);
    live.add('hero');
   }
 
+  if(fighting&&enemy){
+   // Der aktive Gegner steht auf der Buehne, auch ohne Aufdeckung.
+   actor(enemy,enemy,false,time,spots?spots.enemy:null);
+   live.add(enemy);
+  }
+
   for(const monster of w.monsters||[]){
-   if(discovered(w,monster.x,monster.y)){
+   if(fighting&&monster===enemy)continue;
+   if(visibleInMode({
+    mode:fighting?'combat':'explore',
+    discovered:discovered(w,monster.x,monster.y),
+    isEnemy:false
+   })){
     actor(monster,monster,false,time);
     live.add(monster);
    }
@@ -560,8 +655,11 @@ export function createEngine(T,canvas){
   camera.updateProjectionMatrix();
  }
 
- function render(w,p,time,effects){
+ function render(w,p,time,effects,mode='explore',enemy=null){
   if(closed)return;
+
+  // Kampf nur mit lebendem Gegner: nach Flucht/Tod bleibt die Erkundung.
+  const fighting=mode==='combat'&&!!enemy&&enemy.hp>0;
 
   if(tiles!==w.tiles||seed!==w.seed){
    reset();
@@ -580,12 +678,59 @@ export function createEngine(T,canvas){
    sun.color?.set(palette.sun);
   }
 
-  synchronizeCells(w,p);
-  synchronizeObjects(w,p,time);atmosphere.update(w,p,time,effects);
+  // Buehne einmal bestimmen und an Zellen, Figuren und Effekte geben.
+  const center=fighting?stageCenter(p,enemy):null;
+  const spots=center&&center.valid
+   ?stagePositions(center,worldBounds(w))
+   :null;
 
-  camera.position.set(p.x+.5,12,p.y+.5+9);
-  camera.lookAt(p.x+.5,0,p.y+.5);
+  // Trefferzahlen und Funken entstehen in Kachelkoordinaten. Auf der Buehne
+  // werden sie auf die Figuren umgerechnet; die Listen des Renderers bleiben
+  // unangetastet (nur flache Kopien).
+  const stageTiles=spots
+   ?new Set(stageCells(w,p,enemy,spots).map(c=>c.x+':'+c.y))
+   :null;
+
+  synchronizeCells(w,p,stageTiles);
+  synchronizeObjects(w,p,time,fighting,enemy);
+
+  atmosphere.update(
+   w,p,time,
+   {
+    ...stageEffectView(effects,{hero:p,enemy,spots}),
+    stageFocus:spots?{x:center.x,z:center.z}:null,
+    // Buehnenfelder gelten auch fuer Effekte als sichtbar.
+    stageTiles
+   }
+  );
+
+  const target=cameraTarget({
+   mode:fighting?'combat':'explore',hero:p,enemy
+  });
+
+  if(fighting&&!target.centered){
+   // Ohne Gegner keine Bühne: Kamera bleibt bei der Erkundung.
+   target.x=p.x+.5;target.z=p.y+.5;target.zoom=STAGE.zoomOut;
+  }
+
+  // Übergang nur bei echter Bewegung, damit ein ruhender Kampf nicht
+  // jeden Frame neu berechnet.
+  const still=reduced.matches;
+  if(still){
+   cameraX=target.x;cameraZ=target.z;
+  }else{
+   cameraX=approach(cameraX,target.x);
+   cameraZ=approach(cameraZ,target.z);
+  }
+
+  camera.position.set(cameraX,target.height,cameraZ+target.depth);
+  camera.lookAt(cameraX,0,cameraZ);
   camera.updateMatrixWorld();
+
+  if(Math.abs(camera.zoom-target.zoom)>.001){
+   camera.zoom=still?target.zoom:approach(camera.zoom,target.zoom);
+   camera.updateProjectionMatrix();
+  }
 
   gpu.render(scene,camera);
  }
