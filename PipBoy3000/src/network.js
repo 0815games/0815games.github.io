@@ -317,16 +317,21 @@ const Network = window.Network = {
         this.sessionId = null;
         if (this.heartbeatInterval) clearInterval(this.heartbeatInterval);
         this.heartbeatInterval = null;
-        if (ref && this.sessionListener) ref.off('value', this.sessionListener);
+        const listener = this.sessionListener;
         this.sessionRef = null; this.sessionListener = null;
         if (this.db) this.db.ref('players').off();
         if (id && ref) {
             // Vor Freigabe auf bestätigte Saves warten, ohne unbegrenzt offline
             // zu hängen. Regeln verweigern verspätete Writes nach Freigabe.
             await Promise.race([Promise.allSettled([...this.pendingSaves]), new Promise(resolve => setTimeout(resolve, 3000))]);
-            try { await ref.transaction(current => current && current.id === id ? null : undefined, undefined, false); }
-            catch (e) { console.error('Sitzung konnte nicht freigegeben werden', e); }
+            try {
+                await Promise.race([
+                    ref.transaction(current => current && current.id === id ? null : undefined, undefined, false),
+                    new Promise(resolve => setTimeout(resolve, 3000))
+                ]);
+            } catch (e) { console.error('Sitzung konnte nicht freigegeben werden', e); }
         }
+        if (ref && listener) ref.off('value', listener);
         this.active = false; this.myId = null;
     },
 

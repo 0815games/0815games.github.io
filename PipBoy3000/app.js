@@ -1359,18 +1359,22 @@
       this.sessionId = null;
       if (this.heartbeatInterval) clearInterval(this.heartbeatInterval);
       this.heartbeatInterval = null;
-      if (ref && this.sessionListener) ref.off("value", this.sessionListener);
+      const listener = this.sessionListener;
       this.sessionRef = null;
       this.sessionListener = null;
       if (this.db) this.db.ref("players").off();
       if (id && ref) {
         await Promise.race([Promise.allSettled([...this.pendingSaves]), new Promise((resolve) => setTimeout(resolve, 3e3))]);
         try {
-          await ref.transaction((current) => current && current.id === id ? null : void 0, void 0, false);
+          await Promise.race([
+            ref.transaction((current) => current && current.id === id ? null : void 0, void 0, false),
+            new Promise((resolve) => setTimeout(resolve, 3e3))
+          ]);
         } catch (e) {
           console.error("Sitzung konnte nicht freigegeben werden", e);
         }
       }
+      if (ref && listener) ref.off("value", listener);
       this.active = false;
       this.myId = null;
     },

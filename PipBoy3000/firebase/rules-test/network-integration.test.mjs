@@ -59,6 +59,7 @@ test('echter Firebase-8-Client: Abbruch und bestätigte Übernahme mit zwei unab
     assert.equal((await b.db.ref('saves/' + user.uid + '/0').once('value')).val()._deleted, true);
     console.log('STEP disconnect B');
     await timeout(b.network.disconnect());
+    assert.equal((await timeout(b.db.ref('sessions/' + user.uid).once('value'))).val(), null);
   } finally {
     await timeout(a.network.disconnect()).catch(() => {});
     if (b.network.sessionId) await timeout(b.network.disconnect()).catch(() => {});
