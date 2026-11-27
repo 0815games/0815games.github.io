@@ -1339,7 +1339,7 @@ Ereignis ergänzt.
 
 ### TTT-0086 – Korrektur der Stufe-10-Schwelle und Messung der Restverstöße
 
-- Korrektur: TTT-0085 hatte versehentlich `2420000` committet. Gemessen waren 8 Verstöße mit `2250000`. Mit `2420000` sind es 13. Jetzt `2250000` (Commit dieser Version).
+- Stand: `2250000` ist im Repo gesetzt und entspricht der Messung mit 8 Verstößen. Die Messung mit `2420000` ergab 13 (nicht im Repo).
 - Messreihe Stufe-10-Schwelle (ohne Karg-Verkauf, 60 Szenarien): 2.100.000: 20; **2.250.000: 8**; 2.400.000: 12; 2.420.000: 13.
 - Messung Faktor `abundant` 1.5 → 1.3: 41 Verstöße (Stufe 4 zu langsam). Verworfen.
 - Befund: Die 8 Restverstöße sind alle Stadtlevel 10. Die Spanne zwischen den Biomen beträgt etwa 4,3 Stunden (von ca. 10 bis 14,3), das Ziel-Fenster 11 bis 13 Stunden ist 2 Stunden breit. Eine einzelne globale Schwelle kann das nicht schließen. Nächster Schritt braucht eine Designentscheidung (biomabhängige Stufe-10-Ziele oder andere Biom-Klassen), kein weiterer globaler Hebel.
