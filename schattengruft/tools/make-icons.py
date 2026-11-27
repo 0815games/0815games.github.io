@@ -23,7 +23,7 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "assets", "icons")
 
-BG = (8, 9, 14)          # #08090e, theme-color
+BG = (8, 9, 14)          # #08090e, theme-color (Favicon / OG-Bild)
 BG_DEEP = (4, 5, 8)
 GOLD = (212, 160, 60)    # wie altes Favicon
 GOLD_HI = (242, 205, 110)
@@ -31,6 +31,13 @@ RED = (214, 48, 40)
 RED_HI = (240, 96, 64)
 STONE = (30, 32, 40)
 STONE_HI = (52, 56, 68)
+
+# Heim-Screen-Icons (apple-touch-icon, manifest-PNGs): iOS zeigt Icons ohne
+# Transparenz auf dem Homescreen. Ein dunkler Grund verschwindet dort und
+# wirkt wie das iOS-Standard-Icon – deshalb heller, warmer Stein-Ton mit
+# dem goldenen Logo, gut sichtbar auf hellen und dunklen Hintergrunden.
+LIGHT_BG = (230, 216, 190)
+LIGHT_BG_DEEP = (214, 196, 164)
 
 
 # --------------------------------------------------------------------------- Formen
@@ -52,19 +59,26 @@ def flame_points(cx, base_y, w, h, n=64):
     return pts
 
 
-def draw_icon(size, maskable=False):
-    """Zeit das Icon in der Groesse `size`. Gemaeßlicher Goldring mit Flamme."""
+def draw_icon(size, maskable=False, light=False):
+    """Zeit das Icon in der Groesse `size`. Gemaeßlicher Goldring mit Flamme.
+
+    `light` wählt den hellen, warmen Grund (Heim-Screen-Icons: iOS zeigt
+    keine Transparenz, ein dunkler Grund wirkt wie das Standard-Icon).
+    Der dunkle Grund bleibt für Favicon und OG-Bild.
+    """
+    bg = LIGHT_BG if light else BG
+    bg_deep = LIGHT_BG_DEEP if light else BG_DEEP
     img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
     cx, cy = size / 2, size / 2
 
     # Grund: voller Quadrat mit radialer Schachtelung (Dunkel -> etwas heller Mitte)
-    d.rectangle([0, 0, size, size], fill=BG)
+    d.rectangle([0, 0, size, size], fill=bg)
     vg = Image.new("RGBA", (size, size), (0, 0, 0, 0))
     vd = ImageDraw.Draw(vg)
     grad = Image.linear_gradient("L").resize((size, size))
-    tone = Image.new("RGBA", (size, size), BG_DEEP)
-    tone.paste(BG, (0, 0), grad.point(lambda v: int(v * 0.8)))
+    tone = Image.new("RGBA", (size, size), bg_deep)
+    tone.paste(bg, (0, 0), grad.point(lambda v: int(v * 0.8)))
     vg.paste(tone, (0, 0))
     img.alpha_composite(vg)
 
@@ -207,20 +221,21 @@ def main():
     with open(os.path.join(OUT, "favicon.svg"), "w", encoding="utf-8") as f:
         f.write(svg_icon())
 
-    # PNGs
-    img192 = draw_icon(192)
-    img512 = draw_icon(512)
+    # PNGs (Home-Screen-Icons: heller Grund, sonst wirkt das dunkle Logo
+    # auf dem iOS-Homescreen wie das Standard-Icon)
+    img192 = draw_icon(192, light=True)
+    img512 = draw_icon(512, light=True)
     img512.save(os.path.join(OUT, "icon-512.png"))
     img192.save(os.path.join(OUT, "icon-192.png"))
 
-    img_mask = draw_icon(512, maskable=True)
+    img_mask = draw_icon(512, maskable=True, light=True)
     img_mask.save(os.path.join(OUT, "icon-512-maskable.png"))
 
-    apple = draw_icon(180)
+    apple = draw_icon(180, light=True)
     apple.save(os.path.join(OUT, "apple-touch-icon.png"))
 
-    # ICO: von 512-Version rasterisieren
-    write_ico(os.path.join(OUT, "favicon.ico"), img512.convert("RGB"),
+    # ICO: von 512-Version rasterisieren (dunkel, wie Favicon)
+    write_ico(os.path.join(OUT, "favicon.ico"), draw_icon(512).convert("RGB"),
               sizes=(16, 32, 48, 64))
 
     # OG-Image
