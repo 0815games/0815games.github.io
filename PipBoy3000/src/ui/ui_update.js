@@ -78,7 +78,6 @@ const TEXTE = {
   laedt: 'NEUE VERSION WIRD GELADEN...',
   aktuell: 'AKTUELLE VERSION',
   unerreichbar: 'VERSIONSPRÜFUNG NICHT ERREICHBAR',
-  geladen: 'NEUE VERSION {build} GELADEN',
   jetzt: 'JETZT LADEN',
   spaeter: 'SPÄTER'
 };
@@ -91,7 +90,7 @@ const GRUND = {
 
 // Ab hier nur noch Darstellung. `document` und `window` sind Parameter, damit
 // die Datei ohne Browser pruefbar ist.
-export function createUpdateUI({document, window, fetcher = window?.fetch?.bind(window), reload = () => window.location.reload(), replace = url => window.location.replace(url)} = {}) {
+export function createUpdateUI({document, window, fetcher = window?.fetch?.bind(window), replace = url => window.location.replace(url)} = {}) {
   const meta = document.querySelector('meta[name="pipboy-build"]');
   const build = meta ? meta.getAttribute('content') : null;
   const balken = document.getElementById('update-banner');
@@ -136,11 +135,6 @@ export function createUpdateUI({document, window, fetcher = window?.fetch?.bind(
       text.textContent = sagen('laedt');
       text.className = 'popup-text text-yellow-400 animate-pulse';
       jetzt.hidden = true;
-    } else if (zustand.art === 'geladen') {
-      const gruende = zustand.blocker || [];
-      text.textContent = sagen('geladen', {build: zustand.build}) + (gruende.length ? ' - ' + gruende.map(g => GRUND[g] || g).join(', ') : '');
-      text.className = 'popup-text text-[#39ff14]';
-      jetzt.hidden = true;
     } else if (zustand.art === 'aktuell') {
       balken.hidden = true;
       sperreAktualisieren();
@@ -154,8 +148,8 @@ export function createUpdateUI({document, window, fetcher = window?.fetch?.bind(
       jetzt.hidden = true;
     }
     if (spaeter) {
-      spaeter.hidden = zustand.art !== 'veraltet' && zustand.art !== 'unerreichbar' && zustand.art !== 'geladen';
-      spaeter.textContent = zustand.art === 'geladen' ? 'OK' : TEXTE.spaeter;
+      spaeter.hidden = zustand.art !== 'veraltet' && zustand.art !== 'unerreichbar';
+      spaeter.textContent = TEXTE.spaeter;
     }
     if (jetzt) jetzt.textContent = TEXTE.jetzt;
   }
@@ -181,7 +175,9 @@ export function createUpdateUI({document, window, fetcher = window?.fetch?.bind(
     const auf = adresse.searchParams.get('_pb_auf');
     const von = adresse.searchParams.get('_pb_von');
     const versuch = auf === build && BUILD_MUSTER.test(von || '') && von !== build;
-    if (versuch) zustand = {art: 'geladen', build};
+    // Der Zielbuild laeuft bereits. Kein zweites Fenster und kein zweiter
+    // Reload: die bestaetigte Seite ist sofort bedienbar.
+    if (versuch) zustand = null;
     if (auf !== null || von !== null || adresse.searchParams.has('_pb_nonce')) {
       adresse.searchParams.delete('_pb_auf');
       adresse.searchParams.delete('_pb_von');
@@ -197,13 +193,10 @@ export function createUpdateUI({document, window, fetcher = window?.fetch?.bind(
     pruefungLaeuft = true;
     try {
       const ergebnis = await probe();
-      // Die Bestaetigung darf durch eine gleichzeitige Sonde weder
-      // verschwinden noch durch einen Netzfehler ueberschrieben werden.
-      if (zustand && (zustand.art === 'geladen' || zustand.art === 'laedt')) return false;
+      // Ein laufender Reload darf durch eine spaete Sonde nicht ueberschrieben werden.
+      if (zustand && zustand.art === 'laedt') return false;
       if (ergebnis.art === 'aktuell') {
-        // Nach einem Update nicht sofort ausblenden - der Spieler soll sehen,
-        // dass etwas passiert ist.
-        if (!zustand || zustand.art !== 'geladen') { zustand = null; zeichnen(); }
+        zustand = null; zeichnen();
         return false;
       }
       if (ergebnis.art === 'veraltet') {
@@ -227,19 +220,24 @@ export function createUpdateUI({document, window, fetcher = window?.fetch?.bind(
     if (document.visibilityState !== 'hidden') void pruefen();
   }
 
+  function beiSeitenRueckkehr(event) {
+    if (event.persisted) beiSichtbarkeit();
+  }
+
   function start() {
-    geladenPruefen();
-    void pruefen();
+    // Nach erfolgreichem Update die erste Probe auslassen: ein kurzzeitiger
+    // Netzfehler darf das gerade geschlossene Fenster nicht sofort ersetzen.
+    if (!geladenPruefen()) void pruefen();
     timer = window.setInterval(() => void pruefen(), 60000);
     document.addEventListener('visibilitychange', beiSichtbarkeit);
-    window.addEventListener('pageshow', beiSichtbarkeit);
+    window.addEventListener('pageshow', beiSeitenRueckkehr);
   }
 
   function stop() {
     if (timer !== null) window.clearInterval(timer);
     timer = null;
     document.removeEventListener('visibilitychange', beiSichtbarkeit);
-    window.removeEventListener('pageshow', beiSichtbarkeit);
+    window.removeEventListener('pageshow', beiSeitenRueckkehr);
   }
 
   if (jetzt) jetzt.onclick = () => {
@@ -250,14 +248,6 @@ export function createUpdateUI({document, window, fetcher = window?.fetch?.bind(
   };
   if (spaeter) spaeter.onclick = () => {
     if (zustand && zustand.art === 'laedt') return;
-    if (zustand && zustand.art === 'geladen') {
-      const blocker = updateBlockers();
-      if (blocker.length) { zustand = {...zustand, blocker}; zeichnen(); return; }
-      zustand = {art: 'laedt'};
-      zeichnen();
-      reload();
-      return;
-    }
     balken.hidden = true;
     sperreAktualisieren();
   };

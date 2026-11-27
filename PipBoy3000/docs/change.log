@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v14.0.34 (Update-Fenster korrigiert, 2026-11-24)
+- [FIX] Bestätigter Versionssprung schließt das Update-Fenster automatisch, entfernt die Update-Marker und erfordert keinen zweiten Reload. Ein nicht geladener Zielbuild wird nicht als Erfolg gewertet.
+- [FIX] Versteckte Update-Knöpfe werden auch mit den Action-Button-Styles wirklich ausgeblendet; die Spielsperre wird korrekt aufgehoben.
+- [TEST] Erfolgreiches und fehlgeschlagenes Laden, URL-Bereinigung und sichtbare CSS-Zustände geprüft.
+
 ## v14.0.33 (Wasser, Munition und Lagertruhe, 2026-11-24)
 - [FIX] HUD zeigt die Munition der ausgerüsteten Waffe über alle Stapel; bei Nahkampfwaffen einen Strich. Bestehende Munitionsarten besitzen Bilder, Händlerbestände und nun zugängliche levelgebundene Rezepte.
 - [FIX] Ein Schuss ohne ausreichende Munition verbraucht keinen Rest; automatischer Waffenwechsel bevorzugt wirklich Nahkampfwaffen. Munitionskauf mit zu wenig Inventarplatz bricht vor Bezahlung ab. Revolver-Beschreibungen nennen ihre tatsächliche Munition.

@@ -10858,6 +10858,15 @@
   ];
   window.GameData.RELEASED_PATCHES = [
     {
+      version: "14.0.34",
+      datum: "2026-11-24",
+      title: "Update-Fenster korrigiert",
+      punkte: [
+        "Nach erfolgreichem Laden einer neuen Version schließt sich das Update-Fenster automatisch. Ein zweiter Reload ist nicht mehr nötig.",
+        "Versteckte Update-Knöpfe bleiben auch optisch ausgeblendet. Wenn die neue Version noch nicht geladen wurde, bleibt das Update weiter verfügbar."
+      ]
+    },
+    {
       version: "14.0.33",
       datum: "2026-11-24",
       title: "Wasser, Munition und Lagertruhe",
@@ -11246,7 +11255,6 @@
     laedt: "NEUE VERSION WIRD GELADEN...",
     aktuell: "AKTUELLE VERSION",
     unerreichbar: "VERSIONSPRÜFUNG NICHT ERREICHBAR",
-    geladen: "NEUE VERSION {build} GELADEN",
     jetzt: "JETZT LADEN",
     spaeter: "SPÄTER"
   };
@@ -11255,7 +11263,7 @@
     speichert: "Spielstand wird gespeichert",
     kampf: "Kampf laeuft"
   };
-  function createUpdateUI({ document: document2, window: window2, fetcher = window2?.fetch?.bind(window2), reload = () => window2.location.reload(), replace = (url) => window2.location.replace(url) } = {}) {
+  function createUpdateUI({ document: document2, window: window2, fetcher = window2?.fetch?.bind(window2), replace = (url) => window2.location.replace(url) } = {}) {
     const meta = document2.querySelector('meta[name="pipboy-build"]');
     const build = meta ? meta.getAttribute("content") : null;
     const balken = document2.getElementById("update-banner");
@@ -11294,11 +11302,6 @@
         text.textContent = sagen("laedt");
         text.className = "popup-text text-yellow-400 animate-pulse";
         jetzt.hidden = true;
-      } else if (zustand.art === "geladen") {
-        const gruende = zustand.blocker || [];
-        text.textContent = sagen("geladen", { build: zustand.build }) + (gruende.length ? " - " + gruende.map((g) => GRUND[g] || g).join(", ") : "");
-        text.className = "popup-text text-[#39ff14]";
-        jetzt.hidden = true;
       } else if (zustand.art === "aktuell") {
         balken.hidden = true;
         sperreAktualisieren();
@@ -11309,8 +11312,8 @@
         jetzt.hidden = true;
       }
       if (spaeter) {
-        spaeter.hidden = zustand.art !== "veraltet" && zustand.art !== "unerreichbar" && zustand.art !== "geladen";
-        spaeter.textContent = zustand.art === "geladen" ? "OK" : TEXTE.spaeter;
+        spaeter.hidden = zustand.art !== "veraltet" && zustand.art !== "unerreichbar";
+        spaeter.textContent = TEXTE.spaeter;
       }
       if (jetzt) jetzt.textContent = TEXTE.jetzt;
     }
@@ -11330,7 +11333,7 @@
       const auf = adresse.searchParams.get("_pb_auf");
       const von = adresse.searchParams.get("_pb_von");
       const versuch = auf === build && BUILD_MUSTER.test(von || "") && von !== build;
-      if (versuch) zustand = { art: "geladen", build };
+      if (versuch) zustand = null;
       if (auf !== null || von !== null || adresse.searchParams.has("_pb_nonce")) {
         adresse.searchParams.delete("_pb_auf");
         adresse.searchParams.delete("_pb_von");
@@ -11348,12 +11351,10 @@
       pruefungLaeuft = true;
       try {
         const ergebnis = await probe();
-        if (zustand && (zustand.art === "geladen" || zustand.art === "laedt")) return false;
+        if (zustand && zustand.art === "laedt") return false;
         if (ergebnis.art === "aktuell") {
-          if (!zustand || zustand.art !== "geladen") {
-            zustand = null;
-            zeichnen();
-          }
+          zustand = null;
+          zeichnen();
           return false;
         }
         if (ergebnis.art === "veraltet") {
@@ -11373,18 +11374,20 @@
     function beiSichtbarkeit() {
       if (document2.visibilityState !== "hidden") void pruefen();
     }
+    function beiSeitenRueckkehr(event) {
+      if (event.persisted) beiSichtbarkeit();
+    }
     function start() {
-      geladenPruefen();
-      void pruefen();
+      if (!geladenPruefen()) void pruefen();
       timer = window2.setInterval(() => void pruefen(), 6e4);
       document2.addEventListener("visibilitychange", beiSichtbarkeit);
-      window2.addEventListener("pageshow", beiSichtbarkeit);
+      window2.addEventListener("pageshow", beiSeitenRueckkehr);
     }
     function stop() {
       if (timer !== null) window2.clearInterval(timer);
       timer = null;
       document2.removeEventListener("visibilitychange", beiSichtbarkeit);
-      window2.removeEventListener("pageshow", beiSichtbarkeit);
+      window2.removeEventListener("pageshow", beiSeitenRueckkehr);
     }
     if (jetzt) jetzt.onclick = () => {
       if (!ziel || !zustand || zustand.art !== "veraltet") return;
@@ -11398,18 +11401,6 @@
     };
     if (spaeter) spaeter.onclick = () => {
       if (zustand && zustand.art === "laedt") return;
-      if (zustand && zustand.art === "geladen") {
-        const blocker = updateBlockers();
-        if (blocker.length) {
-          zustand = { ...zustand, blocker };
-          zeichnen();
-          return;
-        }
-        zustand = { art: "laedt" };
-        zeichnen();
-        reload();
-        return;
-      }
       balken.hidden = true;
       sperreAktualisieren();
     };
