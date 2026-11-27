@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see docs/PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261121-skills5';
+import {getLanguage} from './language.mjs?v=20261121-menu1';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,17 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'menu1',build:'20261121-menu1',pr:0,
+    title:{en:'Command Center · Tidy Two-Column HQ with a Real Gap Above Settings',de:'Kommandozentrale · Aufgeräumtes Zwei-Spalten-HQ mit echter Lücke über den Einstellungen'},
+    shipped:[
+      {en:'Reported: "Hauptmenu passt immer noch nicht! WICHTIG. Alles sauber hinruecken. Viel platz ueber den 3 Spielmodi, luecke unter waffen freunde bestenliste zu einstellungen buttons hin." The left rail (SOLDAT card, quick actions, SETTINGS/SIGN OUT, save lines) now lives in one flex column of its own inside the HQ grid, so the settings row always follows the action cards with a fixed 24px gap - independent of whether resume, results or field school occupy extra rows. The deployment head gets real headroom above the three mode cards, and the whole grid aligns cleanly on desktop while the phone keeps its approved single-column stack. Cache wave 20261121-menu1.',de:'Gemeldet: „Hauptmenü passt immer noch nicht! WICHTIG. Alles sauber hinrücken. Viel platz über den 3 Spielmodi, lücke unter waffen freunde bestenliste zu einstellungen buttons hin." Die linke Schiene (SOLDAT-Karte, Schnellaktionen, SETTINGS/SIGN OUT, Speicherzeilen) steckt jetzt in einer eigenen Flex-Spalte des HQ-Grids - die Einstellungen folgen den Aktionskarten dort immer mit festen 24px Abstand, unabhängig von Resume/Ergebnis/Feldschule-Zeilen. Der Einsatz-Kopf bekommt echten Luft über den drei Spielmodi; Desktop richtet sich sauber aus, das Telefon behält den gebilligten Ein-Spalten-Stapel. Cache-Welle 20261121-menu1.'},
+      {en:'Pure layout: no handler, id or feature-gate changes.',de:'Reines Layout: keine Handler-, ID- oder Feature-Gate-Änderungen.'},
+    ],
+    open:[
+      {en:'Build-pad optics and admin integration follow in the operator backlog.',de:'Build-Pad-Optik und Admin-Integration folgen in der Betreiber-Backlog.'},
+    ]
+  },
   {
     id:'skills5',build:'20261121-skills5',pr:531,
     title:{en:'Skills · Owned Badges Read as Clear Green, Not Muted Grey',de:'Skills · Gefreischaltete Badges in kräftigem Grün statt gedämpftem Grau'},

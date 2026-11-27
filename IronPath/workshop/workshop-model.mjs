@@ -5,7 +5,7 @@
 // IPL-0137 "alles gleichzeitig": equipped is the taken list — every owned
 // piece counts at once (vest, boots, radio, weapon in parallel). The old
 // three-slot object is gone; nothing replaces anything.
-import {ITEMS,readArmory} from '../core/armory.mjs?v=20261121-skills5';
+import {ITEMS,readArmory} from '../core/armory.mjs?v=20261121-menu1';
 import {PRESTIGE,isPrestige} from '../core/prestige.mjs?v=20261112-pressure1';
 const legacySlots=['gadget','gear','gear','gadget','gadget','gear','gadget','gadget','gadget','gadget'];
 // One price source for both the reducer and the UI, so a re-tune cannot drift.

@@ -516,6 +516,10 @@ body:has(#commandCenter:not([hidden])) #guideRecall.coach-recall {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
+  /* Reported: "luecke unter waffen freunde bestenliste zu einstellungen
+     buttons hin" - the settings row always keeps a clear gap under the
+     quick actions, no matter which rows the right column occupies. */
+  margin-top: 24px;
 }
 
 #commandCenter .command-utilities button {
@@ -560,15 +564,24 @@ body:has(#commandCenter:not([hidden])) #guideRecall.coach-recall {
   #commandCenter .command-nav {
     display: grid;
     grid-template-columns: 336px minmax(0, 1fr);
-    grid-template-rows: auto auto auto auto auto auto;
     column-gap: 20px;
     row-gap: 0;
     align-items: start;
   }
 
-  #commandCenter #menuSoldier.command-soldier {
+  /* The left rail is one column of its own: SOLDAT, quick actions, then the
+     settings row with a fixed gap. It stretches to the full grid height so
+     nothing drifts when resume/results/field-school add or drop rows. */
+  #commandCenter .command-home-side {
     grid-column: 1;
-    grid-row: 1;
+    grid-row: 1 / span 12;
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  #commandCenter #menuSoldier.command-soldier {
     display: flex;
     flex-direction: column;
     align-items: stretch;
@@ -579,8 +592,6 @@ body:has(#commandCenter:not([hidden])) #guideRecall.coach-recall {
   }
 
   #commandCenter .command-soldier-actions {
-    grid-column: 1;
-    grid-row: 2 / span 2;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
@@ -617,32 +628,21 @@ body:has(#commandCenter:not([hidden])) #guideRecall.coach-recall {
     right: 8px;
   }
 
-  #commandCenter .command-utilities {
-    grid-column: 1;
-    grid-row: 4;
-    align-self: start;
-  }
-
   #commandCenter .command-nav-head {
-    grid-column: 2;
-    grid-row: 1;
-    align-self: start;
-    margin-bottom: 12px;
+    /* Reported: "viel platz ueber den 3 Spielmodi" - the deployment head
+       carries real headroom above the three mode cards. */
+    margin-top: 4px;
+    margin-bottom: 22px;
   }
 
   #commandCenter #menuResume {
-    grid-column: 2;
-    grid-row: 2;
     margin-bottom: 10px;
   }
 
   #commandCenter .mode-grid {
-    grid-column: 2;
-    grid-row: 3 / span 2;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 14px;
-    align-self: stretch;
   }
 
   #commandCenter .mode-card {
@@ -650,15 +650,11 @@ body:has(#commandCenter:not([hidden])) #guideRecall.coach-recall {
   }
 
   #commandCenter #menuResults {
-    grid-column: 2;
-    grid-row: 5;
     margin-top: 12px;
     margin-bottom: 0;
   }
 
   #commandCenter #fieldSchool {
-    grid-column: 2;
-    grid-row: 6;
     margin-top: 14px;
   }
 }

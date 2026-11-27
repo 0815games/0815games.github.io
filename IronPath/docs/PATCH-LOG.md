@@ -6,7 +6,7 @@ aber ersetzt weder Git noch die GitHub-PR-Historie. Die dazugehörige
 [Arbeitsanweisung](../../AGENTS.md) verlangt, dieses Log vor der Arbeit zu lesen
 und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
 
-Die Einträge IPL-0001 bis IPL-0126 stehen im
+Die Einträge IPL-0001 bis IPL-0127 stehen im
 [Archiv](PATCH-LOG-ARCHIV.md); hier stehen die neuesten 20. Beide Dateien
 zusammen sind lückenlos und doppelfrei - `../scripts/patch.mjs` (Unterbefehl `check`) und
 `../tests/patch-log-archive.test.mjs` prüfen das.
@@ -65,20 +65,6 @@ jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderl
 
 
 
-## IPL-0127 – Rückbau des entfernten Testprojekts `ironpathtest`
-
-- **Zeit / Quelle:** 2026-11-24 UTC; Betreiber: „IronPathTest Sachen können entfernt werden, aber so das der Rest noch funktioniert.“ Vorausgegangen war die Feststellung, dass das Firebase-Projekt `ironpathtest` und das Vercel-Projekt `ironpath-release` gelöscht sind.
-- **Block / Ziel:** Kein Spiel-Block, keine Spieländerung. Reiner Rückbau der isolierten Test-/Staging-Kette; das Spiel, `admin.html` und die Wartungsprobe bleiben unverändert auf `iron-path-dc727`.
-- **Branch / Basis:** `arena/3ce6a172-0815games-github-io` ab `aa6bfb9` (`main`, Merge PR `#389`).
-- **Änderungen / Dateien:**
-  - Entfernt: `IronPath/release-tools/build-isolated-test-site.mjs`, `initialize-isolated-test.mjs`, `exercise-isolated-guard.mjs`, `IronPath/browser-tests/release-live-test.cjs`, `IronPath/tests/release-test-site.test.mjs`, `release-test-initialize.test.mjs`, `release-test-live-exercise.test.mjs`. Keine dieser Dateien wurde von einem Workflow, einem `npm`-Skript oder einem Produktions-Asset importiert; der Produktionsweg (`build-pages-site.mjs`, `pages-safety.mjs`, `stage-version.mjs` mit `production-public-config.json`) nutzte die Testkonfiguration nie.
-  - `IronPath/release-tools/README.md`: Der Abschnitt „Using the existing test project“ ist durch einen Rückbau-Abschnitt ersetzt (was entfernt wurde und warum, was ein neuer Testlauf bräuchte); der verbliebene Rest ist ausdrücklich als Historie markiert.
-  - `IronPath/docs/DATENBLATT.md`: Statusabsatz ergänzt; ältere Abschnitte ausdrücklich als Historie eingeordnet.
-  - `IronPath/release-tools/PAGES-ROLLOUT.md`, `FIREBASE-PAGES-ROLLOUT.md`, `IronPath/firebase/FRIENDS-ROLLOUT.md`: Verweise präzisiert — das Projekt ist gelöscht, der Pfad entfernt.
-- **Prüfungen:** Gesamtsuite **1342 Tests, 1341 bestanden, 0 Fehler, 1 übersprungen** nach dem Entfernen der drei Testdateien (vorher 1350/1349). `arcade/tests/portals.test.cjs` unverändert grün. Keine Referenz auf die gelöschten Dateien mehr außer der Rückbau-Dokumentation. Weder CI noch `package.json`-Skripte nannten die entfernten Dateien.
-- **Betrieb (belegt):** Das Vercel-Projekt `ironpath-release` wurde am 2026-11-24 auf Anweisung des Betreibers gelöscht; Vercel bestätigte `deleted successfully`, das anschließende Projektlisting enthält nur noch `ironpath-live-session`. Damit sind die alten Deployments und der öffentliche Alias `https://ironpath-release.vercel.app/` weg. Keine Firebase- oder Rules-Änderung.
-- **Git / PR / Release:** Commit und Push auf dem genannten Branch, PR folgt; Merge, CI-Ergebnis und Pages-Auslieferung werden als eigenes Ereignis nachgetragen. Keine Rules-, Daten- oder Vercel-Änderung in diesem Schritt.
-- **Offen / nächster Schritt:** Ein isolierter Testlauf bräuchte eine **neue** Projekt-ID (Firebase sperrt gelöschte IDs dauerhaft) und neue öffentliche Web-Einstellungen; der Rules-Builder der Testkette fehlt dann ebenfalls. Projekt `ironpath-release` ist in Vercel pausiert, das Dienstkonto-Secret dort gelöscht; `ironpath-live-session` führt kein `IRONPATH_FIREBASE_SERVICE_ACCOUNT` mehr — ob der Session-Endpunkt deshalb antwortet, ist von hier aus nicht geprüft.
 
 ## IPL-0128 – Lebendiges Feld VI: Rückstoßrauch, Treffer-Flare, Staub, Spuren, Lull und Wetter (Welle `20261123-aim6`, PR `#405`)
 - **Zeit / Quelle:** Sitzungsdatum 2026-11-21 UTC, Umgebungsuhr 2026-11-24 UTC (getrennt genannt); Betreiber-Auftrag 2026-11-23/24: „1-8 machen wir so“ — acht grafische Pakete, dazu Prestige-Glow umfärben (Betreiber-Wahl im Poll: Amethyst `#b48ce0`; wörtlich zur Farbe: „selbe Farbe wie Upgrade ist schwachsinnig“).
@@ -308,3 +294,15 @@ Nur Darstellung, kein Sim-State, kein Wire-Format, statisch im Terrain-Cache (Re
 - **Prüfung:** Style-Pin (owned=grün, locked=grau, Oliv-Grau weg); Pin-Gruppe 10/0, Suite 1378+2 pr-Platzhalter/1, Schnelltor nur pr-Platzhalter.
 - **Git / PR / Release:** Branch `arena/ea2bdfd4-0815games-github-io` ab `cd2f5d06`; Push, **PR `#531`**, Suite 1378+2 pr-Platzhalter, CI (`game-regressions`/`interface-browser-smoke`/`database-rules`/party-finalization) — alle Checks grün, **Merge `c9309f27` auf `main`**. Doku-PR im Anschluss.
 - **Offen / nächster Schritt:** Bestätigung nach hartem Neu-Laden, dass die skills4-Desktop-Fixes sichtbar sind.
+
+## IPL-0147 – Hauptmenü: aufgeräumtes Zwei-Spalten-HQ, echte Lücke über den Einstellungen (Welle `20261121-menu1`, PR `#—`)
+
+- **Was:** Rückmeldung des Betreibers („Hauptmenü passt immer noch nicht ! WICHTIG. Alles sauber hinrücken. Viel platz über den 3 Spielmodi, lücke unter waffen freunde bestenliste zu einstellungen buttons hin."):
+  1. **Linke Schiene als eigene Spalte:** SOLDAT-Karte, Schnellaktionen (Waffen/Fähigkeiten/Freunde/Bestenliste), SETTINGS/SIGN OUT und die Speicherzeilen stecken jetzt in `.command-home-side` (eigene Flex-Spalte, `grid-row:1/span 12`) — die alte zeilenfeste Platzierung (`utilities=row4`) kippte, sobald Resume/Ergebnis/Feldschule zusätzliche Zeilen belegten.
+  2. **Feste Lücke:** `.command-utilities{margin-top:24px}` — der Abstand Waffen/Freunde/Bestenliste → Einstellungen ist deterministic, unabhängig vom Right-Column-Inhalt.
+  3. **Platz über den Modi:** Einsatz-Kopf `margin-bottom:12→22px` (+4px Top), `.command-home-layout{margin-top:16→22px}`.
+  4. Rechte Spalte (Kopf/Resume/Modi/Ergebnis/Feldschule) räumt automatisch in Spalte2 ein — keine expliziten `grid-row` mehr. Mobil (≤859px) behält den Flex-Stapel (Reihenfolge: Soldat → Aktionen → Einstellungen → Einsatzkopf → Modi).
+- **Pins respektiert:** `command-home-layout` bleibt `minmax(0,1fr)` (Test „single column - no side dossier"), Dokumentreihenfolge `card<actions<head<modes` ✓, Utilities-Content `[menuSettings,menuLogout]` ✓ (Test), Resume<Modi<Results ✓, SHOW-TASK-Pille bleibt rechts (kein Overlap) ✓, Handler/IDs unverändert.
+- **Prüfung:** neue Struktur-/Abstands-Pins · Suite … · Schnelltor … (vor Merge final).
+- **Git / PR / Release:** Branch `arena/e8c58d12-0815games-github-io` ab `716dc9d6`; Push, PR `#—`, CI, Merge – wird nachgetragen.
+- **Offen / nächster Schritt:** Betreiber-Backlog danach: Build-Pad-Optik, AFK-Popup/Logout-Meldung, Admin-Integration.

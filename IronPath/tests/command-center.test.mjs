@@ -48,6 +48,29 @@ test('the highlighted SOLDIER card sits above the game modes and owns the quick 
   assert.doesNotMatch(source,/menuEquipment|menuScrap|menuPoints/,'render() no longer feeds removed nodes');
 });
 
+test('the HQ left rail is its own column: actions, then a real gap, then settings',()=>{
+  const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
+  const css=readFileSync(new URL('../menu-redesign.css',import.meta.url),'utf8');
+  const style=readFileSync(new URL('../style.css',import.meta.url),'utf8');
+  // Reported: "Alles sauber hinruecken ... luecke unter waffen freunde
+  // bestenliste zu einstellungen buttons hin".
+  const side=html.indexOf('class="command-home-side"');
+  assert.ok(side>0,'the left rail wrapper exists');
+  assert.ok(side<html.indexOf('id="menuSoldier"')&&html.indexOf('id="menuSoldier"')<html.indexOf('class="command-soldier-actions"'),'side opens above the soldier card');
+  const sideEnd=html.indexOf('class="command-nav-head"');
+  const rail=html.slice(side,sideEnd);
+  assert.ok(rail.indexOf('id="menuSoldier"')<rail.indexOf('class="command-soldier-actions"'),'soldier, then quick actions');
+  assert.ok(rail.indexOf('class="command-soldier-actions"')<rail.indexOf('class="command-utilities"'),'quick actions, then the settings row');
+  assert.ok(rail.indexOf('id="saveStatus"')>0&&rail.indexOf('id="partySignOutStatus"')>0,'save lines live with the rail');
+  assert.match(css,/\.command-home-side\s*\{[^}]*display:\s*flex;\s*flex-direction:\s*column/,'the rail is one flex column');
+  assert.match(css,/\.command-utilities \{[\s\S]{0,400}?margin-top: 24px/,'fixed gap above SETTINGS/SIGN OUT');
+  assert.match(css,/\.command-nav-head \{[\s\S]{0,300}?margin-bottom: 22px/,'headroom above the three mode cards');
+  assert.match(style,/\.command-home-layout\{[^}]*margin-top:22px/,'air between hero and the HQ grid');
+  // Fixed row numbers are gone - rows can no longer drift.
+  assert.doesNotMatch(css,/\.command-nav \{\s*grid-template-rows: auto auto auto auto auto auto;/,'no fixed row template');
+  assert.doesNotMatch(css,/command-utilities \{\s*grid-column: 1;\s*grid-row: 4;/,'utilities no longer pinned to row 4');
+});
+
 test('the command center can reopen a preserved report after the battle workspace is gone',()=>{
  const nodes=new Map(),el=id=>{if(!nodes.has(id))nodes.set(id,{dataset:{},hidden:false,textContent:'',value:0,max:0});return nodes.get(id);};
  let available=false,opened=0;const game={setMenuOpen(){},getRunSummary:()=>null,hasResults:()=>available,showResults:()=>{opened++;}};
