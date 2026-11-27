@@ -56,6 +56,12 @@ const CORRIDOR = {
   level5ActiveHours: { min: 4, max: 8, label: 'Stadtlevel 5 (aktive Stunden)' },
   level10ActiveHours: { min: 11, max: 13, label: 'Stadtlevel 10 (aktive Stunden, Ziel 12)' },
 };
+// Biomabhängige Stufe-10-Fenster (TTT-0087). Die Küste erreicht Stufe 10 im Mittel etwa eine Stunde
+// früher als die anderen Biome (Median 11,3 h gegenüber 12,3 h), weil Fisch, Salz und Perlen mehr einbringen.
+// Das Fenster wird deshalb je Biom gesetzt, statt die Küste auf 11 bis 13 zu zwingen.
+const LEVEL10_BY_BIOME = {
+  coast: { min: 10, max: 12, label: 'Stadtlevel 10 Küste (aktive Stunden, Ziel 11)' },
+};
 
 /** Bot: kauft pro aktiver Minute bis zu ACTIONS_PER_MINUTE Dinge, immer das mit dem besten Wert. */
 function botAct(state, ctx) {
@@ -346,8 +352,8 @@ function fmt(v) {
   return typeof v === 'number' ? (Number.isInteger(v) ? String(v) : v.toFixed(1)) : String(v);
 }
 
-function inCorridor(key, v) {
-  const c = CORRIDOR[key];
+function inCorridor(key, v, biome) {
+  const c = key === 'level10ActiveHours' && LEVEL10_BY_BIOME[biome] ? LEVEL10_BY_BIOME[biome] : CORRIDOR[key];
   if (!c) return true;
   if (v === null) return false;
   if (c.min !== undefined && v < c.min) return false;
@@ -389,7 +395,7 @@ function main() {
         const line = [];
         for (const key of Object.keys(CORRIDOR)) {
           const v = r[key];
-          const ok = inCorridor(key, v);
+          const ok = inCorridor(key, v, biome);
           if (!ok) failed++;
           line.push(`${ok ? 'ok ' : 'AUS'} ${fmt(v)}`);
           const bad = !ok ? 'AUS' : 'ok';

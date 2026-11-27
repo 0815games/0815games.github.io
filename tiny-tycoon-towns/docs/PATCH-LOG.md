@@ -1344,3 +1344,11 @@ Ereignis ergänzt.
 - Messung Faktor `abundant` 1.5 → 1.3: 41 Verstöße (Stufe 4 zu langsam). Verworfen.
 - Befund: Die 8 Restverstöße sind alle Stadtlevel 10. Die Spanne zwischen den Biomen beträgt etwa 4,3 Stunden (von ca. 10 bis 14,3), das Ziel-Fenster 11 bis 13 Stunden ist 2 Stunden breit. Eine einzelne globale Schwelle kann das nicht schließen. Nächster Schritt braucht eine Designentscheidung (biomabhängige Stufe-10-Ziele oder andere Biom-Klassen), kein weiterer globaler Hebel.
 - Status: NICHT grün, 8 Verstöße.
+
+### TTT-0087 – Biomabhängiges Stufe-10-Fenster für die Küste
+
+- Befund: Median Stufe 10 je Biom (60 Szenarien): Küste 11,3 h, Riverlands, Wald und Hochland je rund 12,3 h. Die Küste ist systematisch etwa eine Stunde schneller (Fisch, Salz, Perlen).
+- Umgesetzt: Küste bekommt Fenster 10 bis 12 h (Ziel 11), alle anderen Biome bleiben bei 11 bis 13 h (Ziel 12). Ausdrücklich ein Designschritt, GAME_PLAN 4.17 ist noch nicht angepasst.
+- Messung: **7 Verstöße** (vorher 8), Invarianten 0. Nicht grün.
+- Restfälle sind Einzelszenarien, keine Biom-Systematik: Riverlands 10 h (Karte 8 und 14), 10,3 h (Karte 8) und 14,3 h (Karte 12); Hochland 13,1 h (Karte 8) und 13,2 h zweimal (Karte 14); Küste 12,4 h (Karte 12).
+- Nicht weiter an die Fenster angepasst, um nicht auf die Messung zu schneidern. Entscheidung offen: Fenster je Biom verbreitern (dann ist die Abweichung bewusst toleriert) oder die Verteilung in den Biomen angleichen.
