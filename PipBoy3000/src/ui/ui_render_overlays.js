@@ -849,6 +849,22 @@ Object.assign(UI, {
         document.addEventListener('keydown', this._eigenerEscHandler);
     },
 
+    ladeHandbuch: async function() {
+        const verDisplay = document.getElementById('version-display');
+        const ver = verDisplay ? verDisplay.textContent.trim() : Date.now();
+        const res = await fetch(`docs/README.md?v=${ver}`);
+        if (!res.ok) throw new Error('Handbuch nicht verfügbar');
+        const text = await res.text();
+        // Der Text stammt aus einer Datei, nicht aus HTML. Vor dem Formatieren
+        // escapen, damit weder Markdown noch ein Fehlertext Skripte einschleusen.
+        return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/^### (.*$)/gim, '<h3 class="text-xl font-bold text-green-300 mt-2 mb-1">$1</h3>')
+            .replace(/^## (.*$)/gim, '<h2 class="text-2xl font-bold text-green-400 mt-4 mb-2">$1</h2>')
+            .replace(/^# (.*$)/gim, '<h1 class="text-3xl font-bold text-yellow-400 mb-2 border-b border-yellow-500">$1</h1>')
+            .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+            .replace(/\n/g, '<br>');
+    },
+
     showManualOverlay: async function() {
         const overlay = document.getElementById('manual-overlay');
         const content = document.getElementById('manual-content');
@@ -869,22 +885,10 @@ Object.assign(UI, {
         if(overlay && content) {
             content.innerHTML = '<div class="text-center animate-pulse">Lade Handbuch...</div>';
             overlay.style.display = 'flex'; overlay.classList.remove('hidden');
-            const verDisplay = document.getElementById('version-display'); 
-            const ver = verDisplay ? verDisplay.textContent.trim() : Date.now();
-            try { 
-                // Liegt seit dem Umbau unter docs/: das Handbuch war früher
-                // /readme.md im Spielordner und lief nach dem Verschieben auf 404.
-                const res = await fetch(`docs/README.md?v=${ver}`); 
-                if (!res.ok) throw new Error("Manual not found"); 
-                let text = await res.text(); 
-                text = text.replace(/^# (.*$)/gim, '<h1 class="text-3xl font-bold text-yellow-400 mb-2 border-b border-yellow-500">$1</h1>');
-                text = text.replace(/^## (.*$)/gim, '<h2 class="text-2xl font-bold text-green-400 mt-4 mb-2">$1</h2>');
-                text = text.replace(/^### (.*$)/gim, '<h3 class="text-xl font-bold text-green-300 mt-2 mb-1">$1</h3>');
-                text = text.replace(/\*\*(.*)\*\*/gim, '<b>$1</b>');
-                text = text.replace(/\n/gim, '<br>');
-                text += '<br><button class="action-button w-full mt-4 border-red-500 text-red-500" onclick="UI.schliesseHandbuch()">SCHLIESSEN (ESC)</button>';
-                content.innerHTML = text; 
-            } catch(e) { content.innerHTML = `<div class="text-red-500">Fehler beim Laden: ${e.message}</div>`; }
+            try {
+                const html = await UI.ladeHandbuch();
+                content.innerHTML = html + '<br><button class="action-button w-full mt-4 border-red-500 text-red-500" onclick="UI.schliesseHandbuch()">SCHLIESSEN (ESC)</button>';
+            } catch(e) { content.textContent = 'Fehler beim Laden des Handbuchs. Bitte erneut versuchen.'; }
         }
     },
 

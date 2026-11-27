@@ -339,7 +339,8 @@ test('das Modul ist im Buendel registriert', () => {
   assert.match(entries, /src\/ui\/ui_tutorial\.js/, 'ui_tutorial.js fehlt in entries.mjs');
   const entry = read('entry.js');
   assert.match(entry, /ui_tutorial\.js/, 'ui_tutorial.js fehlt in entry.js');
-  // Der Menuepunkt zum Nachholen.
-  const html = read('shell', 'index.html');
-  assert.match(html, /id="btn-tutorial-start"/, 'Der Menuepunkt TUTORIAL fehlt');
+  // Tutorial ist im Wiki-Handbuch und als Mission erreichbar.
+  const wiki = read('src/ui', 'ui_view_journal.js');
+  assert.match(wiki, /id="wiki-tutorial-start"/, 'Der Tutorial-Zugang im Wiki fehlt');
+  assert.match(wiki, /data-tutorial-fortsetzen/, 'Der Tutorial-Zugang in den Aufgaben fehlt');
 });

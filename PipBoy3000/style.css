@@ -822,3 +822,16 @@ input.login-input { background: #000; border: 2px solid var(--pip-green); color:
     .char-tab { font-size: clamp(.9rem, 4vw, 1.5rem); letter-spacing: .04em; }
 }
 @media (prefers-reduced-motion: reduce) { .char-tab-punkte { animation: none; } }
+
+/* Kompakte Seiten im Burger-Menü, im Stil des Pip-Boy-Terminals. */
+.menu-seite { display: flex; flex-direction: column; gap: .35rem; }
+.menu-seite[hidden] { display: none; }
+.menu-kopf { padding: .2rem .35rem; color: #6dcf83; border-bottom: 1px solid #14532d; font-size: .8rem; letter-spacing: .14em; }
+#main-nav .menu-seite .action-button { justify-content: flex-start; margin: 0; text-align: left; font-size: 1.1rem; }
+
+.wiki-tutorial-box { display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding: .75rem; margin-bottom: 1rem; border: 1px solid #2b9d45; background: #071b0a; }
+.wiki-tutorial-box strong { color: #8cfb9d; letter-spacing: .12em; }
+.wiki-tutorial-box p { color: #8bcf98; font-size: 1rem; line-height: 1.25; }
+.wiki-tutorial-box .action-button { font-size: 1rem; flex-shrink: 0; }
+.wiki-handbuch { color: #c4e8c4; line-height: 1.45; }
+@media (max-width: 540px) { .wiki-tutorial-box { flex-direction: column; align-items: stretch; } }

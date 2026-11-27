@@ -61,7 +61,7 @@ Object.assign(UI, {
         // dasselbe Bild benutzen.
         const getIcon = (type) => UI.itemTypEmoji(type);
 
-        const categories = ['monsters', 'items', 'crafting', 'locs', 'perks', 'quests'];
+        const categories = ['manual', 'monsters', 'items', 'crafting', 'locs', 'perks', 'quests'];
         categories.forEach(cat => {
             const btn = document.getElementById(`wiki-btn-${cat}`);
             if(btn) {
@@ -74,6 +74,24 @@ Object.assign(UI, {
                 }
             }
         });
+
+        content.dataset.wikiCategory = category;
+        if(category === 'manual') {
+            content.innerHTML = `<section class="wiki-handbuch">
+                <div class="wiki-tutorial-box"><div><strong>TUTORIAL</strong><p>Grundlagen lernen oder an deinem gespeicherten Fortschritt weitermachen.</p></div>
+                <button type="button" id="wiki-tutorial-start" class="action-button">TUTORIAL STARTEN / FORTSETZEN</button></div>
+                <div id="wiki-handbuch-text" role="status">Lade Handbuch...</div></section>`;
+            content.querySelector('#wiki-tutorial-start').onclick = () => UI.starteTutorialAusWiki();
+            const ziel = content.querySelector('#wiki-handbuch-text');
+            UI.ladeHandbuch().then(html => {
+                if(document.getElementById('wiki-handbuch-text') === ziel && content.dataset.wikiCategory === 'manual') ziel.innerHTML = html;
+            }).catch(() => {
+                if(document.getElementById('wiki-handbuch-text') === ziel && content.dataset.wikiCategory === 'manual') {
+                    ziel.textContent = 'Handbuch konnte nicht geladen werden. Wähle den Reiter erneut, um es noch einmal zu versuchen.';
+                }
+            });
+            return;
+        }
 
         let html = '';
 
@@ -234,6 +252,12 @@ Object.assign(UI, {
         }
 
         content.innerHTML = html;
+    },
+
+    starteTutorialAusWiki: async function() {
+        const spielstand = Game.state;
+        await UI.switchView('map');
+        if(Game.state === spielstand && spielstand && spielstand.view === 'map') UI.starteTutorial();
     },
 
     renderQuests: function() {
