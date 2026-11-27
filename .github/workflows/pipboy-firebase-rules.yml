@@ -1,0 +1,30 @@
+name: Pip-Boy Firebase rules
+on:
+  push:
+    branches: ['arena/61fb89ae-0815games-github-io']
+    paths: ['PipBoy3000/firebase/**', '.github/workflows/pipboy-firebase-rules.yml']
+  pull_request:
+    paths: ['PipBoy3000/firebase/**', '.github/workflows/pipboy-firebase-rules.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  rules:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: PipBoy3000/firebase/rules-test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: PipBoy3000/firebase/rules-test/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - run: npm ci --no-audit --no-fund
+      - run: npm test
