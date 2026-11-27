@@ -4,38 +4,38 @@ import {
   createTown, newSeed, chooseBiome, placeBuilding, upgradeBuilding,
   toggleSell, buyOffer, advance, hydrateTown, setTutorialStep, settleConvoyAction,
   plantField, removeField, renewField, setWorkerAssignment, staffing,
-} from './domain/engine.js?v=20261126-hud1';
-import { forestHealth, fishStock, fishingGround, soilOf, FULL } from './domain/economy.js?v=20261126-hud1';
+} from './domain/engine.js?v=20261126-arbeit1';
+import { forestHealth, fishStock, fishingGround, soilOf, FULL } from './domain/economy.js?v=20261126-arbeit1';
 import {
   checkPlacement, placementHint, fieldsOf, plantableNeighbours, fieldSlots,
-} from './domain/placement.js?v=20261126-hud1';
-import { startConvoy } from './domain/convoys.js?v=20261126-hud1';
-import { tradeFormHtml, convoyListHtml, previewFor } from './trade-ui.js?v=20261126-hud1';
+} from './domain/placement.js?v=20261126-arbeit1';
+import { startConvoy } from './domain/convoys.js?v=20261126-arbeit1';
+import { tradeFormHtml, convoyListHtml, previewFor } from './trade-ui.js?v=20261126-arbeit1';
 import {
   productionMultiplier, ratePerMin, buildCost, storageCap, classOf,
-} from './domain/economy.js?v=20261126-hud1';
-import { GRID, keyOf, inBounds, isUnlocked, gridSize } from './domain/grid.js?v=20261126-hud1';
-import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261126-hud1';
-import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261126-hud1';
+} from './domain/economy.js?v=20261126-arbeit1';
+import { GRID, keyOf, inBounds, isUnlocked, gridSize } from './domain/grid.js?v=20261126-arbeit1';
+import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261126-arbeit1';
+import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261126-arbeit1';
 import {
   PERKS, canFoundCharter, grantCharters, buyPerk, perkEffect, perkLevel, availableCharters, emptyCharter,
   applyCharterToData, reconcileCrowns,
-} from './domain/charters.js?v=20261126-hud1';
+} from './domain/charters.js?v=20261126-arbeit1';
 const SEEN_NOTES_KEY = 'ttt:notes-seen';
-import { withTimeout } from './async-util.js?v=20261126-hud1';
-import { checkTownName } from './town-names.js?v=20261126-hud1';
-import { friendsShell, mountFriends } from './friends-ui.js?v=20261126-hud1';
-import { createBoard } from './world/board.js?v=20261126-hud1';
-import { createLoginScene } from './world/login-scene.js?v=20261126-hud1';
-import { TUTORIAL_STEPS, HELP_SECTIONS, CHECK_LABELS, STATE_TASKS, tutorialResume, tutorialStored } from './tutorial.js?v=20261126-hud1';
-import { tutorialSpot, builtSpot } from './domain/tutorialSpot.js?v=20261126-hud1';
-import { createVersionUI } from './version-ui.mjs?v=20261126-hud1';
-import { startAfkWatch, showAfkOverlay } from './afk.js?v=20261126-hud1';
-import { fullResources, fillPercent } from './stock-dock.js?v=20261126-hud1';
-import { nextRequestToShow, requestBadgeLabel, canShowRequestPopup } from './friend-requests.js?v=20261126-hud1';
-import { houseCapacity, staffFactor, tutorialTaskDone } from './domain/settlement.js?v=20261126-hud1';
+import { withTimeout } from './async-util.js?v=20261126-arbeit1';
+import { checkTownName } from './town-names.js?v=20261126-arbeit1';
+import { friendsShell, mountFriends } from './friends-ui.js?v=20261126-arbeit1';
+import { createBoard } from './world/board.js?v=20261126-arbeit1';
+import { createLoginScene } from './world/login-scene.js?v=20261126-arbeit1';
+import { TUTORIAL_STEPS, HELP_SECTIONS, CHECK_LABELS, STATE_TASKS, tutorialResume, tutorialStored } from './tutorial.js?v=20261126-arbeit1';
+import { tutorialSpot, builtSpot } from './domain/tutorialSpot.js?v=20261126-arbeit1';
+import { createVersionUI } from './version-ui.mjs?v=20261126-arbeit1';
+import { startAfkWatch, showAfkOverlay } from './afk.js?v=20261126-arbeit1';
+import { fullResources, fillPercent } from './stock-dock.js?v=20261126-arbeit1';
+import { nextRequestToShow, requestBadgeLabel, canShowRequestPopup } from './friend-requests.js?v=20261126-arbeit1';
+import { houseCapacity, staffFactor, tutorialTaskDone } from './domain/settlement.js?v=20261126-arbeit1';
 
-const BUILD = '20261126-hud1';
+const BUILD = '20261126-arbeit1';
 console.info(`Tiny Tycoon Towns ${BUILD}`);
 const LAST_BIOME_KEY = 'ttt.lastBiome';
 const LOCAL_KEY = (uid) => `ttt.save.v1.${uid}`;
@@ -129,7 +129,7 @@ const REMOTE_TIMEOUT_MS = 10_000;
 async function loadData() {
   const names = ['resources', 'biomes', 'buildings', 'economy', 'merchant', 'npcs'];
   const parts = await Promise.all(names.map((n) =>
-    fetch(`data/${n}.json?v=20261126-hud1`).then((r) => {
+    fetch(`data/${n}.json?v=20261126-arbeit1`).then((r) => {
       if (!r.ok) throw new Error(`data/${n}.json: HTTP ${r.status}`);
       return r.json();
     })));
@@ -175,7 +175,7 @@ async function boot() {
   window.addEventListener('offline', updateSync);
 
   try {
-    cloud = await import('./cloud.js?v=20261126-hud1');
+    cloud = await import('./cloud.js?v=20261126-arbeit1');
   } catch {
     showFatal('Das Konto-System konnte nicht geladen werden. Ohne Anmeldung lässt sich nicht spielen. Bitte Verbindung prüfen und neu laden.');
     return;
@@ -920,8 +920,7 @@ function showTutorialStep(index) {
   const step = TUTORIAL_STEPS[index];
   if (!step || !state) return endTutorial();
   tutorialIndex = index;
-  // Aufgaben auf dem Feld oder in der Leiste: klein anfangen, damit man das Spiel bedienen kann.
-  tutorialMinimized = Boolean(step.task && step.task !== 'tap');
+  // Die Karte bleibt, wie der Spieler sie zuletzt hatte. Nur ein geöffnetes Feld-Fenster macht sie klein.
   renderTutorialStep();
 }
 
@@ -1256,6 +1255,12 @@ function workersHtml(b, x, y) {
   const manual = b.manual ?? [];
   const manualSum = manual.reduce((a, m) => a + m.n, 0);
   const factor = staffFactor(n, cfg.workSlots, cfg);
+  // Bewohner, die manuell an einen anderen Betrieb gebunden sind, fehlen hier. Alles andere ist frei für diesen Betrieb,
+  // auch wenn die Automatik ihn gerade woanders einsetzt: die manuelle Zuweisung hat Vorrang.
+  const boundElsewhere = (hk) => Object.entries(state.tiles).reduce((sum, [pk, t]) => {
+    if (pk === key) return sum;
+    return sum + (t.building?.manual ?? []).filter((m) => m.house === hk).reduce((a, m) => a + m.n, 0);
+  }, 0);
   let html = `<section class="workers"><h3>Arbeiter</h3>
     <p>Besetzt: <strong>${n} / ${cfg.workSlots}</strong> · Faktor ${multiplierText(factor)}</p>
     <p class="small">davon manuell ${manualSum}, automatisch ${Math.max(0, n - manualSum)}</p><ul class="friend-list">`;
@@ -1270,12 +1275,12 @@ function workersHtml(b, x, y) {
       any = true;
       const mine = manual.find((m) => m.house === hk)?.n ?? 0;
       const pop = ht.building.pop ?? cfg.startPop;
-      const free = Math.max(0, pop - (wf.byHouse[hk] ?? 0) + mine);
-      html += `<li class="friend-card"><span>Haus ${hx + 1}, ${hy + 1} · ${pop} Bewohner · ${free} frei</span>
+      const free = Math.max(0, pop - boundElsewhere(hk));
+      html += `<li class="friend-card"><span>Haus ${hx + 1}, ${hy + 1} · ${pop} Bewohner · ${free} für diesen Betrieb</span>
         <span class="friend-actions">
           <button type="button" class="ghost" data-action="worker" data-tx="${hx}" data-ty="${hy}" data-n="${Math.max(0, mine - 1)}" ${mine > 0 ? '' : 'disabled'} aria-label="Einen Arbeiter weniger">−</button>
           <strong>${mine}</strong>
-          <button type="button" class="ghost" data-action="worker" data-tx="${hx}" data-ty="${hy}" data-n="${mine + 1}" ${free > 0 && n < cfg.workSlots ? '' : 'disabled'} aria-label="Einen Arbeiter mehr">+</button>
+          <button type="button" class="ghost" data-action="worker" data-tx="${hx}" data-ty="${hy}" data-n="${mine + 1}" ${mine < free && n < cfg.workSlots ? '' : 'disabled'} aria-label="Einen Arbeiter mehr">+</button>
         </span></li>`;
     }
   }

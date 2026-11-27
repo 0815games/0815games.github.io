@@ -1,17 +1,17 @@
 // Game engine: state creation, player actions and time advance.
 // Every exported action is (state, input, ctx) -> { state, events, error? }.
 // The input state is never mutated.
-import { generateTerrain } from './terrain.js?v=20261126-hud1';
-import { GRID, HALL, keyOf, parseKey, inBounds, isUnlocked } from './grid.js?v=20261126-hud1';
-import { checkPlacement, fieldsOf, fieldSlots } from './placement.js?v=20261126-hud1';
+import { generateTerrain } from './terrain.js?v=20261126-arbeit1';
+import { GRID, HALL, keyOf, parseKey, inBounds, isUnlocked } from './grid.js?v=20261126-arbeit1';
+import { checkPlacement, fieldsOf, fieldSlots } from './placement.js?v=20261126-arbeit1';
 import {
   classOf, buildCost, productionMultiplier, townLevelFor,
   storageCap, throughputPerMin, sellPrice, ratePerMin,
   FULL, fishingGround, soilOf, fishStock, forestHealth,
-} from './economy.js?v=20261126-hud1';
-import { merchantOffers } from './merchant.js?v=20261126-hud1';
-import { arriveConvoys, payoutFor } from './convoys.js?v=20261126-hud1';
-import { growHouse, staffFactor, wageDue, assignWorkers } from './settlement.js?v=20261126-hud1';
+} from './economy.js?v=20261126-arbeit1';
+import { merchantOffers } from './merchant.js?v=20261126-arbeit1';
+import { arriveConvoys, payoutFor } from './convoys.js?v=20261126-arbeit1';
+import { growHouse, staffFactor, wageDue, assignWorkers } from './settlement.js?v=20261126-arbeit1';
 
 export const SCHEMA_VERSION = 1;
 export const BIOMES = ['riverlands', 'deepwoods', 'highlands', 'coast'];
