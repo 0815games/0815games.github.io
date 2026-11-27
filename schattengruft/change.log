@@ -1,16 +1,17 @@
 # CHANGELOG – Chroniken der Schattengruft
 
-## 2026-11-27 – App-Icon, Web-Icon und OG-Bild (0.10.2)
+## v0.10.3 – 2026-11-27 – App-Icon, Web-Icon und OG-Bild; Firebase-Regeln ins Repo
 
-### Icon-Set für App, Browser und iOS
-
-- Neues einheitliches Icon-Set für **Schattengruft**, erzeugt aus dem neuen
-  Skript `tools/make-icons.py` (Pillow, reproduzierbar, keine externen
-  Bilddateien):
+- **Versionsregel gewechselt:** Bisher wurde die Version nur bei Phasenabschlüssen erhöht,
+  Fehlerbehebungen und kleinere Änderungen blieben auf 0.10.x. Nach Nutzerentscheidung
+  wird **jedes sinnvolle Change mit einer Versionserhöhung** gepflegt. Dieser Eintrag
+  ist der erste Schritt: Patch-Erhöhung auf **0.10.3** für ein benutzervisibles
+  Change ohne Spielfunktion.
+- **Icon-Set für App, Browser und iOS:**
 
   | Datei | Verwendung |
   |---|---|
-  | `assets/icons/favicon.svg` | Browser-Favicon (Vektor, skaliert sauber) |
+  | `assets/icons/favicon.svg` | Browser-Favicon (Vektor, skaliert saubar) |
   | `assets/icons/favicon.ico` | Altgeräte-Favicon, 16/32/48/64 px in einem ICO |
   | `assets/icons/apple-touch-icon.png` | iOS Home-Screen-Icon (180×180) |
   | `assets/icons/icon-192.png` / `icon-512.png` | PWA-Icons |
@@ -18,32 +19,24 @@
   | `assets/icons/og-image.jpg/.png` | Share-Bild (1200×630) |
   | `assets/icons/manifest.webmanifest` | Web-Manifest mit allen Icons |
 
-- Design: Dunkles Quadrat (Theme-Farbe `#08090e`), goldner Doppelring,
-  darin eine Fackel mit rot-goldner Flamme – verwandt mit der alten
-  Favicon-Palette.
-- `index.html` jetzt mit allen Tags: Favicon (SVG + ICO), Apple-Touch-Icon,
-  Manifest, `application-name`, OG- und Twitter-Tags für das Share-Bild.
-- Das alte 32×32-Favicon (`favicon.ico` im Ordner-Wurzel) wurde durch das
-  neue Set ersetzt.
+  Design: dunkles Quadrat (Theme-Farbe `#08090e`), goldner Doppelring, Fackel
+  mit rot-goldner Flamme. `index.html` jetzt mit Favicon-, Apple-Touch-Icon-,
+  Manifest- und OG/Twitter-Tags. Erzeugt mit `tools/make-icons.py` (reproduzierbar).
 
-### Firebase-Regeln liegen jetzt im Repo
+- **Firebase-Regeln liegen jetzt im Repo** unter `firebase/database.rules.json`
+  (`dark_rpg/saves`, `dark_rpg/sessions`, `dark_rpg/leaderboard`) – versioniert
+  und auditierbar. `ANALYSE.md` entsprechend korrigiert.
 
-- Die Security-Regeln für `dark_rpg/saves`, `dark_rpg/sessions` und
-  `dark_rpg/leaderboard` liegen jetzt unter
-  **`firebase/database.rules.json`** im Repository und sind versioniert
-  auditierbar. Bisher waren sie nur im Firebase-Kontingent, nicht im Repo.
-- `ANALYSE.md` wurde korrigiert: das Punkt „Fehlende Security-Regeln" ist
-  geschlossen, TODO-Punkt 7 als erledigt markiert.
+- **Changelog-Viewer-Format korrigiert:** Der Ingame-Viewer parsen nur Einträge,
+  deren Überschrift mit `vX.Y.Z` beginnt. Die beiden 2026-11-27-Einträge wurden
+  daher im Spiel gar nicht angezeigt; sie tragen jetzt die version-geführte
+  Überschrift.
 
-### Tests
+- **Tests:** `tests/icon-assets.mjs` (10/10) neu; `html-assets.mjs` jetzt
+  version-agnostisch (regex statt fester Version), damit der nächste Bump
+  nicht mehr manuell angepasst werden muss. `boot-smoke`-Stub synchronisiert.
 
-- Neu: `tests/icon-assets.mjs` (10/10) – prüft Referenzen in `index.html`,
-  PNG-Größen, ICO-Format, Manifest und das Erzeugungs-Skript.
-- Grenzen: Keine visuelle Abnahme des Icons. Pillow-Ausgabe wurde per
-  Pixel-Analyse geprüft, die endgültige Gestaltung bitte auf einem
-  Gerät/dem Home-Screen bestätigen.
-
-## 2026-11-27 – Schwarzer Bildschirm, Doppel-Login und Sitzungsübernahme (0.10.2)
+## v0.10.2 – 2026-11-27 – Schwarzer Bildschirm, Doppel-Login und Sitzungsübernahme
 
 ### Schwarzer Bildschirm nach dem Einloggen (Handy)
 
@@ -99,7 +92,7 @@
   echter Handy-Test. Die Firebase-Regeln liegen nicht im Repo und konnten nicht
   geprüft werden.
 
-## 2026-11-27 – Lade-Hänger am Handy behoben (0.10.2)
+## v0.10.2 – 2026-11-27 – Lade-Hänger am Handy behoben
 
 - **Fehlerbild:** Am Handy blieb das Spiel beim Laden stehen; sichtbar war nur das
   Intro mit „v0.10.2“. Auf dem Rechner trat es nicht auf.

@@ -39,7 +39,7 @@ der Grund, warum seitdem niemand mehr etwas an `schattengruft/` committet hat.
 | Tests | 19 Suiten, 1.195 Assertions, 18 grün / 1 rot · **nach Aufräumen: 22 Suiten, 22 grün** |
 | `index.html` | 219 Zeilen, 76 Element-IDs |
 | `change.log` | 100 KB, 103 Abschnitte |
-| Version | 0.10.2 (an 6 Stellen manuell gepflegt) |
+| Version | 0.10.3 (an 6 Stellen manuell gepflegt) |
 
 ---
 

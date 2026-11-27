@@ -144,7 +144,7 @@ globalThis.window = {
 };
 globalThis.document = {
   readyState: 'complete', hidden: false, title: '', body, head,
-  documentElement: {getAttribute: () => '0.10.2', style: {setProperty() {}}},
+  documentElement: {getAttribute: () => '0.10.3', style: {setProperty() {}}},
   getElementById: (id) => { if (!byId.has(id)) { missingIds.push(id); return null; } return byId.get(id); },
   createElement: (t) => new El(t),
   createTextNode: () => ({}),
