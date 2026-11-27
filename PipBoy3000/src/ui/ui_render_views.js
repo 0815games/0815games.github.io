@@ -110,8 +110,9 @@ Object.assign(UI, {
                 </div>
                 
                 <div class="absolute top-4 left-0 w-full flex justify-center items-center pointer-events-none z-20">
-                    <div class="bg-black/80 border-t-2 border-b-2 border-green-500 px-8 py-2 flex items-center gap-4 shadow-[0_0_15px_rgba(0,255,0,0.2)] backdrop-blur-sm pointer-events-auto">
+                    <div class="bg-black/80 border-t-2 border-b-2 border-green-500 worldmap-kopf px-8 py-2 flex items-center gap-4 shadow-[0_0_15px_rgba(0,255,0,0.2)] backdrop-blur-sm pointer-events-auto">
                         <h2 class="text-xl font-bold text-green-400 tracking-[0.2em] uppercase text-shadow-glow">WELTKARTE</h2>
+                        <button id="worldmap-nav-eingabe" type="button" onclick="UI.oeffneNavigation()" class="action-button worldmap-nav-eingabe" title="Sektor-Koordinaten eingeben">ZIEL</button>
                         <button onclick="if(typeof UI.showMapLegend === 'function') UI.showMapLegend()" class="border border-green-500 text-green-500 hover:bg-green-900 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-all bg-black/80">?</button>
                     </div>
                 </div>
@@ -155,6 +156,22 @@ Object.assign(UI, {
         }, 50);
     },
 
+    aktualisiereCharPunkte: function() {
+        if (!Game.state) return;
+        for (const [name, wert, titel] of [
+            ['special', Game.state.statPoints, 'S.P.E.C.I.A.L.'],
+            ['perks', Game.state.perkPoints, 'PERKS']
+        ]) {
+            const button = document.querySelector(`[data-char-tab="${name}"]`);
+            if (!button) continue;
+            const anzahl = Number.isFinite(Number(wert)) ? Math.max(0, Math.floor(Number(wert))) : 0;
+            const badge = button.querySelector('[data-punkte]');
+            button.classList.toggle('char-tab-punkte', anzahl > 0);
+            button.setAttribute('aria-label', anzahl > 0 ? `${titel}: ${anzahl} Punkte verfügbar` : titel);
+            if (badge) { badge.textContent = String(anzahl); badge.hidden = anzahl === 0; }
+        }
+    },
+
     renderStats: function(tab = 'stats', event = null) {
         if (event) { event.stopPropagation(); event.preventDefault(); }
         Game.state.view = 'char';
@@ -182,8 +199,8 @@ Object.assign(UI, {
         header.className = "flex w-full border-b-2 border-green-800 bg-black sticky top-0 z-30";
         header.innerHTML = `
             <button onclick="UI.renderStats('stats', event)" class="flex-1 py-3 uppercase font-vt323 text-2xl tracking-widest ${getTabClass('stats')}">STATUS</button>
-            <button onclick="UI.renderStats('special', event)" class="flex-1 py-3 uppercase font-vt323 text-2xl tracking-widest ${getTabClass('special')}">S.P.E.C.I.A.L.</button>
-            <button onclick="UI.renderStats('perks', event)" class="flex-1 py-3 uppercase font-vt323 text-2xl tracking-widest ${getTabClass('perks')}">PERKS</button>
+            <button data-char-tab="special" onclick="UI.renderStats('special', event)" class="char-tab flex-1 py-3 uppercase font-vt323 text-2xl tracking-widest ${getTabClass('special')}">S.P.E.C.I.A.L.<span class="char-punkte-badge" data-punkte hidden></span></button>
+            <button data-char-tab="perks" onclick="UI.renderStats('perks', event)" class="char-tab flex-1 py-3 uppercase font-vt323 text-2xl tracking-widest ${getTabClass('perks')}">PERKS<span class="char-punkte-badge" data-punkte hidden></span></button>
         `;
         scrollContainer.appendChild(header);
 
@@ -203,6 +220,7 @@ Object.assign(UI, {
         wrapper.appendChild(footer);
 
         view.appendChild(wrapper);
+        this.aktualisiereCharPunkte();
 
         if (tab === 'stats') setTimeout(() => UI.drawVaultBoy('char-silhouette-canvas'), 100);
     },

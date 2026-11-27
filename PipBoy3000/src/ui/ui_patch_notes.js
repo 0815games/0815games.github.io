@@ -35,6 +35,15 @@ window.GameData.offenePunkte = [
 // nicht mit dem, was geplant war.
 window.GameData.RELEASED_PATCHES = [
   {
+    version: '14.0.32',
+    datum: '2026-11-24',
+    title: 'Punkte auf einen Blick',
+    punkte: [
+      'S.P.E.C.I.A.L. und PERKS leuchten jeweils, solange dort Punkte vergeben werden können. Eine Zahl zeigt die verfügbaren Punkte.',
+      'Der separate Navigationspunkt im Menü entfällt. Koordinaten lassen sich weiterhin über ZIEL auf der Weltkarte eingeben; die Zielführung bleibt unverändert.'
+    ]
+  },
+  {
     version: '14.0.31',
     datum: '2026-11-26',
     title: 'Aufgeräumte Statusleiste',

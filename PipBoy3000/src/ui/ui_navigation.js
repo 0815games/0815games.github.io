@@ -503,8 +503,8 @@ window.Navigation = {
 // Zwei Wege, ein Ziel zu setzen, weil ein Klick auf der Karte nur dort geht,
 // wo die Karte sichtbar ist:
 //   * auf der Weltkarte: Klick/Tap setzt den Marker, dann ZIEL SETZEN;
-//   * aus dem Spiel heraus: "NAVIGATION" im Spielmenue oeffnet ein kleines
-//     Feld, in das man den Sektor eintippt. Wer die Koordinaten aus einer
+//   * auf der Weltkarte: "ZIEL" oeffnet das Feld, in das man den Sektor
+//     eintippt (bei aktivem Ziel geht das auch ueber den HUD-Pfeil). Wer die Koordinaten aus einer
 //     Quest hat, muss dafuer nicht erst die Karte oeffnen und den Sektor
 //     treffen.
 // ---------------------------------------------------------------------------
