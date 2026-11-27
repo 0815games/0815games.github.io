@@ -305,6 +305,6 @@ Nur Darstellung, kein Sim-State, kein Wire-Format, statisch im Terrain-Cache (Re
   2. **`renderSkills` setzt `hidden` auf `.skills-tabs`**, sobald `classId` gesetzt ist (neben der bestehenden Button-Logik); CSS-Sicherung `#skillDialog .skills-tabs[hidden]{display:none}` (display:flex schlägt sonst die UA-Regel). Nach Reset/Abwahl erscheint die Reihe wieder.
 - **Mechanik unangetastet:** Draft/Save/Reset, `parseBuild`, Filter (`#skillFilter` bleibt), aria-Pressed-Logik der Buttons bleibt (Browser-Pins `[data-skill-path]` getAttribute/isHidden laufen weiter — versteckter Vorfahre erfüllt `isHidden`), Zustände + Legend, Mobile-Scroll-Fixes.
 - **i18n:** keine neuen Strings.
-- **Prüfung:** `skill-menu-style.test.mjs` pinnt Default-Akzent, Header-Band/-Tönung, Rahmen-Mix, `[hidden]`-Guard · Suite … · Schnelltor … (vor Merge final).
-- **Git / PR / Release:** Branch `arena/02764ced-0815games-github-io` ab `d3ab5029`; Push, **PR `#525`**, CI, Merge – wird nachgetragen.
+- **Prüfung:** `skill-menu-style.test.mjs` pinnt Default-Akzent, Header-Band/-Tönung, Rahmen-Mix, Aktions-Haarlinie, Kicker, themed-only-Opt-in und `[hidden]`-Guard; Pin-Gruppe 8/0, Suite 1376+2 pr-Platzhalter/1, Schnelltor nur pr-Platzhalter.
+- **Git / PR / Release:** Branch `arena/02764ced-0815games-github-io` ab `d3ab5029`; Push, **PR `#525`**, Suite 1376+2 pr-Platzhalter, CI (`game-regressions`/`interface-browser-smoke`/`database-rules`/party-finalization) — alle Checks grün (ein Flake in `party-offline-modes` des ersten Laufes, Gegenlauf grün), **Merge `9b8c7041` auf `main`**. Doku-PR im Anschluss.
 - **Offen / nächster Schritt:** Sichtung; auf Wunsch Intensität der Klassentönung nachjustieren.
