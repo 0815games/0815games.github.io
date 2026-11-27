@@ -306,6 +306,6 @@ Nur Darstellung, kein Sim-State, kein Wire-Format, statisch im Terrain-Cache (Re
   2. **Spezialisten-Pfade bekommen echte Spaltenköpfe** `PFAD A` / `PFAD B` (+ Spezialisten-Name) über den jeweiligen Spalten — Doktrinen hängen sichtbar unter ihrem Pfad statt zwischen den Pfaden zu schweben (Karten bleiben direkte Grid-Kinder, Connectoren/`data-lane`-Pins der Tests unverändert).
   3. Klassenwähler (Phase 1) nutzt dieselbe Titel-Box ohne Nummer/Chip.
 - **i18n:** keine neuen Strings (Pfad A/B, Kapiteltitel, Untertitel existieren in `localization-skills-de.mjs`; `'ACTIVE ABILITY'` liegt in `localization-de.mjs`, `'MASTERY / CAPSTONE'` in `localization-advanced-skills-de.mjs`).
-- **Prüfung:** `development-ui.test.mjs` um Kapitel-/Lane-Struktur ergänzt (17-Buttons-Pin bestätigt weiter) · `skill-menu-style.test.mjs` pinnt Plakette/Panel/Lane-Kopf · Suite … · Schnelltor … (vor Merge final).
-- **Git / PR / Release:** Branch `arena/c694b6c4-0815games-github-io` ab `bbc9f7e5`; Push, **PR `#518`**, CI, Merge – wird nachgetragen.
+- **Prüfung:** `development-ui.test.mjs` um Kapitel-/Lane-Struktur ergänzt (17-Buttons-Pin bestätigt weiter) · `skill-menu-style.test.mjs` pinnt Plakette/Panel/Lane-Kopf · Pin-Gruppe 7/0, Suite 1375+2 pr-Platzhalter/1, Schnelltor nur pr-Platzhalter.
+- **Git / PR / Release:** Branch `arena/c694b6c4-0815games-github-io` ab `bbc9f7e5`; Push, **PR `#518`**, Suite 1375+2 pr-Platzhalter, CI (`game-regressions`/`interface-browser-smoke`/`database-rules`/party-finalization) — alle Checks grün, **Merge `1b18fb2f` auf `main`**. Doku-PR im Anschluss.
 - **Offen / nächster Schritt:** Sichtung durch den Betreiber; bei Bedarf Folge-Feinlesen (z. B. Klappbarkeit).
