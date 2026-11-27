@@ -1,7 +1,7 @@
 import {getWeaponVisual} from './character.js';
 
 const SUPPORTED=new Set([
- 'goblin','skeleton','rat','slime','bat'
+ 'goblin','skeleton','rat','slime','bat','lord'
 ]);
 
 export function figureKind(value,hero){
@@ -325,6 +325,94 @@ export function createFigureFactory(T){
   };
  }
 
+ function lord(root,value){
+  // Schattenfurst: grosse, bedrohliche menschliche Gestalt mit Umhang,
+  // Krone und Schwwert. Nutzt die gleiche Animations-Schnittstelle wie die
+  // humanoiden Figuren (core/facing/legs/arms), damit die Lauf- und
+  // Treffer-Animationen unchanged bleiben.
+  const core=pivot(root);
+  const facing=pivot(core);
+  const legs=[],arms=[];
+
+  const accent=color(value.color,0x9c27b0);
+  const cloth=material(0x241a2e);
+  const steel=material(0x3d4050,.55);
+  const dark=material(0x15101c);
+  const gold=material(0xc9a86a,.7);
+  const glow=material(accent,0,.7);
+
+  // Umhang hinter dem Korper.
+  box(
+   facing,.5,.85,.03,dark,
+   0,.75,-.21,'cloak'
+  );
+
+  box(
+   facing,.46,.42,.24,
+   steel,0,.72,0,'torso'
+  );
+  box(facing,.48,.05,.26,gold,0,.53,0,'belt');
+  for(let i=0;i<3;i++){
+   box(facing,.4,.025,.06,accent,0,.66-i*.06,.15,'sash');
+  }
+
+  for(const sign of[-1,1]){
+   const leg=pivot(facing,sign*.11,.48,0);
+   legs.push(leg);
+   mesh(
+    leg,'CylinderGeometry',[.06,.05,.34,6],dark,0,-.17,0
+   );
+   box(leg,.14,.12,.23,steel,0,-.37,.04,'boot');
+  }
+
+  for(const sign of[-1,1]){
+   const arm=pivot(facing,sign*.27,.9,0);
+   arms.push(arm);
+   mesh(
+    arm,'CylinderGeometry',[.05,.045,.3,6],steel,0,-.16,0
+   );
+   ball(arm,.055,dark,0,-.33,.01,'hand');
+  }
+
+  const head=pivot(facing,0,1.28,0);
+  ball(head,.15,material(0x8a7080),0,.02,.01,'head');
+
+  // Krone: drei Zacken mit Glochtipps.
+  for(let i=0;i<3;i++){
+   const a=(i-1)*.55;
+   mesh(
+    head,'ConeGeometry',[.035,.13,4],gold,
+    Math.sin(a)*.1,.16,Math.cos(a)*.1,'crown-spike'
+   ).rotation.z=a;
+  }
+  const band=mesh(
+   head,'TorusGeometry',[.155,.018,6,20],gold,0,.06,0,'crown-band'
+  );
+  band.rotation.x=Math.PI/2;
+
+  // Leuchtende Augen.
+  for(const sign of[-1,1]){
+   ball(
+    head,.02,glow,
+    sign*.055,.045,.14,'eye'
+   );
+  }
+
+  // Grosses Schwerter in der rechten Hand.
+  const hand=pivot(arms[1],0,-.33,.05);
+  box(hand,.05,.85,.04,steel,0,.42,0,'blade');
+  mesh(
+   hand,'ConeGeometry',[.035,.12,4],steel,0,.94,0,'blade-tip'
+  );
+  box(hand,.22,.04,.05,gold,0,.32,0,'guard');
+  box(hand,.05,.16,.05,dark,0,.24,0,'grip');
+
+  return {
+   core,facing,legs,arms,height:1.75,
+   style:'lord'
+  };
+ }
+
  function creature(root,value,kind){
   const core=pivot(root),facing=pivot(core);
   const legs=[],arms=[];
@@ -439,7 +527,9 @@ export function createFigureFactory(T){
 
   const rig=hero||kind==='goblin'||kind==='skeleton'
    ?humanoid(node,value,kind,hero)
-   :creature(node,value,kind);
+   :kind==='lord'
+    ?lord(node,value)
+    :creature(node,value,kind);
 
   const hp=pivot(node,0,rig.height,0);
 

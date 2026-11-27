@@ -1,5 +1,29 @@
 # CHANGELOG – Chroniken der Schattengruft
 
+## v0.10.5 – 2026-11-27 – 3D-Erkundung: restliche Karteninhalte in 3D umgesetzt
+
+- **Wanddekoration (Banner & Schilder):** Die 2D-Karte zeigt an den Wänden
+  thementypische Dekorationen; die 3D-Ansicht setzt sie jetzt als Wand-Ebenen
+  mit Canvas-Textures um. Standorte werden deterministisch per Karten-Seed
+  berechnet, nur in der Nähe der Bühne synchronisiert und bei Themawechsel
+  mit thementypischen Farben neu gezeichnet.
+- **Tor-Licht (Tile 2):** Die Scheitelmarken der 2D-Karte leuchten in 3D als
+  leuchtende Tor-Sprites in der jeweiligen Themenlichtfarbe – statt nur als
+  flache Kachel.
+- **Themen-Details auf der Bühne (Fackeln, Fackellicht etc.):** Die themen-
+  typischen Detailobjekte der 2D-Karte liegen jetzt auch in 3D als gleißende
+  Detail-Pool-Objekte mit Pool-Verwaltung vor; sie bleiben in der Nähe der
+  Bühne und werden beim Themenwechsel gewechselt.
+- **Boss-Figur (Lord):** Die 3D-Figuren-Factory unterstützt jetzt die Boss-
+  Figur „lord“ (Umhang, Brustpanzer, Krone, leuchtende Augen, Schwert) für
+  die Arenen, die einen Lord spawnen.
+- **Vignette:** Die 2D-Ansicht hat eine deckende Randdunkelung; die 3D-Ansicht
+  erhält jetzt eine Vignette-Sprite, die der Kamera folgt und das Bildrand-
+  Dunkelung nachahmt.
+- **Verwaltung:** Neue Dekor-/Glow-/Vignette-Textures werden beim Themen-
+  wechsel entsorgt (`dispose`) und Resourcen-Tests auf aktive GPU-Resourcen
+  getunt.
+
 ## v0.10.4 – 2026-11-27 – 3D-Kampf: Zoom korrigiert, Karte vollständig ausgeblendet
 
 - **3D-Ansicht im Kampf sah zu weit weg aus („sieht scheiße aus"):** Der Ortho-Zoom

@@ -14,6 +14,8 @@ const stageModule=await import(
 globalThis.__stage=stageModule;
 
 const resources=[],nodes=[];
+const liveResources=()=>
+ resources.filter(r=>!r.disposed).length;
 let reduced=false,coarse=false;
 
 globalThis.matchMedia=query=>({
@@ -30,14 +32,20 @@ globalThis.document={
   for(const key of[
    'fillRect','clearRect','beginPath','moveTo','lineTo',
    'stroke','save','restore','setTransform','scale',
-   'strokeText','fillText'
+   'strokeText','fillText','closePath','fill','arc','ellipse'
   ])ctx[key]=()=>{};
+  ctx.createRadialGradient=()=>({addColorStop(){}});
 
   return {
    width:128,height:128,getContext:()=>ctx
   };
  }
 };
+
+const decorModule=await import(
+ new URL('../js/world/world3d-decor.js',import.meta.url)
+);
+globalThis.__decor=decorModule;
 
 const helperModule=await import(
  'data:text/javascript;base64,'+
@@ -53,8 +61,11 @@ const source=raw.replace(
  /^import \{(?:drawCharacter|drawMonster)\} from '\.\/(?:character|monster)\.js';$/gm,
  ()=>{count++;return '';}
 ).replace(
- "import {createDungeonSurfaces,createDungeonAtmosphere,theme3D,supportsTheme3D} from './world3d-atmosphere.js';",
- 'const {createDungeonSurfaces,createDungeonAtmosphere,theme3D,supportsTheme3D}=globalThis.__phase2;'
+ "import {createDungeonSurfaces,createDungeonAtmosphere,theme3D,supportsTheme3D,tileVisible} from './world3d-atmosphere.js';",
+ 'const {createDungeonSurfaces,createDungeonAtmosphere,theme3D,supportsTheme3D,tileVisible}=globalThis.__phase2;'
+).replace(
+ "import {wallDecorSites,createWallDecorTextures,createGlowTexture,createVignetteTexture} from './world3d-decor.js';",
+ 'const {wallDecorSites,createWallDecorTextures,createGlowTexture,createVignetteTexture}=globalThis.__decor;'
 ).replace(
  /import \{([^}]*)\} from '\.\/world3d-stage\.js';/,
  (_,names)=>'const {'+names+'}=globalThis.__stage;'
@@ -177,7 +188,7 @@ const T={
  HemisphereLight:Node,DirectionalLight:Sun,
  PointLight:Node,
  BoxGeometry:Geometry,OctahedronGeometry:Geometry,
- RingGeometry:Geometry,
+ RingGeometry:Geometry,PlaneGeometry:Geometry,
  MeshStandardMaterial:Material,
  MeshBasicMaterial:Material,SpriteMaterial:Material,
  Mesh,Sprite,CanvasTexture:R,
@@ -191,7 +202,7 @@ const T={
  SRGBColorSpace:1,NoColorSpace:2,
  NearestFilter:3,LinearFilter:4,
  PCFSoftShadowMap:5,DoubleSide:6,
- ACESFilmicToneMapping:7
+ ACESFilmicToneMapping:7,ClampToEdgeWrapping:8
 };
 
 const freeze=value=>{
@@ -251,12 +262,12 @@ assert.equal(
  nodes.filter(
   n=>n instanceof Sprite&&n.parent&&n.visible
  ).length,
- 3,'hero, known monster, effect text'
+ 4,'hero, known monster, effect text, Vignette'
 );
 
-const nr=resources.length;
+const nr=liveResources();
 engine.render(w,p,1.1,fx);
-assert.equal(resources.length,nr,'resource reuse');
+assert.equal(liveResources(),nr,'resource reuse');
 assert.equal(
  JSON.stringify({w,p,fx}),before,
  'game state unchanged'
@@ -311,7 +322,7 @@ for(const name of themes){
 }
 
 themeSurfaces.dispose();
-const themeResources=resources.length;
+const themeResources=liveResources();
 
 for(const name of[
  ...themes,...themes.slice().reverse()
@@ -319,8 +330,8 @@ for(const name of[
  const themed=freeze({...w,theme:name});
  const snapshot=JSON.stringify(themed);
 
- engine.render(themed,p,4,fx);
- assert.equal(JSON.stringify(themed),snapshot);
+  engine.render(themed,p,4,fx);
+  assert.equal(JSON.stringify(themed),snapshot);
 
  const sites=helperModule.themeDetailSites(themed,p);
 
@@ -345,7 +356,7 @@ for(const name of[
 }
 
 assert.equal(
- resources.length,themeResources,
+ liveResources(),themeResources,
  'theme switching reuses GPU resources'
 );
 
