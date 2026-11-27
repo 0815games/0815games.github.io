@@ -30,7 +30,7 @@ jobs:
       - name: Emulator-Tests
         shell: bash
         run: |
-          if npm test > /tmp/pipboy-rules.log 2>&1; then
+          if timeout 60s npm test > /tmp/pipboy-rules.log 2>&1; then
             cat /tmp/pipboy-rules.log
           else
             cat /tmp/pipboy-rules.log
