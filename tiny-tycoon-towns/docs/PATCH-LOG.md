@@ -1352,3 +1352,11 @@ Ereignis ergänzt.
 - Messung: **7 Verstöße** (vorher 8), Invarianten 0. Nicht grün.
 - Restfälle sind Einzelszenarien, keine Biom-Systematik: Riverlands 10 h (Karte 8 und 14), 10,3 h (Karte 8) und 14,3 h (Karte 12); Hochland 13,1 h (Karte 8) und 13,2 h zweimal (Karte 14); Küste 12,4 h (Karte 12).
 - Nicht weiter an die Fenster angepasst, um nicht auf die Messung zu schneidern. Entscheidung offen: Fenster je Biom verbreitern (dann ist die Abweichung bewusst toleriert) oder die Verteilung in den Biomen angleichen.
+
+### TTT-0088 – Ursachenanalyse Biom-Spanne Stufe 10 (Option B), Bot-Regel Steinbruch verworfen
+
+- Felsen im freischaltbaren Bereich sind über alle Kartengrößen gleich (7 bis 8 auf Stufe 10). Die Karte ist also **nicht** die Ursache.
+- Ursache der Spanne: die Bau-Mischung des Bots. Beispiel Riverlands Karte 12, Seed 777: 29 Farmen, kein Steinbruch, Stufe 10 nach 14,3 h. Karte 14, Seed 777: mit Steinbruch, Stufe 10 nach 10 h.
+- Stein ist in Flusslanden Karg-Ware (`biomes.json`). Der Steinbruch hat dort nur 0,25 des Werts, deshalb wählt der Bot ihn kaum.
+- Versuch: Bot-Regel „ohne Steinbruch zuerst Steinbruch auf Fels“. Ergebnis: Riverlands bleibt bei 2 Gebäuden stehen (63 Verstöße). Der Bau schlägt vermutlich in `placeBuilding` fehl, der Bot wiederholt dieselbe Aktion. Verworfen, Code zurückgesetzt.
+- Offen: Warum der Steinbruch-Bau bei Flusslanden fehlschlägt, muss zuerst geklärt werden. Danach Entscheidung, ob Stein in Flusslanden Karg bleibt.
