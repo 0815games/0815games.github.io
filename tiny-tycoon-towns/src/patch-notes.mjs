@@ -4,6 +4,20 @@
 
 export const RELEASED_PATCHES = [
   {
+    build: '20261126-arbeit1',
+    date: '2026-11-26',
+    items: [
+      {
+        de: 'Tutorial: Die Karte bleibt so, wie du sie zuletzt hattest. Sie klappt nicht mehr nach jedem Weiter ein. Ein geöffnetes Feld-Fenster macht sie klein.',
+        en: 'Tutorial: the card stays as you last left it. It no longer collapses after every Next. An open field window still makes it small.',
+      },
+      {
+        de: 'Arbeiter: Ein Bewohner, der schon automatisch arbeitet, lässt sich mit + manuell einem Betrieb zuweisen. Die manuelle Zuweisung hat Vorrang.',
+        en: 'Workers: a resident who already works automatically can be assigned to a building with +. Manual assignments take priority.',
+      },
+    ],
+  },
+  {
     build: '20261126-hud1',
     date: '2026-11-26',
     items: [

@@ -1238,3 +1238,12 @@ Ereignis ergänzt.
 - Tests: `npm test` 187/187 grün. `npm run check` ohne Fehler.
 - Nachweis: Unit-Tests und Mutationstest. Der Klick selbst ist im Browser nicht geprüft (Testumgebung nicht verfügbar).
 - Offen: Ein Durchlauf im echten Spiel. Die Welle ist erst nach dem Merge live.
+
+### TTT-0075 – Welle 20261126-arbeit1: Tutorial klappt nicht mehr ein, Arbeiter-Zuweisung
+
+- Fehler 1: Das Tutorial wurde bei jedem Schritt mit Aufgabe wieder klein. Ursache: `showTutorialStep` setzte die Karte jedes Mal auf klein. Behebung: Der Zustand bleibt. Nur ein geöffnetes Feld-Fenster macht die Karte klein.
+- Fehler 2: „+“ bei Arbeitern war gesperrt, obwohl ein Bewohner frei war. Ursache: Die Anzeige zählte Bewohner ab, die die Automatik schon einem anderen Betrieb gegeben hatte. Bei einem Haus mit einem Bewohner war so nie eine manuelle Zuweisung möglich. Behebung: Nur Bewohner, die manuell an einen anderen Betrieb gebunden sind, zählen ab. Die Engine hatte den Vorrang schon richtig.
+- Dateien: `src/main.js` (`showTutorialStep`, `workersHtml`), `tests/worker-assign.test.mjs` (neu, 2 Tests zur Engine), `src/patch-notes.mjs` (Eintrag `20261126-arbeit1`, DE/EN), Welle per `scripts/patch.mjs bump --apply`.
+- Tests: `npm test` 189/189 grün. `npm run check` ohne Fehler.
+- Nachweis: Die neuen Tests prüfen die Engine. Die Anzeige in `workersHtml` ist nicht per Test abgedeckt und nicht im Browser geprüft.
+- Offen: Ein Durchlauf im echten Spiel (Haus mit einem Bewohner, Hof, „+“).
