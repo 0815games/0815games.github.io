@@ -45,7 +45,7 @@ export const PATCH_LABELS=Object.freeze({
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
   {
-    id:'skills5',build:'20261121-skills5',pr:0,
+    id:'skills5',build:'20261121-skills5',pr:531,
     title:{en:'Skills · Owned Badges Read as Clear Green, Not Muted Grey',de:'Skills · Gefreischaltete Badges in kräftigem Grün statt gedämpftem Grau'},
     shipped:[
       {en:'Reported with screenshot: "why does everything say Freigeschaltet in grey when I do not have the ability?" The word was correct - the operator build shows 10 of 10 points spent (rank 3 plus seven nodes), and only the inspector buttons ever write points - but the UNLOCKED badge used a muted olive-grey that read as disabled. It now paints a clear field green (4.9:1 contrast) while grey stays reserved for locked and available states. Cache wave 20261121-skills5.',de:'Mit Screenshot gemeldet: „wieso steht überall Freigeschaltet in grau wenn ich die Fähigkeit nicht habe?" Das Wort war korrekt - der Betreiberstand zeigt 10 von 10 Punkten drin (Rang 3 plus sieben Knoten), und nur die Inspector-Buttons schreiben überhaupt Punkte - aber das UNLOCKED-Badge nutzte ein gedämpftes Oliv-Grau, das wie deaktiviert aussah. Es malt jetzt klares Feldgrün (Kontrast 4,9:1); Grau bleibt den Zuständen gesperrt/verfügbar vorbehalten. Cache-Welle 20261121-skills5.'},

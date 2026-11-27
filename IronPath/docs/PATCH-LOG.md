@@ -298,7 +298,7 @@ Nur Darstellung, kein Sim-State, kein Wire-Format, statisch im Terrain-Cache (Re
 - **Git / PR / Release:** Branch `arena/a1f52e38-0815games-github-io` ab `f9ca23e6`; Push, **PR `#529`**, Suite 1377+2 pr-Platzhalter, CI (`game-regressions`/`interface-browser-smoke`/`database-rules`/party-finalization) — alle Checks grün, **Merge `4c594e3a` auf `main`**. Doku-PR im Anschluss.
 - **Offen / nächster Schritt:** Betreiber-Screenshot zur „Freigeschaltet"-Frage abwarten.
 
-## IPL-0146 – Skills Badge-Farbe: „Freigeschaltet" in klarem Feldgrün statt Oliv-Grau (Welle `20261121-skills5`, PR `#—`)
+## IPL-0146 – Skills Badge-Farbe: „Freigeschaltet" in klarem Feldgrün statt Oliv-Grau (Welle `20261121-skills5`, PR `#531`)
 
 - **Was:** Screenshot des Betreibers (Logistik Rang 3/3, Stufe 11, 0 Punkte): „wieso steht überall 'Freigeschaltet' in grau wenn ich die Fähigkeit nicht habe?" Analyse:
   - **Daten korrekt, kein Auto-Grant:** Stufe 11 = `min(17, 10)` = 10 Punkte gesamt; 0 übrig + Rang 3 → **7 Knoten gesetzt**. Schreib-Pfade geprüft: nur die drei Inspector-Buttons (`account.js` UPGRADE/UNLOCK/UNLOCK&SELECT) und der Klassenwahl-Click (`v2;…;1;0;…`) ändern Rang/Bits; Migration schreibt ausschließlich `v2;none`; V2-Regex streng; Tutorial gibt den ersten Punkt bewusst selbst aus (`first-run-ending.mjs`).
@@ -306,5 +306,5 @@ Nur Darstellung, kein Sim-State, kein Wire-Format, statisch im Terrain-Cache (Re
 - **Mechanik unangetastet:** Texte (`FREIGESCHALTET`), Draft/Save/Reset, Punktelogik, Pins.
 - **Desktop-Schnitt (Rückmeldung1):** Fix via IPL-0145 (`20261121-skills4`) live — Wortumbruch + Sidebar-Stapelung ≤1100px; Betreiber soll hart neu laden (Screenshot zeigt Stand mit Scroll-Fold unter der Aktionsleiste).
 - **Prüfung:** Style-Pin auf die neue Badge-Farbe · Suite … · Schnelltor … (vor Merge final).
-- **Git / PR / Release:** Branch `arena/ea2bdfd4-0815games-github-io` ab `cd2f5d06`; Push, PR `#—`, CI, Merge – wird nachgetragen.
+- **Git / PR / Release:** Branch `arena/ea2bdfd4-0815games-github-io` ab `cd2f5d06`; Push, **PR `#531`**, CI, Merge – wird nachgetragen.
 - **Offen / nächster Schritt:** Bestätigung nach hartem Neu-Laden, dass die skills4-Desktop-Fixes sichtbar sind.
