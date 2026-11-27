@@ -2,8 +2,8 @@
 // combat equipment path. Participant declarations and hosts are
 // client-controlled; this does not prove item ownership and is not an
 // anti-cheat boundary.
-import {captureWorkshopLoadout,workshopEffects} from './workshop-effects.mjs?v=20261121-skills5';
-import {decodeWorkshop} from './workshop-wire.mjs?v=20261121-skills5';
+import {captureWorkshopLoadout,workshopEffects} from './workshop-effects.mjs?v=20261121-menu1';
+import {decodeWorkshop} from './workshop-wire.mjs?v=20261121-menu1';
 // IPL-0137: protocol 2 = taken list (arbitrary length, no slots).
 const protocol=2;
 const counts={solo:[1],coop:[2],versus:[2],'four-coop':[3,4],'two-vs-two':[4]};

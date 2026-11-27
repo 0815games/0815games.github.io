@@ -1,4 +1,4 @@
-import {translateStaticDom} from '../language.mjs?v=20261121-skills5';
+import {translateStaticDom} from '../language.mjs?v=20261121-menu1';
 import {applyFeatureVisibility} from '../core/features.mjs?v=20261112-endless1';
 // The intro is independent of authentication. When it ends, any loading or
 // connection error remains visible underneath instead of blocking sign-in.
