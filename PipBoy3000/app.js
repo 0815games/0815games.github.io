@@ -1176,16 +1176,24 @@
     acquireSession: async function(uid) {
       const ref = this.db.ref("sessions/" + uid);
       const id = this.db.ref().push().key;
-      const initial = (await ref.once("value")).val();
-      const busy = initial && initial.id;
-      if (busy && !window.confirm("Dieser Account ist bereits verbunden. Bestehende Sitzung ersetzen? Noch nicht gespeicherter Fortschritt kann verloren gehen.")) {
-        throw new Error("Anmeldung abgebrochen. Die bestehende Sitzung bleibt aktiv.");
+      const keepCached = () => {
+      };
+      ref.on("value", keepCached);
+      let result;
+      try {
+        const initial = (await ref.once("value")).val();
+        const busy = initial && initial.id;
+        if (busy && !window.confirm("Dieser Account ist bereits verbunden. Bestehende Sitzung ersetzen? Noch nicht gespeicherter Fortschritt kann verloren gehen.")) {
+          throw new Error("Anmeldung abgebrochen. Die bestehende Sitzung bleibt aktiv.");
+        }
+        const initialId = initial && initial.id || null;
+        result = await ref.transaction((current) => {
+          if ((current && current.id || null) !== initialId) return;
+          return { id, lastSeen: Date.now() };
+        }, void 0, false);
+      } finally {
+        ref.off("value", keepCached);
       }
-      const initialId = initial && initial.id || null;
-      const result = await ref.transaction((current) => {
-        if ((current && current.id || null) !== initialId) return;
-        return { id, lastSeen: Date.now() };
-      }, void 0, false);
       if (!result.committed) throw new Error("Die Sitzung hat sich geändert. Bitte erneut anmelden.");
       this.sessionId = id;
       this.sessionRef = ref;

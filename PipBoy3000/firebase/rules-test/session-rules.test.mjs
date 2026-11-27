@@ -2,7 +2,7 @@ import {test, before, after, beforeEach} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {initializeTestEnvironment, assertSucceeds, assertFails} from '@firebase/rules-unit-testing';
-import {ref, get, set, update, remove, runTransaction} from 'firebase/database';
+import {ref, get, set, update, remove, runTransaction, onValue} from 'firebase/database';
 
 let env, a, b, other, admin, anon;
 before(async () => {
@@ -45,7 +45,11 @@ test('only current marked full saves, tombstones and presence can be written', a
 test('takeover rejects delayed full saves, tombstones and old presence without touching new data', async () => {
   await assertSucceeds(set(ref(a, 'sessions/alice'), session('A')));
   await assertSucceeds(set(ref(a, 'saves/alice/0'), save('A')));
-  const taken = await assertSucceeds(runTransaction(ref(b, 'sessions/alice'), current => current.id === 'A' ? session('B') : undefined, {applyLocally:false}));
+  const lease = ref(b, 'sessions/alice');
+  const ready = new Promise(resolve => { const stop = onValue(lease, snapshot => resolve({stop, snapshot})); });
+  const {stop} = await ready;
+  const taken = await assertSucceeds(runTransaction(lease, current => current && current.id === 'A' ? session('B') : undefined, {applyLocally:false}));
+  stop();
   assert.equal(taken.committed, true);
   await assertSucceeds(set(ref(b, 'saves/alice/0'), save('B', 10)));
   await assertSucceeds(set(ref(b, 'players/alice'), {_session:'B', name:'New', lastSeen:2}));
