@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see docs/PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261121-skills4';
+import {getLanguage} from './language.mjs?v=20261121-skills5';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,17 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'skills5',build:'20261121-skills5',pr:0,
+    title:{en:'Skills · Owned Badges Read as Clear Green, Not Muted Grey',de:'Skills · Gefreischaltete Badges in kräftigem Grün statt gedämpftem Grau'},
+    shipped:[
+      {en:'Reported with screenshot: "why does everything say Freigeschaltet in grey when I do not have the ability?" The word was correct - the operator build shows 10 of 10 points spent (rank 3 plus seven nodes), and only the inspector buttons ever write points - but the UNLOCKED badge used a muted olive-grey that read as disabled. It now paints a clear field green (4.9:1 contrast) while grey stays reserved for locked and available states. Cache wave 20261121-skills5.',de:'Mit Screenshot gemeldet: „wieso steht überall Freigeschaltet in grau wenn ich die Fähigkeit nicht habe?" Das Wort war korrekt - der Betreiberstand zeigt 10 von 10 Punkten drin (Rang 3 plus sieben Knoten), und nur die Inspector-Buttons schreiben überhaupt Punkte - aber das UNLOCKED-Badge nutzte ein gedämpftes Oliv-Grau, das wie deaktiviert aussah. Es malt jetzt klares Feldgrün (Kontrast 4,9:1); Grau bleibt den Zuständen gesperrt/verfügbar vorbehalten. Cache-Welle 20261121-skills5.'},
+      {en:'No mechanic changes: wording, draft flow and point maths stay exactly as tested.',de:'Keine Mechanik-Änderungen: Schreibweise, Entwurfsfluss und Punktelogik bleiben exakt wie getestet.'},
+    ],
+    open:[
+      {en:'Operator confirmation after hard refresh that the desktop clipping fixes of 20261121-skills4 are visible.',de:'Betreibernachhartung nach hartem Neu-Laden, dass die Desktop-Schnitt-Fixes von 20261121-skills4 sichtbar sind.'},
+    ]
+  },
   {
     id:'skills4',build:'20261121-skills4',pr:529,
     title:{en:'Skills · Desktop Readability: Words Break Instead of Clipping, Sidebar Stacks on Laptops',de:'Skills · Desktop-Lesbarkeit: Wörter brechen statt abzuschneiden, Sidebar stapelt sich auf Laptops'},

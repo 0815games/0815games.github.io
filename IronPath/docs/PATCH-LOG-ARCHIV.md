@@ -1,6 +1,6 @@
 # Iron Path – Patch-Log: Archiv
 
-Ältere Einträge IPL-0001 bis IPL-0125. Die neuesten 20 stehen in
+Ältere Einträge IPL-0001 bis IPL-0126. Die neuesten 20 stehen in
 [PATCH-LOG.md](PATCH-LOG.md); die Regeln für beide Dateien dort und in
 [`../../AGENTS.md`](../../AGENTS.md). Beim Verschieben wandert ein Eintrag immer
 vollständig einschließlich seiner Ereignis-Nachträge.
@@ -4801,3 +4801,14 @@ sie geprüft wurde.
 - **Prüfungen:** `tower-heads` 5/5, `tower-aim` 9/9; Schnelltor „Kein Fehler, 2 Hinweis(e)“; Gesamtsuite **1350 Tests, 1349 bestanden, 0 Fehler, 1 übersprungen**.
 - **Git / PR / Release:** Code-Commit + Push, PR `#387`; zweiter Commit: Cache-Welle `20261123-aim4` mit Feldnotizen `aim4` (79 Dateien, Muster `IPL-0104`). CI, Merge und Pages-Auslieferung werden als Ereignis nachgetragen. **Betreiber-Sichtung auf `20261123-aim4`:** Jeder Schuss muss am Rohr aufblitzen und eine Hülse auswerfen.
 - **Offen / nächster Schritt:** Die Reihe „Lebendiges Feld“ ist damit vollständig (Scheibe 1 + 2, Feinschliff, mehr Leben). Neue Punkte beschließt der Betreiber.
+## IPL-0126 – Lebendiges Feld, Ambiente: Wolkschatten, Windgut und Vogelschar (Cache-Welle folgt im selben PR)
+
+- **Zeit / Quelle:** 2026-11-23 UTC; Betreiber nach Sichtung von `IPL-0125`: „Es können wir noch verbessern grafisch“ — als Paket gewählt: **Lebendiges Ambiente** (Wolkschatten, Windgut, aufscheuchende Vögel).
+- **Block / Ziel:** Kein Spiel-Block; reine Darstellung. Keine Simulations-, Snapshot-, Protokoll- oder Regeländerung — die drei Ebenen werden aus Uhr und Schussliste gezeichnet, die jeder Betrachter ohnehin hat; kein neuer Zustand, kein neues Feld auf dem Draht.
+- **Branch / Basis:** `arena/c8f23493-0815games-github-io` ab `ee9daa42eda08c220e3d9d93df56d3b8a914f00d` (`main`, Merge PR `#387`).
+- **Änderungen / Dateien:**
+  - `IronPath/core/cartoon-art.mjs`: Neuer Helfer `ambientAlarm()` (exportiert) — liest die Alarmlage aus der Schussliste (frischester Schuss nach derselben Rechnung wie der Tracer, Lebensdauer minus Snapshot-Alter, plus Schussdichte, geklemmt auf 0…1); ohne Schüsse 0, jede Ansicht startet zum selben Moment. Neue Funktion `ambientLife()`: zwei weiche Wolkschatten ziehen langsam übers Feld, Windgut (Heu/Blätter/Schnee je nach Biome) wirbelt tief übers Terrain, und eine Vogelschar aus sechs Vögeln kreuzt den Himmel — bei frischen Schüssen steigen sie und schlagen schneller (Höhe und Flügelschlag skaliert mit dem Alarm), bei Ruhe gleiten sie. Beides hinter dem bestehenden Wetter-Schalter (`weatherEffects`) und `reducedMotion`.
+  - `IronPath/tests/ambient-life.test.mjs` (neu): `ambientAlarm`-Regel (keine Schüsse → 0, frischer Schuss > 0,5, gealterter Schuss → 0, klammert bei 1, dichtes Feld klammert, alternder Schuss wird leiser); Wolken/Windgut malen mit dem Wetter und schweigen bei Wetter aus und bei reduzierter Bewegung; die Schar steigt bei frischen Schüssen sichtbar (jeder Vogel höher als in der Ruhe-Szene) und die Malerei berührt die Schussliste nie.
+- **Prüfungen:** `ambient-life` 3/3; Nachbar-Harnische (`battle-art-redesign`, `cartoon-art`, `field-visuals`, `tower-heads`, `soldier-motion`, `terrain`, `story-map-art`) 20/20; Schnelltor „Kein Fehler, 2 Hinweis(e)“; Gesamtsuite **1353 Tests, 1352 bestanden, 0 Fehler, 1 übersprungen**.
+- **Git / PR / Release:** Code-Commit + Push, PR `#388`; zweiter Commit: Cache-Welle `20261123-aim5` mit Feldnotizen `aim5` (79 Dateien, Muster `IPL-0104`). CI, Merge und Pages-Auslieferung werden als Ereignis nachgetragen. **Betreiber-Sichtung auf `20261123-aim5`:** Wolkschatten müssen übers Feld ziehen, Windgut muss wirbeln, und beim Schuss muss die Vogelschar auffliegen.
+- **Offen / nächster Schritt:** Reihe „Lebendiges Feld“ vollständig (Scheibe 1 + 2, Feinschliff, mehr Leben, Ambiente). Neue Punkte beschließt der Betreiber.
