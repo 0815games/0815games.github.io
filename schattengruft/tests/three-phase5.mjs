@@ -78,7 +78,7 @@ const combat=cameraTarget({
 });
 assert.equal(combat.x,4.5,'Kamera über der Kampfmitte');
 assert.equal(combat.zoom,STAGE.zoomIn);
-assert.ok(combat.zoom<explore.zoom,'im Kampf näher dran');
+assert.ok(combat.zoom>explore.zoom,'im Kampf näher dran');
 assert.equal(combat.height,explore.height,'gleiche Höhe, nur anderer Ausschnitt');
 assert.equal(combat.depth,explore.depth);
 

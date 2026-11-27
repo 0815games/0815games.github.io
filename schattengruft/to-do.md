@@ -1,6 +1,6 @@
 # To-do – Chroniken der Schattengruft
 
-Stand: 2026-11-26 · Spielversion: v0.10.3  
+Stand: 2026-11-26 · Spielversion: v0.10.4  
 Umgesetzte und veröffentlichte Funktionen sind nicht Teil dieser Liste. Die Änderungshistorie bleibt in `schattengruft/change.log`.
 
 ## Stabilisierung

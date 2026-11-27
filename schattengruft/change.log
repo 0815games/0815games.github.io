@@ -1,5 +1,19 @@
 # CHANGELOG – Chroniken der Schattengruft
 
+## v0.10.4 – 2026-11-27 – 3D-Kampf: Zoom korrigiert, Karte vollständig ausgeblendet
+
+- **3D-Ansicht im Kampf sah zu weit weg aus („sieht scheiße aus"):** Der Ortho-Zoom
+  für die Kampfbühne war als `zoomIn: 0.42` eingetragen. Bei `OrthographicCamera`
+  bedeutet ein Zoom unter 1 jedoch ein **größeres** Sichtfeld – die Bühne erschien
+  winzig in der Mitte. Der Wert ist korrigiert auf **1,8** (größer = näher dran),
+  der zugehörige Kommentar ebenfalls.
+- **2D-Karte im 3D-Kampf visible durch den Kampf-Overlay:** Der Kampfbildschirm
+  `#combat` hatte einen fast, aber nicht vollständig deckenden Hintergrund
+  (`rgba(5,6,10,.97)`). Er ist jetzt voll opake (`#05060a`) – die 2D-Karte
+  verschwindet während des 3D-Kampfs komplett.
+- 3D-Logik-Tests auf den korrigierten Zoomwert angepasst (Kamera-Übergang und
+  Sichtbarkeit im Kampf). Alle 30 Tests grün.
+
 ## v0.10.3 – 2026-11-27 – App-Icon, Web-Icon und OG-Bild; Firebase-Regeln ins Repo
 
 - **Versionsregel gewechselt:** Bisher wurde die Version nur bei Phasenabschlüssen erhöht,
