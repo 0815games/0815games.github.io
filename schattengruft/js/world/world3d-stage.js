@@ -12,7 +12,7 @@ export const STAGE = Object.freeze({
   heroOffset: -1.15,   // Held relativ zur Kampfmitte (x)
   enemyOffset: 1.05,   // Gegner relativ zur Kampfmitte (x)
   laneZ: 0,            // beide auf derselben Tiefe
-  zoomIn: 0.42,        // Ortho-Höhe im Kampf (kleiner = näher dran)
+  zoomIn: 1.8,        // Ortho-Zoom im Kampf (größer = näher dran)
   zoomOut: 1,          // Faktor der Erkundungskamera
   height: 12,          // Kamerahöhe (wie Erkundung)
   depth: 9,            // Kameraabstand in +z

@@ -88,8 +88,8 @@ assert.ok(Math.abs(camera.zoom-1)<1e-9,'Erkundung: Zoom 1');
 for(let i=2;i<40;i++)engine.render(w,p,i*.1,fx,'combat',enemy);
 const centerX=(1.5+7.5)/2;
 assert.ok(Math.abs(camera.position.x-centerX)<.05,'Kampf: Kamera in der Mitte, ist '+camera.position.x);
-assert.ok(camera.zoom<.5,'Kampf: herangezoomt, zoom='+camera.zoom);
-assert.ok(camera.zoom>.39,'Kampf: Zoom nicht uebers Ziel hinaus, zoom='+camera.zoom);
+assert.ok(camera.zoom>1.5,'Kampf: herangezoomt, zoom='+camera.zoom);
+assert.ok(camera.zoom<=1.81,'Kampf: Zoom nicht uebers Ziel hinaus, zoom='+camera.zoom);
 
 // --- Gegner war nie aufgedeckt, muss aber sichtbar sein ---
 const enemySprites=nodes.filter(n=>n instanceof Sprite&&n.parent&&n.visible&&
