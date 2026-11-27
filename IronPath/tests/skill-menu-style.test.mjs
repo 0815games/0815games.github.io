@@ -50,6 +50,21 @@ test('each sub-category reads as a numbered chapter inside its own panel',()=>{
   assert.match(css,/skill-lane-head--b\{grid-column:1;grid-row:auto\}/,'mobile stacks the lane headers');
 });
 
+test('a chosen class themes the chrome, and the class row disappears',()=>{
+  // Reported: "für jede das Skill menü besonders sein, rein optisch zu jeder
+  // klasse" + "die Auswahlreihe ... kann verschwinden" (IPL-0144).
+  assert.match(css,/#skillDialog\{--skill-accent:#d8c596/,'neutral brass accent by default');
+  assert.match(css,/\.is-class-themed \*?\.skills-header\{[^}]*box-shadow:inset 0 4px 0 var\(--skill-accent\)/,'class band across the header');
+  assert.match(css,/color-mix\(in srgb,var\(--skill-accent\) 24%,#1e3529\)/,'header takes the class tint');
+  assert.match(css,/border-color:color-mix\(in srgb,var\(--skill-accent\) 45%,#71836a\)/,'the frame takes the class edge');
+  assert.match(css,/\.is-class-themed \.skill-actions\{[^}]*color-mix\(in srgb,var\(--skill-accent\) 40%,#61775b\)/,'action bar hairline');
+  assert.match(css,/\.is-class-themed \.skills-kicker\{[^}]*color:var\(--skill-accent\)/,'kicker in the class colour');
+  // The themed rules must be opt-in: phase 1 keeps the approved look.
+  assert.match(css,/\.is-class-themed\{[^}]*border-color:color-mix/,'themed chrome only under .is-class-themed');
+  // display:flex would beat the UA [hidden] rule — the row must really go.
+  assert.match(css,/\.skills-tabs\[hidden\]\{display:none\}/,'the class row vanishes once a class is decided');
+});
+
 test('the phone scroll architecture from the reported fixes stays',()=>{
   assert.match(css,/\/\* Reported: "Bei den Skills hat man 2 Scrollbalken/,'the original scroll report is still documented');
   assert.match(css,/#skillDialog\[open\]\{display:flex;flex-direction:column;overflow:hidden/,'the phone dialog never scrolls itself');

@@ -6,7 +6,7 @@ aber ersetzt weder Git noch die GitHub-PR-Historie. Die dazugehörige
 [Arbeitsanweisung](../../AGENTS.md) verlangt, dieses Log vor der Arbeit zu lesen
 und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
 
-Die Einträge IPL-0001 bis IPL-0123 stehen im
+Die Einträge IPL-0001 bis IPL-0124 stehen im
 [Archiv](PATCH-LOG-ARCHIV.md); hier stehen die neuesten 20. Beide Dateien
 zusammen sind lückenlos und doppelfrei - `../scripts/patch.mjs` (Unterbefehl `check`) und
 `../tests/patch-log-archive.test.mjs` prüfen das.
@@ -62,18 +62,6 @@ jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderl
 
 
 
-## IPL-0124 – Lebendiges Feld, Feinschliff: sanftes Einrasten, Rückstoß nur im Rohr (Cache-Welle folgt im selben PR)
-
-- **Zeit / Quelle:** 2026-11-23 UTC; Betreiber nach Sichtung von Scheibe 2: „Erst Feinschliff, dann mehr Lebendigkeit.“ Dieses Paket ist der Feinschliff an den drehenden Köpfen aus `IPL-0122`/`IPL-0123`.
-- **Block / Ziel:** Kein Spiel-Block; reine Darstellung. Keine Simulations-, Snapshot-, Protokoll- oder Regeländerung — Schwenk- und Rückstoßwerte sind Optik und reisen nie über das Netz.
-- **Branch / Basis:** `arena/3c81a128-0815games-github-io` ab `62eabb03024079b00e613a10910a7b1f8f28b667` (`main`, Merge PR `#385`).
-- **Änderungen / Dateien:**
-  - `IronPath/core/tower-aim.mjs`: Drehgeschwindigkeit 3,4 → 3,0 rad/s (bewusster, weniger nervös), Rückstoß-Fenster 0,13 → 0,16 s (der Tritt ist lesbarer), und die letzte Strecke des Schwenks rastet weich ein (Easing unter 0,45 rad) statt hart zu knallen — volle Rate über das Feld, sanfte Landung aufs Ziel.
-  - `IronPath/core/cartoon-art.mjs`: In allen vier Malern stößt jetzt nur die Waffengruppe zurück (Gehäuse/Lauf/Gurt bzw. Verschluss, Doppellauf, Gewehr) — Dreibein, Kastenschwanz, Sockel, Schild und Zweibein bleiben stehen, wie es eine echte Lafette tut. Das Höhenrad der Kanone bleibt bei der Lafette, das Visier fährt mit dem Rohr.
-  - `IronPath/tests/tower-heads.test.mjs`: Rückstoß-Prüfung sucht jetzt das erste `translate` nach dem Schwenk (Lafette wird zuerst gezeichnet) — pinnt weiterhin Weg je Typ (MG 3,5 / Kanone 5 / Flak 2 / Sniper 1,5). `IronPath/tests/tower-aim.test.mjs`: Easing-Test (Teilweg, dann exaktes Einrasten).
-- **Prüfungen:** `tower-heads` 4/4, `tower-aim` 9/9, `soldier-motion` 3/3; Schnelltor „Kein Fehler, 2 Hinweis(e)“; Gesamtsuite **1349 Tests, 1348 bestanden, 0 Fehler, 1 übersprungen**.
-- **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet`. Commit, Push, PR `#386`, danach Cache-Welle `20261123-aim3` mit Feldnotizen `aim3` als zweiter Commit (Muster `IPL-0104`), CI, Merge und Pages-Auslieferung werden als Ereignis nachgetragen. **Betreiber-Sichtung auf `20261123-aim3`:** Köpfe müssen weich einrasten und nur das Rohr darf zurückstoßen.
-- **Offen / nächster Schritt:** `IPL-0125` „Mehr Lebendigkeit“ (Mündungsfeuer, Hülsen) folgt als eigener Eintrag.
 
 ## IPL-0125 – Lebendiges Feld, mehr Leben: Mündungsfeuer und Hülsen aus dem Rückstoß (Cache-Welle folgt im selben PR)
 
@@ -309,3 +297,14 @@ Nur Darstellung, kein Sim-State, kein Wire-Format, statisch im Terrain-Cache (Re
 - **Prüfung:** `development-ui.test.mjs` um Kapitel-/Lane-Struktur ergänzt (17-Buttons-Pin bestätigt weiter) · `skill-menu-style.test.mjs` pinnt Plakette/Panel/Lane-Kopf · Pin-Gruppe 7/0, Suite 1375+2 pr-Platzhalter/1, Schnelltor nur pr-Platzhalter.
 - **Git / PR / Release:** Branch `arena/c694b6c4-0815games-github-io` ab `bbc9f7e5`; Push, **PR `#518`**, Suite 1375+2 pr-Platzhalter, CI (`game-regressions`/`interface-browser-smoke`/`database-rules`/party-finalization) — alle Checks grün, **Merge `1b18fb2f` auf `main`**. Doku-PR im Anschluss.
 - **Offen / nächster Schritt:** Sichtung durch den Betreiber; bei Bedarf Folge-Feinlesen (z. B. Klappbarkeit).
+
+## IPL-0144 – Skills pro Klasse: klasseneigenes Chrome + Auswahlreihe verschwindet nach der Wahl (Welle `20261121-skills3`, PR `#525`)
+
+- **Was:** Rückmeldung des Betreibers nach IPL-0143 („Optisch sieht das schon mal ganz geil aus"): (1) nach der Klassenwahl soll das Skill-Fenster **pro Klasse optisch eigen** sein, (2) die **Auswahlreihe oben** (Klassen-Tabs) soll **komplett verschwinden**, sobald eine Klasse feststeht — „lässt das ganze sauberer wirken".
+  1. **`is-class-themed`-Modus** (nur Phase 2, gesetzt von `renderSkillTree` über `container.closest('#skillDialog')`): Akzent-Band am Header (`inset 0 4px 0` in der Klassenfarbe), Kopfverlauf mit `color-mix`-Tönung, Kicker in Klassenfarbe, Rahmen des Fensters und Haarlinie der Aktionsleiste getönt — dazu der schon vorhandene Klassen-Hero, pfadfarbene Kapitel-Panels, Spaltenköpfe und Kartenkanten. **Phase 1 (vor der Wahl) bleibt pixel-identisch** (`--skill-accent`-Default `#d8c596`, themed-Regeln greifen nur unter `.is-class-themed`).
+  2. **`renderSkills` setzt `hidden` auf `.skills-tabs`**, sobald `classId` gesetzt ist (neben der bestehenden Button-Logik); CSS-Sicherung `#skillDialog .skills-tabs[hidden]{display:none}` (display:flex schlägt sonst die UA-Regel). Nach Reset/Abwahl erscheint die Reihe wieder.
+- **Mechanik unangetastet:** Draft/Save/Reset, `parseBuild`, Filter (`#skillFilter` bleibt), aria-Pressed-Logik der Buttons bleibt (Browser-Pins `[data-skill-path]` getAttribute/isHidden laufen weiter — versteckter Vorfahre erfüllt `isHidden`), Zustände + Legend, Mobile-Scroll-Fixes.
+- **i18n:** keine neuen Strings.
+- **Prüfung:** `skill-menu-style.test.mjs` pinnt Default-Akzent, Header-Band/-Tönung, Rahmen-Mix, `[hidden]`-Guard · Suite … · Schnelltor … (vor Merge final).
+- **Git / PR / Release:** Branch `arena/02764ced-0815games-github-io` ab `d3ab5029`; Push, **PR `#525`**, CI, Merge – wird nachgetragen.
+- **Offen / nächster Schritt:** Sichtung; auf Wunsch Intensität der Klassentönung nachjustieren.

@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see docs/PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261121-skills2';
+import {getLanguage} from './language.mjs?v=20261121-skills3';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,17 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'skills3',build:'20261121-skills3',pr:525,
+    title:{en:'Skills · Per-Class Chrome and a Cleaner Post-Choice Header',de:'Skills · Klasseneigenes Chrome und ein ruhigerer Kopfbereich nach der Wahl'},
+    shipped:[
+      {en:'Once a class is chosen the skill window wears that class colour: a class band on the header, a tinted frame and kicker, a hairline on the action bar — on top of the class hero, path-coloured chapter panels and lane headers. The class-selection tab row disappears completely once a class is decided, leaving overview, SHOW filter and the tree. Phase 1 before the choice stays exactly as approved.',de:'Ist eine Klasse gewählt, trägt das Fähigkeiten-Fenster deren Farbe: Klassenband am Header, getönter Rahmen und Kicker, Haarlinie an der Aktionsleiste — obendrauf der Klassen-Hero, pfadfarbene Kapitel-Panels und Spaltenköpfe. Die Klassen-Auswahlreihe verschwindet komplett, sobald eine Klasse feststeht; es bleiben Übersicht, SHOW-Filter und der Baum. Phase 1 vor der Wahl bleibt exakt wie gebilligt.'},
+      {en:'Cache wave 20261121-skills3.',de:'Cache-Welle 20261121-skills3.'},
+    ],
+    open:[
+      {en:'Operator review of the class theming; adjust per-class intensity on request.',de:'Sichtung der Klassen-Theming; Intensität auf Wunsch anpassen.'},
+    ]
+  },
   {
     id:'skills2',build:'20261121-skills2',pr:518,
     title:{en:'Skills · Numbered Chapter Plates, Path A/B Column Headers, Progress Chips',de:'Skills · Nummerierte Kapitel-Plaketten, Pfad-A/B-Spaltenköpfe, Fortschritts-Chips'},

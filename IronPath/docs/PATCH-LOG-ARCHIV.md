@@ -1,6 +1,6 @@
 # Iron Path – Patch-Log: Archiv
 
-Ältere Einträge IPL-0001 bis IPL-0123. Die neuesten 20 stehen in
+Ältere Einträge IPL-0001 bis IPL-0124. Die neuesten 20 stehen in
 [PATCH-LOG.md](PATCH-LOG.md); die Regeln für beide Dateien dort und in
 [`../../AGENTS.md`](../../AGENTS.md). Beim Verschieben wandert ein Eintrag immer
 vollständig einschließlich seiner Ereignis-Nachträge.
@@ -4778,3 +4778,15 @@ sie geprüft wurde.
 - **Prüfungen:** `tower-heads` 4/4, `tower-aim` 8/8, `soldier-motion` 3/3; Schnelltor „Kein Fehler, 2 Hinweis(e)“; Gesamtsuite **1348 Tests, 1347 bestanden, 0 Fehler, 1 übersprungen**.
 - **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet`. Commit, Push, PR `#385`, danach Cache-Welle `20261123-aim2` mit Feldnotizen `aim2` als zweiter Commit (Muster `IPL-0104`), CI, Merge und Pages-Auslieferung werden als Ereignis nachgetragen. **Betreiber-Sichtung auf `20261123-aim2`:** alle vier Turmtypen auf einer Karte mit Gegnern aus mehreren Richtungen — jeder Kopf muss sichtbar nachführen und beim Feuern zurückstoßen.
 - **Offen / nächster Schritt:** Die Ausbaureihe „Lebendiges Feld“ ist damit vollständig (Scheibe 1 + 2). Neue Punkte beschließt der Betreiber.
+## IPL-0124 – Lebendiges Feld, Feinschliff: sanftes Einrasten, Rückstoß nur im Rohr (Cache-Welle folgt im selben PR)
+
+- **Zeit / Quelle:** 2026-11-23 UTC; Betreiber nach Sichtung von Scheibe 2: „Erst Feinschliff, dann mehr Lebendigkeit.“ Dieses Paket ist der Feinschliff an den drehenden Köpfen aus `IPL-0122`/`IPL-0123`.
+- **Block / Ziel:** Kein Spiel-Block; reine Darstellung. Keine Simulations-, Snapshot-, Protokoll- oder Regeländerung — Schwenk- und Rückstoßwerte sind Optik und reisen nie über das Netz.
+- **Branch / Basis:** `arena/3c81a128-0815games-github-io` ab `62eabb03024079b00e613a10910a7b1f8f28b667` (`main`, Merge PR `#385`).
+- **Änderungen / Dateien:**
+  - `IronPath/core/tower-aim.mjs`: Drehgeschwindigkeit 3,4 → 3,0 rad/s (bewusster, weniger nervös), Rückstoß-Fenster 0,13 → 0,16 s (der Tritt ist lesbarer), und die letzte Strecke des Schwenks rastet weich ein (Easing unter 0,45 rad) statt hart zu knallen — volle Rate über das Feld, sanfte Landung aufs Ziel.
+  - `IronPath/core/cartoon-art.mjs`: In allen vier Malern stößt jetzt nur die Waffengruppe zurück (Gehäuse/Lauf/Gurt bzw. Verschluss, Doppellauf, Gewehr) — Dreibein, Kastenschwanz, Sockel, Schild und Zweibein bleiben stehen, wie es eine echte Lafette tut. Das Höhenrad der Kanone bleibt bei der Lafette, das Visier fährt mit dem Rohr.
+  - `IronPath/tests/tower-heads.test.mjs`: Rückstoß-Prüfung sucht jetzt das erste `translate` nach dem Schwenk (Lafette wird zuerst gezeichnet) — pinnt weiterhin Weg je Typ (MG 3,5 / Kanone 5 / Flak 2 / Sniper 1,5). `IronPath/tests/tower-aim.test.mjs`: Easing-Test (Teilweg, dann exaktes Einrasten).
+- **Prüfungen:** `tower-heads` 4/4, `tower-aim` 9/9, `soldier-motion` 3/3; Schnelltor „Kein Fehler, 2 Hinweis(e)“; Gesamtsuite **1349 Tests, 1348 bestanden, 0 Fehler, 1 übersprungen**.
+- **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet`. Commit, Push, PR `#386`, danach Cache-Welle `20261123-aim3` mit Feldnotizen `aim3` als zweiter Commit (Muster `IPL-0104`), CI, Merge und Pages-Auslieferung werden als Ereignis nachgetragen. **Betreiber-Sichtung auf `20261123-aim3`:** Köpfe müssen weich einrasten und nur das Rohr darf zurückstoßen.
+- **Offen / nächster Schritt:** `IPL-0125` „Mehr Lebendigkeit“ (Mündungsfeuer, Hülsen) folgt als eigener Eintrag.
