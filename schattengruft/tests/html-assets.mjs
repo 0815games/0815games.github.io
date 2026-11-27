@@ -32,8 +32,7 @@ check(() => assert.deepEqual(missing, [], `index.html verweist auf fehlende Date
 
 // Die drei Skripte, deren falscher Pfad den Totalausfall verursacht hat.
 const scripts = [...html.matchAll(/<script[^>]*\ssrc\s*=\s*["']([^"']+)["']/g)].map((m) => m[1]);
-check(() => assert.ok(scripts.includes('js/main.js?v=0.10.2') ||
-  scripts.some((src) => /^js\/main\.js(\?|$)/.test(src)),
+check(() => assert.ok(scripts.some((src) => /^js\/main\.js(\?|$)/.test(src)),
   `index.html lädt nicht js/main.js (gefunden: ${scripts.join(', ') || 'keine'})`));
 check(() => assert.ok(scripts.some((src) => /^js\/systems\/mobile\.js(\?|$)/.test(src)),
   'index.html lädt nicht js/systems/mobile.js'));
