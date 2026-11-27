@@ -394,66 +394,65 @@ test('ein kaputter Server-Abruf fuehrt nicht zum Neuladen', async () => {
   assert.equal(document.getElementById('update-banner-now').hidden, true);
 });
 
-test('nach einem erfolgreichen Versionssprung startet OK genau einen Reload ohne erneutes Popup', async () => {
-  // Regression aus v14.0.18/v14.0.19: nach dem Reload (?_pb_auf=...) zeigte
-  // #update-banner "NEUE VERSION ... GELADEN" und setzte body.fenster-offen
-  // (#game-screen pointer-events: none), versteckte aber sowohl JETZT LADEN
-  // als auch SPAETER. Damit blieb das Spiel hinter dem Popup unbedienbar.
+test('nach erfolgreichem Update ist das Fenster sofort geschlossen und bleibt geschlossen', async () => {
   const dom = new JSDOM(`<!DOCTYPE html><html><head>
       <meta name="pipboy-build" content="14.0.23">
-    </head><body>
-      <div id="update-banner" hidden>
-        <span id="update-banner-text"></span>
-        <button id="update-banner-now" hidden></button>
-        <button id="update-banner-later"></button>
-      </div>
+    </head><body class="fenster-offen">
+      <div id="update-banner" hidden><span id="update-banner-text"></span>
+        <button id="update-banner-now" hidden></button><button id="update-banner-later"></button></div>
     </body></html>`, {
-    url: 'https://example.test/PipBoy3000/?_pb_auf=14.0.23&_pb_von=14.0.22&_pb_nonce=1',
-    pretendToBeVisual: true,
-    runScripts: 'outside-only'
+    url: 'https://example.test/PipBoy3000/?andere=ja&_pb_auf=14.0.23&_pb_von=14.0.22&_pb_nonce=1#karte',
+    pretendToBeVisual: true, runScripts: 'outside-only'
   });
-  const umg = {
-    dom, window: dom.window, document: dom.window.document,
-    fetcher: async () => ({ok: true, text: async () => JSON.stringify({version: '14.0.23'})})
-  };
+  let anfragen = 0, reloads = 0;
+  const umg = {dom, window: dom.window, document: dom.window.document};
   await ladeUpdateModul(umg);
-  umg.window.eval('var Game = { state: null }; var Combat = {};');
-  umg.window.__fetcher = umg.fetcher;
-  umg.window.__reloadCount = 0;
-  const ui = umg.window.eval("window.__updateApi.createUpdateUI({document: window.document, window: window, fetcher: window.__fetcher, reload: () => window.__reloadCount++})");
+  umg.window.eval('var Game = {state: null}; var Combat = {};');
+  umg.window.__fetcher = async () => { anfragen++; return {ok:true, text:async()=>JSON.stringify({version:'14.0.23'})}; };
+  umg.window.__reload = () => reloads++;
+  const ui = umg.window.eval("window.__updateApi.createUpdateUI({document, window, fetcher: window.__fetcher, replace: window.__reload})");
   ui.start();
   await new Promise(r => setTimeout(r, 30));
-  ui.stop();
+  assert.equal(umg.document.getElementById('update-banner').hidden, true);
+  assert.equal(umg.window.getComputedStyle(umg.document.getElementById('update-banner')).display, 'none');
+  assert.equal(umg.document.body.classList.contains('fenster-offen'), false);
+  assert.equal(ui.zustand, null);
+  assert.equal(reloads, 0, 'Kein zweiter Reload');
+  assert.equal(anfragen, 0, 'Erfolgreicher Start wird nicht sofort durch Netzfehler ersetzt');
+  const url = new URL(umg.window.location.href);
+  assert.equal(url.searchParams.get('andere'), 'ja');
+  assert.equal(url.hash, '#karte');
+  assert.equal(url.searchParams.has('_pb_auf'), false);
+  assert.equal(url.searchParams.has('_pb_von'), false);
+  assert.equal(url.searchParams.has('_pb_nonce'), false);
+  await ui.pruefen();
+  assert.equal(umg.document.getElementById('update-banner').hidden, true);
+  ui.stop(); dom.window.close();
+});
 
-  const banner = umg.document.getElementById('update-banner');
-  const spaeter = umg.document.getElementById('update-banner-later');
-  assert.equal(banner.hidden, false, 'Geladen-Meldung sollte zunaechst sichtbar sein');
-  assert.equal(spaeter.hidden, false, 'Schliessen-Knopf darf nach dem Versionssprung nicht versteckt sein');
-  assert.equal(spaeter.textContent, 'OK');
-  assert.equal(umg.document.body.classList.contains('fenster-offen'), true);
+test('wenn der Zielbuild nicht geladen wurde, bleibt das Update erneut angeboten', async () => {
+  const umg = umgebung({build:'14.0.22', server:'14.0.23'});
+  umg.window.history.replaceState(null, '', '?_pb_auf=14.0.23&_pb_von=14.0.22&_pb_nonce=1');
+  await ladeUpdateModul(umg);
+  umg.window.eval('var Game = {state: null}; var Combat = {};');
+  umg.window.__fetcher = umg.fetcher;
+  const ui = umg.window.eval("window.__updateApi.createUpdateUI({document, window, fetcher: window.__fetcher})");
+  ui.start();
+  await new Promise(r => setTimeout(r, 30));
+  assert.equal(ui.zustand.art, 'veraltet');
+  assert.equal(umg.document.getElementById('update-banner').hidden, false);
+  assert.equal(umg.document.getElementById('update-banner-now').hidden, false);
+  assert.equal(umg.window.location.search.includes('_pb_auf'), false);
+  ui.stop(); umg.dom.window.close();
+});
 
-  assert.ok(!umg.window.location.search.includes('_pb_auf'), 'Update-Marker muss vor OK aus der URL entfernt sein');
-  // Ein Speichervorgang darf nicht durch den zweiten Reload verloren gehen.
-  umg.window.eval('Game.state = {}; Game.isDirty = true');
-  spaeter.click();
-  assert.equal(umg.window.__reloadCount, 0);
-  assert.match(umg.document.getElementById('update-banner-text').textContent, /Spielstand wird gespeichert/);
-  umg.window.eval('Game.isDirty = false');
-  spaeter.click();
-  assert.equal(umg.window.__reloadCount, 1);
-  assert.equal(ui.zustand.art, 'laedt');
-  // Ein neuer Seitenstart mit bereinigter URL darf keine Erfolgsmeldung erneut anzeigen.
-  const neu = umgebung({build: '14.0.23', server: '14.0.23'});
-  await ladeUpdateModul(neu);
-  neu.window.eval('var Game = { state: null }; var Combat = {};');
-  neu.window.__fetcher = neu.fetcher;
-  const neueUI = neu.window.eval("window.__updateApi.createUpdateUI({document, window, fetcher: window.__fetcher})");
-  neueUI.start();
-  await new Promise(r => setTimeout(r, 20));
-  neueUI.stop();
-  assert.equal(neu.document.getElementById('update-banner').hidden, true);
-  neu.dom.window.close();
-  umg.dom.window.close();
+test('versteckte Updateknöpfe sind auch mit echten Action-Button-Styles unsichtbar', () => {
+  const css = readFileSync(join(ROOT, 'shell/style.css'), 'utf8');
+  const dom = new JSDOM(`<style>${css}</style><div class="popup-knoepfe"><button class="action-button" hidden>JETZT LADEN</button><button class="action-button">SPÄTER</button></div>`);
+  const buttons = dom.window.document.querySelectorAll('button');
+  assert.equal(dom.window.getComputedStyle(buttons[0]).display, 'none');
+  assert.equal(dom.window.getComputedStyle(buttons[1]).display, 'flex');
+  dom.window.close();
 });
 
 test('die Seite traegt den Build-Stempel und laedt das Buendel mit Version', () => {

@@ -514,6 +514,7 @@ button, .action-button, .header-btn, .shop-item-row { position: relative; z-inde
    Text und Rand bleiben gesetzt, damit eine gesetzte Rahmenfarbe (z.B.
    border-red-500 am WEGWERFEN-Button) erhalten bleibt und nicht beim
    Darueberfahren auf Gruen umspringt. */
+.popup-knoepfe .action-button[hidden] { display: none; }
 .action-button:hover { background-color: var(--pip-green); color: #000; border-color: var(--pip-green); }
 .action-button:active { transform: scale(0.95); }
 .action-button:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(100%); }

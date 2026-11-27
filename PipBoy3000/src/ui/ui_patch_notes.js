@@ -33,6 +33,15 @@ window.GameData.offenePunkte = [
 // nicht mit dem, was geplant war.
 window.GameData.RELEASED_PATCHES = [
   {
+    version: '14.0.34',
+    datum: '2026-11-24',
+    title: 'Update-Fenster korrigiert',
+    punkte: [
+      'Nach erfolgreichem Laden einer neuen Version schließt sich das Update-Fenster automatisch. Ein zweiter Reload ist nicht mehr nötig.',
+      'Versteckte Update-Knöpfe bleiben auch optisch ausgeblendet. Wenn die neue Version noch nicht geladen wurde, bleibt das Update weiter verfügbar.'
+    ]
+  },
+  {
     version: '14.0.33',
     datum: '2026-11-24',
     title: 'Wasser, Munition und Lagertruhe',
