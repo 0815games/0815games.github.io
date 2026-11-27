@@ -104,7 +104,8 @@ test('Templates rufen keine Funktionen auf, die es nicht gibt', () => {
     for (const match of body.matchAll(/on(?:click|input|change)="(?:Game|UI)\.(\w+)\(/g)) {
       const fn = match[1];
       const defined = new RegExp(`(?:^|[^\\w])${fn}\\s*:`, 'm').test(code)
-        || new RegExp(`function\\s+${fn}\\b`).test(code);
+        || new RegExp(`function\\s+${fn}\\b`).test(code)
+        || new RegExp(`(?:UI|Game)\\.${fn}\\s*=\\s*function\\b`).test(code);
       if (!defined) problems.push(`${name}: ${fn}()`);
     }
   }

@@ -225,7 +225,6 @@ test('jedes Burger-Menue-Fenster oeffnet unter dem Header in #main-content und s
 
     // 2. Alle Unterfenster-Overlays aus dem Burger-Menue
     const unterfenster = [
-      {name: 'NAVIGATION', btn: 'btn-navigation', fensterId: 'nav-eingabe'},
       {name: 'VAULT LEGENDS', btn: 'btn-highscores-game', fensterId: 'ui-dialog-overlay'},
       {name: 'HANDBUCH', btn: 'btn-manual-game', fensterId: 'manual-overlay'},
       {name: 'PATCH-NOTIZEN', btn: 'btn-patch-notes', fensterId: 'patch-notes-overlay'},
@@ -261,6 +260,8 @@ test('jedes Burger-Menue-Fenster oeffnet unter dem Header in #main-content und s
       assert.equal(cs.bottom, '0px', `${name}: #${fensterId} fuellt #main-content nach unten nicht aus`);
       assert.equal(istSichtbar(window, header), true, `${name}: Header ist nicht sichtbar`);
     }
+
+    assert.equal(document.getElementById('btn-navigation'), null, 'Navigation ist kein separater Burger-Menuepunkt mehr');
 
     // 3. TUTORIAL schliesst ebenfalls das Burger-Menue und laesst kein
     //    offenes Unterfenster darunter stehen.
@@ -581,5 +582,49 @@ test('Statusleiste zeigt Spielwerte, behaelt Char- und Menue-Aktionen und ein re
     assert.match(css, /@media\s*\(max-width:\s*540px\)[\s\S]*?"char ressourcen menu"\s*"leben leben leben"/);
     assert.match(css, /#game-header #btn-menu-toggle\s*\{[^}]*min-width:\s*0/);
     assert.match(css, /#val-name\s*\{[^}]*text-overflow:\s*ellipsis/);
+  } finally { await schliesse(); }
+});
+
+test('SPECIAL- und Perk-Reiter leuchten nur bei eigenen offenen Punkten und aktualisieren sich nach Vergabe', async () => {
+  const {window, document, schliesse} = await starteEchteOberflaeche({imSpiel: true});
+  try {
+    const state = window.Game.state;
+    state.statPoints = 2; state.perkPoints = 1; state.lvl = 3;
+    window.Game.saveGame = () => {};
+    await window.UI.switchView('char');
+    const tab = name => document.querySelector(`[data-char-tab="${name}"]`);
+    const istMarkiert = name => tab(name).classList.contains('char-tab-punkte');
+    assert.ok(istMarkiert('special'));
+    assert.ok(istMarkiert('perks'));
+    assert.equal(tab('special').querySelector('[data-punkte]').textContent, '2');
+    assert.equal(tab('perks').querySelector('[data-punkte]').textContent, '1');
+    assert.match(tab('special').getAttribute('aria-label'), /2 Punkte verfügbar/);
+    tab('special').click();
+    assert.equal(state.charTab, 'special');
+    assert.ok(istMarkiert('special'), 'auch aktiver Reiter zeigt offene Punkte');
+    window.Game.upgradeStat('STR');
+    assert.equal(state.statPoints, 1);
+    assert.equal(tab('special').querySelector('[data-punkte]').textContent, '1');
+    window.Game.upgradeStat('STR');
+    assert.equal(state.statPoints, 0);
+    assert.equal(istMarkiert('special'), false);
+    assert.equal(tab('special').querySelector('[data-punkte]').hidden, true);
+    assert.equal(istMarkiert('perks'), true);
+    tab('perks').click();
+    assert.equal(state.charTab, 'perks');
+    window.Game.choosePerk('toughness');
+    assert.equal(state.perkPoints, 0);
+    assert.equal(istMarkiert('perks'), false);
+    assert.equal(document.getElementById('header-char-info').classList.contains('lvl-ready-glow'), false);
+    // Dynamische Punkte waehrend die Ansicht offen ist.
+    state.perkPoints = 3;
+    window.UI.update();
+    assert.equal(istMarkiert('special'), false);
+    assert.equal(istMarkiert('perks'), true);
+    assert.equal(tab('perks').querySelector('[data-punkte]').textContent, '3');
+    state.perkPoints = 0; state.statPoints = 1;
+    window.UI.update();
+    assert.equal(istMarkiert('special'), true);
+    assert.equal(istMarkiert('perks'), false);
   } finally { await schliesse(); }
 });

@@ -22,6 +22,7 @@ Object.assign(UI, {
         if(!this.els.headerCharInfo) this.els.headerCharInfo = document.getElementById('header-char-info');
 
         const hasPoints = (Game.state.statPoints > 0) || (Game.state.perkPoints > 0);
+        if (typeof this.aktualisiereCharPunkte === 'function') this.aktualisiereCharPunkte();
 
         const displayName = Game.state.playerName || (typeof Network !== 'undefined' ? Network.myDisplayName : "SURVIVOR");
         if(this.els.name) this.els.name.textContent = displayName;

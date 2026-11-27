@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v14.0.32 (Punkte auf einen Blick, 2026-11-24)
+- [OPTIK] S.P.E.C.I.A.L.- und PERKS-Reiter zeigen verfügbare Punkte unabhängig voneinander mit Leuchten und Anzahl; auch aktiv und bei reduzierter Bewegung sichtbar.
+- [MENÜ] Separaten Navigationspunkt entfernt. Koordinateneingabe bleibt über ZIEL auf der Weltkarte sowie bei aktivem Ziel über den HUD-Pfeil erreichbar; Zielführung unverändert.
+- [TEST] Vergabe und Aktualisierung beider Punktarten sowie Koordinateneingabe über Weltkarte geprüft.
+
 ## v14.0.31 (Aufgeräumte Statusleiste, 2026-11-26)
 - [OPTIK] Statusleiste mit sauberem Raster, gekürztem Namen und kompakter Menüschaltfläche. Auf schmalen Geräten steht die Lebensanzeige in einer eigenen Zeile; Farben und Bedienung bleiben erhalten.
 - [FIX] UI.update aktualisierte bisher das TP-Textfeld statt des Lebensbalkens; der Balken war außerdem durch eine Inline-Farbe transparent. Jetzt aktualisiert die Leiste den richtigen Balken und der TP-Text bleibt lesbar. Die Berechnung der Werte ist unverändert.

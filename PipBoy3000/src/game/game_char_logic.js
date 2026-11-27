@@ -70,6 +70,7 @@ Object.assign(Game, {
         if(typeof UI.renderStats === 'function') {
             UI.renderStats('perks');
         }
+        if(typeof UI.update === 'function') UI.update();
     },
 
     startCombat: function() { 

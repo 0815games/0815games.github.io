@@ -622,7 +622,7 @@ async function starteEchtesSpiel() {
   return {dom, window, document, canvasAufrufe, schliesse};
 }
 
-test('echtes DOM: Burger-Menue -> NAVIGATION setzt per Enter das Ziel und zeigt Pfeil im HUD und auf dem Spielfeld', async () => {
+test('echtes DOM: Weltkarte -> ZIEL setzt per Enter das Ziel und zeigt Pfeil im HUD und auf dem Spielfeld', async () => {
   const spiel = await starteEchtesSpiel();
   try {
     const {window, document, canvasAufrufe} = spiel;
@@ -631,9 +631,12 @@ test('echtes DOM: Burger-Menue -> NAVIGATION setzt per Enter das Ziel und zeigt 
     const pfeilVorher = document.getElementById('nav-pfeil');
     assert.equal(window.getComputedStyle(pfeilVorher).display, 'none');
 
-    // Burger-Menue oeffnen -> NAVIGATION anklicken.
+    // Koordinateneingabe bleibt ueber die Weltkarte auch ohne Menuepunkt erreichbar.
+    assert.equal(document.getElementById('btn-navigation'), null);
     document.getElementById('btn-menu-toggle').click();
-    document.getElementById('btn-navigation').click();
+    document.getElementById('btn-map').click();
+    await new Promise(r => setTimeout(r, 100));
+    document.getElementById('worldmap-nav-eingabe').click();
 
     const eingabe = document.getElementById('nav-eingabe');
     assert.equal(window.getComputedStyle(eingabe).display, 'flex', '#nav-eingabe muss sichtbar sein');
@@ -652,6 +655,8 @@ test('echtes DOM: Burger-Menue -> NAVIGATION setzt per Enter das Ziel und zeigt 
     assert.equal(window.getComputedStyle(eingabe).display, 'none', 'Enter muss #nav-eingabe schliessen');
     assert.deepEqual({x: window.Game.state.nav.x, y: window.Game.state.nav.y}, {x: 7, y: 2});
 
+    // Zurueck zur Sektorkarte; der HUD-Pfeil bleibt zugaenglich.
+    await window.UI.switchView('map');
     // HUD-Pfeil und Sektor-Anzeige sind im echten CSS sichtbar und gefuellt.
     const pfeil = document.getElementById('nav-pfeil');
     assert.equal(window.getComputedStyle(pfeil).display, 'flex', '#nav-pfeil muss sichtbar sein');
