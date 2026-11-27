@@ -22,25 +22,28 @@ ein Website-Deployment ändert sie nicht. Vor einem Rollout müssen die neuen
 Regeln samt Client mit Emulator und anschließend gegen eine Testdatenbank
 geprüft werden. Kein produktives Regelwerk ohne diese Prüfung veröffentlichen.
 
-## Aktueller Arbeitsstand
+## Neue Regeln und Rollout
 
-`database.rules.session-candidate.json` ist ein **Regelentwurf**, noch nicht
-in Firebase oder im Emulator getestet. Er gehört ausschließlich zum ebenfalls
-unveröffentlichten Client dieser Änderung; weder diese Regeln noch den Client einzeln
-produktiv schalten. Die bisherigen Regeln und bisheriger Client funktionieren weiterhin.
+`database.rules.json` gehört zum neuen Client auf diesem Arbeitsbranch. Die
+Regeln und die Anmeldung wurden mit getrennten Accounts/Sitzungen im Firebase
+Auth- und Realtime-Database-Emulator getestet. Ein Test auf dem echten Gerät
+oder gegen das produktive Firebase-Projekt wurde nicht durchgeführt.
 
-Der Entwurf verlangt einen zum aktiven Sitzungsmarker passenden Marker im
-kompletten Save bzw. Presence-Eintrag. Löschungen sind markierte Tombstones.
+**Vor der Umstellung:** In Firebase Realtime Database ein vollständiges
+JSON-Backup exportieren und alle Spiel-Tabs schließen. Die alte Website darf
+während der Umstellung nicht speichern. Neue Regeln mit altem Client sperren
+Cloud-Speichern; neuer Client mit alten Regeln kann keine Sitzung anlegen.
+Die Veröffentlichung der Website und das Einspielen der Regeln müssen daher
+in einem Wartungsfenster unmittelbar aufeinanderfolgen.
+
+In der Firebase-Konsole des Projekts `pipboy-rpg`: Realtime Database → Regeln,
+Inhalt von `database.rules.json` vollständig einsetzen und veröffentlichen.
+Danach die neue Website öffnen, neu laden und Anmeldung, Speichern, Abbrechen
+und Übernahme in zwei Tabs testen. Bei Problemen beide Tabs schließen; nicht
+weiterspielen, bis Ursache und Wiederherstellung geklärt sind.
+
 Die Admin-Ausnahme erlaubt Bearbeitung anderer Accounts; Änderungen am eigenen
 Admin-Account brauchen eine aktive Spielsitzung, direkte Löschung des eigenen
 Slots ist im Admin-Panel nicht erlaubt. Die Leaderboard-Regeln bleiben wie
 bisher und sind nicht sitzungsgeschützt. Marker schützen nicht vor absichtlicher
 Manipulation durch jemanden mit Zugriff auf denselben Account.
-
-Vor einer späteren Umstellung: vollständiges RTDB-Backup exportieren, alle alten
-Tabs schließen und Regeln sowie Client in einem abgestimmten Wartungsfenster
-bereitstellen. Neue Regeln mit altem Client sperren Cloud-Speichern; neuer Client
-mit alten Regeln kann keine Sitzung anlegen. Regeln und Verhalten sind zunächst
-mit einer Testdatenbank oder dem Firebase-Emulator zu überprüfen, vor allem
-Verdrängung während Offline-Betrieb und verspätete Saves und Deletes. Auch der
-Admin-Eigenaccount und alte `onDisconnect`-Operationen sind zu prüfen.

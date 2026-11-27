@@ -1,6 +1,6 @@
 {
   "database": {
-    "rules": "database.rules.session-candidate.json"
+    "rules": "database.rules.json"
   },
   "emulators": {
     "database": {

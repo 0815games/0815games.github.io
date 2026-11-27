@@ -54,7 +54,7 @@ Sitzung, beispielsweise ein Backend mit passenden Authentifizierungs-Claims.
    veröffentlichen. Offene alte Tabs vor der Umstellung schließen. Bei
    Problemen kein weiteres Spiel speichern, sondern Backup wiederherstellen.
 
-Es gibt einen Client- und Regelentwurf auf dem Arbeitsbranch. Der Regelentwurf
-wurde noch nicht im Firebase-Emulator oder gegen eine Testdatenbank geprüft
-und ist nicht für die produktive Umstellung freigegeben.
-`database.rules.current.json` enthält die bisherigen Regeln.
+Die Regeln und das Netzwerkmodul wurden im Firebase-Emulator geprüft; ein
+Test gegen das produktive Projekt und auf echten Geräten steht noch aus.
+`database.rules.current.json` enthält die bisherigen Regeln;
+`database.rules.json` enthält die neuen Regeln für den Client auf diesem Branch.

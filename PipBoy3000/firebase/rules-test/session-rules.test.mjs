@@ -8,7 +8,7 @@ let env, a, b, other, admin, anon;
 before(async () => {
   env = await initializeTestEnvironment({projectId: 'demo-pipboy', database: {
     host: '127.0.0.1', port: 9000,
-    rules: await readFile(new URL('../database.rules.session-candidate.json', import.meta.url), 'utf8')
+    rules: await readFile(new URL('../database.rules.json', import.meta.url), 'utf8')
   }});
   a = env.authenticatedContext('alice', {email: 'alice@example.com'}).database();
   b = env.authenticatedContext('alice', {email: 'alice@example.com'}).database();

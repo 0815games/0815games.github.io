@@ -1,7 +1,6 @@
 name: Pip-Boy Firebase rules
 on:
   push:
-    branches: ['arena/61fb89ae-0815games-github-io']
     paths: ['PipBoy3000/firebase/**', '.github/workflows/pipboy-firebase-rules.yml']
   pull_request:
     paths: ['PipBoy3000/firebase/**', '.github/workflows/pipboy-firebase-rules.yml']
