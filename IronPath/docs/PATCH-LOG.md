@@ -298,7 +298,7 @@ Nur Darstellung, kein Sim-State, kein Wire-Format, statisch im Terrain-Cache (Re
 - **Git / PR / Release:** Branch `arena/02764ced-0815games-github-io` ab `d3ab5029`; Push, **PR `#525`**, Suite 1376+2 pr-Platzhalter, CI (`game-regressions`/`interface-browser-smoke`/`database-rules`/party-finalization) — alle Checks grün (ein Flake in `party-offline-modes` des ersten Laufes, Gegenlauf grün), **Merge `9b8c7041` auf `main`**. Doku-PR im Anschluss.
 - **Offen / nächster Schritt:** Sichtung; auf Wunsch Intensität der Klassentönung nachjustieren.
 
-## IPL-0145 – Skills Desktop-Lesbarkeit: Wörter brechen statt abschneiden, Sidebar stapelt unter 1100px (Welle `20261121-skills4`, PR `#—`)
+## IPL-0145 – Skills Desktop-Lesbarkeit: Wörter brechen statt abschneiden, Sidebar stapelt unter 1100px (Welle `20261121-skills4`, PR `#529`)
 
 - **Was:** Rückmeldung des Betreibers (Screenshot-Batch zeigte kein Skills-Fenster): „auf der Desktop anwendung sind schriften abgeschnitten und nach rechts und links kann man nicht alles lesen wenn die fähigkeiten von links nach rechts ausgebaut werden". Zwei Ursachen in `skill-menu.css`:
   1. **Lange deutsche Komposita laufen über die Spalte** — `overflow-wrap:break-word` jetzt auf `.skill-card-name`, `.skill-card-description`, `.skill-card-requirement`, `.skill-card-tag`/`.skill-card-state`, `.skill-group-heading p`, `.skill-chapter-title` und `.skill-lane-head span` (Spaltenkopf bricht statt Ellipsis-Schnitt). Nicht betroffen: `#skillDetailText`/`#skillStatus`/`.skill-card-name` bleiben ohne `text-transform` (innerText-Pins).
@@ -306,5 +306,5 @@ Nur Darstellung, kein Sim-State, kein Wire-Format, statisch im Terrain-Cache (Re
 - **Mechanik unangetastet:** nur Layout/CSS; Draft/Save/Reset, Badges, Zustände, aria-Pins, Mobile-Scroll-Fixes unverändert.
 - **Zweite Meldung (offen):** „wieso steht überall 'Freigeschaltet' in grau wenn ich die Fähigkeit nicht habe?" — Badge+Button laut Betreiber betroffen; Übersetzungen geprüft (UNLOCKED→FREIGESCHALTET, AVAILABLE→VERFÜGBAR, LOCKED→GESPERRT, Merge-Reihenfolge sauber), Auto-Spend/Regex/Migration geprüft, **frisch gewählter Render zeigt korrekt GESPERRT/VERFÜGBAR** — Nachweis-Screenshot steht aus, eigenes Ticket/Wellen-Nachtrag.
 - **Prüfung:** `skill-menu-style.test.mjs` pinnt Umbruch-Regeln + Stack-Block · Suite … · Schnelltor … (vor Merge final).
-- **Git / PR / Release:** Branch `arena/a1f52e38-0815games-github-io` ab `f9ca23e6`; Push, PR `#—`, CI, Merge – wird nachgetragen.
+- **Git / PR / Release:** Branch `arena/a1f52e38-0815games-github-io` ab `f9ca23e6`; Push, **PR `#529`**, CI, Merge – wird nachgetragen.
 - **Offen / nächster Schritt:** Betreiber-Screenshot zur „Freigeschaltet"-Frage abwarten.

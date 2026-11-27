@@ -45,7 +45,7 @@ export const PATCH_LABELS=Object.freeze({
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
   {
-    id:'skills4',build:'20261121-skills4',pr:0,
+    id:'skills4',build:'20261121-skills4',pr:529,
     title:{en:'Skills · Desktop Readability: Words Break Instead of Clipping, Sidebar Stacks on Laptops',de:'Skills · Desktop-Lesbarkeit: Wörter brechen statt abzuschneiden, Sidebar stapelt sich auf Laptops'},
     shipped:[
       {en:'Reported: on desktop the skill text is cut off and the left-to-right rows cannot be read. Card titles, descriptions, requirements, badges and lane headers now break long compounds instead of overflowing their column, and below 1100px the detail sidebar stacks under the list so the training and combo rows get the full window width again. Mobile keeps its approved single-column layout. Cache wave 20261121-skills4.',de:'Gemeldet: auf dem Desktop werden Schriften abgeschnitten und die Zeilen von links nach rechts sind nicht lesbar. Kartentitel, Beschreibungen, Voraussetzungen, Badges und Spaltenköpfe brechen lange Komposita jetzt, statt über die Spalte zu laufen; unter 1100px stapelt sich die Detail-Sidebar unter die Liste, damit Trainings- und Komboreihen wieder die volle Fensterbreite nutzen. Mobile behält die gebilligte Einspalten-Ansicht. Cache-Welle 20261121-skills4.'},
