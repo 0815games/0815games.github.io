@@ -45,7 +45,7 @@ export const PATCH_LABELS=Object.freeze({
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
   {
-    id:'skills3',build:'20261121-skills3',pr:0,
+    id:'skills3',build:'20261121-skills3',pr:525,
     title:{en:'Skills · Per-Class Chrome and a Cleaner Post-Choice Header',de:'Skills · Klasseneigenes Chrome und ein ruhigerer Kopfbereich nach der Wahl'},
     shipped:[
       {en:'Once a class is chosen the skill window wears that class colour: a class band on the header, a tinted frame and kicker, a hairline on the action bar — on top of the class hero, path-coloured chapter panels and lane headers. The class-selection tab row disappears completely once a class is decided, leaving overview, SHOW filter and the tree. Phase 1 before the choice stays exactly as approved.',de:'Ist eine Klasse gewählt, trägt das Fähigkeiten-Fenster deren Farbe: Klassenband am Header, getönter Rahmen und Kicker, Haarlinie an der Aktionsleiste — obendrauf der Klassen-Hero, pfadfarbene Kapitel-Panels und Spaltenköpfe. Die Klassen-Auswahlreihe verschwindet komplett, sobald eine Klasse feststeht; es bleiben Übersicht, SHOW-Filter und der Baum. Phase 1 vor der Wahl bleibt exakt wie gebilligt.'},

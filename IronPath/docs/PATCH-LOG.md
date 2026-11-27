@@ -298,7 +298,7 @@ Nur Darstellung, kein Sim-State, kein Wire-Format, statisch im Terrain-Cache (Re
 - **Git / PR / Release:** Branch `arena/c694b6c4-0815games-github-io` ab `bbc9f7e5`; Push, **PR `#518`**, Suite 1375+2 pr-Platzhalter, CI (`game-regressions`/`interface-browser-smoke`/`database-rules`/party-finalization) — alle Checks grün, **Merge `1b18fb2f` auf `main`**. Doku-PR im Anschluss.
 - **Offen / nächster Schritt:** Sichtung durch den Betreiber; bei Bedarf Folge-Feinlesen (z. B. Klappbarkeit).
 
-## IPL-0144 – Skills pro Klasse: klasseneigenes Chrome + Auswahlreihe verschwindet nach der Wahl (Welle `20261121-skills3`, PR `#—`)
+## IPL-0144 – Skills pro Klasse: klasseneigenes Chrome + Auswahlreihe verschwindet nach der Wahl (Welle `20261121-skills3`, PR `#525`)
 
 - **Was:** Rückmeldung des Betreibers nach IPL-0143 („Optisch sieht das schon mal ganz geil aus"): (1) nach der Klassenwahl soll das Skill-Fenster **pro Klasse optisch eigen** sein, (2) die **Auswahlreihe oben** (Klassen-Tabs) soll **komplett verschwinden**, sobald eine Klasse feststeht — „lässt das ganze sauberer wirken".
   1. **`is-class-themed`-Modus** (nur Phase 2, gesetzt von `renderSkillTree` über `container.closest('#skillDialog')`): Akzent-Band am Header (`inset 0 4px 0` in der Klassenfarbe), Kopfverlauf mit `color-mix`-Tönung, Kicker in Klassenfarbe, Rahmen des Fensters und Haarlinie der Aktionsleiste getönt — dazu der schon vorhandene Klassen-Hero, pfadfarbene Kapitel-Panels, Spaltenköpfe und Kartenkanten. **Phase 1 (vor der Wahl) bleibt pixel-identisch** (`--skill-accent`-Default `#d8c596`, themed-Regeln greifen nur unter `.is-class-themed`).
@@ -306,5 +306,5 @@ Nur Darstellung, kein Sim-State, kein Wire-Format, statisch im Terrain-Cache (Re
 - **Mechanik unangetastet:** Draft/Save/Reset, `parseBuild`, Filter (`#skillFilter` bleibt), aria-Pressed-Logik der Buttons bleibt (Browser-Pins `[data-skill-path]` getAttribute/isHidden laufen weiter — versteckter Vorfahre erfüllt `isHidden`), Zustände + Legend, Mobile-Scroll-Fixes.
 - **i18n:** keine neuen Strings.
 - **Prüfung:** `skill-menu-style.test.mjs` pinnt Default-Akzent, Header-Band/-Tönung, Rahmen-Mix, `[hidden]`-Guard · Suite … · Schnelltor … (vor Merge final).
-- **Git / PR / Release:** Branch `arena/02764ced-0815games-github-io` ab `d3ab5029`; Push, PR `#—`, CI, Merge – wird nachgetragen.
+- **Git / PR / Release:** Branch `arena/02764ced-0815games-github-io` ab `d3ab5029`; Push, **PR `#525`**, CI, Merge – wird nachgetragen.
 - **Offen / nächster Schritt:** Sichtung; auf Wunsch Intensität der Klassentönung nachjustieren.
