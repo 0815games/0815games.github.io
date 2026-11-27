@@ -1,5 +1,38 @@
 # CHANGELOG – Chroniken der Schattengruft
 
+## 2026-11-27 – Lade-Hänger am Handy behoben (0.10.2)
+
+- **Fehlerbild:** Am Handy blieb das Spiel beim Laden stehen; sichtbar war nur das
+  Intro mit „v0.10.2“. Auf dem Rechner trat es nicht auf.
+- **Ursache:** Eine Endlosschleife über Mikrotasks. `paint()` in
+  `js/systems/world3d-mode.js` schrieb `textContent`, `title` und Attribute am
+  3D-Schalter. Jede Zuweisung an `textContent` ist im Browser **immer** eine
+  `childList`-Mutation – auch wenn der Text gleich bleibt. Der `MutationObserver`
+  auf `document.body` (`subtree`) sah das als fremde Änderung, rief `schedule()`
+  und damit erneut `paint()` auf. Die Seite blieb in dieser Schleife hängen und
+  zeichnete nichts mehr. Auf dem Rechner blieb die Schleife wegen der schnelleren
+  Abarbeitung oft unbemerkt; am Handy fror die Seite ein.
+- **Behebung, zwei Ebenen:**
+  1. `paint()` verwirft seine eigenen Datensätze sofort mit `observer.takeRecords()`,
+     bevor der Beobachter sie sieht.
+  2. `paintNow()` schreibt nur noch, wenn sich ein Wert wirklich ändert. Das
+     verringert die Mutationen zusätzlich und hält den Schalter ruhig.
+- **Zweite Ursache entschärft:** Das Laden der 3D-Bibliothek von jsdelivr hatte
+  keine Zeitgrenze. Ein hängendes CDN (Mobilfunk, Captive Portal) hätte den Start
+  unbegrenzt blockiert. Nach 12 s bleibt es jetzt bei 2D, das Spiel startet weiter.
+- **Cache unabhängig von der Anzeige-Version:** Der Service-Worker-Cache hieß
+  `schattengruft-v0.10.2`. Da die Version bewusst nicht bei jeder Änderung steigt,
+  konnte ein alter Stand so nie aufgeräumt werden. Der Cache heißt jetzt
+  `schattengruft-cache-r2`; `CACHE_REVISION` hochzählen räumt alte Stände ab.
+- **Tests, die den Fehler wirklich finden:** `boot-smoke.mjs` startete nur den
+  2D-Fall und konnte die Schleife deshalb nicht sehen. Der Observer-Stub in den
+  Tests meldete eigene `textContent`-Schreibvorgänge gar nicht. Beides ist
+  behoben: Der Stub zählt jede Zuweisung wie ein Browser, und `boot-smoke` prüft
+  zusätzlich den Start mit gespeicherter 3D-Vorliebe. Neue Suite
+  `tests/three-mode-loop.mjs` prüft Ruhezustand, Einschalten und Kampfstart.
+  Gegenprobe: Ohne den Fix melden beide Tests 300 bzw. 200 Runden ohne Ruhe.
+- **Version bleibt 0.10.2.** Es ist eine Fehlerbehebung ohne neue Funktion.
+
 ## 2026-11-26 – 3D-Ansicht im Spiel verdrahtet
 
 - **3D-Schalter im Spiel:** Statt des Testschalters über der Karte gibt es jetzt einen

@@ -135,16 +135,42 @@ export function install3DMode(stateRef = state) {
   }
 
   function paint() {
+    if (painting) return;
+    painting = true;
+    try {
+      paintNow();
+    } finally {
+      painting = false;
+      // Eigene Schreibvorgänge sofort verwerfen, bevor der Beobachter sie
+      // sieht. Ohne das weckt sich die Darstellung selbst: jede Zuweisung an
+      // textContent ist im Browser eine Mutation, auch bei gleichem Text.
+      observer?.takeRecords?.();
+    }
+  }
+
+  function paintNow() {
     const api = api3d();
     const on = !!api?.active;
-    but3d.textContent = on ? '3D ein' : '3D aus';
-    but3d.setAttribute('aria-pressed', String(on));
-    but3d.title = on
-      ? '3D-Ansicht ausschalten (2D)'
-      : '3D-Ansicht einschalten';
+    const text = on ? '3D ein' : '3D aus';
+
+    // Nur schreiben, wenn sich etwas ändert. Jede Zuweisung an textContent ist
+    // im Browser eine Mutation; unnötige Schreibvorgänge kosten nur Arbeit.
+    if (but3d.textContent !== text) but3d.textContent = text;
+    if (but3d.getAttribute('aria-pressed') !== String(on)) {
+      but3d.setAttribute('aria-pressed', String(on));
+    }
+
+    const tip = on ? '3D-Ansicht ausschalten (2D)' : '3D-Ansicht einschalten';
+    if (but3d.title !== tip) but3d.title = tip;
+
     but3d.classList.toggle('on', on);
-    but3d.disabled = !!api?.error;
-    but3d.setAttribute('aria-label', label());
+    if (but3d.disabled !== !!api?.error) but3d.disabled = !!api?.error;
+
+    const name = label();
+    if (but3d.getAttribute('aria-label') !== name) {
+      but3d.setAttribute('aria-label', name);
+    }
+
     syncLayout();
   }
 
@@ -170,16 +196,33 @@ export function install3DMode(stateRef = state) {
   // Kampf, Tod und Screenwechsel ändern Klassen am DOM, nicht zwingend ein
   // Eingabeereignis. boss-loot.js nutzt dasselbe Muster.
   let scheduled = false;
+
+  // Wahr, solange paint() das DOM anfasst. Der Beobachter-Callback läuft zwar
+  // erst nach dem synchronen Code, sieht aber die Datensätze trotzdem – die
+  // Prüfung unten schützt zusätzlich zu takeRecords() in paint().
+  let painting = false;
+
   const schedule = () => {
-    if (scheduled) return;
+    if (scheduled || painting) return;
     scheduled = true;
     queueMicrotask(() => {
       scheduled = false;
-      paint();
+      if (!painting) paint();
     });
   };
 
-  const observer = new MutationObserver(schedule);
+  const observer = new MutationObserver(() => {
+    // Eigene Schreibvorgänge verwerfen. `textContent` zuzuweisen ist immer
+    // eine childList-Mutation – auch wenn der Text gleich bleibt. Ohne diese
+    // Prüfung weckt sich paint() selbst und die Seite friert ein (am Handy
+    // als „hängt beim Laden" sichtbar).
+    if (painting) {
+      observer.takeRecords();
+      return;
+    }
+    // Nur echte Spieländerungen zählen: Kampfbeginn, Kampfende, Tod.
+    schedule();
+  });
   observer.observe(document.body, {
     childList: true,
     subtree: true,

@@ -210,9 +210,14 @@ body:not(.world3d-combat) #combat-stage{display:none}
   loading=true;
 
   try{
-   const THREE=await import(
-    'https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js'
-   );
+   // Zeitgrenze: Ein haengendes CDN (Mobilfunk, Captive Portal) darf den
+   // Spielstart nicht blockieren. Nach 12 s bleibt es bei 2D.
+   const THREE=await Promise.race([
+    import('https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js'),
+    new Promise((_,reject)=>setTimeout(
+     ()=>reject(new Error('3D-Bibliothek: Zeitgrenze überschritten')),12000
+    ))
+   ]);
    const node=document.createElement('canvas');
    node.className='world3d-canvas';
    node.setAttribute('aria-hidden','true');
