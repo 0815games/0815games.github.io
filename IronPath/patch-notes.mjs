@@ -45,7 +45,7 @@ export const PATCH_LABELS=Object.freeze({
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
   {
-    id:'skills2',build:'20261121-skills2',pr:0,
+    id:'skills2',build:'20261121-skills2',pr:518,
     title:{en:'Skills · Numbered Chapter Plates, Path A/B Column Headers, Progress Chips',de:'Skills · Nummerierte Kapitel-Plaketten, Pfad-A/B-Spaltenköpfe, Fortschritts-Chips'},
     shipped:[
       {en:'The class tree reads as four numbered chapters (01 Training, 02 Specialist paths, 03 Mastery, 04 Class combos), each in its own recessed panel with a brass number plate, a readable purpose line and a progress chip. The two specialist lanes get real column headers (PATH A / PATH B with the specialist name), so doctrines no longer float between the paths. Mechanic untouched: same cards, same states, same draft flow.',de:'Der Klassenbaum liest sich als vier nummerierte Kapitel (01 Training, 02 Spezialistenpfade, 03 Meisterschaft, 04 Klassenkombos), jedes in einem eigenen vertieften Panel mit Messing-Nummernplakette, lesbarem Zweck-Text und Fortschritts-Chip. Die beiden Spezialisten-Spalten echte Spaltenköpfe (PFAD A / PFAD B mit Spezialisten-Namen) — Doktrinen schweben nicht mehr zwischen den Pfaden. Mechanik unberührt: gleiche Karten, gleiche Zustände, gleicher Entwurfsfluss.'},
