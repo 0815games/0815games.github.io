@@ -1283,3 +1283,12 @@ Ereignis ergänzt.
 - Befund 3 (offen): Die Zeit bis Stufe 10 streut stark nach Seed und Biom (ca. 8 bis 15 h), das Ziel ist 11 bis 13 h. Ein einzelner Stellhebel (Schwelle `townLevelThresholds[9]`, XP-Faktor `riverlands`) verschiebt das Mittel, aber nicht die Streuung. Stand bester Lauf: 12 Verstöße von 60 Szenarien. Die Ausgangswirtschaft hat mit den Terrain-Fixes 19 Verstöße.
 - Status: NICHT grün. Die Wirtschaft ist nicht fertig nachjustiert. Nächster Schritt: Ursache der Streuung im Bot oder in der Startphase finden, nicht nur Zahlen verschieben.
 - Tests: `npm test` 197/197 grün.
+
+### TTT-0080 – Balance Schritt 2: Bot bewertet nicht verkaufbare Waren kleiner, Stufe-10-Schwelle
+
+- Messung je Schritt (60 Szenarien, 30 Tage, Verstöße gegen den Korridor): Ausgangslage mit Terrain-Fixes 19, nach Bot-Bewertung 13, nach Schwelle 2.250.000 für Stufe 10: 8.
+- Änderung 1 (Bot, `scripts/simulate-balance.mjs`): Eine Ware, die nicht verkauft wird (Karg), zählt bei der Bewertung eines Erzeugers nur mit 30 % des Preises. Vorher hat der Bot Erzeuger gebaut, deren Ware liegen blieb.
+- Änderung 2 (Wirtschaft, `data/economy.json`): `townLevelThresholds[9]` von 2.420.000 auf 2.250.000.
+- Befund: Die Streuung der Stufe-10-Zeit ist noch etwa 4 h (10 bis 14,3 h). Das Korridorfenster ist 2 h. Ein Mittelwert-Hebel reicht nicht.
+- Status: NICHT grün, 8 von 60 außerhalb. Nächster Schritt: Verkaufsbewertung im Bot (Vorrat sitzt immer bei der Reserve von 20, daher blind), und die Karg-Frage (Designentscheidung).
+- Tests: `npm test` siehe Commit.

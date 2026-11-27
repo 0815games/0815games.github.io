@@ -46,6 +46,8 @@ const HOUSE_NEED = 0.6;
 const HOUSE_MIN_PRODUCERS = 8;
 const HOUSE_LAND_RESERVE = 10;
 const HOUSE_MIN_LEVEL = 5;
+// Wert einer nicht verkaufbaren Ware im Vergleich zum Grundpreis (Schätzung für den Händler).
+const UNSOLD_VALUE = 0.3;
 
 // Korridore aus GAME_PLAN 4.17 (kumuliert). Die Einheit steht bei jedem Meilenstein.
 const CORRIDOR = {
@@ -80,7 +82,9 @@ function botAct(state, ctx) {
  * Ohne diese Regel baut der Bot nur Getreide und bleibt bei 63 Gebäuden stehen.
  */
 function producerScore(s, d, def, rate, cost) {
-  const price = d.resources[def.resource].basePrice;
+  // Karg-Ressourcen verkauft das Rathaus nicht automatisch (nur Händler). Ihr Wert ist deshalb klein.
+  const sellable = s.sellEnabled?.[def.resource] !== false;
+  const price = d.resources[def.resource].basePrice * (sellable ? 1 : UNSOLD_VALUE);
   const have = s.stock[def.resource] ?? 0;
   const demand = 1 / (1 + have / 50);
   return (rate * price * demand) / cost.coins;
@@ -309,7 +313,9 @@ export function simulate({ biome, days, mapSize = BASE_MAP, seed = 1234 }) {
     if (t.terrain === 'meadow') open.meadowFree++;
     else if (open[t.terrain] !== undefined) open[t.terrain]++;
   }
-  const diag = { open, stock: Object.fromEntries(Object.entries(state.stock).map(([k, v]) => [k, Math.floor(v)])), townXp: Math.floor(state.townXp) };
+  const buildings = {};
+  for (const t of Object.values(state.tiles)) if (t.building) buildings[t.building.id] = (buildings[t.building.id] ?? 0) + 1;
+  const diag = { buildings, open, stock: Object.fromEntries(Object.entries(state.stock).map(([k, v]) => [k, Math.floor(v)])), townXp: Math.floor(state.townXp) };
   return {
     biome,
     mapSize,
