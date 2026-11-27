@@ -1,4 +1,4 @@
-import {getMap} from './maps.mjs?v=20261121-padart1';
+import {getMap} from './maps.mjs?v=20261121-afkmsg1';
 // Client-only effects. They never affect commands, damage, rewards or match state.
 export function createCombatEffects({clock=()=>performance.now(),reducedMotion=false}={}){
   let effects=[],cooldowns=null,comboSeqs=null,previous=null;
