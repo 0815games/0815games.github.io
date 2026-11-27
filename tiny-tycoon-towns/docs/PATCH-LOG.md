@@ -1308,3 +1308,17 @@ Ereignis ergänzt.
 - Balance (60 Szenarien, 30 Tage): Mit der neuen Regel 76 Verstöße. Ursache: Der Verkaufsdurchsatz des Rathauses (20/min) wird auf alle verkaufbaren Waren verteilt. Mit mehr verkaufbaren Waren bekommt jede weniger, Stufe 5 und Stufe 10 verlangsamen sich, einige Städte bleiben bei Stufe 8 oder 9 stehen.
 - Gegenversuch: Durchsatz 30/min: 69 Verstöße. Zurückgenommen (bleibt 20).
 - Status: NICHT grün. Die Regel braucht eine Neuabstimmung mehrerer Werte (Durchsatz, Schwelle, Reserve oder Verteilung). Das ist ein größerer Schritt, nicht als Einzelstellschraube.
+
+### TTT-0083 – Karg-Verkauf: Stufenlogik und Schwelle (nicht grün)
+
+- Messkette (60 Szenarien, 30 Tage, Verstöße gegen den Korridor), jeder Schritt einzeln gemessen:
+  - Karg-Verkauf, Durchsatz geteilt: 76
+  - Durchsatz Rathaus 30 statt 20: 69 (zurückgenommen)
+  - Stufenlogik: erst normale Waren, Karg mit dem Rest: 67
+  - Stufenlogik + Schwelle Stufe 10 2.000.000: 53 (**Stand dieses Commits**)
+  - zusätzlich Karg-Reserve 100: 66 (zurückgenommen)
+  - zusätzlich Sättigung je Ware (ab 10 Erzeugern): 62 (zurückgenommen)
+- Befund: Der Bot baut mit dem Karg-Verkauf andere Mischungen (z. B. 24 Imkereien, 12 Steinbrüche, 9 Farmen, Korn 100 ungenutzt). Stufe 5 und Stufe 10 verschieben sich. Ein einzelner Stellhebel reicht nicht.
+- Vergleich: Ohne Karg-Verkauf (Stand TTT-0080) waren es 8 Verstöße.
+- Status: NICHT grün. Für eine grüne Balance braucht es eine Überarbeitung der Erzeuger-Bewertung im Bot (Wert aus tatsächlichem Umsatz statt Vorrat), keine weitere Einzelstellschraube.
+- Tests: `npm test` 198 von 198 grün.
