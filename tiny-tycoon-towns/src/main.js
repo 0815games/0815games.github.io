@@ -4,38 +4,38 @@ import {
   createTown, newSeed, chooseBiome, placeBuilding, upgradeBuilding,
   toggleSell, buyOffer, advance, hydrateTown, setTutorialStep, settleConvoyAction,
   plantField, removeField, renewField, setWorkerAssignment, staffing,
-} from './domain/engine.js?v=20261126-arbeit1';
-import { forestHealth, fishStock, fishingGround, soilOf, FULL } from './domain/economy.js?v=20261126-arbeit1';
+} from './domain/engine.js?v=20261127-info1';
+import { forestHealth, fishStock, fishingGround, soilOf, FULL } from './domain/economy.js?v=20261127-info1';
 import {
   checkPlacement, placementHint, fieldsOf, plantableNeighbours, fieldSlots,
-} from './domain/placement.js?v=20261126-arbeit1';
-import { startConvoy } from './domain/convoys.js?v=20261126-arbeit1';
-import { tradeFormHtml, convoyListHtml, previewFor } from './trade-ui.js?v=20261126-arbeit1';
+} from './domain/placement.js?v=20261127-info1';
+import { startConvoy } from './domain/convoys.js?v=20261127-info1';
+import { tradeFormHtml, convoyListHtml, previewFor } from './trade-ui.js?v=20261127-info1';
 import {
   productionMultiplier, ratePerMin, buildCost, storageCap, classOf,
-} from './domain/economy.js?v=20261126-arbeit1';
-import { GRID, keyOf, inBounds, isUnlocked, gridSize } from './domain/grid.js?v=20261126-arbeit1';
-import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261126-arbeit1';
-import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261126-arbeit1';
+} from './domain/economy.js?v=20261127-info1';
+import { GRID, keyOf, inBounds, isUnlocked, gridSize } from './domain/grid.js?v=20261127-info1';
+import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261127-info1';
+import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261127-info1';
 import {
   PERKS, canFoundCharter, grantCharters, buyPerk, perkEffect, perkLevel, availableCharters, emptyCharter,
   applyCharterToData, reconcileCrowns,
-} from './domain/charters.js?v=20261126-arbeit1';
+} from './domain/charters.js?v=20261127-info1';
 const SEEN_NOTES_KEY = 'ttt:notes-seen';
-import { withTimeout } from './async-util.js?v=20261126-arbeit1';
-import { checkTownName } from './town-names.js?v=20261126-arbeit1';
-import { friendsShell, mountFriends } from './friends-ui.js?v=20261126-arbeit1';
-import { createBoard } from './world/board.js?v=20261126-arbeit1';
-import { createLoginScene } from './world/login-scene.js?v=20261126-arbeit1';
-import { TUTORIAL_STEPS, HELP_SECTIONS, CHECK_LABELS, STATE_TASKS, tutorialResume, tutorialStored } from './tutorial.js?v=20261126-arbeit1';
-import { tutorialSpot, builtSpot } from './domain/tutorialSpot.js?v=20261126-arbeit1';
-import { createVersionUI } from './version-ui.mjs?v=20261126-arbeit1';
-import { startAfkWatch, showAfkOverlay } from './afk.js?v=20261126-arbeit1';
-import { fullResources, fillPercent } from './stock-dock.js?v=20261126-arbeit1';
-import { nextRequestToShow, requestBadgeLabel, canShowRequestPopup } from './friend-requests.js?v=20261126-arbeit1';
-import { houseCapacity, staffFactor, tutorialTaskDone } from './domain/settlement.js?v=20261126-arbeit1';
+import { withTimeout } from './async-util.js?v=20261127-info1';
+import { checkTownName } from './town-names.js?v=20261127-info1';
+import { friendsShell, mountFriends } from './friends-ui.js?v=20261127-info1';
+import { createBoard } from './world/board.js?v=20261127-info1';
+import { createLoginScene } from './world/login-scene.js?v=20261127-info1';
+import { TUTORIAL_STEPS, HELP_SECTIONS, CHECK_LABELS, STATE_TASKS, tutorialResume, tutorialStored } from './tutorial.js?v=20261127-info1';
+import { tutorialSpot, builtSpot } from './domain/tutorialSpot.js?v=20261127-info1';
+import { createVersionUI } from './version-ui.mjs?v=20261127-info1';
+import { startAfkWatch, showAfkOverlay } from './afk.js?v=20261127-info1';
+import { fullResources, fillPercent } from './stock-dock.js?v=20261127-info1';
+import { nextRequestToShow, requestBadgeLabel, canShowRequestPopup } from './friend-requests.js?v=20261127-info1';
+import { houseCapacity, staffFactor, tutorialTaskDone } from './domain/settlement.js?v=20261127-info1';
 
-const BUILD = '20261126-arbeit1';
+const BUILD = '20261127-info1';
 console.info(`Tiny Tycoon Towns ${BUILD}`);
 const LAST_BIOME_KEY = 'ttt.lastBiome';
 const LOCAL_KEY = (uid) => `ttt.save.v1.${uid}`;
@@ -129,7 +129,7 @@ const REMOTE_TIMEOUT_MS = 10_000;
 async function loadData() {
   const names = ['resources', 'biomes', 'buildings', 'economy', 'merchant', 'npcs'];
   const parts = await Promise.all(names.map((n) =>
-    fetch(`data/${n}.json?v=20261126-arbeit1`).then((r) => {
+    fetch(`data/${n}.json?v=20261127-info1`).then((r) => {
       if (!r.ok) throw new Error(`data/${n}.json: HTTP ${r.status}`);
       return r.json();
     })));
@@ -175,7 +175,7 @@ async function boot() {
   window.addEventListener('offline', updateSync);
 
   try {
-    cloud = await import('./cloud.js?v=20261126-arbeit1');
+    cloud = await import('./cloud.js?v=20261127-info1');
   } catch {
     showFatal('Das Konto-System konnte nicht geladen werden. Ohne Anmeldung lässt sich nicht spielen. Bitte Verbindung prüfen und neu laden.');
     return;
@@ -618,7 +618,11 @@ function bindStatic() {
   });
   $('#panel').addEventListener('click', onPanelClick);
   $('#stock-btn').addEventListener('click', openStock);
-  $('#xp-bar')?.addEventListener('click', () => markTutorial('xp'));
+  // Die Stadtlevel-Pille öffnet ein Infofenster; das zählt auch für das Tutorial.
+  $('#xp-bar')?.closest('.map-pill')?.addEventListener('click', () => {
+    markTutorial('xp');
+    openLevelInfo();
+  });
   $('#merchant')?.addEventListener('click', () => markTutorial('merchant'));
   $('#dock-toggle').addEventListener('click', () => setDockOpen($('#dock-body').hidden));
   setDockOpen(window.matchMedia?.('(min-width: 900px)').matches ?? false); // Desktop offen, Mobile eingeklappt
@@ -985,6 +989,36 @@ function minimizeTutorialForPanel() {
   renderTutorialStep();
 }
 
+/** Stadtlevel: Fortschritt, nächstes Raster und woher Erfahrung kommt. */
+function openLevelInfo() {
+  if (!state) return;
+  const th = data.economy.townLevelThresholds;
+  const lvl = state.townLevel;
+  const lo = th[lvl - 1] ?? 0;
+  const hi = th[lvl];
+  const progress = hi === undefined
+    ? 'Du hast das höchste Stadtlevel erreicht.'
+    : `${fmt0(state.townXp - lo)} von ${fmt0(hi - lo)} Erfahrung bis Stadtlevel ${lvl + 1} (insgesamt ${fmt0(state.townXp)} XP).`;
+  const sizes = Object.entries(data.economy.gridSizeByTownLevel).map(([l, s]) => [Number(l), s]).sort((a, b) => a[0] - b[0]);
+  const next = sizes.find(([l]) => l > lvl);
+  const nextGrid = next ? `Ab Stadtlevel ${next[0]} wächst das Raster auf ${next[1]} × ${next[1]} Felder.` : 'Das Raster hat seine größte Stufe erreicht.';
+  const xp = data.economy.xp;
+  openDialog(`<div class="dlg-body help">
+    <h2 id="dlg-title">Stadtlevel ${lvl}</h2>
+    <p>${esc(progress)}</p>
+    <p>${esc(nextGrid)}</p>
+    <h3>Woher Erfahrung kommt</h3>
+    <ul>
+      <li>Gebäude bauen: ${xp.buildingPlaced} XP</li>
+      <li>Gebäude ausbauen: ${xp.upgradePerNewLevel} XP je neuer Stufe</li>
+      <li>Eberhard kaufen: ${xp.merchantPurchase} XP je Kauf</li>
+      <li>Handelsfahrt abgeschlossen: ${xp.convoyDelivered} XP</li>
+    </ul>
+    <p class="row"><button type="button" id="level-info-close" class="primary">Schließen</button></p>
+  </div>`);
+  $('#level-info-close').addEventListener('click', closeDialog);
+}
+
 /** Hilfe-Übersicht: alle Abschnitte, jederzeit über den Hilfe-Knopf. */
 function showHelp() {
   markTutorial('help');
@@ -1276,12 +1310,17 @@ function workersHtml(b, x, y) {
       const mine = manual.find((m) => m.house === hk)?.n ?? 0;
       const pop = ht.building.pop ?? cfg.startPop;
       const free = Math.max(0, pop - boundElsewhere(hk));
+      // Warum das + gesperrt ist, steht direkt daneben.
+      const blockedWhy = mine < free && n < cfg.workSlots ? '' :
+        (n >= cfg.workSlots ? 'Betrieb ist voll'
+          : free === 0 && pop > 0 ? 'Alle Bewohner dieses Hauses sind fest anderen Betrieben zugewiesen. Dort mit − einen lösen.'
+          : 'Kein freier Bewohner in diesem Haus');
       html += `<li class="friend-card"><span>Haus ${hx + 1}, ${hy + 1} · ${pop} Bewohner · ${free} für diesen Betrieb</span>
         <span class="friend-actions">
           <button type="button" class="ghost" data-action="worker" data-tx="${hx}" data-ty="${hy}" data-n="${Math.max(0, mine - 1)}" ${mine > 0 ? '' : 'disabled'} aria-label="Einen Arbeiter weniger">−</button>
           <strong>${mine}</strong>
-          <button type="button" class="ghost" data-action="worker" data-tx="${hx}" data-ty="${hy}" data-n="${mine + 1}" ${mine < free && n < cfg.workSlots ? '' : 'disabled'} aria-label="Einen Arbeiter mehr">+</button>
-        </span></li>`;
+          <button type="button" class="ghost" data-action="worker" data-tx="${hx}" data-ty="${hy}" data-n="${mine + 1}" ${blockedWhy ? 'disabled' : ''} aria-label="Einen Arbeiter mehr">+</button>
+        </span>${blockedWhy ? `<small class="muted">${esc(blockedWhy)}</small>` : ''}</li>`;
     }
   }
   if (!any) html += '<li class="small muted">Kein Wohnhaus in Reichweite (3 Felder).</li>';
