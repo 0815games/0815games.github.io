@@ -45,7 +45,7 @@ export const PATCH_LABELS=Object.freeze({
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
   {
-    id:'padart1',build:'20261121-padart1',pr:0,
+    id:'padart1',build:'20261121-padart1',pr:538,
     title:{en:'Field · Build Pads Re-Issued in the Tower Art Style',de:'Spielfeld · Build Pads im Turm-Stil neu ausgestattet'},
     shipped:[
       {en:'Operator backlog item "Optik anpassen beim rest - Build Pads": the emplacement plate under every tower was still the old V2 gunpit while the towers, bunker and all field dressing had already been re-issued in the tower style (wave towerdeco1). The plate is now regenerated in that same language - thick ink contours, painterly concrete slabs, earth-and-stone plinth with sandbags, dark dugout pit - cut out with the established white-to-alpha pipeline and shipped under the same file name. Cache wave 20261121-padart1 so returning players get the new plate too.',de:'Backlog-Punkt des Betreibers „Optik anpassen beim Rest - Build Pads": die Geschützstellungs-Platte unter jedem Turm war noch die alte V2-gunpit, während Türme, Bunker und gesamtes Feld-Dressing längst im Turm-Stil neu ausgestattet waren (Welle towerdeco1). Die Platte ist jetzt in derselben Sprache neu erzeugt - dicke Tusche-Konturen, malerische Betonplatten, Erd-und-Stein-Plinth mit Sandsäcken, dunkler Schützengraben - mit der etablierten Weiß-Alpha-Pipeline freigestellt und unter demselben Dateinamen ausgeliefert. Cache-Welle 20261121-padart1, damit auch wiederkommende Spieler die neue Platte sehen.'},

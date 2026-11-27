@@ -295,7 +295,7 @@ Nur Darstellung, kein Sim-State, kein Wire-Format, statisch im Terrain-Cache (Re
 - **Git / PR / Release:** Branch `arena/e8c58d12-0815games-github-io` ab `716dc9d6`; Commits `c0c1635` (Surgery/CSS/Bump) + Struktur-Rebuild, **PR `#533`**, CI-Lauf `46027978321` grün (alle Browser-Jobs nach; der erste Lauf `46022163078` war durch eine defekte Seitenstruktur rot — Kopf außerhalb der Section, Side-Wrapper spannte über `</section>` — Logs nicht abrufbar, lokal rebuildet), **Merge `487a1b03`**, Pages `46029435252` success.
 - **Offen / nächster Schritt:** Betreiber-Backlog danach: Build-Pad-Optik, AFK-Popup/Logout-Meldung, Admin-Integration.
 
-## IPL-0148 – Build-Pads: Geschützstellungs-Platte im Turm-Stil neu ausgestattet (Welle `20261121-padart1`, PR `#000`)
+## IPL-0148 – Build-Pads: Geschützstellungs-Platte im Turm-Stil neu ausgestattet (Welle `20261121-padart1`, PR `#538`)
 
 - **Zeit / Quelle:** Sitzungsdatum 2026-11-21 UTC; Betreiber-Auftrag (4-Punkte-Nachricht): „Optik anpassen beim rest - Build Pads".
 - **Block / Ziel:** Kein Spiel-Block; reine Darstellung auf der Spielmap. Kein neuer Zustand auf dem Draht; Reduced-Motion- und Wetter-Schalter unberührt; keine Mechanik- oder Handler-Änderung. Sichtung macht der Betreiber („Mach alles Live, ich teste dann").
@@ -305,5 +305,5 @@ Nur Darstellung, kein Sim-State, kein Wire-Format, statisch im Terrain-Cache (Re
   - `IronPath/patch-notes.mjs`: Eintrag `padart1` an die Spitze von `RELEASED_PATCHES` (pr-Platzhalter bis zur PR-Nummer); die Open-Zeile von `menu1` nennt jetzt nur noch die Admin-Integration.
   - Cache-Welle `20261121-padart1` (`bump … --from 20261121-menu1 --apply`,96 Dateien,7/7 Anker) - der `sprite()`-Loader in `cartoon-art.mjs` hängt am Token, damit auch wiederkommende Spieler die neue Platte laden.
 - **Prüfung:** Suite und Schnelltor vor dem PR: **1379 grün /2 rot (nur pr:0-Platzhalter) /1 übersprungen**; die Pins `fillText('BUILD')` und das Verbot von `#ffed70` laufen unverändert weiter (kein Zeichen-Code angefasst). Endstand nach PR-Nummer wird nachgetragen.
-- **Git / PR / Release:** Branch `arena/840f9060-0815games-github-io` ab `f8de8cfb`; Push, **PR `#000`**, CI, Merge – wird nachgetragen.
+- **Git / PR / Release:** Branch `arena/840f9060-0815games-github-io` ab `f8de8cfb`; Push, **PR `#538`**, CI, Merge – wird nachgetragen.
 - **Offen / nächster Schritt:** Betreiber-Sichtprüfung der neuen Platte auf allen fünf Boden-Themen nach hartem Neu-Laden; danach Backlog-Punkte AFK-Popup/„ausgeloggt"-Meldung und Admin-Panel-Vollintegration.
