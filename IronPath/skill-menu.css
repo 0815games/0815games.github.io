@@ -1,6 +1,10 @@
 /* Skills: a compact in-game loadout menu, not a scrollable map. */
-#skillDialog{width:min(1180px,calc(100vw - 24px));max-width:1180px;max-height:calc(100dvh - 24px);padding:0;background:linear-gradient(180deg,#182b21,#122019);border:1px solid #71836a;border-radius:6px;color:#f3edda;box-shadow:0 28px 90px #000c;overflow:auto;font-family:Arial,sans-serif}
+#skillDialog{--skill-accent:#d8c596;width:min(1180px,calc(100vw - 24px));max-width:1180px;max-height:calc(100dvh - 24px);padding:0;background:linear-gradient(180deg,#182b21,#122019);border:1px solid #71836a;border-radius:6px;color:#f3edda;box-shadow:0 28px 90px #000c;overflow:auto;font-family:Arial,sans-serif}
 #skillDialog .skills-header{display:flex;justify-content:space-between;align-items:flex-start;padding:25px 28px 19px;background:linear-gradient(90deg,#1e3529,#152820 70%);border-bottom:1px solid #63785f}
+#skillDialog.is-class-themed{border-color:#71836a;border-color:color-mix(in srgb,var(--skill-accent) 45%,#71836a)}
+#skillDialog.is-class-themed .skills-header{box-shadow:inset 0 4px 0 var(--skill-accent);background:linear-gradient(90deg,#1e3529,#152820 70%);background:linear-gradient(90deg,color-mix(in srgb,var(--skill-accent) 24%,#1e3529),#152820 72%)}
+#skillDialog.is-class-themed .skills-kicker{color:#e1c683;color:var(--skill-accent)}
+#skillDialog.is-class-themed .skill-actions{border-top-color:#61775b;border-top-color:color-mix(in srgb,var(--skill-accent) 40%,#61775b)}
 #skillDialog .skills-kicker{display:block;color:#e1c683;font-size:10px;font-weight:800;letter-spacing:.16em}
 #skillDialog .skills-header h2{margin:6px 0 5px;color:#f6eed8;font:700 clamp(1.5rem,3vw,1.95rem)/1.1 Georgia,serif}
 #skillDialog .skills-header p{margin:0;color:#acbdb1;font-size:13px}
@@ -8,6 +12,7 @@
 #skillDialog .skills-overview{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:18px 24px 0;padding:14px 17px;background-color:#1d3229;border:1px solid #c9b678;border-radius:3px;background-image:radial-gradient(circle at 9px 9px,#9a9577 0 2.5px,#403e31 3.2px,transparent 3.8px),radial-gradient(circle at calc(100% - 9px) 9px,#9a9577 0 2.5px,#403e31 3.2px,transparent 3.8px),radial-gradient(circle at 9px calc(100% - 9px),#9a9577 0 2.5px,#403e31 3.2px,transparent 3.8px),radial-gradient(circle at calc(100% - 9px) calc(100% - 9px),#9a9577 0 2.5px,#403e31 3.2px,transparent 3.8px),linear-gradient(180deg,#223a2c,#182b21)}
 #skillDialog .skills-overview div{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}#skillDialog .skills-overview span{font-size:10px;letter-spacing:.11em;color:#a8c4ad;font-weight:700}#skillDialog .skills-overview strong{color:#f3ddb0;font-size:13px;letter-spacing:.03em}#skillDialog .skills-overview .skills-overview-note{color:#b1c1b3;letter-spacing:0;font-weight:400;font-size:12px}
 #skillDialog .skills-tabs{display:flex;gap:6px;overflow-x:auto;padding:16px 24px 6px;scrollbar-width:thin}
+#skillDialog .skills-tabs[hidden]{display:none}
 #skillDialog .skills-tabs button{flex:none;width:auto;min-height:42px;margin:0;padding:0 15px;border:1px solid #61775b;border-radius:2px;background:#152b21;color:#d9d3b6;box-shadow:none;font:800 10px/1 'Arial Narrow','DIN Alternate',Arial,sans-serif;letter-spacing:.12em}
 #skillDialog .skills-tabs button[aria-pressed=true]{background:linear-gradient(180deg,#d8c488,#c3ad6c);border-color:#e8d69a;color:#1a2a20;box-shadow:inset 0 1px #fff5}
 #skillDialog .skills-filter{display:flex;align-items:center;gap:9px;padding:8px 24px 0}#skillDialog .skills-filter label{font-size:10px;letter-spacing:.1em;color:#8fa79a;font-weight:bold}#skillDialog .skills-filter select:not([hidden]){width:auto;min-height:38px;margin:0;padding:6px 30px 6px 10px;background:#203029;border:1px solid #4b6354;color:#e4eadf;border-radius:5px;font-size:12px}#skillDialog select[hidden]{display:none}

@@ -1,8 +1,8 @@
-import {nodeMatches} from '../core/skill-planner.mjs?v=20261121-skills2';
+import {nodeMatches} from '../core/skill-planner.mjs?v=20261121-skills3';
 // Presentation only: all progression and transactions remain in the existing models.
-import {SKILL_PATHS,SKILL_PATH_MAP,pointsLeft,classNodes,webReady,webRequirement} from '../core/skills.mjs?v=20261121-skills2';
-import {CAPSTONES} from '../core/skill-combos.mjs?v=20261121-skills2';
-import {TOWER_CLASS_PATHS} from '../core/tower-class-paths.mjs?v=20261121-skills2';
+import {SKILL_PATHS,SKILL_PATH_MAP,pointsLeft,classNodes,webReady,webRequirement} from '../core/skills.mjs?v=20261121-skills3';
+import {CAPSTONES} from '../core/skill-combos.mjs?v=20261121-skills3';
+import {TOWER_CLASS_PATHS} from '../core/tower-class-paths.mjs?v=20261121-skills3';
 const NS='http://www.w3.org/2000/svg';
 export const CLASS_COLORS={
   assault:'#d89970',
@@ -40,7 +40,7 @@ function classArtElement(document,classId,cls='class-art-img'){
   const src=CLASS_ARTWORKS[classId];
   if(!src)return null;
   const img=document.createElement('img');
-  img.src=`${src}?v=20261121-skills2`;
+  img.src=`${src}?v=20261121-skills3`;
   img.alt='';
   img.className=cls;
   img.setAttribute('aria-hidden','true');
@@ -67,6 +67,15 @@ export function towerClassIcon(document,classId,size=26){
 export function renderSkillTree({document,container,build,level,selected,onSelect,filter='all',pathFilter='all',inspector=null,inspectorHome=null,translate=(text,values={})=>text.replace(/\{([A-Za-z]+)\}/g,(m,key)=>values[key]??m)}){
   const scrollTop=container.scrollTop,left=pointsLeft(build,level);
   let chapterNo=0;
+  // Per-class chrome: the dialog picks up the class colour only after the
+  // choice — phase 1 keeps the neutral board look untouched. Stubs without
+  // closest/style (unit harnesses) simply skip this.
+  const themedDialog=container.closest?.('#skillDialog');
+  if(themedDialog){
+    themedDialog.classList?.toggle?.('is-class-themed',!!build.classId);
+    if(build.classId)themedDialog.style?.setProperty?.('--skill-accent',CLASS_COLORS[build.classId]||'#d8c596');
+    else themedDialog.style?.removeProperty?.('--skill-accent');
+  }
   if(inspector&&inspectorHome){inspectorHome.append(inspector);inspector.hidden=true;}
   const board=document.createElement('div');
   board.className='skills-catalogue';
