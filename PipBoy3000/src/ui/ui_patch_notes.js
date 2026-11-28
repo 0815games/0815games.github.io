@@ -33,6 +33,15 @@ window.GameData.offenePunkte = [
 // nicht mit dem, was geplant war.
 window.GameData.RELEASED_PATCHES = [
   {
+    version: '14.0.38',
+    datum: '2026-11-24',
+    title: 'Materialien richtig stapeln',
+    punkte: [
+      'Säuredrüsen, Knochen, Schrott und Upgrade-Materialien werden bis zu 20 Stück gestapelt. Einfache getrennte Stapel in alten Spielständen werden beim Laden zusammengeführt.',
+      'Waffen, Rüstungen und Gegenstände mit besonderen Eigenschaften bleiben getrennt. Die Werkbank berücksichtigt alle Materialstapel; Zerlegen und Einkaufen schützen vor Materialverlust.'
+    ]
+  },
+  {
     version: '14.0.37',
     datum: '2026-11-24',
     title: 'Pip-Boy-Systemfenster',
