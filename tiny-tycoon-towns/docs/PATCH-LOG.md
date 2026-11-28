@@ -1378,3 +1378,11 @@ Ereignis ergänzt.
 - Tests: `tests/terrainConversion.test.mjs` (6 Fälle). `npm test`: 203 von 203 grün.
 - Nicht enthalten: Oberfläche (Kachel-Menü in `main.js`), GAME_PLAN-Abschnitt, Bot-Regel. Der Bot nutzt die Wandlung nicht, die Balance-Messung bleibt deshalb unverändert (7 Verstöße).
 - Offen: Ob der Bot die Wandlung nutzen soll (Voraussetzung, um die Biom-Spanne zu schließen), und die Oberfläche.
+
+### TTT-0091 – Oberfläche für Geländewandel (Schritt 1 von 3)
+
+- Leeres, freigeschaltetes Feld (ohne Gebäude und Feld) zeigt unter dem Bau-Menü den Abschnitt „Gelände wandeln“: Kosten für diese Kachel und ein Knopf je anderem Gelände.
+- Klick öffnet eine Bestätigung mit Kosten und Hinweis auf Holz- und Fischverlust, dann Wandlung.
+- Fehlende Münzen: Knöpfe gesperrt, mit Hinweis, wie viel fehlt.
+- Browser-Test nicht durchgeführt (Sandbox ohne lauffähige Oberfläche). Bitte in der Vorschau prüfen.
+- Nächste Schritte: 2. Bot-Regel für Wandlung messen, 3. Balance-Matrix.

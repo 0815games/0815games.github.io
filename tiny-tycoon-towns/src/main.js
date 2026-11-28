@@ -6,6 +6,7 @@ import {
   plantField, removeField, renewField, setWorkerAssignment, staffing,
 } from './domain/engine.js?v=20261127-karten1';
 import { forestHealth, fishStock, fishingGround, soilOf, FULL } from './domain/economy.js?v=20261127-karten1';
+import { TERRAINS, conversionCost, convertTerrain } from './domain/engine.js?v=20261127-karten1';
 import {
   checkPlacement, placementHint, fieldsOf, plantableNeighbours, fieldSlots,
 } from './domain/placement.js?v=20261127-karten1';
@@ -712,6 +713,18 @@ async function onPanelClick(e) {
     return;
   }
   if (action === 'upgrade') dispatch(upgradeBuilding(state, { x, y }, ctx()), 'Aufgewertet.');
+  if (action === 'convert') {
+    const terrain = btn.dataset.terrain;
+    const cost = conversionCost(state, x, y, data);
+    const yes = await askConfirm(
+      `${TERRAIN_DE[terrain]} daraus machen?`,
+      `Feld ${x + 1}, ${y + 1} wird ${TERRAIN_DE[terrain]} für ${fmt0(cost)} Münzen. Holz oder Fisch auf dieser Kachel gehen verloren.`,
+      { ok: 'Ja, wandeln' },
+    );
+    if (!yes || !state) return;
+    dispatch(convertTerrain(state, { x, y, terrain }, ctx()), 'Gelände gewandelt.');
+    return;
+  }
   if (action === 'worker') {
     const n = Number(btn.dataset.n);
     const house = keyOf(Number(btn.dataset.tx), Number(btn.dataset.ty));
@@ -1231,6 +1244,7 @@ function renderPanel() {
     html += buildingDetails(b, x, y);
   } else {
     html += buildMenu(x, y);
+    if (!tile.field) html += terrainMenu(x, y);
   }
   panel.innerHTML = html;
 }
@@ -1412,6 +1426,23 @@ function farmFieldsHtml(b, x, y) {
 let buildInfoOpen = false; // Beschreibung im Bau-Fenster eingeblendet (bleibt beim Blättern)
 
 /** Eine Bauoption je Ansicht. ‹ › blättert durch alle Gebäude. Feste Größe, Beschreibung auf Wunsch. */
+/** Gelände wandeln gegen Münzen (TTT-0090). Nur freie, freigeschaltete Kacheln. */
+function terrainMenu(x, y) {
+  const tile = state.tiles[keyOf(x, y)];
+  const cost = conversionCost(state, x, y, data);
+  const ok = state.coins >= cost;
+  let html = `<section><h3>Gelände wandeln</h3>
+    <p class="small">Dieses Feld kostet <strong>${fmt0(cost)} Münzen</strong>. Jede Wandlung der Stadt macht die nächste teurer.</p>
+    <div class="terrain-choices">`;
+  for (const t of TERRAINS) {
+    if (t === tile.terrain) continue;
+    html += `<button type="button" class="ghost small" data-action="convert" data-terrain="${t}" ${ok ? '' : 'disabled'}>${TERRAIN_DE[t]}</button>`;
+  }
+  html += '</div>';
+  if (!ok) html += `<p class="small warn">Dir fehlen ${fmt0(cost - state.coins)} Münzen.</p>`;
+  return `${html}</section>`;
+}
+
 function buildMenu(x, y) {
   const entries = Object.entries(data.buildings).filter(([, d]) => !d.fixed);
   if (buildIdx >= entries.length) buildIdx = 0;
