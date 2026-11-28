@@ -77,7 +77,17 @@ async function assertFits(page,width,selectors){
   {
    const f=await fixture(browser,{control:{...open,mode:'maintenance'}}),{page,state}=f;
    try{
-    await page.locator('#adminLoginButton:not([disabled])').waitFor();
+    try{
+     await page.locator('#adminLoginButton:not([disabled])').waitFor();
+    }catch(cause){
+     const diag=await page.evaluate(()=>({
+      button:document.getElementById('adminLoginButton')?.textContent,
+      loginMessage:document.getElementById('adminLoginMessage')?.textContent,
+      entryScript:document.querySelector('script[type="module"][src*="admin-entry"]')?.getAttribute('src'),
+      playerCard:!!document.getElementById('adminPlayerCard')
+     })).catch(error=>({evaluateFailed:String(error)}));
+     throw new Error(`login button never enabled: ${JSON.stringify(diag)} pageerrors=${JSON.stringify(state.errors)} cause=${cause.message}`);
+    }
     for(const [width,height] of [[320,568],[375,667],[390,844],[1440,900]]){
      await page.setViewportSize({width,height});
      await assertFits(page,width,['.panel','#adminEmail','#adminPassword','#adminLoginButton']);
