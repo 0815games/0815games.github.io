@@ -1183,7 +1183,7 @@
       try {
         const initial = (await ref.once("value")).val();
         const busy = initial && initial.id;
-        if (busy && !window.confirm("Dieser Account ist bereits verbunden. Bestehende Sitzung ersetzen? Noch nicht gespeicherter Fortschritt kann verloren gehen.")) {
+        if (busy && !await window.PipDialog.confirm({ titel: "SITZUNG AKTIV", text: "Dieser Account ist bereits verbunden. Möchtest du die bestehende Sitzung ersetzen? Noch nicht gespeicherter Fortschritt kann verloren gehen.", bestaetigen: "SITZUNG ERSETZEN", abbrechen: "ABBRECHEN" })) {
           throw new Error("Anmeldung abgebrochen. Die bestehende Sitzung bleibt aktiv.");
         }
         const initialId = initial && initial.id || null;
@@ -9654,8 +9654,9 @@
           };
         }
       } else {
-        alert(info.title + "\n\n" + info.text.replace(/<[^>]*>?/gm, "\n"));
-        if (onConfirm) onConfirm();
+        window.PipDialog.info({ titel: info.title, text: info.text.replace(/<[^>]*>?/gm, "\n"), bestaetigen: "SYSTEM STARTEN" }).then(() => {
+          if (onConfirm) onConfirm();
+        });
       }
     },
     stopMinigame: function() {
@@ -9930,7 +9931,7 @@
       if (typeof this.showInfoDialog === "function") {
         this.showInfoDialog(info.title, info.text);
       } else {
-        alert(info.title + ": " + info.text.replace(/<[^>]*>?/gm, ""));
+        window.PipDialog.info({ titel: info.title, text: info.text.replace(/<[^>]*>?/gm, "") });
       }
     }
   });
@@ -10939,6 +10940,15 @@
     "Befund 8 aus docs/BEFUNDE.md: *.log in .gitignore trifft auch docs/change.log, der build.json-Hash deckt style.css nicht ab, src/admin.js hat keine Tests."
   ];
   window.GameData.RELEASED_PATCHES = [
+    {
+      version: "14.0.37",
+      datum: "2026-11-24",
+      title: "Pip-Boy-Systemfenster",
+      punkte: [
+        "Die Frage zur Sitzungsübernahme erscheint als grünes Pip-Boy-Fenster statt als Browserabfrage. Abbrechen lässt die bestehende Sitzung bestehen.",
+        "Auch Fehlerbericht, Minispiel-Hinweise und Verwaltungs-Fallbacks verwenden spielinterne Systemfenster. Tastatur und schmale Bildschirme werden berücksichtigt."
+      ]
+    },
     {
       version: "14.0.36",
       datum: "2026-11-24",

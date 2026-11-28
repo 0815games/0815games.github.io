@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v14.0.37 (Pip-Boy-Systemfenster, 2026-11-24)
+- [DESIGN] Sitzungsübernahme als eigener grüner Pip-Boy-Dialog statt Browser-Bestätigung; Bestätigen, Abbrechen, Escape und Tastaturfokus berücksichtigt.
+- [DESIGN] Browser-Meldungen für Crash-Bericht, Minispiel-Fallbacks und Verwaltungsoberfläche durch einheitliche Systemfenster ersetzt.
+- [TEST] Dialogzustimmung, Abbruch, Tastatur, HTML-Escaping, Warteschlange und Wächter gegen native Browserdialoge in den Spielquellen.
+
 ## v14.0.36 (Sitzungsübernahme, 2026-11-24)
 - [NEU] Bestehende Sitzung beim Login nach Bestätigung übernehmen; die verdrängte Sitzung beendet das Spiel ohne abschließendes Cloud-Speichern.
 - [SPEICHERN] Sitzungsmarker bei Cloud-Saves und Löschmarkierungen; passende Regeln sind Voraussetzung. Alte Presence wird nicht mehr mit onDisconnect entfernt.

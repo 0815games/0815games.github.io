@@ -19,7 +19,7 @@ function client(name, confirm) {
   db.useEmulator('127.0.0.1', 9000);
   let lost;
   const displaced = new Promise(resolve => { lost = resolve; });
-  const window = {confirm};
+  const window = {PipDialog: {confirm: async () => confirm()}};
   const context = vm.createContext({window, firebase, console, setTimeout, clearTimeout, setInterval, clearInterval,
     UI: {logout: (...args) => lost(args), log() {}}, Game: {saveTimer: null}});
   vm.runInContext(source, context);

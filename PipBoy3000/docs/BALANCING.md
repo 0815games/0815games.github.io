@@ -3,7 +3,7 @@
 Erzeugt von `node tools/balance.mjs --write`. Nicht von Hand ändern —
 die Zahlen kommen aus dem gebauten Bündel und dem Quelltext.
 
-Stand: Version 14.0.36
+Stand: Version 14.0.37
 
 ## 1. Waffen
 
@@ -125,7 +125,7 @@ Alle 10 Perks werden im Code gelesen.
 | CHA | `src/game/game_world_logic.js:359` | 1 | 0 |
 | INT | `src/data/data_minigames.js:17`<br>`src/data/data_minigames.js:277` | 2 | 4 |
 | AGI | `src/data/data_minigames.js:190`<br>`src/game/game_combat.js:312` | 2 | -2 |
-| LUC | `src/data/data_minigames.js:144`<br>`src/game/game_core.js:147`<br>`src/ui/ui_render_minigames.js:276` | 3 | 0 |
+| LUC | `src/data/data_minigames.js:144`<br>`src/game/game_core.js:147`<br>`src/ui/ui_render_minigames.js:275` | 3 | 0 |
 
 ## 5. Verbrauchsgüter
 

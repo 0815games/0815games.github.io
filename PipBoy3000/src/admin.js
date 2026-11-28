@@ -172,7 +172,7 @@ const Admin = window.Admin = {
         const btnNo = document.getElementById('admin-confirm-no');
 
         if(!overlay) {
-            if(confirm(text)) callback(); 
+            window.PipDialog.confirm({titel: title, text: text.replace(/<[^>]*>/g, '')}).then(yes => { if (yes) callback(); });
             return;
         }
 
@@ -864,7 +864,7 @@ const Admin = window.Admin = {
                 this.showToast("RAW DATA WRITTEN. SYNC NOW!", "error");
             });
         } catch(e) {
-            alert("INVALID JSON: " + e.message);
+            window.PipDialog.info({titel: 'UNGÜLTIGES JSON', text: e.message});
         }
     }
 };
