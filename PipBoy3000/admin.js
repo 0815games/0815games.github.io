@@ -542,7 +542,7 @@
       try {
         const initial = (await ref.once("value")).val();
         const busy = initial && initial.id;
-        if (busy && !window.confirm("Dieser Account ist bereits verbunden. Bestehende Sitzung ersetzen? Noch nicht gespeicherter Fortschritt kann verloren gehen.")) {
+        if (busy && !await window.PipDialog.confirm({ titel: "SITZUNG AKTIV", text: "Dieser Account ist bereits verbunden. Möchtest du die bestehende Sitzung ersetzen? Noch nicht gespeicherter Fortschritt kann verloren gehen.", bestaetigen: "SITZUNG ERSETZEN", abbrechen: "ABBRECHEN" })) {
           throw new Error("Anmeldung abgebrochen. Die bestehende Sitzung bleibt aktiv.");
         }
         const initialId = initial && initial.id || null;
@@ -909,7 +909,9 @@
       const btnYes = document.getElementById("admin-confirm-yes");
       const btnNo = document.getElementById("admin-confirm-no");
       if (!overlay) {
-        if (confirm(text)) callback();
+        window.PipDialog.confirm({ titel: title, text: text.replace(/<[^>]*>/g, "") }).then((yes) => {
+          if (yes) callback();
+        });
         return;
       }
       elTitle.textContent = title;
@@ -1570,7 +1572,7 @@
           this.showToast("RAW DATA WRITTEN. SYNC NOW!", "error");
         });
       } catch (e) {
-        alert("INVALID JSON: " + e.message);
+        window.PipDialog.info({ titel: "UNGÜLTIGES JSON", text: e.message });
       }
     }
   };

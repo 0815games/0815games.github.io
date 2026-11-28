@@ -24,7 +24,7 @@ function setup(initial = null, confirm = () => true) {
     return {set: async value => { writes.push([path, value]); }, once: async () => ({val: () => null}), off() {}};
   }};
   const logouts = [];
-  const window = {confirm};
+  const window = {PipDialog: {confirm: async () => confirm()}};
   const context = vm.createContext({window, console, setTimeout, clearTimeout, setInterval, clearInterval,
     UI: {logout: (...args) => logouts.push(args)}, Game: {saveTimer: null}});
   vm.runInContext(readFileSync(new URL('../src/network.js', import.meta.url), 'utf8'), context);

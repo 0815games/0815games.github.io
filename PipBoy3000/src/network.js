@@ -121,7 +121,7 @@ const Network = window.Network = {
             // Auch eine verwaiste Session braucht Zustimmung: Browser können
             // Hintergrund-Tabs länger als zwei Minuten pausieren.
             const busy = initial && initial.id;
-            if (busy && !window.confirm('Dieser Account ist bereits verbunden. Bestehende Sitzung ersetzen? Noch nicht gespeicherter Fortschritt kann verloren gehen.')) {
+            if (busy && !(await window.PipDialog.confirm({titel: 'SITZUNG AKTIV', text: 'Dieser Account ist bereits verbunden. Möchtest du die bestehende Sitzung ersetzen? Noch nicht gespeicherter Fortschritt kann verloren gehen.', bestaetigen: 'SITZUNG ERSETZEN', abbrechen: 'ABBRECHEN'}))) {
                 throw new Error('Anmeldung abgebrochen. Die bestehende Sitzung bleibt aktiv.');
             }
             const initialId = initial && initial.id || null;

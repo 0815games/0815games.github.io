@@ -2,6 +2,7 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
+    <!-- PIP-DIALOG -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Pip-Boy 3003</title>
     
@@ -34,7 +35,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js" crossorigin="anonymous"
             onerror="window.scriptLoadError='firebase-database.js';"></script>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
-    <meta name="pipboy-build" content="14.0.36">
+    <meta name="pipboy-build" content="14.0.37">
     
     <script>document.write('<link rel="stylesheet" href="style.css?v=' + Date.now() + '">');</script>
     
@@ -211,8 +212,8 @@ ${window.logBuffer.slice(-10).join('\n') || '(leer - Fehler trat vor dem ersten 
         function copyCrashReport() {
             const text = document.getElementById('crash-report-text');
             text.select();
-            document.execCommand('copy');
-            alert("Bericht in Zwischenablage kopiert!");
+            const kopiert = document.execCommand('copy');
+            window.PipDialog.info({titel: 'FEHLERBERICHT', text: kopiert ? 'Der Bericht wurde in die Zwischenablage kopiert.' : 'Kopieren fehlgeschlagen. Bitte den markierten Bericht manuell kopieren.'});
         }
     </script>
 </head>

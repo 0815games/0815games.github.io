@@ -98,7 +98,7 @@ async function preflight() {
 
   // Quelle des App-Icons. Fehlt eine, zeigt der Startbildschirm ein leeres
   // Feld - und das faellt im Browser niemandem als Fehler auf.
-  for (const file of [...ORDER, ...ADMIN_ORDER, 'shell/index.html', 'shell/admin.html', 'shell/style.css',
+  for (const file of [...ORDER, ...ADMIN_ORDER, 'shell/index.html', 'shell/admin.html', 'shell/style.css', 'shell/pip-dialog.js',
                       'shell/Version', ...APP_ICONS]) {
     try {
       await stat(join(ROOT, file));
@@ -218,6 +218,8 @@ export async function run({check = CHECK} = {}) {
 // haben. Alles andere bleibt unangetastet.
 async function renderShell(file, version, {game}) {
   let html = await readFile(join(ROOT, 'shell', file), 'utf8');
+  if (!html.includes('<!-- PIP-DIALOG -->')) fail(`${file}: PIP-DIALOG-Marker fehlt.`);
+  html = html.replace('<!-- PIP-DIALOG -->', `<script>\n${await readFile(join(ROOT, 'shell', 'pip-dialog.js'), 'utf8')}\n</script>`);
 
   html = html.replace(/[ \t]*<script src="https:\/\/cdn\.tailwindcss\.com"><\/script>\n/, '');
   html = html.replace(

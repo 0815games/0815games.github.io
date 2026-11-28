@@ -2,6 +2,78 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
+    <script>
+// Gemeinsame, unabhaengige Pip-Boy-Systemdialoge fuer Spiel, Login und Admin.
+// Keine Browser-Dialoge: auch im Crash-Bildschirm muss das Design erhalten bleiben.
+(() => {
+    const warteschlange = [];
+    let offen = false;
+
+    function zeigeNaechsten() {
+        if (offen || !warteschlange.length) return;
+        if (!document.body) {
+            document.addEventListener('DOMContentLoaded', zeigeNaechsten, {once: true});
+            return;
+        }
+        offen = true;
+        const {optionen, resolve} = warteschlange.shift();
+        const vorher = document.activeElement;
+        const layer = document.createElement('div');
+        layer.className = 'pip-system-dialog-layer';
+        layer.innerHTML = `<section class="pip-system-dialog" role="dialog" aria-modal="true" aria-labelledby="pip-dialog-title" aria-describedby="pip-dialog-message">
+            <div class="pip-system-dialog-top"><span>ROBCO INDUSTRIES</span><span>TERMINAL LINK</span></div>
+            <h2 id="pip-dialog-title"></h2><p id="pip-dialog-message"></p>
+            <div class="pip-system-dialog-actions"></div>
+            <div class="pip-system-dialog-footer">VAULT-TEC • PERSONAL INFORMATION PROCESSOR</div>
+        </section>`;
+        const box = layer.querySelector('section');
+        box.querySelector('h2').textContent = optionen.titel || 'SYSTEMMELDUNG';
+        box.querySelector('p').textContent = optionen.text || '';
+        const actions = box.querySelector('.pip-system-dialog-actions');
+        const nein = optionen.frage ? document.createElement('button') : null;
+        const ja = document.createElement('button');
+        if (nein) {
+            nein.type = 'button'; nein.className = 'pip-dialog-button pip-dialog-cancel';
+            nein.textContent = optionen.abbrechen || 'ABBRECHEN';
+            actions.appendChild(nein);
+        }
+        ja.type = 'button'; ja.className = 'pip-dialog-button pip-dialog-primary';
+        ja.textContent = optionen.bestaetigen || (optionen.frage ? 'BESTÄTIGEN' : 'VERSTANDEN');
+        actions.appendChild(ja);
+        const buttons = nein ? [nein, ja] : [ja];
+        function fertig(wert) {
+            document.removeEventListener('keydown', taste, true);
+            layer.remove();
+            offen = false;
+            if (vorher && vorher.isConnected && typeof vorher.focus === 'function') vorher.focus();
+            resolve(wert);
+            zeigeNaechsten();
+        }
+        function taste(event) {
+            if (event.key === 'Escape') { event.preventDefault(); event.stopImmediatePropagation(); fertig(false); }
+            else if (event.key === 'Tab') {
+                event.preventDefault(); event.stopImmediatePropagation();
+                const pos = buttons.indexOf(document.activeElement);
+                buttons[(pos + (event.shiftKey ? buttons.length - 1 : 1)) % buttons.length].focus();
+            }
+        }
+        if (nein) nein.addEventListener('click', () => fertig(false));
+        ja.addEventListener('click', () => fertig(true));
+        layer.addEventListener('click', event => { if (event.target === layer) fertig(false); });
+        document.addEventListener('keydown', taste, true);
+        document.body.appendChild(layer);
+        (nein || ja).focus();
+    }
+    function anfordern(optionen) {
+        return new Promise(resolve => { warteschlange.push({optionen, resolve}); zeigeNaechsten(); });
+    }
+    window.PipDialog = {
+        confirm: optionen => anfordern({...optionen, frage: true}),
+        info: optionen => anfordern({...optionen, frage: false})
+    };
+})();
+
+</script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ROBCO OVERSEER V14.0.0</title>    
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22 font-weight=%22bold%22 fill=%22%231aff1a%22 font-family=%22monospace%22>A</text></svg>">
@@ -10,8 +82,8 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="app.css?v=14.0.36">
-    <link rel="stylesheet" href="style.css?v=14.0.36">
+    <link rel="stylesheet" href="app.css?v=14.0.37">
+    <link rel="stylesheet" href="style.css?v=14.0.37">
 
     <style>
         .admin-font { font-family: 'Share Tech Mono', monospace; }
@@ -312,6 +384,6 @@
     window.GameData = { items: {}, recipes: [], monsters: {} };
 </script>
     <script crossorigin src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="admin.js?v=14.0.36"></script>
+    <script src="admin.js?v=14.0.37"></script>
 </body>
 </html>

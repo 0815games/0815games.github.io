@@ -835,3 +835,37 @@ input.login-input { background: #000; border: 2px solid var(--pip-green); color:
 .wiki-tutorial-box .action-button { font-size: 1rem; flex-shrink: 0; }
 .wiki-handbuch { color: #c4e8c4; line-height: 1.45; }
 @media (max-width: 540px) { .wiki-tutorial-box { flex-direction: column; align-items: stretch; } }
+
+/* Einheitliche Systemfenster: auch Login, Verwaltung und Crash-Bericht. */
+.pip-system-dialog-layer {
+    position: fixed; inset: 0; z-index: 2147483640; display: flex;
+    align-items: center; justify-content: center; padding: 18px;
+    background: rgba(0, 8, 0, .88); box-sizing: border-box;
+}
+.pip-system-dialog {
+    box-sizing: border-box; width: min(100%, 510px); max-height: 90dvh; overflow-y: auto;
+    padding: 20px; border: 2px solid #39ff14; background: #071607;
+    color: #b8fca4; box-shadow: 0 0 30px #0b6b14, inset 0 0 35px #001700;
+    font-family: VT323, 'Share Tech Mono', monospace; text-align: left;
+}
+.pip-system-dialog-top, .pip-system-dialog-footer {
+    display: flex; justify-content: space-between; gap: 12px;
+    color: #55ad45; font-size: 14px; letter-spacing: .08em;
+}
+.pip-system-dialog h2 {
+    margin: 14px 0 10px; padding-bottom: 8px; border-bottom: 1px solid #33812a;
+    color: #39ff14; font-size: 30px; line-height: 1.05; letter-spacing: .04em;
+    text-shadow: 0 0 8px #2bad22;
+}
+.pip-system-dialog p { margin: 0 0 22px; white-space: pre-wrap; font-size: 20px; line-height: 1.3; }
+.pip-system-dialog-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.pip-system-dialog .pip-dialog-button {
+    flex: 1 1 140px; min-height: 48px; border: 1px solid #4bb53a;
+    background: #071a07; color: #99f48b; font: inherit; font-size: 20px;
+    cursor: pointer; padding: 8px 14px;
+}
+.pip-system-dialog .pip-dialog-primary { border-color: #39ff14; color: #39ff14; }
+.pip-system-dialog .pip-dialog-button:hover, .pip-system-dialog .pip-dialog-button:focus-visible {
+    outline: 2px solid #a7ff96; outline-offset: 2px; background: #39ff14; color: #001400;
+}
+.pip-system-dialog-footer { margin-top: 18px; border-top: 1px solid #21521d; padding-top: 8px; }

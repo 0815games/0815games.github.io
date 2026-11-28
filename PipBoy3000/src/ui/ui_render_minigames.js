@@ -97,8 +97,7 @@ Object.assign(UI, {
                 };
             }
         } else {
-            alert(info.title + "\n\n" + info.text.replace(/<[^>]*>?/gm, "\n"));
-            if(onConfirm) onConfirm();
+            window.PipDialog.info({titel: info.title, text: info.text.replace(/<[^>]*>?/gm, "\n"), bestaetigen: 'SYSTEM STARTEN'}).then(() => { if(onConfirm) onConfirm(); });
         }
     },
 
@@ -419,7 +418,7 @@ Object.assign(UI, {
         if (typeof this.showInfoDialog === 'function') {
             this.showInfoDialog(info.title, info.text);
         } else {
-            alert(info.title + ": " + info.text.replace(/<[^>]*>?/gm, ''));
+            window.PipDialog.info({titel: info.title, text: info.text.replace(/<[^>]*>?/gm, '')});
         }
     }
 });

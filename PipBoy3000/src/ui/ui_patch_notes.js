@@ -33,6 +33,15 @@ window.GameData.offenePunkte = [
 // nicht mit dem, was geplant war.
 window.GameData.RELEASED_PATCHES = [
   {
+    version: '14.0.37',
+    datum: '2026-11-24',
+    title: 'Pip-Boy-Systemfenster',
+    punkte: [
+      'Die Frage zur Sitzungsübernahme erscheint als grünes Pip-Boy-Fenster statt als Browserabfrage. Abbrechen lässt die bestehende Sitzung bestehen.',
+      'Auch Fehlerbericht, Minispiel-Hinweise und Verwaltungs-Fallbacks verwenden spielinterne Systemfenster. Tastatur und schmale Bildschirme werden berücksichtigt.'
+    ]
+  },
+  {
     version: '14.0.36',
     datum: '2026-11-24',
     title: 'Sitzungsübernahme',
