@@ -68,7 +68,12 @@ header{display:flex;align-items:center;justify-content:space-between;gap:8px;fle
 .hud-left b{color:#fff}.hud-left em{color:#d4a94d;font-style:normal}.level-badge,.exp-badge,.slot-badge{padding:3px 7px;border:1px solid #3b4258;border-radius:999px;color:#c1c6d2;background:#181b28;font-size:10px}
 .slot-badge{border-color:#c99c42;color:#ffd36c}.exp-badge{border-color:#4a3b6b;color:#d1c4e9}
 .bars{display:flex;gap:6px;flex-wrap:wrap}.bars label{font-size:9px;color:#aab1c0}.bars i{display:block;width:72px;height:7px;border:1px solid #3b4258;background:#08090e;border-radius:999px;overflow:hidden}.bars i i{display:block;height:100%;width:100%;background:#c8323b}.bars i .mana{background:#2879cf}.bars i .xp{background:#8e24aa}.bars small{font-size:8px}
-.right{display:flex;align-items:center;gap:5px;flex-wrap:wrap}.right b{font-size:11px;color:#e8e4d9}.right button{min-width:38px;min-height:38px;background:#24293c;border:1px solid #c99c42;color:#fff;border-radius:10px}
+.right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.right b{font-size:11px;color:#e8e4d9;flex:0 0 auto}.right button{flex:0 0 auto;min-width:34px;min-height:34px;padding:4px 6px;background:#24293c;border:1px solid #3b4258;color:#c1c6d2;border-radius:10px;font-size:14px;line-height:1}.right button:hover{border-color:#c99c42;color:#fff}
+/* Versionsbadge im Spielheader: unauffällig, nicht groß und breit */
+#game header .version-badge,#game-version{margin:0;padding:2px 6px;min-height:0;font-size:8px;letter-spacing:.02em}
+/* 3D-Schalter: klarer aktiver Zustand statt bloßem Textwechsel */
+#btn-3d.on{background:#c99c42;border-color:#ffe082;color:#16120a;font-weight:700}
+#stage{transition:opacity .25s ease}
 
 #layout{flex:1;min-height:0;display:flex;flex-direction:column}
 #mapbox{position:relative;flex:1;min-height:0;background:#000;border-bottom:1px solid #3b4258}
@@ -93,10 +98,10 @@ nav button.active{color:#ffd36c;border-color:#c99c42;background:#222739}
 #iteminfo{margin-top:10px;padding:9px;background:#0c0e15;border:1px solid #3b4258;border-radius:12px;font-size:12px;min-height:56px;line-height:1.45}
 #logs{font-size:11px;line-height:1.5}
 
-#skill-tree{display:grid;grid-template-columns:1fr;gap:8px}
-.skill-node{background:#141824;border:1px solid #2b3245;border-radius:12px;padding:10px}.skill-node.learned{border-color:#3d7a4a}.skill-node.available{border-color:#ffd54f}.skill-node.locked{opacity:.6}
-.skill-head{display:flex;justify-content:space-between;font-weight:700;margin-bottom:5px}.skill-node p{margin:4px 0;font-size:12px}.skill-node small{display:block;margin:0 0 8px;color:#9aa4b2}
-.btn-learn{width:100%;min-height:44px;background:#1d2433;border:1px solid #3b475e;color:#e6e6e6;border-radius:10px}.btn-learn:disabled{opacity:.5}.skill-node.available .btn-learn{border-color:#ffd54f;color:#ffd54f}
+#skill-tree{display:grid;grid-template-columns:1fr;gap:8px;align-items:stretch}
+.skill-node{display:flex;flex-direction:column;background:#141824;border:1px solid #2b3245;border-radius:12px;padding:10px;min-height:0}.skill-node.learned{border-color:#3d7a4a}.skill-node.available{border-color:#ffd54f}.skill-node.locked{opacity:.6}
+.skill-head{display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:700;margin-bottom:5px}.skill-head span:last-child{flex:0 0 auto;font-size:11px;color:#9aa4b2;letter-spacing:.04em;white-space:nowrap}.skill-node p{margin:4px 0;font-size:12px}.skill-node small{display:block;margin:0 0 8px;color:#9aa4b2}
+.btn-learn{margin-top:auto;width:100%;min-height:42px;background:#1d2433;border:1px solid #3b475e;color:#e6e6e6;border-radius:10px;font-size:12px}.btn-learn:disabled{opacity:.5;cursor:not-allowed}.skill-node.available .btn-learn{border-color:#ffd54f;color:#ffd54f}
 
 #combat{position:fixed;inset:0;z-index:120;display:flex;flex-direction:column;justify-content:center;gap:14px;padding:20px;padding-top:max(20px,env(safe-area-inset-top));padding-bottom:max(20px,env(safe-area-inset-bottom));background:#05060a;border:0}
 #combat h2{text-align:center;color:#ff8790;font-size:18px;margin:0}
