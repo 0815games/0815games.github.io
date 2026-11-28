@@ -6,9 +6,9 @@ const base=process.env.IRONPATH_BASE_URL||'http://127.0.0.1:8765',open={format:1
 const app=`export function initializeApp(config,name){globalThis.__adminApp={config,name};return {name};}`;
 const auth=`
  export const browserSessionPersistence={type:'SESSION'};
- const auth={currentUser:null};let observer=()=>{};
+ const auth={currentUser:null};const observers=new Set();
  export function initializeAuth(app,options){globalThis.__adminAuth=auth;globalThis.__adminPersistence=options.persistence.type;return auth;}
- export function onAuthStateChanged(_auth,callback){observer=callback;globalThis.__adminSwitchUser=uid=>{auth.currentUser=uid?{uid,email:uid+'@example.test'}:null;observer(auth.currentUser);};queueMicrotask(()=>observer(auth.currentUser));return ()=>{};}
+ export function onAuthStateChanged(_auth,callback){observers.add(callback);globalThis.__adminSwitchUser=uid=>{auth.currentUser=uid?{uid,email:uid+'@example.test'}:null;for(const cb of [...observers])cb(auth.currentUser);};queueMicrotask(()=>{if(observers.has(callback))callback(auth.currentUser);});return ()=>observers.delete(callback);}
  export async function signInWithEmailAndPassword(a,email,password){if(password!=='example-password')throw Error('invalid');a.currentUser={uid:email.startsWith('admin')?'test-admin':'ordinary-player',email};observer(a.currentUser);}
  export async function signOut(a){a.currentUser=null;observer(null);}
 `;

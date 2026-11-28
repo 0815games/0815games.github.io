@@ -4,7 +4,7 @@
 // characterNames stays admin-only, so the in-game claim flow keeps returning
 // 'unsupported' exactly as it does against the live rules today.
 import assert from 'node:assert/strict';
-import {before,describe,it} from 'node:test';
+import {before,test} from 'node:test';
 import {initializeTestEnvironment} from '@firebase/rules-unit-testing';
 import {readFileSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
@@ -37,8 +37,7 @@ before(async()=>{
  });
 });
 
-describe('published admin account rules',()=>{
- it('lets the operator read and set XP while players keep their own rules',async()=>{
+test('published admin account rules: operator reads and sets XP, players keep their own rules',async()=>{
   await env.withSecurityRulesDisabled(async context=>{
    const db=context.database();
    await db.ref('_ironpathMaintenance').set({format:1,mode:'open',authAfterMs:0});
@@ -92,4 +91,3 @@ describe('published admin account rules',()=>{
    await context.database().ref('_ironpathMaintenance').set({format:1,mode:'open',authAfterMs:0});
   });
  });
-});
