@@ -1,6 +1,14 @@
 # CHANGELOG – Chroniken der Schattengruft
 
-## v0.10.5 – 2026-11-27 – 3D-Erkundung: restliche Karteninhalte in 3D umgesetzt
+## v0.10.6
+- 3D: Schwarzer Bildschirm in der Erkundung behoben (Leinwand-Regel
+  klassenbasiert mit position:absolute;inset:0, greift in jedem Host).
+- 3D-Schalter zeigt auf Karten ohne 3D ein Dialog "3D BALD VERWENDBAR"
+  (Popup) statt wirkungslosem Umschalten.
+- Theme-Name feuershrein -> feuerschrein vereinheitlicht (war sonst
+  nie 3D-fähig).
+
+v0.10.5 – 2026-11-27 – 3D-Erkundung: restliche Karteninhalte in 3D umgesetzt
 
 - **Wanddekoration (Banner & Schilder):** Die 2D-Karte zeigt an den Wänden
   thementypische Dekorationen; die 3D-Ansicht setzt sie jetzt als Wand-Ebenen
