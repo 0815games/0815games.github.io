@@ -84,7 +84,10 @@ async function assertFits(page,width,selectors){
       button:document.getElementById('adminLoginButton')?.textContent,
       loginMessage:document.getElementById('adminLoginMessage')?.textContent,
       entryScript:document.querySelector('script[type="module"][src*="admin-entry"]')?.getAttribute('src'),
-      playerCard:!!document.getElementById('adminPlayerCard')
+      playerCard:!!document.getElementById('adminPlayerCard'),
+      resources:performance.getEntriesByType('resource')
+       .map(r=>{const u=new URL(r.name);return `${u.pathname.split('/').pop()}${u.search}:${r.responseStatus||r.transferSize||'?'}`;})
+       .filter(n=>/admin|character|progression|maintenance|gstatic|firebase/.test(n))
      })).catch(error=>({evaluateFailed:String(error)}));
      throw new Error(`login button never enabled: ${JSON.stringify(diag)} pageerrors=${JSON.stringify(state.errors)} cause=${cause.message}`);
     }
