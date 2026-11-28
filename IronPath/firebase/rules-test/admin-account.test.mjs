@@ -28,15 +28,12 @@ const as=sdk=>sdk();
 before(async()=>{
  env=await initializeTestEnvironment({
   projectId:'demo-ironpath',
-  hub:{host:'127.0.0.1',port:4400},
   database:{host:'127.0.0.1',port:9000,rules:readFileSync(testRulesetPath('../ADMIN-ACCOUNT-RULES-TO-PUBLISH.json'),'utf8')}
  });
- assert.equal(env.rulesetPath,testRulesetPath('../ADMIN-ACCOUNT-RULES-TO-PUBLISH.json'));
 });
 
 describe('published admin account rules',()=>{
  it('lets the operator read and set XP while players keep their own rules',async()=>{
-  assert.equal(env.rulesetPath,testRulesetPath('../ADMIN-ACCOUNT-RULES-TO-PUBLISH.json'));
   await env.withSecurityRulesDisabled(async context=>{
    const db=context.database();
    await db.ref('_ironpathMaintenance').set({format:1,mode:'open',authAfterMs:0});

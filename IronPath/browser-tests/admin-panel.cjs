@@ -19,6 +19,7 @@ const database=`
  export async function get(r){if(r.path==='_ironpathMaintenanceAdminAccess'&&globalThis.__adminAuth.currentUser?.uid!=='test-admin')throw Object.assign(Error('permission_denied'),{code:'PERMISSION_DENIED'});return snap(null);}
  export function onValue(r,callback){listener=callback;globalThis.__adminEmit=value=>listener?.(snap(value));fetch('/__admin-control').then(r=>r.json()).then(value=>{if(listener===callback)callback(snap(value));});return ()=>{if(listener===callback)listener=null;};}
  export function serverTimestamp(){return {'.sv':'timestamp'};}
+ export async function update(){throw Object.assign(Error('unexpected update'),{code:'UNEXPECTED'});}
  export async function runTransaction(r,reducer){
   const current=await (await fetch('/__admin-control')).json(),next=reducer(current);
   if(next===undefined)return {committed:false,snapshot:snap(current)};
