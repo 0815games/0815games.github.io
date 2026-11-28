@@ -11,12 +11,16 @@
   let active = 0;
   let touchStart = null;
 
-  function select(index, focusChoice = false) {
+  function select(index, focusGame = false) {
     active = (index + cards.length) % cards.length;
     cards.forEach((card, i) => card.classList.toggle('is-selected', i === active));
     choices.forEach((button, i) => button.setAttribute('aria-pressed', String(i === active)));
     counter.textContent = `${String(active + 1).padStart(2, '0')} / ${String(cards.length).padStart(2, '0')}`;
-    if (focusChoice) choices[active]?.focus({preventScroll: true});
+    if (focusGame) cards[active].querySelector('.card-link').focus({preventScroll: true});
+  }
+
+  function launchSelected() {
+    cards[active].querySelector('.card-link').click();
   }
 
   grid.dataset.mobileReady = 'true';
@@ -38,11 +42,29 @@
   grid.addEventListener('touchcancel', () => { touchStart = null; }, {passive: true});
 
   document.addEventListener('keydown', event => {
-    if (!mobile.matches || event.altKey || event.ctrlKey || event.metaKey) return;
-    if (event.target.closest('a,button,input,textarea,select,[contenteditable="true"]')) return;
-    if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+    if (event.altKey || event.ctrlKey || event.metaKey) return;
+    const target = event.target;
+    if (target.closest('input,textarea,select,[contenteditable="true"]')) return;
+
+    const key = event.key.toLowerCase();
+    const previous = ['arrowleft', 'arrowup', 'a', 'w'].includes(key);
+    const next = ['arrowright', 'arrowdown', 'd', 's'].includes(key);
+    if (previous || next) {
       event.preventDefault();
-      select(active + (event.key === 'ArrowRight' ? 1 : -1), true);
+      select(active + (next ? 1 : -1), true);
+      return;
+    }
+
+    if (event.key === 'Enter' && !target.closest('a,button')) {
+      event.preventDefault();
+      launchSelected();
+      return;
+    }
+
+    if ((event.code === 'Space' || event.key === ' ') && !target.closest('button')) {
+      event.preventDefault();
+      if (target.closest('a')) target.closest('a').click();
+      else launchSelected();
     }
   });
 

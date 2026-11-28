@@ -19,7 +19,15 @@ assert.equal((html.match(/data-game-select=/g) || []).length, 4, 'vier direkte M
 assert.match(css, /grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/, 'Desktop zeigt alle vier Titel nebeneinander');
 assert.ok(css.includes('.game-grid[data-mobile-ready="true"] .game-card{display:none}'), 'Mobile blendet nicht ausgewählte Titel aus');
 assert.match(source, /touchstart/);
-assert.match(source, /ArrowLeft/);
+assert.match(source, /'arrowleft'/);
+assert.match(source, /'arrowright'/);
+assert.match(source, /'arrowup'/);
+assert.match(source, /'arrowdown'/);
+assert.match(source, /'a', 'w'/);
+assert.match(source, /'d', 's'/);
+assert.match(source, /event\.key === 'Enter'/);
+assert.match(source, /event\.code === 'Space'/);
+assert.match(source, /launchSelected/);
 assert.match(source, /previous-game/);
 
 for (const game of games) {
