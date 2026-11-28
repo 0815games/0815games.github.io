@@ -1,6 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="16" fill="#111411"/>
-  <rect x="5" y="5" width="54" height="54" rx="13" fill="none" stroke="#ffffff" stroke-opacity=".2"/>
-  <text x="32" y="29" fill="#f0f0e8" font-family="Arial,sans-serif" font-size="17" font-weight="700" text-anchor="middle">08</text>
-  <text x="32" y="47" fill="#c9f06b" font-family="Arial,sans-serif" font-size="17" font-weight="700" text-anchor="middle">15</text>
+  <rect width="64" height="64" rx="15" fill="#111411"/>
+  <g stroke="#101510" stroke-width="2.4" stroke-linejoin="round">
+    <path d="M8.5 30V17.5a8 8 0 0 1 16 0V30Z" fill="#b7eb57"/>
+    <path d="M39.5 30V17.5a8 8 0 0 1 16 0V30Z" fill="#f6bc5e"/>
+    <path d="M8.5 56V43.5a8 8 0 0 1 16 0V56Z" fill="#79c8bd"/>
+    <path d="M39.5 56V43.5a8 8 0 0 1 16 0V56Z" fill="#eadb9a"/>
+  </g>
+  <path d="M32 9v46" stroke="#ffffff" stroke-opacity=".08" stroke-width="1"/>
 </svg>

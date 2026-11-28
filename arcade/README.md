@@ -1,10 +1,12 @@
-# 0815 Games — Spielzentrale 3.0.0
+# 0815 Games — Spielkacheln 3.2.0
 
-Die Startseite ist ein kompakter Launcher für genau vier Spiele: Pipboy3003, Tiny Tycoon Towns, IronPath und Schattengruft.
+Die Startseite zeigt ausschließlich die vier Spielkacheln: Pipboy3003, Tiny Tycoon Towns, IronPath und Schattengruft. Die Schattengruft-Kachel und das App-Icon haben eigens gestaltete Artwork.
 
-- Desktop: vier Spielkarten mit direkt eingebundenen Vorschaubildern nebeneinander.
-- Mobil: jeweils eine aktive Karte; Wechsel per Wischen, WASD, Pfeiltasten, Vor/Zurück oder direkter Punktauswahl. Enter und Leertaste starten das ausgewählte Spiel.
-- Jede Karte startet das Spiel direkt. Es werden keine Spiele in iframes geladen.
-- Helles und dunkles Farbschema über die kleine Kopfzeilen-Steuerung; die Wahl bleibt in `theme.js` erhalten.
-- Mobile Navigation und Pfeiltasten respektieren reduzierte Bewegung; keine automatisch abspielenden Inhalte.
+- Desktop: vier Spielkarten mit Vorschaubildern nebeneinander.
+- Mobil: eine aktive Kachel; Wechsel per Wischen, WASD, Pfeiltasten, Vor/Zurück oder direkter Punktauswahl. Enter und Leertaste starten das ausgewählte Spiel.
+- iOS-Web-App-Metadaten, Apple-Touch-Icon, SVG/PNG/ICO-Favicons, Safari-Pinned-Tab-Icon und Manifest mit passenden Icons und Spiel-Kurzbefehlen.
+- Root-Service-Worker cached Dashboard, Icons und Karten-Artwork offline. Die Spiele selbst benötigen weiterhin ihre normalen Netzwerkverbindungen.
+- Installation auf iPhone/iPad: in Safari öffnen → Teilen → „Zum Home-Bildschirm“.
+- Keine zusätzliche Überschrift, Intro-Kopie, Markenleiste oder Fußzeile.
+- Jede Karte startet das Spiel direkt; Spiele werden nicht in iframes geladen.
 - Tests: `node arcade/tests/portals.test.cjs`.

@@ -1,0 +1,62 @@
+{
+  "id": "./",
+  "name": "0815 Games",
+  "short_name": "0815 Games",
+  "description": "Deine Spielzentrale mit Pipboy3003, Tiny Tycoon Towns, IronPath und Schattengruft.",
+  "lang": "de-DE",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#111411",
+  "theme_color": "#111411",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    {
+      "src": "arcade/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "arcade/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "arcade/icons/icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Pipboy3003 starten",
+      "short_name": "Pipboy3003",
+      "url": "PipBoy3000/index.html",
+      "icons": [{"src": "arcade/icons/icon-192.png", "sizes": "192x192", "type": "image/png"}]
+    },
+    {
+      "name": "Tiny Tycoon Towns starten",
+      "short_name": "Tiny Tycoon",
+      "url": "tiny-tycoon-towns/index.html",
+      "icons": [{"src": "arcade/icons/icon-192.png", "sizes": "192x192", "type": "image/png"}]
+    },
+    {
+      "name": "IronPath starten",
+      "short_name": "IronPath",
+      "url": "IronPath/index.html",
+      "icons": [{"src": "arcade/icons/icon-192.png", "sizes": "192x192", "type": "image/png"}]
+    },
+    {
+      "name": "Schattengruft starten",
+      "short_name": "Schattengruft",
+      "url": "schattengruft/index.html",
+      "icons": [{"src": "arcade/icons/icon-192.png", "sizes": "192x192", "type": "image/png"}]
+    }
+  ]
+}

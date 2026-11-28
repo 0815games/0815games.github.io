@@ -1,51 +1,38 @@
 <!doctype html>
-<html lang="de" data-dashboard-version="3.0.0">
+<html lang="de" data-dashboard-version="3.2.0">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="dark">
   <meta name="theme-color" content="#111411">
-  <meta name="description" content="Vier Welten, ein Klick bis zum Abenteuer. Entdecke die Spiele von 0815 Games.">
-  <title>0815 Games — Deine Spielzentrale</title>
-  <script src="arcade/theme.js?v=3.0.0"></script>
-  <link rel="stylesheet" href="arcade/dashboard.css?v=3.0.0">
-  <script defer src="arcade/dashboard.js?v=3.0.0"></script>
-  <link rel="icon" type="image/svg+xml" href="arcade/favicon.svg?v=3.0.0">
+  <meta name="application-name" content="0815 Games">
+  <meta name="description" content="Wähle deine nächste Spielwelt aus den vier Browser-Spielen von 0815 Games.">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="0815 Games">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-touch-fullscreen" content="yes">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="msapplication-TileColor" content="#111411">
+  <meta name="msapplication-TileImage" content="arcade/icons/icon-192.png">
+  <title>0815 Games — Spiele</title>
+  <link rel="manifest" href="manifest.webmanifest?v=3.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="arcade/icons/apple-touch-icon.png?v=3.2.0">
+  <link rel="icon" type="image/svg+xml" href="arcade/favicon.svg?v=3.2.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="arcade/icons/favicon-32.png?v=3.2.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="arcade/icons/favicon-16.png?v=3.2.0">
+  <link rel="shortcut icon" href="arcade/icons/favicon.ico?v=3.2.0">
+  <link rel="mask-icon" href="arcade/safari-pinned-tab.svg?v=3.2.0" color="#c9f06b">
+  <link rel="stylesheet" href="arcade/dashboard.css?v=3.2.0">
+  <script defer src="arcade/dashboard.js?v=3.2.0"></script>
 </head>
 <body>
   <a class="skip-link" href="#games">Direkt zu den Spielen</a>
   <div class="ambient ambient-one" aria-hidden="true"></div>
   <div class="ambient ambient-two" aria-hidden="true"></div>
 
-  <header class="site-header">
-    <a class="brand" href="./" aria-label="0815 Games — Startseite">
-      <span class="brand-mark" aria-hidden="true">08<span>15</span></span>
-      <span class="brand-copy"><strong>0815 GAMES</strong><small>DEINE SPIELZENTRALE</small></span>
-    </a>
-    <div class="header-right">
-      <span class="library-count"><i aria-hidden="true"></i> 04 SPIELE VERFÜGBAR</span>
-      <fieldset class="theme-switch">
-        <legend class="sr-only">Darstellung wählen</legend>
-        <button type="button" data-theme-choice="dark" aria-pressed="true" aria-label="Dunkle Darstellung">◐</button>
-        <button type="button" data-theme-choice="light" aria-pressed="false" aria-label="Helle Darstellung">☼</button>
-      </fieldset>
-    </div>
-  </header>
-
   <main>
-    <section class="intro" aria-labelledby="page-title">
-      <div class="intro-copy">
-        <p class="eyebrow"><span>DEIN NÄCHSTES ABENTEUER</span><span class="eyebrow-line" aria-hidden="true"></span></p>
-        <h1 id="page-title">Worauf hast du<br><em>heute Lust?</em></h1>
-        <p class="intro-text">Vier Welten. Vier Arten abzutauchen.<br class="desktop-break"> Such dir dein Spiel aus und leg direkt los.</p>
-      </div>
-      <div class="intro-stamp" aria-hidden="true"><span>PLAY</span><b>ANY<br>WORLD</b><small>EST. 2025</small></div>
-    </section>
-
-    <section class="library" id="games" aria-labelledby="games-heading">
-      <div class="section-heading">
-        <h2 id="games-heading">Deine Spiele</h2>
-        <span class="section-note">BIBLIOTHEK <b>01 — 04</b></span>
-      </div>
+    <section class="library" id="games" aria-label="Spiele">
 
       <div class="game-grid" id="game-grid">
         <article class="game-card game-pipboy" data-game-card data-index="0">
@@ -106,7 +93,7 @@
         <article class="game-card game-shadow" data-game-card data-index="3">
           <a class="card-link" href="schattengruft/index.html" aria-label="Schattengruft spielen">
             <div class="game-art art-shadow">
-              <img src="arcade/art/schattengruft.svg" alt="Dunkler, geheimnisvoller Eingang in eine unterirdische Gruft" width="1600" height="900" loading="lazy">
+              <img src="arcade/art/schattengruft-artwork.jpg" alt="Ein einsamer Abenteurer vor einem verfallenen, leuchtenden Gruftportal" width="1536" height="1024" loading="lazy">
               <span class="art-vignette" aria-hidden="true"></span>
               <span class="shadow-sigil" aria-hidden="true">✧</span>
               <span class="game-number">04</span>
@@ -133,10 +120,7 @@
         <span class="switch-count" id="switch-count" aria-live="polite">01 <i>/</i> 04</span>
         <button class="switch-arrow" type="button" id="next-game" aria-label="Nächstes Spiel">→</button>
       </nav>
-      <p class="mobile-hint">WISCHEN ODER PFEILE TIPPEN</p>
     </section>
   </main>
-
-  <footer class="site-footer"><span>GUTE SPIELE. GUTE ZEIT.</span><span>GEMACHT MIT <b>♥</b> VON 0815 GAMES</span></footer>
 </body>
 </html>
