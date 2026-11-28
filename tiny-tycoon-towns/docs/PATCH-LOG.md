@@ -1360,3 +1360,11 @@ Ereignis ergänzt.
 - Stein ist in Flusslanden Karg-Ware (`biomes.json`). Der Steinbruch hat dort nur 0,25 des Werts, deshalb wählt der Bot ihn kaum.
 - Versuch: Bot-Regel „ohne Steinbruch zuerst Steinbruch auf Fels“. Ergebnis: Riverlands bleibt bei 2 Gebäuden stehen (63 Verstöße). Der Bau schlägt vermutlich in `placeBuilding` fehl, der Bot wiederholt dieselbe Aktion. Verworfen, Code zurückgesetzt.
 - Offen: Warum der Steinbruch-Bau bei Flusslanden fehlschlägt, muss zuerst geklärt werden. Danach Entscheidung, ob Stein in Flusslanden Karg bleibt.
+
+### TTT-0089 – Ursache der Biom-Spanne bestätigt, zwei Versuche verworfen
+
+- Warum der Steinbruch-Versuch (TTT-0088) hängt: Der Steinbruch kostet 5 Holz und 80 Münzen. Danach hat der Bot kein Holz mehr, und Stein bleibt unverkauft (500 auf Lager, Standard „aus“ bei Karg). Ohne Einkommen kommt nichts weiter. Die Regel wird verworfen.
+- Ursache der Spanne: Stein ist in Flusslanden Karg und standardmäßig nicht verkaufbar. Der Steinbruch hat dadurch keinen Wert, für den Bot und für den Spieler.
+- Versuch: Stein in Flusslanden standardmäßig verkaufbar. Ergebnis: **17 Verstöße**. Flusslande werden zu schnell (8 bis 10 Stunden), Stufe 5 verschiebt sich. Verworfen, Code zurückgesetzt.
+- Befund: Der Stein-Schalter ist ein grober Hebel mit zu großer Wirkung. Die Spanne braucht eine feinere Stellgröße (z. B. Verkaufsanteil oder Stein-Preis in Flusslanden) oder eine Designentscheidung zu Karg-Waren.
+- Status: NICHT grün, Stand unverändert 7 Verstöße (TTT-0087).
