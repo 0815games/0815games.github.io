@@ -55,7 +55,7 @@
     1342000,
     1617000,
     1936000,
-    2420000
+    2250000
   ],
   "gridSizeByTownLevel": {
     "1": 6,
@@ -76,6 +76,13 @@
       "highlands": 0.875,
       "coast": 0.639
     }
+  },
+  "terrainConversion": {
+    "_comment": "Geländewandel gegen Münzen (TTT-0090). Kosten je Kachel: baseCoins × growthPerConversion^(bisherige Wandlungen) × Zufall zwischen randomMin und randomMax. Erste Werte, Balance offen.",
+    "baseCoins": 150,
+    "growthPerConversion": 1.2,
+    "randomMin": 0.7,
+    "randomMax": 1.3
   },
   "offline": {
     "baseCapHours": 8,

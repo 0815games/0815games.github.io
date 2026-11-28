@@ -191,7 +191,21 @@ Jede Stadtstufe über 1 bringt +2 % Produktion und schaltet Gebäude und Fläche
 
 ### 4.8 Stadtfläche
 
-Das Raster hat immer 10×10 Koordinaten. Freigeschaltet ist ein zentriertes Quadrat der jeweiligen Größe.
+**Kartengröße je Stadt (TTT-0078):** Jede Stadt hat ihre eigene Karte. Das Rathaus steht in der Mitte.
+
+| Stand | Kartengröße |
+|---|---|
+| Neue Stadt ohne Freibrief | 8×8 |
+| Nach 1 Freibrief | 10×10 |
+| Nach 2 Freibriefen | 12×12 |
+| Nach 3 Freibriefen | 14×14 |
+| Ab 4 Freibriefen | 16×16 (Maximum) |
+
+Die Karte wird mit dem Start einer neuen Stadt festgelegt. Bestehende Städte bleiben 10×10. Das Gelände wird pro Größe zufällig erzeugt; im freischaltbaren Bereich gibt es immer genug Fels und Berg für Steinbruch und Mine.
+
+Offen: Die Freischaltung folgt weiter der Tabelle unten (höchstens 10×10). Auf großen Karten bleibt damit ein äußerer Rand gesperrt.
+
+Das Raster hat die Größe der Karte. Freigeschaltet ist ein zentriertes Quadrat der jeweiligen Größe.
 
 | Stadtlevel | Freigeschaltetes Raster |
 |---|---|

@@ -4,38 +4,39 @@ import {
   createTown, newSeed, chooseBiome, placeBuilding, upgradeBuilding,
   toggleSell, buyOffer, advance, hydrateTown, setTutorialStep, settleConvoyAction,
   plantField, removeField, renewField, setWorkerAssignment, staffing,
-} from './domain/engine.js?v=20261127-info1';
-import { forestHealth, fishStock, fishingGround, soilOf, FULL } from './domain/economy.js?v=20261127-info1';
+} from './domain/engine.js?v=20261127-karten1';
+import { forestHealth, fishStock, fishingGround, soilOf, FULL } from './domain/economy.js?v=20261127-karten1';
+import { TERRAINS, conversionCost, convertTerrain } from './domain/engine.js?v=20261127-karten1';
 import {
   checkPlacement, placementHint, fieldsOf, plantableNeighbours, fieldSlots,
-} from './domain/placement.js?v=20261127-info1';
-import { startConvoy } from './domain/convoys.js?v=20261127-info1';
-import { tradeFormHtml, convoyListHtml, previewFor } from './trade-ui.js?v=20261127-info1';
+} from './domain/placement.js?v=20261127-karten1';
+import { startConvoy } from './domain/convoys.js?v=20261127-karten1';
+import { tradeFormHtml, convoyListHtml, previewFor } from './trade-ui.js?v=20261127-karten1';
 import {
   productionMultiplier, ratePerMin, buildCost, storageCap, classOf,
-} from './domain/economy.js?v=20261127-info1';
-import { GRID, keyOf, inBounds, isUnlocked, gridSize } from './domain/grid.js?v=20261127-info1';
-import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261127-info1';
-import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261127-info1';
+} from './domain/economy.js?v=20261127-karten1';
+import { keyOf, inBounds, isUnlocked, gridSize, sizeOf, hallOf, mapSizeFor, START_MAP } from './domain/grid.js?v=20261127-karten1';
+import { merchantOffers, localDateKey } from './domain/merchant.js?v=20261127-karten1';
+import { RELEASED_PATCHES, OPEN_ITEMS } from './patch-notes.mjs?v=20261127-karten1';
 import {
   PERKS, canFoundCharter, grantCharters, buyPerk, perkEffect, perkLevel, availableCharters, emptyCharter,
   applyCharterToData, reconcileCrowns,
-} from './domain/charters.js?v=20261127-info1';
+} from './domain/charters.js?v=20261127-karten1';
 const SEEN_NOTES_KEY = 'ttt:notes-seen';
-import { withTimeout } from './async-util.js?v=20261127-info1';
-import { checkTownName } from './town-names.js?v=20261127-info1';
-import { friendsShell, mountFriends } from './friends-ui.js?v=20261127-info1';
-import { createBoard } from './world/board.js?v=20261127-info1';
-import { createLoginScene } from './world/login-scene.js?v=20261127-info1';
-import { TUTORIAL_STEPS, HELP_SECTIONS, CHECK_LABELS, STATE_TASKS, tutorialResume, tutorialStored } from './tutorial.js?v=20261127-info1';
-import { tutorialSpot, builtSpot } from './domain/tutorialSpot.js?v=20261127-info1';
-import { createVersionUI } from './version-ui.mjs?v=20261127-info1';
-import { startAfkWatch, showAfkOverlay } from './afk.js?v=20261127-info1';
-import { fullResources, fillPercent } from './stock-dock.js?v=20261127-info1';
-import { nextRequestToShow, requestBadgeLabel, canShowRequestPopup } from './friend-requests.js?v=20261127-info1';
-import { houseCapacity, staffFactor, tutorialTaskDone } from './domain/settlement.js?v=20261127-info1';
+import { withTimeout } from './async-util.js?v=20261127-karten1';
+import { checkTownName } from './town-names.js?v=20261127-karten1';
+import { friendsShell, mountFriends } from './friends-ui.js?v=20261127-karten1';
+import { createBoard } from './world/board.js?v=20261127-karten1';
+import { createLoginScene } from './world/login-scene.js?v=20261127-karten1';
+import { TUTORIAL_STEPS, HELP_SECTIONS, CHECK_LABELS, STATE_TASKS, tutorialResume, tutorialStored } from './tutorial.js?v=20261127-karten1';
+import { tutorialSpot, builtSpot } from './domain/tutorialSpot.js?v=20261127-karten1';
+import { createVersionUI } from './version-ui.mjs?v=20261127-karten1';
+import { startAfkWatch, showAfkOverlay } from './afk.js?v=20261127-karten1';
+import { fullResources, fillPercent } from './stock-dock.js?v=20261127-karten1';
+import { nextRequestToShow, requestBadgeLabel, canShowRequestPopup } from './friend-requests.js?v=20261127-karten1';
+import { houseCapacity, staffFactor, tutorialTaskDone } from './domain/settlement.js?v=20261127-karten1';
 
-const BUILD = '20261127-info1';
+const BUILD = '20261127-karten1';
 console.info(`Tiny Tycoon Towns ${BUILD}`);
 const LAST_BIOME_KEY = 'ttt.lastBiome';
 const LOCAL_KEY = (uid) => `ttt.save.v1.${uid}`;
@@ -129,7 +130,7 @@ const REMOTE_TIMEOUT_MS = 10_000;
 async function loadData() {
   const names = ['resources', 'biomes', 'buildings', 'economy', 'merchant', 'npcs'];
   const parts = await Promise.all(names.map((n) =>
-    fetch(`data/${n}.json?v=20261127-info1`).then((r) => {
+    fetch(`data/${n}.json?v=20261127-karten1`).then((r) => {
       if (!r.ok) throw new Error(`data/${n}.json: HTTP ${r.status}`);
       return r.json();
     })));
@@ -175,7 +176,7 @@ async function boot() {
   window.addEventListener('offline', updateSync);
 
   try {
-    cloud = await import('./cloud.js?v=20261127-info1');
+    cloud = await import('./cloud.js?v=20261127-karten1');
   } catch {
     showFatal('Das Konto-System konnte nicht geladen werden. Ohne Anmeldung lässt sich nicht spielen. Bitte Verbindung prüfen und neu laden.');
     return;
@@ -576,7 +577,7 @@ function describeTile(x, y) {
   const tile = state.tiles[keyOf(x, y)];
   const b = tile.building;
   const bName = b ? data.buildings[b.id].name.de : '';
-  const unlocked = isUnlocked(x, y, state.townLevel, data);
+  const unlocked = isUnlocked(x, y, state.townLevel, data, sizeOf(state));
   return [
     `Feld ${x + 1}, ${y + 1}`,
     TERRAIN_DE[tile.terrain],
@@ -602,7 +603,7 @@ function ensureBoard() {
       state,
       data,
       // Ohne geladene Stadt (Erstellen, Laden) ist nichts freigeschaltet. Sonst Absturz im Zeichenlauf.
-      unlocked: (x, y) => !!state && isUnlocked(x, y, state.townLevel, data),
+      unlocked: (x, y) => !!state && isUnlocked(x, y, state.townLevel, data, sizeOf(state)),
     }),
   });
 }
@@ -681,7 +682,7 @@ function bindStatic() {
     cloud.deleteTown(doomed).catch((e) => toast(cloud.dbErrorDe(e), 'error'));
     state = null;
     cloudDirty = false;
-    selected = { x: 4, y: 4 };
+    selected = hallOf(START_MAP);
     showFounding();
   });
 }
@@ -712,6 +713,18 @@ async function onPanelClick(e) {
     return;
   }
   if (action === 'upgrade') dispatch(upgradeBuilding(state, { x, y }, ctx()), 'Aufgewertet.');
+  if (action === 'convert') {
+    const terrain = btn.dataset.terrain;
+    const cost = conversionCost(state, x, y, data);
+    const yes = await askConfirm(
+      `${TERRAIN_DE[terrain]} daraus machen?`,
+      `Feld ${x + 1}, ${y + 1} wird ${TERRAIN_DE[terrain]} für ${fmt0(cost)} Münzen. Holz oder Fisch auf dieser Kachel gehen verloren.`,
+      { ok: 'Ja, wandeln' },
+    );
+    if (!yes || !state) return;
+    dispatch(convertTerrain(state, { x, y, terrain }, ctx()), 'Gelände gewandelt.');
+    return;
+  }
   if (action === 'worker') {
     const n = Number(btn.dataset.n);
     const house = keyOf(Number(btn.dataset.tx), Number(btn.dataset.ty));
@@ -1094,7 +1107,7 @@ function renderHud() {
   const t = state;
   const biome = data.biomes[t.biome].name.de;
   $('#town-name').textContent = t.name;
-  $('#town-meta').textContent = `${biome} · Raster ${gridSize(t.townLevel, data)} × ${gridSize(t.townLevel, data)}`;
+  $('#town-meta').textContent = `${biome} · Karte ${sizeOf(t)} × ${sizeOf(t)}`;
   $('#coins').textContent = fmt0(t.coins);
   $('#hud-coins').textContent = fmt0(t.coins);
   $('#level-label').textContent = `Stadtlevel ${t.townLevel}`;
@@ -1124,8 +1137,9 @@ function renderBoard() {
 
 function totalRates() {
   const rates = {};
-  for (let y = 0; y < GRID; y++) {
-    for (let x = 0; x < GRID; x++) {
+  const size = sizeOf(state);
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
       const b = state.tiles[keyOf(x, y)].building;
       if (!b) continue;
       const res = data.buildings[b.id].resource;
@@ -1215,7 +1229,7 @@ function renderPanel() {
   panel.hidden = false;
   const { x, y } = selected;
   const tile = state.tiles[keyOf(x, y)];
-  const unlocked = isUnlocked(x, y, state.townLevel, data);
+  const unlocked = isUnlocked(x, y, state.townLevel, data, sizeOf(state));
   const b = tile.building;
   let html = `<div class="panel-head"><div><h2>Feld ${x + 1}, ${y + 1}</h2>
     <p class="muted small">${TERRAIN_DE[tile.terrain]}${unlocked ? '' : ' · gesperrt'}</p></div>
@@ -1230,6 +1244,7 @@ function renderPanel() {
     html += buildingDetails(b, x, y);
   } else {
     html += buildMenu(x, y);
+    if (!tile.field) html += terrainMenu(x, y);
   }
   panel.innerHTML = html;
 }
@@ -1305,7 +1320,7 @@ function workersHtml(b, x, y) {
       const hx = x + dx, hy = y + dy;
       const hk = keyOf(hx, hy);
       const ht = state.tiles[hk];
-      if (!inBounds(hx, hy) || ht?.building?.id !== 'house') continue;
+      if (!inBounds(hx, hy, sizeOf(state)) || ht?.building?.id !== 'house') continue;
       any = true;
       const mine = manual.find((m) => m.house === hk)?.n ?? 0;
       const pop = ht.building.pop ?? cfg.startPop;
@@ -1411,6 +1426,23 @@ function farmFieldsHtml(b, x, y) {
 let buildInfoOpen = false; // Beschreibung im Bau-Fenster eingeblendet (bleibt beim Blättern)
 
 /** Eine Bauoption je Ansicht. ‹ › blättert durch alle Gebäude. Feste Größe, Beschreibung auf Wunsch. */
+/** Gelände wandeln gegen Münzen (TTT-0090). Nur freie, freigeschaltete Kacheln. */
+function terrainMenu(x, y) {
+  const tile = state.tiles[keyOf(x, y)];
+  const cost = conversionCost(state, x, y, data);
+  const ok = state.coins >= cost;
+  let html = `<section><h3>Gelände wandeln</h3>
+    <p class="small">Dieses Feld kostet <strong>${fmt0(cost)} Münzen</strong>. Jede Wandlung der Stadt macht die nächste teurer.</p>
+    <div class="terrain-choices">`;
+  for (const t of TERRAINS) {
+    if (t === tile.terrain) continue;
+    html += `<button type="button" class="ghost small" data-action="convert" data-terrain="${t}" ${ok ? '' : 'disabled'}>${TERRAIN_DE[t]}</button>`;
+  }
+  html += '</div>';
+  if (!ok) html += `<p class="small warn">Dir fehlen ${fmt0(cost - state.coins)} Münzen.</p>`;
+  return `${html}</section>`;
+}
+
 function buildMenu(x, y) {
   const entries = Object.entries(data.buildings).filter(([, d]) => !d.fixed);
   if (buildIdx >= entries.length) buildIdx = 0;
@@ -1783,8 +1815,8 @@ function showFounding() {
     }
     const name = check.name;
     localStorage.setItem(LAST_BIOME_KEY, biome);
-    state = createTown({ name, biome, seed: newSeed(), now: Date.now(), data });
-    selected = { x: 4, y: 4 };
+    state = createTown({ name, biome, seed: newSeed(), now: Date.now(), data, mapSize: mapSizeFor(Object.keys(charter?.founded ?? {}).length) });
+    selected = hallOf(sizeOf(state));
     closeDialog();
     cloudDirty = true;
     lastCloudAt = 0;
@@ -1825,7 +1857,7 @@ async function startVisit(friendUid, friendName) {
     getModel: () => ({
       state: model.state,
       data: baseData,
-      unlocked: (x, y) => !!model.state && isUnlocked(x, y, model.state.townLevel, data),
+      unlocked: (x, y) => !!model.state && isUnlocked(x, y, model.state.townLevel, data, sizeOf(model.state)),
     }),
   });
   updateVisitInfo();
@@ -2167,10 +2199,10 @@ async function foundCharter() {
   }
   charter = next;
   const biome = chooseBiome(Math.random, state.biome);
-  const fresh = createTown({ name: state.name, biome, seed: newSeed(), now: Date.now(), data });
+  const fresh = createTown({ name: state.name, biome, seed: newSeed(), now: Date.now(), data, mapSize: mapSizeFor(Object.keys(charter?.founded ?? {}).length) });
   fresh.coins += perkEffect(charter, 'startCoins');
   state = fresh;
-  selected = { x: 4, y: 4 };
+  selected = hallOf(sizeOf(state));
   cloudDirty = true;
   lastCloudAt = 0;
   saveLocal();

@@ -4,6 +4,16 @@
 
 export const RELEASED_PATCHES = [
   {
+    build: '20261127-karten1',
+    date: '2026-11-27',
+    items: [
+      {
+        de: 'Karten: Neue Städte starten auf 8 × 8. Jeder Freibrief macht die nächste Karte um zwei Felder größer, bis 16 × 16. Bestehende Städte bleiben 10 × 10.',
+        en: 'Maps: new towns start at 8 × 8. Each charter makes the next map two tiles larger, up to 16 × 16. Existing towns stay at 10 × 10.',
+      },
+    ],
+  },
+  {
     build: '20261127-info1',
     date: '2026-11-27',
     items: [

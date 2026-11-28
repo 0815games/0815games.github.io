@@ -1,12 +1,20 @@
 // Weltansicht: Insel im Meer, Kamera, Eingabe, Partikel und Tag-Nacht.
 // renderWorld() zeichnet nur auf einen Kontext und ist deshalb auch ohne Browser prüfbar.
 // createScene() verbindet sie mit einem <canvas> im DOM.
-import { HW, HH, toScreen, toTile, hash } from './iso.js?v=20261127-info1';
-import { drawTile, drawBuilding, fillPoly, shade, mix, P } from './art.js?v=20261127-info1';
-import { stageFor } from '../domain/settlement.js?v=20261127-info1';
+import { HW, HH, toScreen, toTile, hash } from './iso.js?v=20261127-karten1';
+import { drawTile, drawBuilding, fillPoly, shade, mix, P } from './art.js?v=20261127-karten1';
+import { stageFor } from '../domain/settlement.js?v=20261127-karten1';
+import { hallOf } from '../domain/grid.js?v=20261127-karten1';
 
-export const GRID_SIZE = 10;     // spielbares Raster (siehe src/domain/grid.js)
-export const HALL = { x: 4, y: 4 };
+// Spielbares Raster und Rathaus der Stadt, die gerade gezeichnet wird. Mit setBoardSize() gesetzt
+// (Kartengröße je Stadt, siehe src/domain/grid.js). Standard: 10 × 10 wie bisher.
+export let GRID_SIZE = 10;
+export let HALL = { x: 4, y: 4 };
+export function setBoardSize(n) {
+  if (n === GRID_SIZE) return;
+  GRID_SIZE = n;
+  HALL = hallOf(n);
+}
 export const DETAIL_MIN_ZOOM = 0.75; // darunter keine kleinen Details (Gras, Blumen, Wellen, Zweitbäume)
 export const PAD = 9;            // Land und Meer außerhalb des Rasters, in Kacheln
 const ISLAND_CENTER = 4.5;

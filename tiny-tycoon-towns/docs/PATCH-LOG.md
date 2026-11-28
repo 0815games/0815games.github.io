@@ -1262,3 +1262,127 @@ Ereignis ergänzt.
 - Rückmeldung: Haus 4/4 Bewohner, 0 frei, „+“ grau. Ursache: Alle vier sind manuell anderen Betrieben zugewiesen. Das ist so gewollt (manuell vor Automatik), der Hinweis war aber unklar.
 - Änderung: Der Hinweis nennt jetzt den Grund: „Alle Bewohner dieses Hauses sind fest anderen Betrieben zugewiesen. Dort mit − einen lösen.“
 - Tests: `npm test` 189/189 grün. `npm run check` ohne Fehler.
+
+### TTT-0078 – Welle 20261127-karten1: Kartengrößen 8 bis 16
+
+- Anlass: Nutzer-Auftrag „go“: größere Karten. Reihenfolge: erst Karten, danach Balance und Stresstest über alle Karten und Szenarien.
+- Änderung 1: Jede Stadt hat ihre Kartengröße (`state.mapSize`). Neue Städte starten auf 8 × 8. Jeder Freibrief macht die nächste Karte um zwei Felder größer (8, 10, 12, 14, 16), höchstens 16 × 16. Die Größe richtet sich nach der Zahl der Freibrief-Gründungen (`mapSizeFor` in `src/domain/grid.js`).
+- Änderung 2: Bestehende Städte ohne Feld bleiben 10 × 10 (`hydrateTown`). Das Terrain ist für 10 × 10 bitgenau wie vorher (geprüft über 1600 Seeds und Biome).
+- Änderung 3: Rathaus steht in der Mitte der Karte. Startfläche und Terrain-Generator rechnen relativ zum Rathaus. Bau-Prüfung, Tutorial-Feldsuche, Admin und Weltansicht nutzen die Größe der Stadt (`setBoardSize` in `src/world/scene.js`).
+- Änderung 4: Firebase-Regel für `mapSize` (Zahl, 8 bis 16). Die Regel muss mit dem Deploy veröffentlicht werden.
+- Dateien: `src/domain/grid.js`, `terrain.js`, `engine.js`, `economy.js`, `placement.js`, `tutorialSpot.js`, `src/main.js`, `src/admin.js`, `src/world/scene.js`, `src/world/board.js`, `firebase/database.rules.json`, `src/patch-notes.mjs`, Welle `20261127-karten1`.
+- Tests: `npm test` mit neuem `tests/mapsize.test.mjs` grün. `npm run check` ohne Fehler.
+- Offen: Die Freischaltung innerhalb der Karte folgt weiter `gridSizeByTownLevel` (max. 10 × 10). Auf 12 bis 16 großen Karten bleibt damit ein Rand gesperrt. Die Balance (Schritt 2 des Auftrags) ist noch nicht gemacht. Der Browser-Test ist noch nicht gemacht.
+
+### TTT-0079 – Balance-Simulation über alle Kartengrößen (Teilstand)
+
+- Anlass: Nutzer-Auftrag „mach alles fertig“ (Balance und Stresstest über alle Karten und Szenarien).
+- Szenarien: Karten 8, 10, 12, 14, 16 × Biome 4 × Seeds 3, je 30 Tage (`node scripts/simulate-balance.mjs --days 30`). Diagnose mit `--diag`.
+- Befund 1 (behoben): Auf großen Küstenkarten lag das Wasser außerhalb des freischaltbaren Bereichs. Ohne Fischerei und Salz blieb der Bot bei 28 Gebäuden auf Stufe 4 hängen. Fix: die Küste rückt auf Karten über 10 Feldern nach innen (Versatz `floor((n-10)/2)`). Auf 10×10 unverändert.
+- Befund 2 (behoben): Viele Karten hatten fast keinen Fels und Berg, also keinen Stein und kein Eisen. Die Wirtschaft stand (z. B. 10×10 Wald, Seed 777: Stufe 9 nach 30 Tagen). Fix: im freischaltbaren Bereich (ohne Startfläche) mindestens 6 Fels und 3 Berg (`ensureRing`). Bei 10×10 ändert sich dadurch das Gelände neuer Städte; bestehende Städte bleiben unverändert.
+- Befund 3 (offen): Die Zeit bis Stufe 10 streut stark nach Seed und Biom (ca. 8 bis 15 h), das Ziel ist 11 bis 13 h. Ein einzelner Stellhebel (Schwelle `townLevelThresholds[9]`, XP-Faktor `riverlands`) verschiebt das Mittel, aber nicht die Streuung. Stand bester Lauf: 12 Verstöße von 60 Szenarien. Die Ausgangswirtschaft hat mit den Terrain-Fixes 19 Verstöße.
+- Status: NICHT grün. Die Wirtschaft ist nicht fertig nachjustiert. Nächster Schritt: Ursache der Streuung im Bot oder in der Startphase finden, nicht nur Zahlen verschieben.
+- Tests: `npm test` 197/197 grün.
+
+### TTT-0080 – Balance Schritt 2: Bot bewertet nicht verkaufbare Waren kleiner, Stufe-10-Schwelle
+
+- Messung je Schritt (60 Szenarien, 30 Tage, Verstöße gegen den Korridor): Ausgangslage mit Terrain-Fixes 19, nach Bot-Bewertung 13, nach Schwelle 2.250.000 für Stufe 10: 8.
+- Änderung 1 (Bot, `scripts/simulate-balance.mjs`): Eine Ware, die nicht verkauft wird (Karg), zählt bei der Bewertung eines Erzeugers nur mit 30 % des Preises. Vorher hat der Bot Erzeuger gebaut, deren Ware liegen blieb.
+- Änderung 2 (Wirtschaft, `data/economy.json`): `townLevelThresholds[9]` von 2.420.000 auf 2.250.000.
+- Befund: Die Streuung der Stufe-10-Zeit ist noch etwa 4 h (10 bis 14,3 h). Das Korridorfenster ist 2 h. Ein Mittelwert-Hebel reicht nicht.
+- Status: NICHT grün, 8 von 60 außerhalb. Nächster Schritt: Verkaufsbewertung im Bot (Vorrat sitzt immer bei der Reserve von 20, daher blind), und die Karg-Frage (Designentscheidung).
+- Tests: `npm test` siehe Commit.
+
+### TTT-0081 – Versuch: Sättigung je Ware im Bot (verworfen)
+
+- Versuch 1: Wert eines Erzeugers sinkt mit der Zahl schon gebauter Erzeuger derselben Ware (Halbwert bei 6), Vorratsbezug entfernt. Ergebnis: 43 Verstöße. Flussland bleibt bei Stufe 8 stehen.
+- Versuch 2: Sättigung bei 20. Ergebnis: 43 Verstöße, gleiches Muster.
+- Versuch 3: Vorratsbezug beibehalten, Sättigung bei 20 als zusätzlicher Faktor. Ergebnis: 23 Verstöße, Hochland zu schnell (ca. 10 h statt 12), Flussland teils zu langsam.
+- Entscheidung: Alle drei verworfen. Der Stand aus TTT-0080 (8 Verstöße) bleibt. Der Vorrat ist für den Bot ein wichtiges Signal, auch wenn er nahe der Reserve liegt.
+
+### TTT-0082 – Karg-Waren werden automatisch verkauft (zum halben Preis)
+
+- Entscheidung des Nutzers: Karg-Waren (z. B. Stein in Flussland, Fisch in Deepwoods) werden automatisch verkauft, aber zu `economy.sell.scarceSellFactor` (0,5) des Preises.
+- Umsetzung: `sellPrice(resource, data, biome)` berechnet den Faktor. Neue Städte starten mit Verkauf an für alle Waren (`sellEnabled`). Der Schalter bleibt erhalten. Bestehende Städte behalten ihren gespeicherten Schalter (Karg-Waren bleiben dort aus, bis der Spieler sie einschaltet).
+- Tests: `npm test` 198 von 198 grün. Angepasst: Startwert des Schalters, Lohn-Test (Verkauf für diesen Test aus), neuer Test für den Preisfaktor.
+- Balance (60 Szenarien, 30 Tage): Mit der neuen Regel 76 Verstöße. Ursache: Der Verkaufsdurchsatz des Rathauses (20/min) wird auf alle verkaufbaren Waren verteilt. Mit mehr verkaufbaren Waren bekommt jede weniger, Stufe 5 und Stufe 10 verlangsamen sich, einige Städte bleiben bei Stufe 8 oder 9 stehen.
+- Gegenversuch: Durchsatz 30/min: 69 Verstöße. Zurückgenommen (bleibt 20).
+- Status: NICHT grün. Die Regel braucht eine Neuabstimmung mehrerer Werte (Durchsatz, Schwelle, Reserve oder Verteilung). Das ist ein größerer Schritt, nicht als Einzelstellschraube.
+
+### TTT-0083 – Karg-Verkauf: Stufenlogik und Schwelle (nicht grün)
+
+- Messkette (60 Szenarien, 30 Tage, Verstöße gegen den Korridor), jeder Schritt einzeln gemessen:
+  - Karg-Verkauf, Durchsatz geteilt: 76
+  - Durchsatz Rathaus 30 statt 20: 69 (zurückgenommen)
+  - Stufenlogik: erst normale Waren, Karg mit dem Rest: 67
+  - Stufenlogik + Schwelle Stufe 10 2.000.000: 53 (**Stand dieses Commits**)
+  - zusätzlich Karg-Reserve 100: 66 (zurückgenommen)
+  - zusätzlich Sättigung je Ware (ab 10 Erzeugern): 62 (zurückgenommen)
+- Befund: Der Bot baut mit dem Karg-Verkauf andere Mischungen (z. B. 24 Imkereien, 12 Steinbrüche, 9 Farmen, Korn 100 ungenutzt). Stufe 5 und Stufe 10 verschieben sich. Ein einzelner Stellhebel reicht nicht.
+- Vergleich: Ohne Karg-Verkauf (Stand TTT-0080) waren es 8 Verstöße.
+- Status: NICHT grün. Für eine grüne Balance braucht es eine Überarbeitung der Erzeuger-Bewertung im Bot (Wert aus tatsächlichem Umsatz statt Vorrat), keine weitere Einzelstellschraube.
+- Tests: `npm test` 198 von 198 grün.
+
+### TTT-0084 – Bot-Bewertung nach verkaufbarem Anteil (verworfen)
+
+- Versuch 1: Erzeuger-Wert = min(Rate, Anteil am Rathaus-Durchsatz), Anteil geteilt durch alle verkaufbaren Waren: 69 Verstöße (verworfen).
+- Versuch 2: wie 1, aber nur Waren mit Erzeuger zählen: 62 Verstöße (verworfen).
+- Bot zurückgesetzt auf den Stand von TTT-0083 (53 Verstöße). Nicht erneut versuchen, ohne die Verkaufsreihenfolge zu klären.
+- Befund: Karg-Waren bekommen mit der Stufenlogik kaum Durchsatz, weil die normalen Waren ihn zuerst aufbrauchen. Ein Bot, der Karg nach Anteil bewertet, baut dann die falschen Gebäude. Die eigentliche Frage ist die Verkaufsreihenfolge, nicht die Bot-Formel.
+
+### TTT-0085 – Karg-Verkauf zurückgenommen (Entscheidung A)
+
+- Karg-Verkauf (TTT-0082), Stufenlogik und Schwelle 2.000.000 (TTT-0083) zurückgenommen. Code, Konfiguration und Tests auf dem Stand von TTT-0081 (`b063737`). Die Dokumentation der Versuche bleibt.
+- Tests: 197 von 197 grün.
+- Balance (60 Szenarien, 30 Tage): 8 Verstöße, Invarianten 0. Nicht grün, aber nah am Korridor.
+- Offen: Karg-Verkauf als Option statt automatisch (Designentscheidung), Balance-Abstimmung der Kartengrößen.
+
+### TTT-0086 – Korrektur der Stufe-10-Schwelle und Messung der Restverstöße
+
+- Stand: `2250000` ist im Repo gesetzt und entspricht der Messung mit 8 Verstößen. Die Messung mit `2420000` ergab 13 (nicht im Repo).
+- Messreihe Stufe-10-Schwelle (ohne Karg-Verkauf, 60 Szenarien): 2.100.000: 20; **2.250.000: 8**; 2.400.000: 12; 2.420.000: 13.
+- Messung Faktor `abundant` 1.5 → 1.3: 41 Verstöße (Stufe 4 zu langsam). Verworfen.
+- Befund: Die 8 Restverstöße sind alle Stadtlevel 10. Die Spanne zwischen den Biomen beträgt etwa 4,3 Stunden (von ca. 10 bis 14,3), das Ziel-Fenster 11 bis 13 Stunden ist 2 Stunden breit. Eine einzelne globale Schwelle kann das nicht schließen. Nächster Schritt braucht eine Designentscheidung (biomabhängige Stufe-10-Ziele oder andere Biom-Klassen), kein weiterer globaler Hebel.
+- Status: NICHT grün, 8 Verstöße.
+
+### TTT-0087 – Biomabhängiges Stufe-10-Fenster für die Küste
+
+- Befund: Median Stufe 10 je Biom (60 Szenarien): Küste 11,3 h, Riverlands, Wald und Hochland je rund 12,3 h. Die Küste ist systematisch etwa eine Stunde schneller (Fisch, Salz, Perlen).
+- Umgesetzt: Küste bekommt Fenster 10 bis 12 h (Ziel 11), alle anderen Biome bleiben bei 11 bis 13 h (Ziel 12). Ausdrücklich ein Designschritt, GAME_PLAN 4.17 ist noch nicht angepasst.
+- Messung: **7 Verstöße** (vorher 8), Invarianten 0. Nicht grün.
+- Restfälle sind Einzelszenarien, keine Biom-Systematik: Riverlands 10 h (Karte 8 und 14), 10,3 h (Karte 8) und 14,3 h (Karte 12); Hochland 13,1 h (Karte 8) und 13,2 h zweimal (Karte 14); Küste 12,4 h (Karte 12).
+- Nicht weiter an die Fenster angepasst, um nicht auf die Messung zu schneidern. Entscheidung offen: Fenster je Biom verbreitern (dann ist die Abweichung bewusst toleriert) oder die Verteilung in den Biomen angleichen.
+
+### TTT-0088 – Ursachenanalyse Biom-Spanne Stufe 10 (Option B), Bot-Regel Steinbruch verworfen
+
+- Felsen im freischaltbaren Bereich sind über alle Kartengrößen gleich (7 bis 8 auf Stufe 10). Die Karte ist also **nicht** die Ursache.
+- Ursache der Spanne: die Bau-Mischung des Bots. Beispiel Riverlands Karte 12, Seed 777: 29 Farmen, kein Steinbruch, Stufe 10 nach 14,3 h. Karte 14, Seed 777: mit Steinbruch, Stufe 10 nach 10 h.
+- Stein ist in Flusslanden Karg-Ware (`biomes.json`). Der Steinbruch hat dort nur 0,25 des Werts, deshalb wählt der Bot ihn kaum.
+- Versuch: Bot-Regel „ohne Steinbruch zuerst Steinbruch auf Fels“. Ergebnis: Riverlands bleibt bei 2 Gebäuden stehen (63 Verstöße). Der Bau schlägt vermutlich in `placeBuilding` fehl, der Bot wiederholt dieselbe Aktion. Verworfen, Code zurückgesetzt.
+- Offen: Warum der Steinbruch-Bau bei Flusslanden fehlschlägt, muss zuerst geklärt werden. Danach Entscheidung, ob Stein in Flusslanden Karg bleibt.
+
+### TTT-0089 – Ursache der Biom-Spanne bestätigt, zwei Versuche verworfen
+
+- Warum der Steinbruch-Versuch (TTT-0088) hängt: Der Steinbruch kostet 5 Holz und 80 Münzen. Danach hat der Bot kein Holz mehr, und Stein bleibt unverkauft (500 auf Lager, Standard „aus“ bei Karg). Ohne Einkommen kommt nichts weiter. Die Regel wird verworfen.
+- Ursache der Spanne: Stein ist in Flusslanden Karg und standardmäßig nicht verkaufbar. Der Steinbruch hat dadurch keinen Wert, für den Bot und für den Spieler.
+- Versuch: Stein in Flusslanden standardmäßig verkaufbar. Ergebnis: **17 Verstöße**. Flusslande werden zu schnell (8 bis 10 Stunden), Stufe 5 verschiebt sich. Verworfen, Code zurückgesetzt.
+- Befund: Der Stein-Schalter ist ein grober Hebel mit zu großer Wirkung. Die Spanne braucht eine feinere Stellgröße (z. B. Verkaufsanteil oder Stein-Preis in Flusslanden) oder eine Designentscheidung zu Karg-Waren.
+- Status: NICHT grün, Stand unverändert 7 Verstöße (TTT-0087).
+
+### TTT-0090 – Geländewandel gegen Münzen (Engine, Daten, Tests)
+
+- Neue Aktion `convertTerrain` (Engine): Gelände jeder Kachel wird gegen Münzen gewandelt. Alle Geländearten wandelbar (Wiese, Wald, Fels, Wasser, Strand, Berg).
+- Regeln: nur im freigeschalteten Bereich, nur freie Kacheln (kein Gebäude, kein Feld), nicht gleiches Gelände. Holz- und Fischbestand der Kachel fallen weg.
+- Kosten je Kachel: `baseCoins` × `growthPerConversion`^(bisherige Wandlungen der Stadt) × Zufallsfaktor je Kachel zwischen `randomMin` und `randomMax`. Der Zufall ist deterministisch (Stadt-Seed), damit Spielstände reproduzierbar bleiben.
+- Werte in `data/economy.json` (`terrainConversion`): 150 Münzen, Faktor 1,2 je Wandlung, 0,7 bis 1,3. Erste Werte, Balance offen.
+- Tests: `tests/terrainConversion.test.mjs` (6 Fälle). `npm test`: 203 von 203 grün.
+- Nicht enthalten: Oberfläche (Kachel-Menü in `main.js`), GAME_PLAN-Abschnitt, Bot-Regel. Der Bot nutzt die Wandlung nicht, die Balance-Messung bleibt deshalb unverändert (7 Verstöße).
+- Offen: Ob der Bot die Wandlung nutzen soll (Voraussetzung, um die Biom-Spanne zu schließen), und die Oberfläche.
+
+### TTT-0091 – Oberfläche für Geländewandel (Schritt 1 von 3)
+
+- Leeres, freigeschaltetes Feld (ohne Gebäude und Feld) zeigt unter dem Bau-Menü den Abschnitt „Gelände wandeln“: Kosten für diese Kachel und ein Knopf je anderem Gelände.
+- Klick öffnet eine Bestätigung mit Kosten und Hinweis auf Holz- und Fischverlust, dann Wandlung.
+- Fehlende Münzen: Knöpfe gesperrt, mit Hinweis, wie viel fehlt.
+- Browser-Test nicht durchgeführt (Sandbox ohne lauffähige Oberfläche). Bitte in der Vorschau prüfen.
+- Nächste Schritte: 2. Bot-Regel für Wandlung messen, 3. Balance-Matrix.

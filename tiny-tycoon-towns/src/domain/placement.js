@@ -1,6 +1,6 @@
 // Platzierungsregeln: Welches Gelände ein Gebäude braucht, und wie Felder der Farm funktionieren.
 // Reine Funktionen ohne Zustandsänderung. Alle Regeln stehen in data/buildings.json („placement“).
-import { inBounds, keyOf, isUnlocked } from './grid.js?v=20261127-info1';
+import { inBounds, keyOf, isUnlocked, sizeOf } from './grid.js?v=20261127-karten1';
 
 const N4 = [[1, 0], [-1, 0], [0, 1], [0, -1]];
 const N8 = [...N4, [1, 1], [1, -1], [-1, 1], [-1, -1]];
@@ -9,7 +9,7 @@ export const TERRAIN_NAMES_DE = {
   meadow: 'Wiese', forest: 'Wald', rock: 'Fels', water: 'Wasser', sand: 'Strand', mountain: 'Berg',
 };
 
-const terrainAt = (state, x, y) => (inBounds(x, y) ? state.tiles[keyOf(x, y)]?.terrain : undefined);
+const terrainAt = (state, x, y) => (inBounds(x, y, sizeOf(state)) ? state.tiles[keyOf(x, y)]?.terrain : undefined);
 
 /** Land heißt jedes Gelände außer Wasser. */
 const isLand = (t) => t !== undefined && t !== 'water';
@@ -46,7 +46,7 @@ export function placementHint(def) {
 export function checkPlacement(state, x, y, buildingId, data) {
   const def = data.buildings[buildingId];
   const rules = def?.placement;
-  const tile = inBounds(x, y) ? state.tiles[keyOf(x, y)] : null;
+  const tile = inBounds(x, y, sizeOf(state)) ? state.tiles[keyOf(x, y)] : null;
   if (!tile) return { ok: false, reason: 'outOfBounds' };
   if (tile.field) return { ok: false, reason: 'fieldOccupied' };
   if (!rules) return { ok: true };
@@ -69,8 +69,8 @@ export function checkPlacement(state, x, y, buildingId, data) {
 }
 
 /** 8er-Nachbarschaft, nur innerhalb des Rasters. */
-export function neighbours8(x, y) {
-  return N8.map(([dx, dy]) => [x + dx, y + dy]).filter(([nx, ny]) => inBounds(nx, ny));
+export function neighbours8(x, y, size) {
+  return N8.map(([dx, dy]) => [x + dx, y + dy]).filter(([nx, ny]) => inBounds(nx, ny, size));
 }
 
 /** Schlüssel aller Felder, die zu der Farm auf (fx, fy) gehören. */
@@ -86,11 +86,11 @@ export const fieldSlots = (level) => level;
 
 /** Felder, die eine Farm auf (fx, fy) noch anlegen kann, als Schlüssel. Nur freie, aufgedeckte Wiesen daneben. */
 export function plantableNeighbours(state, fx, fy, data) {
-  return neighbours8(fx, fy)
+  return neighbours8(fx, fy, sizeOf(state))
     .filter(([x, y]) => {
       const t = state.tiles[keyOf(x, y)];
       return t && t.terrain === 'meadow' && !t.building && !t.field
-        && isUnlocked(x, y, state.townLevel, data);
+        && isUnlocked(x, y, state.townLevel, data, sizeOf(state));
     })
     .map(([x, y]) => keyOf(x, y));
 }

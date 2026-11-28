@@ -1,17 +1,17 @@
 // Game engine: state creation, player actions and time advance.
 // Every exported action is (state, input, ctx) -> { state, events, error? }.
 // The input state is never mutated.
-import { generateTerrain } from './terrain.js?v=20261127-info1';
-import { GRID, HALL, keyOf, parseKey, inBounds, isUnlocked } from './grid.js?v=20261127-info1';
-import { checkPlacement, fieldsOf, fieldSlots } from './placement.js?v=20261127-info1';
+import { generateTerrain } from './terrain.js?v=20261127-karten1';
+import { BASE_MAP, hallOf, keyOf, parseKey, inBounds, isUnlocked, sizeOf } from './grid.js?v=20261127-karten1';
+import { checkPlacement, fieldsOf, fieldSlots } from './placement.js?v=20261127-karten1';
 import {
   classOf, buildCost, productionMultiplier, townLevelFor,
   storageCap, throughputPerMin, sellPrice, ratePerMin,
   FULL, fishingGround, soilOf, fishStock, forestHealth,
-} from './economy.js?v=20261127-info1';
-import { merchantOffers } from './merchant.js?v=20261127-info1';
-import { arriveConvoys, payoutFor } from './convoys.js?v=20261127-info1';
-import { growHouse, staffFactor, wageDue, assignWorkers } from './settlement.js?v=20261127-info1';
+} from './economy.js?v=20261127-karten1';
+import { merchantOffers } from './merchant.js?v=20261127-karten1';
+import { arriveConvoys, payoutFor } from './convoys.js?v=20261127-karten1';
+import { growHouse, staffFactor, wageDue, assignWorkers } from './settlement.js?v=20261127-karten1';
 
 export const SCHEMA_VERSION = 1;
 export const BIOMES = ['riverlands', 'deepwoods', 'highlands', 'coast'];
@@ -24,15 +24,16 @@ export function chooseBiome(rnd, lastBiome = null) {
   return pool[Math.floor(rnd() * pool.length)];
 }
 
-export function createTown({ name, biome, seed, now, data }) {
-  const terrain = generateTerrain(biome, seed);
+export function createTown({ name, biome, seed, now, data, mapSize = BASE_MAP }) {
+  const terrain = generateTerrain(biome, seed, mapSize);
+  const hall = hallOf(mapSize);
   const tiles = {};
-  for (let y = 0; y < GRID; y++) {
-    for (let x = 0; x < GRID; x++) {
+  for (let y = 0; y < mapSize; y++) {
+    for (let x = 0; x < mapSize; x++) {
       tiles[keyOf(x, y)] = { terrain: terrain[y][x] };
     }
   }
-  tiles[keyOf(HALL.x, HALL.y)].building = { id: 'townHall', level: 1 };
+  tiles[keyOf(hall.x, hall.y)].building = { id: 'townHall', level: 1 };
 
   const stock = {};
   const sellEnabled = {};
@@ -49,6 +50,7 @@ export function createTown({ name, biome, seed, now, data }) {
     biome,
     seed,
     townLevel: 1,
+    mapSize,
     townXp: 0,
     coins: data.economy.startCoins,
     lifetimeCoins: 0,
@@ -107,6 +109,7 @@ export function hydrateTown(raw) {
   s.sellEnabled ??= {};
   s.stock ??= {};
   s.tiles ??= {};
+  s.mapSize ??= BASE_MAP;
   s.townXp ??= 0;
   s.lifetimeCoins ??= 0;
   s.tutorialStep ??= 0;
@@ -119,8 +122,8 @@ export function hydrateTown(raw) {
 
 export function placeBuilding(state, { x, y, buildingId }, ctx) {
   const { data } = ctx;
-  if (!inBounds(x, y)) return fail(state, 'outOfBounds');
-  if (!isUnlocked(x, y, state.townLevel, data)) return fail(state, 'locked');
+  if (!inBounds(x, y, sizeOf(state))) return fail(state, 'outOfBounds');
+  if (!isUnlocked(x, y, state.townLevel, data, sizeOf(state))) return fail(state, 'locked');
   const def = data.buildings[buildingId];
   if (!def || def.fixed) return fail(state, 'unknownBuilding');
   if (def.unlockTownLevel > state.townLevel) return fail(state, 'townLevelTooLow');
@@ -174,8 +177,8 @@ export function plantField(state, { fx, fy, x, y }, ctx) {
   const { data } = ctx;
   const farm = state.tiles[keyOf(fx, fy)]?.building;
   if (!farm || farm.id !== 'farm') return fail(state, 'noFarm');
-  if (!inBounds(x, y) || Math.max(Math.abs(x - fx), Math.abs(y - fy)) !== 1) return fail(state, 'notNextToFarm');
-  if (!isUnlocked(x, y, state.townLevel, data)) return fail(state, 'locked');
+  if (!inBounds(x, y, sizeOf(state)) || Math.max(Math.abs(x - fx), Math.abs(y - fy)) !== 1) return fail(state, 'notNextToFarm');
+  if (!isUnlocked(x, y, state.townLevel, data, sizeOf(state))) return fail(state, 'locked');
   const t = state.tiles[keyOf(x, y)];
   if (t.building) return fail(state, 'occupied');
   if (t.field) return fail(state, 'alreadyField');
@@ -216,6 +219,55 @@ export function removeField(state, { x, y }) {
   return { state: s, events: [{ type: 'fieldRemoved', x, y }] };
 }
 
+
+/** Gelände, das man gegen Münzen wandeln kann (TTT-0090). */
+export const TERRAINS = ['meadow', 'forest', 'rock', 'water', 'sand', 'mountain'];
+
+/** Deterministischer Pseudozufall je Kachel und Wandlungs-Nummer, Ergebnis in [0, 1). */
+function conversionRoll(seed, x, y, n) {
+  let h = (seed ^ Math.imul(x + 1, 73856093) ^ Math.imul(y + 1, 19349663) ^ Math.imul(n + 1, 83492791)) >>> 0;
+  h = Math.imul(h ^ (h >>> 16), 0x85ebca6b) >>> 0;
+  h = Math.imul(h ^ (h >>> 13), 0xc2b2ae35) >>> 0;
+  return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+}
+
+/**
+ * Kosten, um die Kachel (x, y) zu wandeln. Zufällig je Kachel, und jede weitere Wandlung der Stadt
+ * macht alles teurer.
+ */
+export function conversionCost(state, x, y, data) {
+  const c = data.economy.terrainConversion;
+  const n = state.terrainConversions ?? 0;
+  const roll = conversionRoll(state.seed ?? 0, x, y, n);
+  const factor = c.randomMin + roll * (c.randomMax - c.randomMin);
+  return Math.round(c.baseCoins * Math.pow(c.growthPerConversion, n) * factor);
+}
+
+/** Wandelt das Gelände einer freigeschalteten, freien Kachel gegen Münzen. Holz- und Fischbestand fallen weg. */
+export function convertTerrain(state, { x, y, terrain }, ctx) {
+  const { data } = ctx;
+  if (!inBounds(x, y, sizeOf(state))) return fail(state, 'outOfBounds');
+  if (!isUnlocked(x, y, state.townLevel, data, sizeOf(state))) return fail(state, 'locked');
+  if (!TERRAINS.includes(terrain)) return fail(state, 'unknownTerrain');
+  const tile = state.tiles[keyOf(x, y)];
+  if (!tile) return fail(state, 'noTile');
+  if (tile.building) return fail(state, 'occupied');
+  if (tile.field) return fail(state, 'fieldOccupied');
+  if (tile.terrain === terrain) return fail(state, 'sameTerrain');
+
+  const cost = conversionCost(state, x, y, data);
+  if (state.coins < cost) return fail(state, 'noCoins');
+
+  const s = clone(state);
+  s.coins -= cost;
+  const t = s.tiles[keyOf(x, y)];
+  const from = t.terrain;
+  t.terrain = terrain;
+  delete t.wood;
+  delete t.fish;
+  s.terrainConversions = (s.terrainConversions ?? 0) + 1;
+  return { state: s, events: [{ type: 'terrainConverted', x, y, from, to: terrain, cost }] };
+}
 
 /**
  * Rechnet einen angekommenen Konvoi ab. Idempotent: Die Konvoi-ID ist der Schlüssel, ein zweiter Aufruf

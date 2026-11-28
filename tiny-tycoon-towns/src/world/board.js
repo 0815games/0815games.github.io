@@ -1,7 +1,8 @@
 // DOM-Brücke für die Weltansicht: Canvas, Kamera (Ziehen, Zoom), Tastatur, Animation.
 // Der Spielzustand kommt von außen (main.js). Diese Datei verändert ihn nie.
-import { toScreen } from './iso.js?v=20261127-info1';
-import { renderWorld, pickTile, makeFx, stepFx, produceIcons, coinGain, dayFactor, GRID_SIZE, HALL } from './scene.js?v=20261127-info1';
+import { toScreen } from './iso.js?v=20261127-karten1';
+import { renderWorld, pickTile, makeFx, stepFx, produceIcons, coinGain, dayFactor, GRID_SIZE, HALL, setBoardSize } from './scene.js?v=20261127-karten1';
+import { sizeOf } from '../domain/grid.js?v=20261127-karten1';
 
 const DRAG_PX = 6;
 const K_MIN = 0.45;
@@ -41,16 +42,20 @@ export function createBoard(container, opts) {
   let rafId = 0;
   let dirty = true;
   const drag = { active: false, id: null, moved: false, sx: 0, sy: 0, cx: 0, cy: 0 };
+  // Kartengröße der Stadt vor dem ersten Zeichnen übernehmen (jede Stadt hat ihre eigene Größe).
+  const syncSize = () => setBoardSize(sizeOf(opts.getModel().state));
+  syncSize();
   const center = toScreen(HALL.x + 0.5, HALL.y + 0.5);
   cam.x = center.x;
   cam.y = center.y;
 
   // Kamera darf nicht weit ins Leere: Mitte bleibt im Umkreis der Insel.
-  const bounds = {
+  const boundsOf = () => ({
     x0: toScreen(-3, GRID_SIZE / 2).x, x1: toScreen(GRID_SIZE + 3, GRID_SIZE / 2).x,
     y0: toScreen(GRID_SIZE / 2, -3).y, y1: toScreen(GRID_SIZE / 2, GRID_SIZE + 3).y,
-  };
+  });
   const clampCam = () => {
+    const bounds = boundsOf();
     cam.x = Math.min(bounds.x1, Math.max(bounds.x0, cam.x));
     cam.y = Math.min(bounds.y1, Math.max(bounds.y0, cam.y));
   };
@@ -85,6 +90,7 @@ export function createBoard(container, opts) {
   const view = () => ({ x: cam.x, y: cam.y, zoom: base * cam.k });
 
   function screenToTile(e) {
+    syncSize();
     const r = canvas.getBoundingClientRect();
     const sx = e.clientX - r.left;
     const sy = e.clientY - r.top;
@@ -92,6 +98,7 @@ export function createBoard(container, opts) {
   }
 
   function model() {
+    syncSize();
     const m = opts.getModel();
     return { ...m, selected: opts.getSelected(), hint: hintTile, reduceMotion: reduce, size: GRID_SIZE };
   }
@@ -197,6 +204,7 @@ export function createBoard(container, opts) {
     const d = map[e.key];
     if (d) {
       e.preventDefault();
+      syncSize();
       const s = opts.getSelected();
       const nx = Math.min(GRID_SIZE - 1, Math.max(0, s.x + d[0]));
       const ny = Math.min(GRID_SIZE - 1, Math.max(0, s.y + d[1]));
@@ -273,6 +281,7 @@ export function createBoard(container, opts) {
     },
     /** Kamera zurück auf das Rathaus, Zoom auf Grundgröße. Bei einer neuen Stadt, sonst bleibt die alte Ansicht. */
     recenter() {
+      syncSize();
       const c = toScreen(HALL.x + 0.5, HALL.y + 0.5);
       cam.x = c.x;
       cam.y = c.y;

@@ -1,22 +1,27 @@
-import { mulberry32 } from './rng.js?v=20261127-info1';
-import { GRID, HALL } from './grid.js?v=20261127-info1';
+import { mulberry32 } from './rng.js?v=20261127-karten1';
+import { BASE_MAP, hallOf } from './grid.js?v=20261127-karten1';
+
+// Maße der aktuellen Karte. Wird in generateTerrain gesetzt (synchron, also ohne Wettlauf).
+let G = { n: BASE_MAP, hx: hallOf(BASE_MAP).x, hy: hallOf(BASE_MAP).y };
 
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 
 /**
- * Seeded terrain generator. Returns a GRID x GRID array (rows = y, cols = x).
+ * Seeded terrain generator. Returns a size x size array (rows = y, cols = x). Mit size 10 wie bisher.
  * Biome decides the layout; the hall tile is always meadow.
  */
-export function generateTerrain(biome, seed) {
+export function generateTerrain(biome, seed, size = BASE_MAP) {
   const rnd = mulberry32(seed);
-  const g = Array.from({ length: GRID }, () => Array(GRID).fill('meadow'));
+  const h = hallOf(size);
+  G = { n: size, hx: h.x, hy: h.y };
+  const g = Array.from({ length: G.n }, () => Array(G.n).fill('meadow'));
 
   switch (biome) {
     case 'riverlands': {
       // A river meanders north-south through the middle of the starting area.
-      let cx = rnd() < 0.5 ? 3 : 4;
-      for (let y = 0; y < GRID; y++) {
-        if (rnd() < 0.35) cx = clamp(cx + (rnd() < 0.5 ? -1 : 1), 2, 6);
+      let cx = rnd() < 0.5 ? G.hx - 1 : G.hx;
+      for (let y = 0; y < G.n; y++) {
+        if (rnd() < 0.35) cx = clamp(cx + (rnd() < 0.5 ? -1 : 1), G.hx - 2, G.hx + 2);
         g[y][cx] = 'water';
       }
       scatter(g, rnd, 0.06, 'forest');
@@ -24,8 +29,8 @@ export function generateTerrain(biome, seed) {
     }
     case 'deepwoods': {
       scatter(g, rnd, 0.55, 'forest');
-      const px = 2 + Math.floor(rnd() * 4);
-      const py = 2 + Math.floor(rnd() * 4);
+      const px = G.hx - 2 + Math.floor(rnd() * 4);
+      const py = G.hy - 2 + Math.floor(rnd() * 4);
       for (const [dx, dy] of [[0, 0], [1, 0], [0, 1], [1, 1]]) g[py + dy][px + dx] = 'water';
       break;
     }
@@ -35,14 +40,17 @@ export function generateTerrain(biome, seed) {
     }
     case 'coast': {
       // Sea on one side, a sandy shore just inside it.
+      // Auf großen Karten rückt die Küste nach innen, damit das Wasser im freischaltbaren Bereich liegt
+      // (Mitte 10 × 10). Auf 10 × 10 und kleiner bleibt sie am Rand wie bisher.
+      const off = Math.max(0, Math.floor((G.n - 10) / 2));
       const left = rnd() < 0.5;
-      for (let y = 0; y < GRID; y++) {
+      for (let y = 0; y < G.n; y++) {
         const wobble = rnd() < 0.3 ? 1 : 0;
         for (let i = 0; i < 2 + wobble; i++) {
-          const x = left ? i : GRID - 1 - i;
+          const x = left ? i + off : G.n - 1 - off - i;
           g[y][x] = 'water';
         }
-        const sx = left ? 2 + wobble : GRID - 3 - wobble;
+        const sx = left ? 2 + wobble + off : G.n - 3 - wobble - off;
         g[y][sx] = 'sand';
       }
       scatter(g, rnd, 0.05, 'forest');
@@ -62,15 +70,41 @@ export function generateTerrain(biome, seed) {
   // Startlayout entschärfen: nicht zu viel Wasser, genug Wiese für Farmen.
   limitStartWater(g, 4);
   ensureStartMeadow(g, 12);
+  // Stein und Eisen: im freischaltbaren Bereich mindestens so viel Fels und Berg, dass Steinbruch und Mine Arbeit haben.
+  ensureRing(g, rnd, 'rock', 6);
+  ensureRing(g, rnd, 'mountain', 3);
 
-  g[HALL.y][HALL.x] = 'meadow';
+  g[G.hy][G.hx] = 'meadow';
   return g;
 }
 
+/**
+ * Der größte freischaltbare Bereich (10 × 10 um das Rathaus, auf der Karte) ohne die Startfläche.
+ * Dort werden fehlende Fels- und Bergkacheln als Wiese umgewandelt, bis `min` erreicht ist.
+ */
+function ensureRing(g, rnd, terrain, min) {
+  const x0 = Math.max(0, G.hx - 4), x1 = Math.min(G.n - 1, G.hx + 5);
+  const y0 = Math.max(0, G.hy - 4), y1 = Math.min(G.n - 1, G.hy + 5);
+  const inStart = (x, y) => Math.abs(x - G.hx) <= 2 && Math.abs(y - G.hy) <= 2;
+  const cells = [];
+  for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+    if (!inStart(x, y)) cells.push([x, y]);
+  }
+  const have = cells.filter(([x, y]) => g[y][x] === terrain).length;
+  let need = min - have;
+  const meadows = cells.filter(([x, y]) => g[y][x] === 'meadow');
+  while (need > 0 && meadows.length) {
+    const i = Math.floor(rnd() * meadows.length);
+    const [x, y] = meadows.splice(i, 1)[0];
+    g[y][x] = terrain;
+    need--;
+  }
+}
+
 function scatter(g, rnd, prob, terrain) {
-  for (let y = 0; y < GRID; y++) {
-    for (let x = 0; x < GRID; x++) {
-      if (x === HALL.x && y === HALL.y) continue;
+  for (let y = 0; y < G.n; y++) {
+    for (let x = 0; x < G.n; x++) {
+      if (x === G.hx && y === G.hy) continue;
       if (g[y][x] === 'meadow' && rnd() < prob) g[y][x] = terrain;
     }
   }
@@ -78,27 +112,27 @@ function scatter(g, rnd, prob, terrain) {
 
 /** Lässt einen zusammenhängenden Gebirgszug aus einem zufälligen Startfeld wachsen (nur auf Wiese und Fels). */
 function grow(g, rnd, terrain, size) {
-  let x = 1 + Math.floor(rnd() * (GRID - 2));
-  let y = 1 + Math.floor(rnd() * (GRID - 2));
+  let x = 1 + Math.floor(rnd() * (G.n - 2));
+  let y = 1 + Math.floor(rnd() * (G.n - 2));
   let placed = 0;
   for (let tries = 0; tries < 200 && placed < size; tries++) {
-    const ok = !(x === HALL.x && y === HALL.y) && (g[y][x] === 'meadow' || g[y][x] === 'rock');
+    const ok = !(x === G.hx && y === G.hy) && (g[y][x] === 'meadow' || g[y][x] === 'rock');
     if (ok) {
       g[y][x] = terrain;
       placed++;
     }
     // Nächster Schritt: vom letzten Berg aus, damit der Zug zusammenhängt.
     const [dx, dy] = [[1, 0], [-1, 0], [0, 1], [0, -1]][Math.floor(rnd() * 4)];
-    x = clamp(x + dx, 0, GRID - 1);
-    y = clamp(y + dy, 0, GRID - 1);
+    x = clamp(x + dx, 0, G.n - 1);
+    y = clamp(y + dy, 0, G.n - 1);
   }
 }
 
 /** Die Startfläche (Mitte, sechs mal sechs Kacheln) braucht mindestens `count` Kacheln von `terrain`. */
 function ensureStart(g, rnd, terrain, count) {
   const cells = [];
-  for (let y = 2; y <= 7; y++) for (let x = 2; x <= 7; x++) {
-    if (x === HALL.x && y === HALL.y) continue;
+  for (let y = G.hy - 2; y <= G.hy + 3; y++) for (let x = G.hx - 2; x <= G.hx + 3; x++) {
+    if (x === G.hx && y === G.hy) continue;
     cells.push([x, y]);
   }
   const have = cells.filter(([x, y]) => g[y][x] === terrain).length;
@@ -143,8 +177,8 @@ function ensureStartMeadow(g, min) {
 
 function startCells() {
   const cells = [];
-  for (let y = 2; y <= 7; y++) for (let x = 2; x <= 7; x++) {
-    if (x === HALL.x && y === HALL.y) continue;
+  for (let y = G.hy - 2; y <= G.hy + 3; y++) for (let x = G.hx - 2; x <= G.hx + 3; x++) {
+    if (x === G.hx && y === G.hy) continue;
     cells.push([x, y]);
   }
   return cells;
