@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Weihnachtsbaum Bastelvorlage – 2 auf DIN-A4</title>
+<style>
+  @page { size: A4 portrait; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Segoe UI", "Calibri", "Helvetica Neue", Arial, sans-serif;
+    color: #2e1a0f;
+    background: #fff0e6;
+    width: 210mm; height: 297mm;
+    padding: 10mm 10mm 12mm 10mm;
+  }
+  header {
+    text-align: center;
+    margin-bottom: 4mm;
+  }
+  header h1 {
+    font-size: 22pt; letter-spacing: 1pt; color: #b53a22;
+    text-shadow: 0 1px 0 #fff;
+  }
+  header .subtitle {
+    font-size: 11pt; color: #6d3e2a; font-weight: 600;
+  }
+
+  .templates {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    gap: 4mm;
+  }
+  .tree-box {
+    flex: 1 1 0; border: 2pt dashed #caa27e; border-radius: 8pt;
+    background: #fff8f0; padding: 2mm;
+    text-align: center;
+    min-width: 0;
+  }
+  .tree-box h2 { font-size: 12pt; color: #8a2e1f; margin-bottom: 2mm; }
+  .tree-box .label {
+    font-size: 8pt; color: #8a6a52; margin-bottom: 2mm;
+  }
+
+  .svg-tree {
+    width: 86mm; height: 118mm; display: block; margin: 0 auto;
+  }
+
+  .legend {
+    display: flex; gap: 6mm; justify-content: center; margin-top: 2mm;
+  }
+  .legend span { font-size: 8pt; color: #4a2c18; }
+  .legend .line-solid { display: inline-block; width: 14pt; height: 2pt; background: #1a1a1a; vertical-align: middle; margin-right: 2pt; }
+  .legend .line-dashed { display: inline-block; width: 14pt; height: 2pt; border-bottom: 1.5pt dashed #d94f1e; vertical-align: middle; margin-right: 2pt; }
+
+  .instructions {
+    margin-top: 4mm; padding: 5mm 6mm; background: #fff; border-left: 4pt solid #b53a22; border-radius: 4pt;
+    box-shadow: 0 1pt 3pt rgba(46,26,15,0.08);
+  }
+  .instructions h3 { font-size: 13pt; color: #b53a22; margin-bottom: 2mm; }
+  .instructions ol { padding-left: 4mm; font-size: 9.5pt; line-height: 1.35; }
+  .instructions li { margin-bottom: 1mm; }
+  .instructions strong { color: #8a2e1f; }
+  .tip-box { background: #ffeaa7; padding: 3mm 4mm; border-radius: 4pt; font-size: 9pt; color: #5a3a18; margin-top: 2mm; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🎄 Weihnachtsbaum – 3-Seiten-Bastelvorlage</h1>
+  <div class="subtitle">Zwei große Bäume auf einer DIN-A4-Seite · Perfekte Knicklinien · Gerade Schnittkanten</div>
+</header>
+
+<section class="templates" aria-label="Vorlagen">
+  <div class="tree-box">
+    <h2>Baum 1 (links)</h2>
+    <div class="label">Ausschneiden · Knicklinien nicht schneiden!</div>
+    <svg class="svg-tree" viewBox="0 0 180 240" xmlns="http://www.w3.org/2000/svg" aria-label="Baum Vorlage 1">
+      <defs>
+        <pattern id="dots" width="8" height="8" patternUnits="userSpaceOnUse">
+          <circle cx="2" cy="2" r="0.7" fill="#e6c9a8" />
+        </pattern>
+      </defs>
+
+      <!-- Background faint tree shadow / placement guide -->
+      <rect x="10" y="10" width="160" height="220" fill="url(#dots)" rx="4" opacity="0.6" />
+
+      <!-- Main tree cut shape: straight sides, flat base, pointed top -->
+      <polygon points="90,12 170,220 10,220" fill="#cde6a8" stroke="#2e5e1a" stroke-width="2.2" stroke-linejoin="round" />
+
+      <!-- Top fold line (horizontal, near top) -->
+      <line x1="20" y1="60" x2="160" y2="60" stroke="#d94f1e" stroke-width="1.5" stroke-dasharray="6,3" />
+      <text x="165" y="56" font-size="7" fill="#d94f1e" font-family="sans-serif" font-weight="bold">Knicklinie oben</text>
+
+      <!-- Bottom fold line (horizontal, near base) -->
+      <line x1="20" y1="175" x2="160" y2="175" stroke="#d94f1e" stroke-width="1.5" stroke-dasharray="6,3" />
+      <text x="165" y="171" font-size="7" fill="#d94f1e" font-family="sans-serif" font-weight="bold">Knicklinie unten</text>
+
+      <!-- Center vertical fold line -->
+      <line x1="90" y1="12" x2="90" y2="220" stroke="#1a3a4a" stroke-width="1.2" stroke-dasharray="5,4" />
+      <text x="95" y="18" font-size="7" fill="#1a3a4a" font-family="sans-serif">Mitte knicken</text>
+
+      <!-- Small glue tab on left side -->
+      <rect x="8" y="95" width="8" height="30" fill="#f2d6b5" stroke="#bfa07a" stroke-width="1" rx="2" />
+      <text x="3" y="112" font-size="6" fill="#8a5a3a" font-family="sans-serif" transform="rotate(-90 3,112)">Klebelasche</text>
+
+      <!-- Decoration guide (optional, not to cut) -->
+      <circle cx="90" cy="100" r="8" fill="#f2c94c" opacity="0.9" stroke="#cfa92b" stroke-width="1" />
+      <circle cx="60" cy="140" r="6" fill="#e85d4e" opacity="0.9" stroke="#c44b3f" stroke-width="0.8" />
+      <circle cx="120" cy="140" r="6" fill="#4a9e8f" opacity="0.9" stroke="#367a6e" stroke-width="0.8" />
+      <text x="90" y="230" font-size="7" fill="#6d3e2a" text-anchor="middle" font-family="sans-serif" font-weight="bold">Skizze: dekorieren nach dem Knicken</text>
+    </svg>
+    <div class="legend">
+      <span><span class="line-solid"></span> = Ausschneiden</span>
+      <span><span class="line-dashed"></span> = Knicklinie (nicht schneiden)</span>
+    </div>
+  </div>
+
+  <div class="tree-box">
+    <h2>Baum 2 (rechts)</h2>
+    <div class="label">Identische Vorlage · Gerne farbig ausdrucken</div>
+    <svg class="svg-tree" viewBox="0 0 180 240" xmlns="http://www.w3.org/2000/svg" aria-label="Baum Vorlage 2">
+      <defs>
+        <pattern id="dots2" width="8" height="8" patternUnits="userSpaceOnUse">
+          <circle cx="2" cy="2" r="0.7" fill="#e6c9a8" />
+        </pattern>
+      </defs>
+      <rect x="10" y="10" width="160" height="220" fill="url(#dots2)" rx="4" opacity="0.6" />
+
+      <polygon points="90,12 170,220 10,220" fill="#b5dbb8" stroke="#2e5e1a" stroke-width="2.2" stroke-linejoin="round" />
+
+      <line x1="20" y1="60" x2="160" y2="60" stroke="#d94f1e" stroke-width="1.5" stroke-dasharray="6,3" />
+      <text x="165" y="56" font-size="7" fill="#d94f1e" font-family="sans-serif" font-weight="bold">Knicklinie oben</text>
+
+      <line x1="20" y1="175" x2="160" y2="175" stroke="#d94f1e" stroke-width="1.5" stroke-dasharray="6,3" />
+      <text x="165" y="171" font-size="7" fill="#d94f1e" font-family="sans-serif" font-weight="bold">Knicklinie unten</text>
+
+      <line x1="90" y1="12" x2="90" y2="220" stroke="#1a3a4a" stroke-width="1.2" stroke-dasharray="5,4" />
+      <text x="95" y="18" font-size="7" fill="#1a3a4a" font-family="sans-serif">Mitte knicken</text>
+
+      <rect x="8" y="95" width="8" height="30" fill="#f2d6b5" stroke="#bfa07a" stroke-width="1" rx="2" />
+      <text x="3" y="112" font-size="6" fill="#8a5a3a" font-family="sans-serif" transform="rotate(-90 3,112)">Klebelasche</text>
+
+      <circle cx="90" cy="100" r="8" fill="#f2c94c" opacity="0.9" stroke="#cfa92b" stroke-width="1" />
+      <circle cx="60" cy="140" r="6" fill="#e85d4e" opacity="0.9" stroke="#c44b3f" stroke-width="0.8" />
+      <circle cx="120" cy="140" r="6" fill="#4a9e8f" opacity="0.9" stroke="#367a6e" stroke-width="0.8" />
+      <text x="90" y="230" font-size="7" fill="#6d3e2a" text-anchor="middle" font-family="sans-serif" font-weight="bold">Skizze: dekorieren nach dem Knicken</text>
+    </svg>
+    <div class="legend">
+      <span><span class="line-solid"></span> = Ausschneiden</span>
+      <span><span class="line-dashed"></span> = Knicklinie (nicht schneiden)</span>
+    </div>
+  </div>
+</section>
+
+<section class="instructions" aria-label="Bastelanleitung">
+  <h3>📋 Volles Bastelprogramm (3-Seiten-Baum)</h3>
+  <ol>
+    <li><strong>Material:</strong> Buntes Papier (ca. 120–160 g/m²), Schere, Lineal, Bleistift, Klebstift oder Tesa, Stifte / Buntstifte / Aufkleber und ein kleiner Stern für die Spitze.</li>
+    <li><strong>Ausschneiden:</strong> Drucke diese Seite auf DIN-A4. Schneide beide Baum-Vorlagen genau an den <strong>Geraden Kanten</strong> aus – die gestrichelten Linien bleiben unberührt. Achte auf die kleine Klebelasche links.</li>
+    <li><strong>Knicklinien vorbereiten:</strong> Lege das Papier auf eine harte Fläche. Ziehe mit dem Lineal über die <strong>obere und untere gestrichelte Linie</strong>, sodass eine saubere Falte entsteht. Das gibt dem Baum später die perfekte Form.</li>
+    <li><strong>3D-Form bilden (3 Seiten):</strong> Knicke entlang der <strong>vertikalen Mittellinie</strong>, sodass der Baum zu einer dreieckigen Säule wird. Die linke Klebelasche wird auf die rechte Seite geklebt – so entsteht ein stehender Baum mit drei Seiten.</li>
+    <li><strong>Fertige Standfestigkeit:</strong> Die <strong>obere Knicklinie</strong> sorgt für die leicht gewölbte Kronenform; die <strong>untere Knicklinie</strong> für einen stabilen Fuß. Wenn nötig, füge unten ein kleines Dreieck als Sockel ein.</li>
+    <li><strong>Dekorieren:</strong> Male Ornamente, Sterne oder Schneeflocken direkt auf die drei Seiten. Klebe einen goldenen Stern oben auf die Spitze und eine kleine Schleife an den Fuß.</li>
+    <li><strong>Tipp:</strong> Für einen besonders schönen Effekt kannst du zwei Bäume in unterschiedlichen Grüntönen oder mit gestrichelten Muster-Papieren ausdrucken und nebeneinander stellen.</li>
+  </ol>
+  <div class="tip-box">
+    <strong>Hinweis für perfekte Ergebnisse:</strong> Drucke mit „Tatsächliche Größe“ (kein „Anpassen“). Die gestrichelten Knicklinien sind bewusst rot markiert – schneide sie nicht mit, sonst verliert der Baum seine Standfestigkeit.
+  </div>
+</section>
+
+<footer style="margin-top: 3mm; text-align:center; font-size:7pt; color:#8a7a6a;">
+  Vorlage für Kinder & Erwachsene · DIN-A4 · Zwei Bäume pro Seite · Gerade Schnittkanten für einfaches Ausschneiden
+</footer>
+
+</body>
+</html>
