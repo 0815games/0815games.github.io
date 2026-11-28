@@ -54,4 +54,9 @@ test('the emulator suite runs the account rules in CI',()=>{
  const test=read('firebase/rules-test/admin-account.test.mjs');
  assert.ok(test.includes('ADMIN-ACCOUNT-RULES-TO-PUBLISH.json'),'the test must load the publish file');
  assert.ok(test.includes(`const ADMIN='${ADMIN}'`),'the test must use the published admin UID');
+ const publish=read('firebase/ADMIN-ACCOUNT-RULES-TO-PUBLISH.json');
+ assert.ok(!publish.includes('isObject'),'RTDB rules have no isObject() method');
+ const browser=read('firebase/rules-test/admin-panel-browser.cjs');
+ assert.ok(!browser.includes("admin-entry.mjs?v=202610"),"the panel test must not pin a cache-wave token");
+ assert.ok(browser.includes('admin-entry\\.mjs\\?v='),'the panel test swaps the entry token generically');
 });
