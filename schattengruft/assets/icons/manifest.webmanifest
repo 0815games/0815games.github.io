@@ -2,7 +2,7 @@
   "name": "Chroniken der Schattengruft",
   "short_name": "Schattengruft",
   "description": "Dungeon-Roguelike mit Cloud-Saves. Dunkel, tief, lohnend.",
-  "start_url": ".",
+  "start_url": "../../",
   "display": "fullscreen",
   "orientation": "portrait",
   "background_color": "#08090e",
