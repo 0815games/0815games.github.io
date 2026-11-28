@@ -35,8 +35,8 @@ before(async()=>{
   projectId:'demo-ironpath',
   database:{host:'127.0.0.1',port:9000,rules:readFileSync(testRulesetPath('../ADMIN-ACCOUNT-RULES-TO-PUBLISH.json'),'utf8')}
  });
-after(async()=>{if(env)await env.cleanup();});
 });
+after(async()=>{if(env)await env.cleanup();});
 
 test('published admin account rules: operator reads and sets XP, players keep their own rules',{timeout:25000},async()=>{
   console.error('[phase] start');
