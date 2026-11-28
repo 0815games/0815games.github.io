@@ -37,7 +37,7 @@
     const dx = event.changedTouches[0].clientX - touchStart.x;
     const dy = event.changedTouches[0].clientY - touchStart.y;
     touchStart = null;
-    if (mobile.matches && Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(dy) * 1.3) select(active + (dx < 0 ? 1 : -1));
+    if (mobile.matches && Math.abs(dy) > 48 && Math.abs(dy) > Math.abs(dx) * 1.3) select(active + (dy < 0 ? 1 : -1));
   }, {passive: true});
   grid.addEventListener('touchcancel', () => { touchStart = null; }, {passive: true});
 
