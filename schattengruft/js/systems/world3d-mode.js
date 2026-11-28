@@ -10,6 +10,7 @@
 // oben im Kampfbildschirm, und die 3D-Leinwand wird dorthin umgehängt.
 
 import { state } from '../core/state.js';
+import { supportsTheme3D } from '../world/world3d-atmosphere.js';
 
 const HOST_ID = 'combat-stage';
 const STORAGE_KEY = 'schattengruft-3d';
@@ -131,6 +132,8 @@ export function install3DMode(stateRef = state) {
     if (!api) return 'Lädt …';
     if (api.active) return stateRef.inCombat ? '3D-Kampfbühne' : '3D-Ansicht';
     if (api.error) return '3D nicht verfügbar';
+    // Karte ohne 3D: Schalter führt zum "Bald verfügbar"-Popup.
+    if (!worldSupports3D()) return '3D bald verfügbar';
     return '2D-Ansicht';
   }
 
@@ -182,9 +185,84 @@ export function install3DMode(stateRef = state) {
     paint();
   }
 
+  // Liefert true, wenn die aktuelle Karte eine 3D-Ansicht hat. Liegt kein
+  // Weltobjekt vor oder das Thema ist nicht in 3D umgesetzt, gibt es keine.
+  function worldSupports3D() {
+    const w = stateRef.world;
+    return !!(w && Array.isArray(w.tiles) && w.tiles.length
+      && supportsTheme3D(w.theme));
+  }
+
+  // Eigenes Dialog-Fenster für Karten ohne 3D: "Bald verfügbar".
+  // Nach demselben Muster wie stair-confirm.js – eigenständig, kein
+  // ModalManager, damit es nicht mit anderen Dialogen kollidiert.
+  let comingSoonDialog = null;
+  let comingSoonOkButton = null;
+  function showComingSoon() {
+    if (!comingSoonDialog) {
+      comingSoonDialog = document.createElement('dialog');
+      comingSoonDialog.id = 'world3d-coming-soon';
+      comingSoonDialog.setAttribute('role', 'dialog');
+      comingSoonDialog.setAttribute('aria-modal', 'true');
+      comingSoonDialog.setAttribute('aria-labelledby', 'world3d-coming-soon-title');
+      comingSoonDialog.setAttribute('aria-describedby', 'world3d-coming-soon-text');
+
+      const card = document.createElement('div');
+      card.className = 'cs-card';
+
+      const heading = document.createElement('h2');
+      heading.id = 'world3d-coming-soon-title';
+      heading.textContent = '🛠️ 3D BALD VERWENDBAR';
+
+      const text = document.createElement('p');
+      text.id = 'world3d-coming-soon-text';
+      text.textContent = 'Diese Karte hat die 3D-Ansicht noch nicht. Wir arbeiten daran – sie ist bald direkt hier im Spiel nutzbar.';
+
+      const actions = document.createElement('div');
+      actions.className = 'cs-actions';
+      comingSoonOkButton = document.createElement('button');
+      comingSoonOkButton.type = 'button';
+      comingSoonOkButton.id = 'world3d-coming-soon-ok';
+      comingSoonOkButton.textContent = 'Verstanden';
+      comingSoonOkButton.addEventListener('click', () => comingSoonDialog.close());
+      actions.append(comingSoonOkButton);
+
+      card.append(heading, text, actions);
+      comingSoonDialog.append(card);
+      document.body.append(comingSoonDialog);
+
+      const style = document.createElement('style');
+      style.textContent = `
+#world3d-coming-soon,#world3d-coming-soon *{box-sizing:border-box}
+#world3d-coming-soon{position:fixed;inset:0;margin:0;width:100%;max-width:100%;height:100dvh;max-height:100dvh;border:0;padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));background:#05060af2;color:#fff;overflow:auto}
+#world3d-coming-soon[open]{display:grid;place-items:center}
+#world3d-coming-soon::backdrop{background:#05060ae6}
+#world3d-coming-soon .cs-card{width:min(420px,100%);min-width:0;max-height:100%;overflow:auto;padding:20px;background:#111420;border:2px solid #c99c42;border-radius:16px;text-align:center;box-shadow:0 20px 60px #000c}
+#world3d-coming-soon h2{margin:0 0 8px;color:#ffd54f;font-size:20px;overflow-wrap:anywhere}
+#world3d-coming-soon p{margin:0 0 16px;line-height:1.5;overflow-wrap:anywhere}
+#world3d-coming-soon .cs-actions{display:grid;grid-template-columns:minmax(0,1fr)}
+#world3d-coming-soon button{width:100%;min-width:0;min-height:52px;padding:12px;border:1px solid #c99c42;border-radius:12px;background:#24293c;color:#fff;font:inherit;overflow-wrap:anywhere;touch-action:manipulation}
+#world3d-coming-soon #world3d-coming-soon-ok{background:#c99c42;color:#111;font-weight:700}
+#world3d-coming-soon button:focus-visible{outline:3px solid #ffe082;outline-offset:2px}
+`;
+      document.head.append(style);
+      comingSoonDialog.addEventListener('cancel', (e) => {
+        e.preventDefault();
+        comingSoonDialog.close();
+      });
+    }
+    if (!comingSoonDialog.open) comingSoonDialog.showModal();
+  }
+
   const onClick = () => {
     const api = api3d();
     if (!api) return;
+    // 3D einschalten, aber aktuelle Karte hat noch keine 3D: Popup zeigen,
+    // statt wirkungslos umschalten (das war bisher "passiert gar nichts").
+    if (!api.active && !worldSupports3D()) {
+      showComingSoon();
+      return;
+    }
     // Den Zielzustand hier festhalten: würde er nach dem Umschalten erneut
     // aus `api.active` gelesen, kehrte der Aufruf sich selbst um.
     choose(!api.active);
@@ -240,6 +318,14 @@ export function install3DMode(stateRef = state) {
     window.removeEventListener?.('resize', onResize);
     unsubscribe?.();
     unsubscribe = null;
+    // Das "Bald verfügbar"-Dialog-Fenster entfernen, damit eine neue
+    // Installation nicht auf einen alten Knoten stößt.
+    if (comingSoonDialog) {
+      if (comingSoonDialog.open) comingSoonDialog.close();
+      comingSoonDialog.remove?.();
+      comingSoonDialog = null;
+      comingSoonOkButton = null;
+    }
   };
 
   // Auf den Renderer warten: main.js setzt window.__rpg erst am Ende.

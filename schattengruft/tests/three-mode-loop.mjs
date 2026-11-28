@@ -33,6 +33,7 @@ class El {
     this.dataset = {};
     this._text = '';
     this._disabled = false;
+    this._open = false;
     this._classes = new Set();
     this._events = {};
     this.classList = {
@@ -47,6 +48,9 @@ class El {
     };
     if (id) byId.set(id, this);
   }
+
+  get open() { return this._open; }
+  set open(value) { this._open = !!value; }
 
   get textContent() { return this._text; }
   // Wie im Browser: Zuweisung ersetzt den Knoten -> immer ein Datensatz.
@@ -65,6 +69,9 @@ class El {
 
   get disabled() { return this._disabled; }
   set disabled(value) { this._disabled = !!value; }
+
+  showModal() { this._open = true; }
+  close() { this._open = false; }
 
   setAttribute(name, value) {
     if (this.attrs[name] !== String(value)) {
@@ -208,7 +215,7 @@ const { install3DMode, reset3DModeForTests } = await import(
 );
 
 reset3DModeForTests();
-install3DMode({ inCombat: false });
+install3DMode({ inCombat: false, world: { tiles: [{}], theme: 'katakomben' } });
 
 // 1. Ruhezustand nach der Installation
 const start = await settle();
@@ -224,7 +231,7 @@ assert.ok(
 );
 
 // 3. Kampf beginnt: Klasse ändert sich, die Leinwand wird umgehängt
-const state = { inCombat: true };
+const state = { inCombat: true, world: { tiles: [{}], theme: 'katakomben' } };
 reset3DModeForTests();
 install3DMode(state);
 // 3D ist bereits eingeschaltet (der Renderer behält seinen Zustand). Kein

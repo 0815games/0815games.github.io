@@ -41,8 +41,12 @@ export function installWorld3D(renderer,state){
 .world3d-home{
 position:absolute;inset:0;pointer-events:none;z-index:2
 }
-.world3d-home canvas,
-#combat-stage canvas{
+/* Die 3D-Leinwand trägt die Klasse world3d-canvas und hängt je nach
+   Bildschirm in .world3d-home, #mapbox oder #combat-stage. Die Regel muss
+   klassenbasiert sein: Steht die Leinwand direkt im Kartenbereich (#mapbox),
+   greift die world3d-home-Canvas-Regel nicht – die absolute Positionierung
+   fehlt dann und die Leinwand landet unsichtbar im Flow (schwarzer Bildschirm). */
+.world3d-canvas{
 position:absolute;inset:0;width:100%!important;height:100%!important;
 pointer-events:none!important;display:block;border-radius:inherit
 }

@@ -1,5 +1,5 @@
 const plans=new WeakMap(),stamps=new Map(),installed=new WeakSet();
-const COLORS={katakomben:['#634354','#999181'],pilzwald:['#415e43','#a1b77c'],frostgruft:['#55768d','#bfdce7'],feuershrein:['#8a4736','#c4a477'],schattenarena:['#635075','#c0a6d9']};
+const COLORS={katakomben:['#634354','#999181'],pilzwald:['#415e43','#a1b77c'],frostgruft:['#55768d','#bfdce7'],feuerschrein:['#8a4736','#c4a477'],schattenarena:['#635075','#c0a6d9']};
 function noise(x,y,seed=0){let v=(Math.imul(x+1,374761393)^Math.imul(y+1,668265263)^(seed|0))>>>0;v=Math.imul(v^(v>>>13),1274126177)>>>0;return(v^(v>>>16))>>>0;}
 function site(tiles,x,y){return [-1,0,1].every(dx=>tiles[y]?.[x+dx]===1&&tiles[y+1]?.[x+dx]===0);}
 export function planWallDecor(tiles,seed=0){

@@ -26,6 +26,7 @@ class El {
     this.dataset = {};
     this._text = '';
     this._disabled = false;
+    this._open = false;
     this._classes = new Set();
     this._events = {};
     this.classList = {
@@ -41,6 +42,15 @@ class El {
     if (id) byId.set(id, this);
   }
 
+  get open() { return this._open; }
+  set open(value) { this._open = !!value; }
+
+  get id() { return this._id; }
+  set id(value) {
+    this._id = value;
+    if (value) byId.set(value, this);
+  }
+
   get textContent() { return this._text; }
   set textContent(value) { this._text = String(value); }
   get title() { return this.attrs.title ?? ''; }
@@ -48,7 +58,15 @@ class El {
   get disabled() { return this._disabled; }
   set disabled(value) { this._disabled = !!value; }
 
-  setAttribute(name, value) { this.attrs[name] = String(value); }
+  showModal() { this._open = true; }
+  close() { this._open = false; }
+
+  setAttribute(name, value) {
+    this.attrs[name] = String(value);
+    // IDs von programmatisch erzeugten Knoten registrieren (z. B. das
+    // "Bald verfügbar"-Dialog-Fenster), das Modul setzt sie per setAttribute.
+    if (name === 'id' && value) byId.set(value, this);
+  }
   getAttribute(name) { return this.attrs[name] ?? null; }
 
   append(...nodes) {
@@ -176,8 +194,12 @@ assert.equal(initialPreference({ search: '?view=unsinn', stored: true }), 'on');
 // prüft damit genau eine Installation.
 reset3DModeForTests();
 
-// Ein schlanker Spielzustand genügt; das Modul liest nur `inCombat`.
-const state = { inCombat: false };
+// Ein schlanker Spielzustand genügt. `world` simuliert eine vorhandene
+// Karte mit 3D-fähigem Theme, so wie es im Spielfluss immer der Fall ist.
+const state = {
+  inCombat: false,
+  world: { tiles: [{}, {}, {}], theme: 'katakomben' }
+};
 
 /* ---------- 1. Reine Host-Logik ---------- */
 
@@ -306,6 +328,45 @@ await flush();
 assert.ok(calls.length > before, 'Vorliebe beim Start angewandt');
 assert.equal(fake.active, true, '3D startet eingeschaltet');
 
+/* ---------- 8a. Karte ohne 3D: Popup "Bald verfügbar" ---------- */
+
+// Karte mit einem Theme, das noch keine 3D-Ansicht hat.
+const no3DState = {
+  inCombat: false,
+  world: { tiles: [{}, {}], theme: 'verwitterter_friedhof' }
+};
+// Startzustand: 3D aus, damit der Schalter das Popup löst (nicht das
+// Einschalten aus der gespeicherten Vorliebe "on").
+storage.set('schattengruft-3d', 'off');
+fake._active = false;
+reset3DModeForTests();
+install3DMode(no3DState);
+await flush();
+const beforePopup = calls.length;
+button.click();
+await flush();
+
+assert.equal(fake.active, false, '3D bleibt bei Nicht-3D-Karte deaktiviert');
+assert.ok(
+  !calls.slice(beforePopup).includes('setEnabled:true'),
+  'Renderer wurde bei Nicht-3D-Karte nicht auf "ein" geschaltet'
+);
+const comingSoon = byId.get('world3d-coming-soon');
+assert.ok(comingSoon, 'Dialog-Fenster "Bald verfügbar" wurde erzeugt');
+assert.equal(comingSoon.open, true, 'Dialog ist geöffnet');
+assert.ok(
+  byId.get('world3d-coming-soon-ok'),
+  'Dialog hat den Bestätigungsbutton'
+);
+assert.equal(
+  button.getAttribute('aria-label'), '3D bald verfügbar',
+  'Schalter zeigt den Nicht-3D-Zustand an'
+);
+
+// Bestätigung schließt das Dialog und 3D bleibt deaktiviert.
+byId.get('world3d-coming-soon-ok').click();
+assert.equal(comingSoon.open, false, 'Dialog schließt nach Bestätigung');
+
 /* ---------- 9. Der Schalter ist im echten Markup verdrahtet ---------- */
 
 const { readFile } = await import('node:fs/promises');
@@ -357,6 +418,18 @@ assert.ok(
   engineSource.includes('Den Zustand NICHT abschalten') ||
   engineSource.includes('Der nächste Frame misst neu'),
   'Grund ist im Code dokumentiert'
+);
+
+// (c) Die 3D-Leinwand muss absolut im Host liegen. Ohne `position:absolute`
+//     und `inset:0` landet sie im Flow und ist unsichtbar – schwarzer Bildschirm,
+//     wenn sie direkt im Kartenbereich (#mapbox) hängt.
+assert.ok(
+  /\.world3d-canvas\s*\{[^}]*position:absolute[^}]*inset:0/s.test(engineSource),
+  'Leinwand-Regel setzt absolute Positionierung'
+);
+assert.ok(
+  !/world3d-home canvas/.test(engineSource),
+  'Leinwand-Regel ist klassenbasiert, nicht host-basiert'
 );
 
 
