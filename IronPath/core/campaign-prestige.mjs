@@ -11,7 +11,7 @@
 // best-effort transaction (the endlessLastRun pattern) and disables itself
 // for the session if the database refuses it - mission completion itself
 // never carries the field and can never be blocked by it.
-import {readArmory} from './armory.mjs?v=20261121-afkmsg1';
+import {readArmory} from './armory.mjs?v=20261121-adminacc1';
 import {PRESTIGE_MAX_TIER} from './campaign-pressure.mjs?v=20261112-pressure1';
 
 export {PRESTIGE_MAX_TIER};
