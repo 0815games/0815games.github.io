@@ -1,29 +1,31 @@
 'use strict';
-const assert=require('node:assert/strict');
-const fs=require('node:fs');
-const vm=require('node:vm');
-const path=require('node:path');
-const root=path.resolve(__dirname,'../..');
-const source=fs.readFileSync(path.join(root,'arcade/dashboard.js'),'utf8');
-const fn=source.match(/^function portalOffset[^\n]+/m);
-assert.ok(fn,'portalOffset vorhanden');
-const context={};vm.createContext(context);vm.runInContext(fn[0]+';this.offset=portalOffset;',context);
-for(let active=0;active<6;active++){
- const offsets=Array.from({length:6},(_,i)=>context.offset(i,active,6));
- assert.equal(offsets[active],0);
- assert.deepEqual([...offsets].sort((a,b)=>a-b),[-3,-2,-1,0,1,2]);
- assert.equal(context.offset((active+1)%6,active,6),1);
- assert.equal(context.offset((active+5)%6,active,6),-1);
-}
-const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
-assert.ok(html.includes('data-dashboard-version="2.0.3"'));
-assert.ok(!/<iframe\b/i.test(html));
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const root = path.resolve(__dirname, '../..');
+const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+const css = fs.readFileSync(path.join(root, 'arcade/dashboard.css'), 'utf8');
+const source = fs.readFileSync(path.join(root, 'arcade/dashboard.js'), 'utf8');
+const games = JSON.parse(fs.readFileSync(path.join(root, 'arcade/games.json'), 'utf8'));
+
+assert.equal(games.length, 4, 'die Spielzentrale enthält genau vier Titel');
+assert.deepEqual(games.map(game => game.id), ['pipboy', 'tiny-tycoon-towns', 'ironpath', 'schattengruft']);
+assert.ok(!/<iframe\b/i.test(html), 'Spiele werden nicht in eingebetteten Frames geladen');
 assert.ok(!source.includes('createElement(\'iframe\')'));
-const embedded=html.match(/<script type="application\/json" id="portal-data">([\s\S]*?)<\/script>/);
-assert.ok(embedded);
-const games=JSON.parse(embedded[1]);
-assert.equal(games.length,6);
-assert.deepEqual(games,JSON.parse(fs.readFileSync(path.join(root,'arcade/games.json'),'utf8')));
-for(const game of games){assert.ok(fs.existsSync(path.join(root,game.path)));assert.ok(fs.existsSync(path.join(root,'arcade/art',game.id+'.svg')));}
-for(const asset of ['theme.js','dashboard.css','dashboard.js'])assert.ok(html.includes('arcade/'+asset+'?v=2.0.3'));
-console.log('Portal-Tests bestanden: zyklische Positionen, Spiele, Assets, eingebettete Daten und Version.');
+assert.match(html, /data-dashboard-version="3\.0\.0"/);
+assert.match(html, /id="game-grid"/);
+assert.equal((html.match(/data-game-card/g) || []).length, 4, 'vier auswählbare Spiele-Karten');
+assert.equal((html.match(/data-game-select=/g) || []).length, 4, 'vier direkte Mobile-Auswahltasten');
+assert.match(css, /grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/, 'Desktop zeigt alle vier Titel nebeneinander');
+assert.ok(css.includes('.game-grid[data-mobile-ready="true"] .game-card{display:none}'), 'Mobile blendet nicht ausgewählte Titel aus');
+assert.match(source, /touchstart/);
+assert.match(source, /ArrowLeft/);
+assert.match(source, /previous-game/);
+
+for (const game of games) {
+  assert.ok(fs.existsSync(path.join(root, game.path)), `Spiel vorhanden: ${game.path}`);
+  assert.ok(fs.existsSync(path.join(root, game.image)), `Vorschaubild vorhanden: ${game.image}`);
+  assert.ok(html.includes(`href="${game.path}"`), `Spiel ist auf der Startseite verlinkt: ${game.path}`);
+}
+for (const asset of ['theme.js', 'dashboard.css', 'dashboard.js']) assert.ok(html.includes(`arcade/${asset}?v=3.0.0`));
+console.log('Dashboard-Tests bestanden: vier Spiele, Vorschauen, Links, Desktop-Grid und mobile Navigation.');
