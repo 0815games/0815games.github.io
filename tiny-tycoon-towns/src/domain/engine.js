@@ -220,6 +220,55 @@ export function removeField(state, { x, y }) {
 }
 
 
+/** Gelände, das man gegen Münzen wandeln kann (TTT-0090). */
+export const TERRAINS = ['meadow', 'forest', 'rock', 'water', 'sand', 'mountain'];
+
+/** Deterministischer Pseudozufall je Kachel und Wandlungs-Nummer, Ergebnis in [0, 1). */
+function conversionRoll(seed, x, y, n) {
+  let h = (seed ^ Math.imul(x + 1, 73856093) ^ Math.imul(y + 1, 19349663) ^ Math.imul(n + 1, 83492791)) >>> 0;
+  h = Math.imul(h ^ (h >>> 16), 0x85ebca6b) >>> 0;
+  h = Math.imul(h ^ (h >>> 13), 0xc2b2ae35) >>> 0;
+  return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+}
+
+/**
+ * Kosten, um die Kachel (x, y) zu wandeln. Zufällig je Kachel, und jede weitere Wandlung der Stadt
+ * macht alles teurer.
+ */
+export function conversionCost(state, x, y, data) {
+  const c = data.economy.terrainConversion;
+  const n = state.terrainConversions ?? 0;
+  const roll = conversionRoll(state.seed ?? 0, x, y, n);
+  const factor = c.randomMin + roll * (c.randomMax - c.randomMin);
+  return Math.round(c.baseCoins * Math.pow(c.growthPerConversion, n) * factor);
+}
+
+/** Wandelt das Gelände einer freigeschalteten, freien Kachel gegen Münzen. Holz- und Fischbestand fallen weg. */
+export function convertTerrain(state, { x, y, terrain }, ctx) {
+  const { data } = ctx;
+  if (!inBounds(x, y, sizeOf(state))) return fail(state, 'outOfBounds');
+  if (!isUnlocked(x, y, state.townLevel, data, sizeOf(state))) return fail(state, 'locked');
+  if (!TERRAINS.includes(terrain)) return fail(state, 'unknownTerrain');
+  const tile = state.tiles[keyOf(x, y)];
+  if (!tile) return fail(state, 'noTile');
+  if (tile.building) return fail(state, 'occupied');
+  if (tile.field) return fail(state, 'fieldOccupied');
+  if (tile.terrain === terrain) return fail(state, 'sameTerrain');
+
+  const cost = conversionCost(state, x, y, data);
+  if (state.coins < cost) return fail(state, 'noCoins');
+
+  const s = clone(state);
+  s.coins -= cost;
+  const t = s.tiles[keyOf(x, y)];
+  const from = t.terrain;
+  t.terrain = terrain;
+  delete t.wood;
+  delete t.fish;
+  s.terrainConversions = (s.terrainConversions ?? 0) + 1;
+  return { state: s, events: [{ type: 'terrainConverted', x, y, from, to: terrain, cost }] };
+}
+
 /**
  * Rechnet einen angekommenen Konvoi ab. Idempotent: Die Konvoi-ID ist der Schlüssel, ein zweiter Aufruf
  * ändert nichts. Kronen gehen nicht in den Stadtstand, sie werden in `payout.crowns` zurückgegeben

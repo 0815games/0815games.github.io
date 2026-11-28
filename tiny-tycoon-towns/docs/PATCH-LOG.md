@@ -1368,3 +1368,13 @@ Ereignis ergänzt.
 - Versuch: Stein in Flusslanden standardmäßig verkaufbar. Ergebnis: **17 Verstöße**. Flusslande werden zu schnell (8 bis 10 Stunden), Stufe 5 verschiebt sich. Verworfen, Code zurückgesetzt.
 - Befund: Der Stein-Schalter ist ein grober Hebel mit zu großer Wirkung. Die Spanne braucht eine feinere Stellgröße (z. B. Verkaufsanteil oder Stein-Preis in Flusslanden) oder eine Designentscheidung zu Karg-Waren.
 - Status: NICHT grün, Stand unverändert 7 Verstöße (TTT-0087).
+
+### TTT-0090 – Geländewandel gegen Münzen (Engine, Daten, Tests)
+
+- Neue Aktion `convertTerrain` (Engine): Gelände jeder Kachel wird gegen Münzen gewandelt. Alle Geländearten wandelbar (Wiese, Wald, Fels, Wasser, Strand, Berg).
+- Regeln: nur im freigeschalteten Bereich, nur freie Kacheln (kein Gebäude, kein Feld), nicht gleiches Gelände. Holz- und Fischbestand der Kachel fallen weg.
+- Kosten je Kachel: `baseCoins` × `growthPerConversion`^(bisherige Wandlungen der Stadt) × Zufallsfaktor je Kachel zwischen `randomMin` und `randomMax`. Der Zufall ist deterministisch (Stadt-Seed), damit Spielstände reproduzierbar bleiben.
+- Werte in `data/economy.json` (`terrainConversion`): 150 Münzen, Faktor 1,2 je Wandlung, 0,7 bis 1,3. Erste Werte, Balance offen.
+- Tests: `tests/terrainConversion.test.mjs` (6 Fälle). `npm test`: 203 von 203 grün.
+- Nicht enthalten: Oberfläche (Kachel-Menü in `main.js`), GAME_PLAN-Abschnitt, Bot-Regel. Der Bot nutzt die Wandlung nicht, die Balance-Messung bleibt deshalb unverändert (7 Verstöße).
+- Offen: Ob der Bot die Wandlung nutzen soll (Voraussetzung, um die Biom-Spanne zu schließen), und die Oberfläche.
