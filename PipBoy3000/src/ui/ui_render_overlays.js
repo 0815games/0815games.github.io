@@ -290,7 +290,7 @@ Object.assign(UI, {
         // faellt aus dem Entwurf. Die Farbe (Rot) traegt die Bedeutung.
         const btnTrash = document.createElement('button');
         btnTrash.className = "action-button border-red-500 text-red-400 px-4 py-2 font-bold flex-1 text-base";
-        btnTrash.textContent = "WEGWERFEN";
+        btnTrash.textContent = invItem.count > 1 ? `STAPEL WEGWERFEN (${invItem.count}x)` : "WEGWERFEN";
         btnTrash.onclick = () => { Game.destroyItem(invIndex); setTimeout(() => UI.leaveDialog(), 50); };
 
         const btnNo = document.createElement('button');

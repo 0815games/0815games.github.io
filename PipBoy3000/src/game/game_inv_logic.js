@@ -51,9 +51,10 @@ Object.assign(Game, {
 
         // 1. Stacken (nur wenn es keine einzigartigen Eigenschaften hat)
         // Legendaries mit UID sollten NICHT gestapelt werden
-        if (!props && (!fullItemObj || !fullItemObj.uid)) {
+        const incomingSimple = !fullItemObj || this.istEinfacherStapel({...fullItemObj, id: itemId, count});
+        if (limit > 1 && incomingSimple) {
             for (let item of this.state.inventory) {
-                if (item.id === itemId && !item.props && !item.uid && item.count < limit) {
+                if (item.id === itemId && this.istEinfacherStapel(item) && item.count < limit) {
                     const space = limit - item.count;
                     const take = Math.min(space, remaining);
                     item.count += take;
@@ -76,13 +77,13 @@ Object.assign(Game, {
                 const take = Math.min(limit, remaining);
                 
                 let newItem;
-                if(fullItemObj && (fullItemObj.uid || fullItemObj.isLegendary)) {
+                if(fullItemObj && !incomingSimple) {
                     // [NEU] Wenn es ein Legendary/Custom Item ist, kopiere ALLES
                     newItem = JSON.parse(JSON.stringify(fullItemObj));
                     newItem.count = take;
                     newItem.isNew = true;
                     // Sicherstellen, dass ID gesetzt ist
-                    if(!newItem.id) newItem.id = itemId;
+                    newItem.id = itemId;
                 } else {
                     // Standard Item
                     newItem = { id: itemId, count: take, isNew: true };
@@ -194,32 +195,47 @@ Object.assign(Game, {
         // Legendaries geben mehr Schrott
         if(item.isLegendary) value *= 2;
         
-        this.state.inventory.splice(invIndex, 1);
-
-        let scrapAmount = Math.max(1, Math.floor(value / 10)); 
+        let scrapAmount = Math.max(1, Math.floor(value / 10));
         const perkLvl = this.getPerkLevel('scrapper');
-        if(perkLvl > 0) { scrapAmount += perkLvl; }
-
-        this.addToInventory('junk_metal', scrapAmount);
-        let msg = `Zerlegt: ${name} -> ${scrapAmount}x Schrott`;
-
-        let screwChance = 0.3 + (perkLvl * 0.15); 
+        if (perkLvl > 0) scrapAmount += perkLvl;
+        const outputs = [{id: 'junk_metal', count: scrapAmount}];
+        const screwChance = 0.3 + (perkLvl * 0.15);
         const isComplex = def.type === 'weapon' || def.type === 'junk' || def.type === 'tool';
-
-        if(isComplex && Math.random() < screwChance) {
+        if (isComplex && Math.random() < screwChance) {
             let screws = Math.max(1, Math.floor(value / 50));
             if (perkLvl >= 2 && Math.random() < 0.4) screws *= 2;
-            this.addToInventory('screws', screws);
-            msg += `, ${screws}x Schrauben`;
+            outputs.push({id: 'screws', count: screws});
         }
-        
-        let plasticChance = 0.2 + (perkLvl * 0.15);
-        if(value >= 100 && Math.random() < plasticChance) {
-            let plastic = 1;
-            if (perkLvl >= 3) plastic += 1;
-            this.addToInventory('plastic', plastic);
-            msg += `, ${plastic}x Plastik`;
+        const plasticChance = 0.2 + (perkLvl * 0.15);
+        if (value >= 100 && Math.random() < plasticChance) {
+            outputs.push({id: 'plastic', count: perkLvl >= 3 ? 2 : 1});
         }
+        // Platz vor dem Zerlegen vollständig prüfen; auch ein verbleibender
+        // Teil des ursprünglichen Stapels belegt weiterhin seinen Platz.
+        const probe = this.state.inventory.map(entry => ({...entry}));
+        if (probe[invIndex].count > 1) probe[invIndex].count--;
+        else probe.splice(invIndex, 1);
+        for (const output of outputs) {
+            const limit = this.getStackLimit(output.id);
+            let rest = output.count;
+            for (const entry of probe) {
+                if (entry.id !== output.id || !this.istEinfacherStapel(entry)) continue;
+                const n = Math.min(rest, Math.max(0, limit - entry.count));
+                entry.count += n; rest -= n;
+            }
+            while (rest > 0) {
+                if (probe.length >= this.getMaxSlots()) {
+                    UI.log('Nicht genug Platz für die Materialien.', 'text-red-500'); return;
+                }
+                const n = Math.min(limit, rest);
+                probe.push({id: output.id, count: n}); rest -= n;
+            }
+        }
+        if (item.count > 1) item.count--;
+        else this.state.inventory.splice(invIndex, 1);
+        for (const output of outputs) this.addToInventory(output.id, output.count);
+        let msg = `Zerlegt: ${name} -> ${scrapAmount}x Schrott`;
+        for (const output of outputs.slice(1)) msg += `, ${output.count}x ${this.items[output.id].name}`;
 
         UI.log(msg, "text-orange-400 font-bold");
         this.updateWeight();
@@ -233,38 +249,34 @@ Object.assign(Game, {
         if(!recipe) return;
         if(this.state.lvl < recipe.lvl) { UI.log(`Benötigt Level ${recipe.lvl}!`, "text-red-500"); return; }
         
-        for(let reqId in recipe.req) {
-            const countNeeded = recipe.req[reqId];
-            const invItem = this.state.inventory.find(i => i.id === reqId);
-            if (!invItem || invItem.count < countNeeded) { UI.log(`Material fehlt: ${this.items[reqId].name}`, "text-red-500"); return; }
-        }
-        if(recipe.type === 'ammo') {
-            const id = recipe.out === 'AMMO' ? 'ammo' : recipe.out;
-            const limit = this.getStackLimit(id);
-            const freed = Object.entries(recipe.req).filter(([reqId, needed]) => {
-                const stack = this.state.inventory.find(i => i.id === reqId);
-                return stack && stack.count === needed;
-            }).length;
-            const freeInStacks = this.state.inventory.filter(i => i.id === id && !i.props && !i.uid)
-                .reduce((n, i) => n + Math.max(0, limit - i.count), 0);
-            const freeSlots = Math.max(0, this.getMaxSlots() - this.getUsedSlots() + freed);
-            if(recipe.count > freeInStacks + freeSlots * limit) {
-                UI.log("Nicht genug Platz für die hergestellte Munition.", "text-red-500"); return;
+        // Zuerst virtuell verbrauchen: Zutaten können über mehrere Stapel
+        // verteilt sein. Gleichzeitig den Platz für das gesamte Ergebnis prüfen.
+        const danach = this.state.inventory.map(item => ({...item}));
+        for (const [reqId, needed] of Object.entries(recipe.req)) {
+            let rest = needed;
+            for (let i = 0; i < danach.length && rest > 0; i++) {
+                const item = danach[i];
+                if (item.id !== reqId) continue;
+                const take = Math.min(item.count, rest);
+                item.count -= take; rest -= take;
+                if (item.count <= 0) { danach.splice(i, 1); i--; }
+            }
+            if (rest > 0) {
+                UI.log(`Material fehlt: ${(this.items[reqId] || {}).name || reqId}`, 'text-red-500'); return;
             }
         }
-        for(let reqId in recipe.req) {
-            const countNeeded = recipe.req[reqId];
-            const invItem = this.state.inventory.find(i => i.id === reqId);
-            invItem.count -= countNeeded;
-            if(invItem.count <= 0) this.state.inventory = this.state.inventory.filter(i => i.id !== reqId);
+        const outputId = recipe.out === 'AMMO' ? 'ammo' : recipe.out;
+        const limit = this.getStackLimit(outputId);
+        const frei = danach.filter(i => i.id === outputId && this.istEinfacherStapel(i))
+            .reduce((n, i) => n + Math.max(0, limit - i.count), 0);
+        const slots = Math.max(0, this.getMaxSlots() - danach.length);
+        if (recipe.count > frei + slots * limit ||
+            (outputId === 'camp_kit' && danach.some(i => i.id === 'camp_kit'))) {
+            UI.log('Nicht genug Platz für das hergestellte Item.', 'text-red-500'); return;
         }
-        
-        if(recipe.out === "AMMO") { 
-            this.addToInventory('ammo', recipe.count);
-        } else { 
-            this.addToInventory(recipe.out, recipe.count); 
-        }
-        
+        for (const [reqId, needed] of Object.entries(recipe.req)) this.removeFromInventory(reqId, needed);
+        this.addToInventory(outputId, recipe.count);
+
         UI.log(`Hergestellt: ${recipe.count}x ${recipe.out === "AMMO" ? "Munition" : this.items[recipe.out].name}`, "text-green-400 font-bold");
 
         if(typeof Game.updateQuestProgress === 'function' && recipe.out !== "AMMO") {

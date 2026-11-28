@@ -136,8 +136,7 @@ Object.assign(UI, {
                 
                 for(let reqId in recipe.req) {
                     const countNeeded = recipe.req[reqId];
-                    const invItem = Game.state.inventory.find(i => i.id === reqId);
-                    const countHave = invItem ? invItem.count : 0;
+                    const countHave = Game.state.inventory.reduce((n, i) => n + (i.id === reqId ? i.count : 0), 0);
                     const reqDef = Game.items[reqId];
                     const reqName = reqDef ? reqDef.name : reqId;
                     let color = "text-green-600";

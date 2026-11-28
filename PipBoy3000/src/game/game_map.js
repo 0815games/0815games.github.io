@@ -341,7 +341,7 @@ Object.assign(Game, {
                 const randomEquip = possibleEquip[Math.floor(Math.random() * possibleEquip.length)];
                 loot.push({ id: randomEquip.id, count: 1 });
             } else if (Math.random() > 0.2) {
-                loot.push({ id: 'junk', count: Math.floor(Math.random() * 4) + 1 });
+                loot.push({ id: 'junk_metal', count: Math.floor(Math.random() * 4) + 1 });
             }
         }
         

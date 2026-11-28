@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## v14.0.38 (Materialien richtig stapeln, 2026-11-24)
+- [INVENTAR] Einfache getrennte Materialstapel aus bestehenden Spielständen beim Laden bis zum Limit zusammenführen; Sonderdaten, UIDs und Ausrüstung bleiben unangetastet.
+- [WERKBANK] Zutaten über mehrere Stapel zählen und verbrauchen, Platz vor Fertigung und Zerlegen prüfen; Zerlegen entfernt nur ein Exemplar.
+- [LAGER] Einfache Waffen und Rüstungen im Lager nicht mehr zusammenlegen. Einkauf aller Waren prüft vor Bezahlung den Platz.
+- [FIX] Kisten-Schrott verwendet eine gültige Item-ID; Wegwerfen eines ganzen Stapels wird im Knopf mit Menge kenntlich gemacht.
+- [TEST] Katalogweite Materialprüfung, Migration, Stapelgrenzen, Sonderdaten, Werkbank, Lager und Einkauf.
+
 ## v14.0.37 (Pip-Boy-Systemfenster, 2026-11-24)
 - [DESIGN] Sitzungsübernahme als eigener grüner Pip-Boy-Dialog statt Browser-Bestätigung; Bestätigen, Abbrechen, Escape und Tastaturfokus berücksichtigt.
 - [DESIGN] Browser-Meldungen für Crash-Bericht, Minispiel-Fallbacks und Verwaltungsoberfläche durch einheitliche Systemfenster ersetzt.

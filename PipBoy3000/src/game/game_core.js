@@ -162,6 +162,36 @@ window.Game = {
 
     getUsedSlots: function() { if(!this.state || !this.state.inventory) return 0; return this.state.inventory.length; },
     getStackLimit: function(itemId) { if(itemId==='caps')return 99999; if(this.items[itemId] && this.items[itemId].type==='ammo')return 100; const i=this.items[itemId]; if(!i)return 1; if(i.type==='component'||i.type==='rare'||i.type==='consumable'||i.type==='junk')return 20; if(i.type==='ammo')return 100; return 1; },
+    // Nur eindeutige Standard-Einträge zusammenlegen. Fremde Eigenschaften,
+    // UIDs und Mods bleiben unverändert; alte übergroße Stapel werden erhalten.
+    istEinfacherStapel: function(item) {
+        return !!item && typeof item.id === 'string' && Number.isSafeInteger(item.count) && item.count > 0 &&
+            Object.keys(item).every(k => ['id', 'count', 'isNew'].includes(k));
+    },
+
+    ordneInventarStapel: function() {
+        if (!this.state || !Array.isArray(this.state.inventory)) return false;
+        const inv = this.state.inventory;
+        let geaendert = false;
+        for (let i = 0; i < inv.length; i++) {
+            const ziel = inv[i];
+            if (!this.istEinfacherStapel(ziel)) continue;
+            const limit = this.getStackLimit(ziel.id);
+            if (limit <= 1 || ziel.count >= limit) continue;
+            for (let j = i + 1; j < inv.length && ziel.count < limit; j++) {
+                const quelle = inv[j];
+                if (!this.istEinfacherStapel(quelle) || quelle.id !== ziel.id) continue;
+                const menge = Math.min(limit - ziel.count, quelle.count);
+                ziel.count += menge;
+                quelle.count -= menge;
+                if (quelle.isNew) ziel.isNew = true;
+                geaendert = true;
+                if (quelle.count === 0) { inv.splice(j, 1); j--; }
+            }
+        }
+        return geaendert;
+    },
+
     // Zaehlt alle Munitionsarten zusammen. Vorher nur 'ammo' - mit sechs
     // Sorten waere der HUD-Zaehler sonst still falsch (docs/BEFUNDE.md, 4).
     syncAmmo: function() {
@@ -450,6 +480,8 @@ window.Game = {
 
             if (saveData) {
                 this.state = saveData;
+                // Bestehende einfache Materialstapel ohne Verlust zusammenführen.
+                if (this.ordneInventarStapel()) this.isDirty = true;
                 // FIX: Seed Sicherheit für alte Spielstände
                 if (!this.state.worldSeed) { this.state.worldSeed = Date.now(); }
                 if (typeof WorldGen !== 'undefined') WorldGen.setSeed(this.state.worldSeed);

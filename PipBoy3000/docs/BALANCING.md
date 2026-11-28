@@ -3,7 +3,7 @@
 Erzeugt von `node tools/balance.mjs --write`. Nicht von Hand ändern —
 die Zahlen kommen aus dem gebauten Bündel und dem Quelltext.
 
-Stand: Version 14.0.37
+Stand: Version 14.0.38
 
 ## 1. Waffen
 
