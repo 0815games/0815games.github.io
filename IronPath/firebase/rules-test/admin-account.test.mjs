@@ -5,7 +5,7 @@
 // characterNames stays admin-only, so the in-game claim flow keeps returning
 // 'unsupported' exactly as it does against the live rules today.
 import assert from 'node:assert/strict';
-import {before,test} from 'node:test';
+import {after,before,test} from 'node:test';
 import {initializeTestEnvironment} from '@firebase/rules-unit-testing';
 import {readFileSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
@@ -35,9 +35,11 @@ before(async()=>{
   projectId:'demo-ironpath',
   database:{host:'127.0.0.1',port:9000,rules:readFileSync(testRulesetPath('../ADMIN-ACCOUNT-RULES-TO-PUBLISH.json'),'utf8')}
  });
+after(async()=>{if(env)await env.cleanup();});
 });
 
-test('published admin account rules: operator reads and sets XP, players keep their own rules',async()=>{
+test('published admin account rules: operator reads and sets XP, players keep their own rules',{timeout:25000},async()=>{
+  console.error('[phase] start');
   await env.withSecurityRulesDisabled(async context=>{
    const db=context.database();
    await db.ref('_ironpathMaintenance').set({format:1,mode:'open',authAfterMs:0});
@@ -46,6 +48,7 @@ test('published admin account rules: operator reads and sets XP, players keep th
    await db.ref('characterNames/alpha').set({uid:'alpha'});
   });
 
+  console.error('[phase] admin-reads');
   // The operator: any player, read and write.
   await env.authenticatedContext(ADMIN,authOptions).database().ref('players/alpha').child('xp').get();
   await env.authenticatedContext(ADMIN,authOptions).database().ref('players/beta').get();
@@ -58,6 +61,7 @@ test('published admin account rules: operator reads and sets XP, players keep th
   await assertDenied(()=>env.authenticatedContext(ADMIN,authOptions).database().ref('players/alpha').update({xp:12.5}));
   await assertDenied(()=>env.authenticatedContext(ADMIN,authOptions).database().ref('players/alpha').update({xp:1,name:'Nope',gender:'other'}));
 
+  console.error('[phase] rename');
   // The operator: rename with the reservation moving in the same update.
   await env.authenticatedContext(ADMIN,authOptions).database().ref().update({
    'players/alpha/name':'Gamma',
@@ -68,6 +72,7 @@ test('published admin account rules: operator reads and sets XP, players keep th
   assert.equal((await env.authenticatedContext(ADMIN,authOptions).database().ref('characterNames/gamma/uid').get()).val(),'alpha');
   assert.equal((await env.authenticatedContext(ADMIN,authOptions).database().ref('characterNames/alpha').get()).exists(),false);
 
+  console.error('[phase] denies');
   // A player: reads nobody else, writes nobody else, cannot touch the index.
   await assertDenied(()=>env.unauthenticatedContext().database().ref('players/alpha/xp').get());
   await assertDenied(()=>env.authenticatedContext('beta',authOptions).database().ref('players/alpha/xp').get());
@@ -75,12 +80,14 @@ test('published admin account rules: operator reads and sets XP, players keep th
   await assertDenied(()=>env.authenticatedContext('beta',authOptions).database().ref('characterNames/omega').get());
   await assertDenied(()=>env.authenticatedContext('beta',authOptions).database().ref('characterNames/omega').set({uid:'beta'}));
 
+  console.error('[phase] owner');
   // The owner still has their account: monotone XP, immutable name.
   await env.authenticatedContext('beta',authOptions).database().ref('players/beta').update({xp:999});
   assert.equal((await env.authenticatedContext('beta',authOptions).database().ref('players/beta/xp').get()).val(),999);
   await assertDenied(()=>env.authenticatedContext('beta',authOptions).database().ref('players/beta').update({xp:5}));
   await assertDenied(()=>env.authenticatedContext('beta',authOptions).database().ref('players/beta/name').set('Stolen'));
 
+  console.error('[phase] maintenance');
   // Maintenance mode: the player gate still applies, the operator does not.
   await env.withSecurityRulesDisabled(async context=>{
    await context.database().ref('_ironpathMaintenance').set({format:1,mode:'down',authAfterMs:0});
