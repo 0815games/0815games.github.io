@@ -1,5 +1,6 @@
 // Admin account tools against the exact file that would be published:
-// ADMIN-ACCOUNT-RULES-TO-PUBLISH.json. The operator may read any player and
+// ADMIN-ACCOUNT-RULES-TO-PUBLISH.json (the file the operator publishes).
+// The operator may read any player and
 // set XP or the character name; everyone else keeps the rules they have.
 // characterNames stays admin-only, so the in-game claim flow keeps returning
 // 'unsupported' exactly as it does against the live rules today.
