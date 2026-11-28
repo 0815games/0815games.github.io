@@ -69,4 +69,10 @@
   });
 
   select(0);
+
+  if ('serviceWorker' in navigator && window.isSecureContext) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    }, {once: true});
+  }
 })();
