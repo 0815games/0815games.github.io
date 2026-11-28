@@ -14,8 +14,8 @@ assert.equal(games.length, 4, 'die Spielzentrale enthält genau vier Titel');
 assert.deepEqual(games.map(game => game.id), ['pipboy', 'tiny-tycoon-towns', 'ironpath', 'schattengruft']);
 assert.ok(!/<iframe\b/i.test(html), 'Spiele werden nicht in eingebetteten Frames geladen');
 assert.ok(!source.includes('createElement(\'iframe\')'));
-assert.match(html, /data-dashboard-version="3\.2\.0"/);
-assert.match(html, /rel="manifest" href="manifest\.webmanifest\?v=3\.2\.0"/);
+assert.match(html, /data-dashboard-version="3\.3\.0"/);
+assert.match(html, /rel="manifest" href="manifest\.webmanifest\?v=3\.3\.0"/);
 assert.match(html, /name="apple-mobile-web-app-capable" content="yes"/);
 assert.match(html, /rel="apple-touch-icon" sizes="180x180"/);
 assert.equal(manifest.name, '0815 Games');
@@ -49,6 +49,9 @@ assert.equal((html.match(/data-game-select=/g) || []).length, 4, 'vier direkte M
 assert.match(css, /grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/, 'Desktop zeigt alle vier Titel nebeneinander');
 assert.ok(css.includes('.game-grid[data-mobile-ready="true"] .game-card{display:none}'), 'Mobile blendet nicht ausgewählte Titel aus');
 assert.match(source, /touchstart/);
+assert.match(source, /Math\.abs\(dy\) > 48/);
+assert.match(source, /select\(active \+ \(dy < 0 \? 1 : -1\)\)/);
+assert.ok(css.includes('.game-art{aspect-ratio:1.19;touch-action:pan-x}'), 'vertikale Swipes auf dem Bild bleiben für die Spielauswahl verfügbar');
 assert.match(source, /'arrowleft'/);
 assert.match(source, /'arrowright'/);
 assert.match(source, /'arrowup'/);
@@ -66,6 +69,6 @@ for (const game of games) {
   assert.ok(html.includes(`href="${game.path}"`), `Spiel ist auf der Startseite verlinkt: ${game.path}`);
 }
 assert.ok(html.includes('src="arcade/art/schattengruft-artwork.jpg"'), 'Schattengruft nutzt die neue Artwork-Datei');
-for (const asset of ['dashboard.css', 'dashboard.js']) assert.ok(html.includes(`arcade/${asset}?v=3.2.0`));
+for (const asset of ['dashboard.css', 'dashboard.js']) assert.ok(html.includes(`arcade/${asset}?v=3.3.0`));
 assert.ok(html.includes('arcade/favicon.svg?v=3.2.0'));
 console.log('Dashboard-Tests bestanden: vier Spiele, Vorschauen, Links, Desktop-Grid und mobile Navigation.');

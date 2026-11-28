@@ -1,16 +1,16 @@
 'use strict';
 
 const CACHE_PREFIX = '0815-games-dashboard-';
-const CACHE_NAME = `${CACHE_PREFIX}3.2.0`;
+const CACHE_NAME = `${CACHE_PREFIX}3.3.0`;
 const APP_SCOPE = self.registration.scope;
 const APP_ROOT = new URL('./', APP_SCOPE).href;
 const INDEX_URL = new URL('index.html', APP_SCOPE).href;
 const SHELL_FILES = [
   './',
   './index.html',
-  './manifest.webmanifest?v=3.2.0',
-  './arcade/dashboard.css?v=3.2.0',
-  './arcade/dashboard.js?v=3.2.0',
+  './manifest.webmanifest?v=3.3.0',
+  './arcade/dashboard.css?v=3.3.0',
+  './arcade/dashboard.js?v=3.3.0',
   './arcade/favicon.svg?v=3.2.0',
   './arcade/safari-pinned-tab.svg?v=3.2.0',
   './arcade/icons/favicon.ico?v=3.2.0',
