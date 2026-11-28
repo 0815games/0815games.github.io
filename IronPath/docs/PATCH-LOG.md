@@ -293,7 +293,7 @@ Nur Darstellung, kein Sim-State, kein Wire-Format, statisch im Terrain-Cache (Re
 - **Git / PR / Release:** Branch `arena/840f9060-0815games-github-io` ab `f8de8cfb`; Commits `58f0944` (Code/Test/Bump/Notes) + `70c7ece` (pr:543), **PR `#543`**, CI `46053631772` grün, **Merge `38aa60dd`**, Pages `46055550543` success auf `38aa60dd`.
 - **Offen / nächster Schritt:** Betreiber-Prüfung (inaktiv melden, auch mit zweitem Tab desselben Browsers); danach letzter Backlog-Punkt Admin-Panel-Vollintegration.
 
-## IPL-0150 – Betriebssteuerung: Konto & Charakter (XP setzen, Name ändern) (Welle `20261121-adminacc1`, PR `#0`)
+## IPL-0150 – Betriebssteuerung: Konto & Charakter (XP setzen, Name ändern) (Welle `20261121-adminacc1`, PR `#548`)
 
 - **Zeit / Quelle:** Sitzungsdatum 2026-11-21 UTC; Betreiber-Auftrag (4-Punkte-Nachricht, Punkt3): „Punkt3 muss das adminpanel noch voll integrieren - zum acc sachen ändern und char sachen".
 - **Block / Ziel:** Kein Spiel-Block; Betriebssteuerung (`admin.html`-Welt) plus Firebase-Rules. Bestehende Sprache: Wartungsschalter bleibt, darunter kommt **KONTO & CHARAKTER** - Lookup, Anzeige, zwei Bearbeitungen, alles über den Bestätigungsdialog. Kein Tutorial-Reset, kein Geschlechtswechsel, keine Accountsperre; Spieltexte und Spielverhalten unverändert.
@@ -307,5 +307,5 @@ Nur Darstellung, kein Sim-State, kein Wire-Format, statisch im Terrain-Cache (Re
   - `IronPath/tests/admin-players.test.mjs` (neu): Quell-Pins - HTML-IDs/Dialog/Überschrift/Styles, `update`-Import und `createAdminPlayers`-Start, Rules-Pins (Admin-Zweig, Child-Basis-Checks, Admin-only-Index), CI-Chain.
   - `IronPath/patch-notes.mjs`: Eintrag `adminacc1` an die Spitze (pr-Platzhalter bis zur PR-Nummer); Cache-Welle `20261121-adminacc1` (`bump … --from 20261121-afkmsg1 --apply`,100 Dateien,384 Tokens,7 Anker).
 - **Prüfung:** `node --test IronPath/tests/admin-players.test.mjs` 4/4, `admin-maintenance` 7/7; Patch-Notes importiert sauber; Bump-Trockenlauf vor `--apply` (7 bekannte Anker, patch-notes-Historie geschützt); Patch-Log-Rotation auf IPL-0150 (150 Einträge) vom Archiv-Test grün abgesichert; Emulator-Suite `admin-account.test.mjs` läuft im CI an der `test:maintenance`-Chain (kein Java lokal); Gesamtlauf und `check --fast` wie gehabt. Rules-Veröffentlichung liegt beim Betreiber (TO-PUBLISH).
-- **Git / PR / Release:** Branch `arena/67fbb6df-0815games-github-io` ab `31c4160`; Commits in dieser Welle, **PR `#0`** (Nummer nachgereicht), CI/Seiten und Merge werden hier fortgeschrieben.
+- **Git / PR / Release:** Branch `arena/67fbb6df-0815games-github-io` ab `31c4160`; Commits in dieser Welle, **PR `#548`**, CI/Seiten und Merge werden hier fortgeschrieben.
 - **Offen / nächster Schritt:** Betreiber-Prüfung: Admin-Rules publizieren, dann im Panel ein Testkonto per Name laden, XP setzen, umbenennen und die Freunde-Liste nach dem nächsten Konto-Laden gegenprüfen.
