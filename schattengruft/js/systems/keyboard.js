@@ -30,7 +30,7 @@ function setup(){
  function consume(e){e.preventDefault();e.stopImmediatePropagation();}
  function openPanel(tab){menu=true;document.querySelector(`nav button[data-tab="${tab}"]`)?.click();first(el(tab));}
  document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>{menu=true;first(el(b.dataset.tab));}));
- document.addEventListener('click',e=>{if(e.target.closest('.item')){const index=Array.from(el('items').children).indexOf(e.target.closest('.item'));queueMicrotask(()=>{if(menu){const items=Array.from(el('items').children);items[Math.min(index,items.length-1)]?.focus();}});}},true);
+ document.addEventListener('click',e=>{if(e.target.closest('.item')){const index=Array.from(el('items').children).indexOf(e.target.closest('.item'));queueMicrotask(()=>{if(menu){const items=Array.from(el('items').children);items[Math.min(index,items.length-1)]?.focus();}});}else if(menu&&!e.target.closest('aside,nav,.item,.slot-box,#combat,.screen,header,.iteminfo,dialog,.toast,.skill-node,.equip-slot-box')){menu=false;stage.focus();}},true);
  function moveFocus(list,dx,dy,columns=1){
   if(!list.length)return;
   const index=list.indexOf(document.activeElement);

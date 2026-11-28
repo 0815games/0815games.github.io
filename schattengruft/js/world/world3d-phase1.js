@@ -57,6 +57,9 @@ border:1px solid #693040;border-radius:12px
 body:not(.world3d-combat) #combat-stage{display:none}
 .world3d-on #stage{opacity:0!important}
 .world3d-on #hint{display:none}
+/* 3D-Leinwand: beim Ein-/Ausschalten sanft ein- und ausblenden */
+.world3d-canvas{opacity:0;transition:opacity .35s ease}
+body.world3d-on .world3d-canvas{opacity:1}
 
 /* Im 3D-Kampf muss die Bühne neben Bedienung und Text Platz haben.
    Die 2D-Ansicht behält ihr bisheriges Layout vollständig. */
