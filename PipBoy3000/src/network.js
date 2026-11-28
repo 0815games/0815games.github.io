@@ -8,6 +8,11 @@ const Network = window.Network = {
     otherPlayers: {},
     active: false,
     heartbeatInterval: null,
+    sessionId: null,
+    sessionRef: null,
+    sessionListener: null,
+    sessionLost: false,
+    pendingSaves: new Set(),
 
     config: {
         apiKey: "AIzaSyCgSK4nJ3QOVMBd7m9RSmURflSRWN4ejBY",
@@ -68,6 +73,7 @@ const Network = window.Network = {
             await user.updateProfile({ displayName: name });
             this.myId = user.uid;
             this.myDisplayName = name;
+            await this.acquireSession(user.uid);
             return {};
         } catch (e) {
             // Firebase meldet sich mit `code` und einer englischen Nachricht.
@@ -99,42 +105,71 @@ const Network = window.Network = {
         return `Anmeldung fehlgeschlagen (${code || 'unbekannt'}).`;
     },
 
-    login: async function(email, password) {
-        this.init(); 
-        if (!this.active) {
-            throw new Error("Verbindung zu Vault-Tec unterbrochen. Spiel ohne Anmeldung möglich.");
-        }
+    // Eine Session wird per Transaktion übernommen. Auch verwaiste Sitzungen
+    // werden nur nach Zustimmung ersetzt.
+    acquireSession: async function(uid) {
+        const ref = this.db.ref('sessions/' + uid);
+        const id = this.db.ref().push().key;
+        // Ein aktiver Listener hält den zuletzt gelesenen Wert im lokalen
+        // Firebase-Cache. Ohne ihn kann transaction zuerst null sehen und
+        // eine bestehende Sitzung fälschlich als geändert ablehnen.
+        const keepCached = () => {};
+        ref.on('value', keepCached);
+        let result;
         try {
-            const userCredential = await this.auth.signInWithEmailAndPassword(email, password);
-            const user = userCredential.user;
-
-            const playerRef = this.db.ref('players/' + user.uid);
-            const playerSnap = await playerRef.once('value');
-            
-            if (playerSnap.exists()) {
-                const pData = playerSnap.val();
-                const now = Date.now();
-                if (pData.lastSeen && (now - pData.lastSeen < 120000)) {
-                    throw new Error("SESSION_ACTIVE");
-                }
+            const initial = (await ref.once('value')).val();
+            // Auch eine verwaiste Session braucht Zustimmung: Browser können
+            // Hintergrund-Tabs länger als zwei Minuten pausieren.
+            const busy = initial && initial.id;
+            if (busy && !window.confirm('Dieser Account ist bereits verbunden. Bestehende Sitzung ersetzen? Noch nicht gespeicherter Fortschritt kann verloren gehen.')) {
+                throw new Error('Anmeldung abgebrochen. Die bestehende Sitzung bleibt aktiv.');
             }
+            const initialId = initial && initial.id || null;
+            result = await ref.transaction(current => {
+                if ((current && current.id || null) !== initialId) return;
+                return {id, lastSeen: Date.now()};
+            }, undefined, false);
+        } finally {
+            ref.off('value', keepCached);
+        }
+        if (!result.committed) throw new Error('Die Sitzung hat sich geändert. Bitte erneut anmelden.');
+        this.sessionId = id;
+        this.sessionRef = ref;
+        this.sessionLost = false;
+        this.sessionListener = snap => {
+            if (!this.sessionId || (snap.val() && snap.val().id === this.sessionId)) return;
+            this.sessionLost = true;
+            this.sessionId = null;
+            if (this.heartbeatInterval) clearInterval(this.heartbeatInterval);
+            if (typeof Game !== 'undefined' && Game.saveTimer) {
+                clearTimeout(Game.saveTimer); Game.saveTimer = null; Game.isDirty = false;
+            }
+            if (typeof UI !== 'undefined' && UI.logout) UI.logout('SITZUNG AUF EINEM ANDEREN GERÄT ERSETZT', true);
+        };
+        ref.on('value', this.sessionListener);
+        if (this.heartbeatInterval) clearInterval(this.heartbeatInterval);
+        this.heartbeatInterval = setInterval(() => this.sendHeartbeat(), 5000);
+    },
 
+    login: async function(email, password) {
+        this.init();
+        if (!this.active) throw new Error('Verbindung zu Vault-Tec unterbrochen. Spiel ohne Anmeldung möglich.');
+        try {
+            const user = (await this.auth.signInWithEmailAndPassword(email, password)).user;
             this.myId = user.uid;
-            this.myDisplayName = user.displayName || "Unknown";
-            const snapshot = await this.db.ref('saves/' + this.myId).once('value');
-            return snapshot.val() || {}; 
-
+            this.myDisplayName = user.displayName || 'Unknown';
+            await this.acquireSession(user.uid);
+            const snapshot = await this.db.ref('saves/' + user.uid).once('value');
+            const saves = snapshot.val() || {};
+            for (const key of Object.keys(saves)) if (saves[key] && saves[key]._deleted) delete saves[key];
+            return saves;
         } catch(e) {
-            console.error("Auth Error:", e);
-            if (e.message === "SESSION_ACTIVE") {
-                throw new Error("Account ist aktiv! Bitte anderen Tab schließen oder warten.");
-            }
-            // Fehlercodes aus dem fremden Firebase-Skript übersetzen, damit
-            // im Login ein Satz steht und nicht "auth/network-request-failed".
-            throw new Error(this.fehlerText(e));
+            if (this.sessionId) await this.disconnect();
+            if (e.code) throw new Error(this.fehlerText(e));
+            throw e;
         }
     },
-    
+
     checkNameAvailability: async function(charName) {
         if (!this.db || !charName) return true;
         const safeName = charName.replace(/[.#$\[\]]/g, "_");
@@ -203,59 +238,36 @@ const Network = window.Network = {
     },
 
     saveToSlot: function(slotIndex, gameState) {
-        if(!this.active || !this.myId || !this.auth.currentUser) return;
-        
+        if (!this.active || !this.myId || !this.sessionId || !this.auth.currentUser) return;
         const saveObj = JSON.parse(JSON.stringify(gameState));
-        if(this.auth && this.auth.currentUser && this.auth.currentUser.email) {
-            saveObj._userEmail = this.auth.currentUser.email;
-        }
+        saveObj._userEmail = this.auth.currentUser.email || null;
         saveObj._lastSeen = Date.now();
-        const updates = {};
-        updates[`saves/${this.myId}/${slotIndex}`] = saveObj;
-        
-        this.db.ref().update(updates)
-            .catch(e => {
-                if(e.code !== 'PERMISSION_DENIED') console.error("Save Error:", e);
-            });
+        saveObj._session = this.sessionId;
+        const operation = this.db.ref(`saves/${this.myId}/${slotIndex}`).set(saveObj);
+        this.pendingSaves.add(operation);
+        operation.catch(e => {
+            console.error('Save Error:', e);
+            if (typeof UI !== 'undefined' && UI.log) UI.log('CLOUD-SPEICHERN FEHLGESCHLAGEN', 'text-red-500');
+        }).finally(() => this.pendingSaves.delete(operation));
+        return operation;
     },
 
-    // --- NEU: SICHERES LÖSCHEN EINES SLOTS ---
+    // Ein Tombstone trägt den Sitzungsmarker; ein direktes remove könnte nicht
+    // mit newData geprüft werden und wäre für einen verdrängten Client unsicher.
     deleteSlot: async function(slotIndex) {
-        if(!this.active || !this.myId || !this.auth.currentUser) {
-            return Promise.reject("Not authenticated");
-        }
-
-        try {
-            const snap = await this.db.ref(`saves/${this.myId}/${slotIndex}`).once('value');
-            const save = snap.val();
-
-            if (save && save.playerName) {
-                const safeName = save.playerName.replace(/[.#$\[\]]/g, "_");
-                const lbRef = this.db.ref(`leaderboard/${safeName}`);
-                const lbSnap = await lbRef.once('value');
-                
-                // Falls der Charakter beim Löschen noch "lebendig" im Leaderboard stand,
-                // töten wir ihn offiziell und geben den Namen frei.
-                if (lbSnap.exists() && lbSnap.val().status === 'alive') {
-                    const ts = Date.now();
-                    const deadSafeName = safeName + "_RIP_" + ts;
-                    
-                    const deadEntry = lbSnap.val();
-                    deadEntry.status = 'dead';
-                    deadEntry.deathTime = ts;
-                    
-                    await this.db.ref(`leaderboard/${deadSafeName}`).set(deadEntry);
-                    await lbRef.remove(); // Name freigeben
-                }
+        if (!this.active || !this.myId || !this.sessionId || !this.auth.currentUser) throw new Error('Keine aktive Sitzung');
+        const ref = this.db.ref(`saves/${this.myId}/${slotIndex}`);
+        const save = (await ref.once('value')).val();
+        await ref.set({_deleted: true, _session: this.sessionId});
+        if (save && save.playerName) {
+            const safeName = save.playerName.replace(/[.#$\[\]]/g, '_');
+            const lbRef = this.db.ref(`leaderboard/${safeName}`);
+            const entry = (await lbRef.once('value')).val();
+            if (entry && entry.status === 'alive') {
+                const ts = Date.now();
+                await this.db.ref(`leaderboard/${safeName}_RIP_${ts}`).set({...entry, status: 'dead', deathTime: ts});
+                await lbRef.remove();
             }
-
-            // Savegame Slot aus der DB wischen
-            await this.db.ref(`saves/${this.myId}/${slotIndex}`).remove();
-            console.log(`✅ Slot ${slotIndex} erfolgreich gelöscht.`);
-            
-        } catch(e) {
-             console.error("❌ Löschfehler:", e); 
-             throw e; 
         }
     },
 
@@ -275,78 +287,66 @@ const Network = window.Network = {
     },
 
     startPresence: function() {
-        if(!this.myId || !this.auth.currentUser) return;
-        
-        this.db.ref('players/' + this.myId).onDisconnect().remove();
-        this.db.ref('players').on('value', (snapshot) => {
-            if (!this.active) return; 
-            const rawData = snapshot.val() || {};
-            const now = Date.now();
-            const cleanData = {};
-            for (let pid in rawData) {
+        if (!this.myId || !this.sessionId || !this.auth.currentUser) return;
+        // Kein onDisconnect auf einem gemeinsam genutzten Pfad: ein alter Tab
+        // dürfte sonst die Presence seines Nachfolgers löschen.
+        this.db.ref('players').on('value', snapshot => {
+            if (!this.active) return;
+            const rawData = snapshot.val() || {}, cleanData = {}, now = Date.now();
+            for (const pid in rawData) {
                 if (pid === this.myId) continue;
                 const p = rawData[pid];
-                if (p.lastSeen && (now - p.lastSeen > 120000)) continue; 
+                if (!p.lastSeen || now - p.lastSeen > 120000) continue;
                 cleanData[p.name || pid] = p;
             }
             this.otherPlayers = cleanData;
-            if(typeof UI !== 'undefined') {
+            if (typeof UI !== 'undefined') {
                 const el = document.getElementById('val-players');
-                if(el) el.textContent = `${Object.keys(this.otherPlayers).length + 1}`; 
-                if(UI.els.spawnScreen && UI.els.spawnScreen.style.display !== 'none') {
-                    UI.renderSpawnList(this.otherPlayers);
-                }
+                if (el) el.textContent = `${Object.keys(cleanData).length + 1}`;
+                if (UI.els.spawnScreen && UI.els.spawnScreen.style.display !== 'none') UI.renderSpawnList(cleanData);
                 UI.updatePlayerList();
             }
-            if(typeof Game !== 'undefined' && Game.state && Game.draw) Game.draw();
+            if (typeof Game !== 'undefined' && Game.state && Game.draw) Game.draw();
         });
-        
-        if(typeof UI !== 'undefined') {
-            UI.setConnectionState('online');
-            const charName = (typeof Game !== 'undefined' && Game.state && Game.state.playerName) ? Game.state.playerName : this.myDisplayName;
-            UI.log(`TERMINAL LINK: ${charName}`, "text-green-400 font-bold");
-        }
-        
-        if(this.heartbeatInterval) clearInterval(this.heartbeatInterval);
-        this.heartbeatInterval = setInterval(() => { this.sendHeartbeat(); }, 5000);
+        if (typeof UI !== 'undefined') UI.setConnectionState('online');
         this.sendHeartbeat();
     },
 
     disconnect: async function() {
+        const ref = this.sessionRef, id = this.sessionId;
+        this.sessionId = null;
         if (this.heartbeatInterval) clearInterval(this.heartbeatInterval);
-
-        if (this.db) {
-             this.db.ref('players').off(); 
-        }
-
-        if (this.active && this.db && this.myId) {
+        this.heartbeatInterval = null;
+        const listener = this.sessionListener;
+        this.sessionRef = null; this.sessionListener = null;
+        if (this.db) this.db.ref('players').off();
+        if (id && ref) {
+            // Vor Freigabe auf bestätigte Saves warten, ohne unbegrenzt offline
+            // zu hängen. Regeln verweigern verspätete Writes nach Freigabe.
+            await Promise.race([Promise.allSettled([...this.pendingSaves]), new Promise(resolve => setTimeout(resolve, 3000))]);
             try {
-                await this.db.ref('players/' + this.myId).remove();
-                console.log("Session sauber beendet & freigegeben.");
-            } catch(e) {
-                console.error("Fehler beim Session-Freigeben:", e);
-            }
+                await Promise.race([
+                    ref.transaction(current => current && current.id === id ? null : undefined, undefined, false),
+                    new Promise(resolve => setTimeout(resolve, 3000))
+                ]);
+            } catch (e) { console.error('Sitzung konnte nicht freigegeben werden', e); }
         }
-
-        this.active = false;
-        this.myId = null;
+        if (ref && listener) ref.off('value', listener);
+        this.active = false; this.myId = null;
     },
 
     sendHeartbeat: function() {
-        if (!this.active || !this.myId || !this.auth.currentUser) return;
-        
-        if(typeof Game !== 'undefined' && Game.state && Game.state.view === 'map') {
-             this.db.ref('players/' + this.myId).update({
-                lastSeen: Date.now(),
-                name: Game.state.playerName || this.myDisplayName,
-                x: Game.state.player.x,
-                y: Game.state.player.y,
-                sector: Game.state.sector,
-                lvl: Game.state.lvl
-            }).catch(e => {}); 
+        if (!this.active || !this.myId || !this.sessionId || !this.auth.currentUser) return;
+        const id = this.sessionId;
+        this.sessionRef.transaction(current => current && current.id === id ? {...current, lastSeen: Date.now()} : undefined, undefined, false).catch(e => console.error('Session heartbeat:', e));
+        if (typeof Game !== 'undefined' && Game.state && Game.state.view === 'map') {
+            this.db.ref('players/' + this.myId).set({
+                _session: id, lastSeen: Date.now(), name: Game.state.playerName || this.myDisplayName,
+                x: Game.state.player.x, y: Game.state.player.y, sector: Game.state.sector, lvl: Game.state.lvl
+            }).catch(e => console.error('Presence:', e));
         }
     },
-    
+
     sendBugReport: async function(reportData) {
         if (!this.db) return false;
         try { await this.db.ref("bug_reports").push(reportData); return true; } 

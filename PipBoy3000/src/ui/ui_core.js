@@ -497,13 +497,13 @@ const UI = {
         if(typeof Network !== 'undefined') Network.startPresence();
     },
 
-    logout: async function(msg) {
+    logout: async function(msg, skipSave = false) {
         if (typeof this._cancelVaultCinematic === 'function') this._cancelVaultCinematic();
         this.loginBusy = false;
         this.selectedSlot = -1; 
         this.charSelectMode = false; 
         
-        if(Game.state) { Game.saveGame(true); Game.state = null; }
+        if(Game.state) { if (!skipSave) Game.saveGame(true); Game.state = null; }
         if(typeof Network !== 'undefined') { await Network.disconnect(); }
         
         this.els.gameScreen.classList.add('hidden');

@@ -33,6 +33,15 @@ window.GameData.offenePunkte = [
 // nicht mit dem, was geplant war.
 window.GameData.RELEASED_PATCHES = [
   {
+    version: '14.0.36',
+    datum: '2026-11-24',
+    title: 'Sitzungsübernahme',
+    punkte: [
+      'Beim Anmelden kann eine bestehende Sitzung nach Bestätigung ersetzt werden.',
+      'Die vorherige Sitzung wird beendet; Cloud-Spielstände tragen einen Sitzungsmarker und erfordern passende Firebase-Regeln.'
+    ]
+  },
+  {
     version: '14.0.35',
     datum: '2026-11-24',
     title: 'Übersichtliches Pip-Boy-Menü',

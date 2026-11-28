@@ -153,7 +153,10 @@ Object.assign(UI, {
                 
                 await Network.deleteSlot(this.selectedSlot);
                 this.closeDeleteOverlay();
-                this.attemptLogin();
+                const snapshot = await Network.db.ref('saves/' + Network.myId).once('value');
+                const saves = snapshot.val() || {};
+                for (const key of Object.keys(saves)) if (saves[key] && saves[key]._deleted) delete saves[key];
+                this.renderCharacterSelection(saves);
             };
         }
 

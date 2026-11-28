@@ -11,11 +11,11 @@ test('automatische Cloud-Speicherungen schreiben weiterhin, aber ohne Erfolgsmel
   w.eval(quelle);
   const writes = [], meldungen = [];
   w.UI = {log: (...args) => meldungen.push(args)};
-  Object.assign(w.Network, {active: true, myId: 'spieler', auth: {currentUser: {}}, db: {ref: () => ({update: async data => writes.push(data)})}});
+  Object.assign(w.Network, {active: true, myId: 'spieler', sessionId: 'sitzung', auth: {currentUser: {}}, db: {ref: path => ({set: async data => writes.push({path, data})})}});
   for (let i = 0; i < 5; i++) w.Network.saveToSlot(0, {playerName: 'Test', sektor: i});
   await Promise.resolve();
   assert.equal(writes.length, 5);
-  assert.equal(writes[4]['saves/spieler/0'].sektor, 4);
+  assert.equal(writes[4].data.sektor, 4);
   assert.equal(meldungen.length, 0);
   dom.window.close();
 });
@@ -26,7 +26,7 @@ test('Speicherfehler bleiben im Fehlerprotokoll sichtbar', async () => {
   w.eval(quelle);
   const fehler = [];
   w.console.error = (...args) => fehler.push(args);
-  Object.assign(w.Network, {active: true, myId: 'spieler', auth: {currentUser: {}}, db: {ref: () => ({update: () => Promise.reject(new Error('Netzfehler'))})}});
+  Object.assign(w.Network, {active: true, myId: 'spieler', sessionId: 'sitzung', auth: {currentUser: {}}, db: {ref: () => ({set: () => Promise.reject(new Error('Netzfehler'))})}});
   w.Network.saveToSlot(0, {playerName: 'Test'});
   await new Promise(resolve => setTimeout(resolve, 0));
   assert.equal(fehler.length, 1);

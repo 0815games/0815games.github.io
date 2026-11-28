@@ -1,0 +1,28 @@
+{
+  "rules": {
+    "saves": {
+      ".read": "auth.token.email === 'admin@pipboy-system.com'",
+      ".write": "auth.token.email === 'admin@pipboy-system.com'",
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid"
+      }
+    },
+    "leaderboard": {
+      ".read": true,
+      ".write": "auth != null"
+    },
+    "bug_reports": {
+      ".read": "auth.token.email === 'admin@pipboy-system.com'",
+      ".write": true
+    },
+    "players": {
+      ".read": true,
+      "$uid": {
+        ".write": "auth != null && auth.uid === $uid"
+      }
+    },
+    ".read": false,
+    ".write": false
+  }
+}

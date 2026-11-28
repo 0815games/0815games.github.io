@@ -1,0 +1,36 @@
+{
+  "rules": {
+    "saves": {
+      ".read": "auth != null && auth.token.email === 'admin@pipboy-system.com'",
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        "$slot": {
+          ".write": "auth != null && ((auth.token.email === 'admin@pipboy-system.com' && auth.uid !== $uid) || (auth.uid === $uid && newData.exists() && newData.child('_session').isString() && newData.child('_session').val() === root.child('sessions').child($uid).child('id').val()))"
+        }
+      }
+    },
+    "sessions": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid",
+        ".validate": "newData.hasChildren(['id', 'lastSeen']) && newData.child('id').isString() && newData.child('lastSeen').isNumber()"
+      }
+    },
+    "leaderboard": {
+      ".read": true,
+      ".write": "auth != null"
+    },
+    "bug_reports": {
+      ".read": "auth != null && auth.token.email === 'admin@pipboy-system.com'",
+      ".write": true
+    },
+    "players": {
+      ".read": true,
+      "$uid": {
+        ".write": "auth != null && auth.uid === $uid && newData.exists() && newData.child('_session').isString() && newData.child('_session').val() === root.child('sessions').child($uid).child('id').val()"
+      }
+    },
+    ".read": false,
+    ".write": false
+  }
+}

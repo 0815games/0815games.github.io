@@ -1090,6 +1090,11 @@
     otherPlayers: {},
     active: false,
     heartbeatInterval: null,
+    sessionId: null,
+    sessionRef: null,
+    sessionListener: null,
+    sessionLost: false,
+    pendingSaves: /* @__PURE__ */ new Set(),
     config: {
       apiKey: "AIzaSyCgSK4nJ3QOVMBd7m9RSmURflSRWN4ejBY",
       authDomain: "pipboy-rpg.firebaseapp.com",
@@ -1140,6 +1145,7 @@
         await user.updateProfile({ displayName: name });
         this.myId = user.uid;
         this.myDisplayName = name;
+        await this.acquireSession(user.uid);
         return {};
       } catch (e) {
         throw new Error(this.fehlerText(e));
@@ -1165,33 +1171,65 @@
       const roh = e && e.message || String(e);
       return `Anmeldung fehlgeschlagen (${code || "unbekannt"}).`;
     },
+    // Eine Session wird per Transaktion übernommen. Auch verwaiste Sitzungen
+    // werden nur nach Zustimmung ersetzt.
+    acquireSession: async function(uid) {
+      const ref = this.db.ref("sessions/" + uid);
+      const id = this.db.ref().push().key;
+      const keepCached = () => {
+      };
+      ref.on("value", keepCached);
+      let result;
+      try {
+        const initial = (await ref.once("value")).val();
+        const busy = initial && initial.id;
+        if (busy && !window.confirm("Dieser Account ist bereits verbunden. Bestehende Sitzung ersetzen? Noch nicht gespeicherter Fortschritt kann verloren gehen.")) {
+          throw new Error("Anmeldung abgebrochen. Die bestehende Sitzung bleibt aktiv.");
+        }
+        const initialId = initial && initial.id || null;
+        result = await ref.transaction((current) => {
+          if ((current && current.id || null) !== initialId) return;
+          return { id, lastSeen: Date.now() };
+        }, void 0, false);
+      } finally {
+        ref.off("value", keepCached);
+      }
+      if (!result.committed) throw new Error("Die Sitzung hat sich geändert. Bitte erneut anmelden.");
+      this.sessionId = id;
+      this.sessionRef = ref;
+      this.sessionLost = false;
+      this.sessionListener = (snap) => {
+        if (!this.sessionId || snap.val() && snap.val().id === this.sessionId) return;
+        this.sessionLost = true;
+        this.sessionId = null;
+        if (this.heartbeatInterval) clearInterval(this.heartbeatInterval);
+        if (typeof Game !== "undefined" && Game.saveTimer) {
+          clearTimeout(Game.saveTimer);
+          Game.saveTimer = null;
+          Game.isDirty = false;
+        }
+        if (typeof UI !== "undefined" && UI.logout) UI.logout("SITZUNG AUF EINEM ANDEREN GERÄT ERSETZT", true);
+      };
+      ref.on("value", this.sessionListener);
+      if (this.heartbeatInterval) clearInterval(this.heartbeatInterval);
+      this.heartbeatInterval = setInterval(() => this.sendHeartbeat(), 5e3);
+    },
     login: async function(email, password) {
       this.init();
-      if (!this.active) {
-        throw new Error("Verbindung zu Vault-Tec unterbrochen. Spiel ohne Anmeldung möglich.");
-      }
+      if (!this.active) throw new Error("Verbindung zu Vault-Tec unterbrochen. Spiel ohne Anmeldung möglich.");
       try {
-        const userCredential = await this.auth.signInWithEmailAndPassword(email, password);
-        const user = userCredential.user;
-        const playerRef = this.db.ref("players/" + user.uid);
-        const playerSnap = await playerRef.once("value");
-        if (playerSnap.exists()) {
-          const pData = playerSnap.val();
-          const now = Date.now();
-          if (pData.lastSeen && now - pData.lastSeen < 12e4) {
-            throw new Error("SESSION_ACTIVE");
-          }
-        }
+        const user = (await this.auth.signInWithEmailAndPassword(email, password)).user;
         this.myId = user.uid;
         this.myDisplayName = user.displayName || "Unknown";
-        const snapshot = await this.db.ref("saves/" + this.myId).once("value");
-        return snapshot.val() || {};
+        await this.acquireSession(user.uid);
+        const snapshot = await this.db.ref("saves/" + user.uid).once("value");
+        const saves = snapshot.val() || {};
+        for (const key of Object.keys(saves)) if (saves[key] && saves[key]._deleted) delete saves[key];
+        return saves;
       } catch (e) {
-        console.error("Auth Error:", e);
-        if (e.message === "SESSION_ACTIVE") {
-          throw new Error("Account ist aktiv! Bitte anderen Tab schließen oder warten.");
-        }
-        throw new Error(this.fehlerText(e));
+        if (this.sessionId) await this.disconnect();
+        if (e.code) throw new Error(this.fehlerText(e));
+        throw e;
       }
     },
     checkNameAvailability: async function(charName) {
@@ -1249,45 +1287,35 @@
       return list;
     },
     saveToSlot: function(slotIndex, gameState) {
-      if (!this.active || !this.myId || !this.auth.currentUser) return;
+      if (!this.active || !this.myId || !this.sessionId || !this.auth.currentUser) return;
       const saveObj = JSON.parse(JSON.stringify(gameState));
-      if (this.auth && this.auth.currentUser && this.auth.currentUser.email) {
-        saveObj._userEmail = this.auth.currentUser.email;
-      }
+      saveObj._userEmail = this.auth.currentUser.email || null;
       saveObj._lastSeen = Date.now();
-      const updates = {};
-      updates[`saves/${this.myId}/${slotIndex}`] = saveObj;
-      this.db.ref().update(updates).catch((e) => {
-        if (e.code !== "PERMISSION_DENIED") console.error("Save Error:", e);
-      });
+      saveObj._session = this.sessionId;
+      const operation = this.db.ref(`saves/${this.myId}/${slotIndex}`).set(saveObj);
+      this.pendingSaves.add(operation);
+      operation.catch((e) => {
+        console.error("Save Error:", e);
+        if (typeof UI !== "undefined" && UI.log) UI.log("CLOUD-SPEICHERN FEHLGESCHLAGEN", "text-red-500");
+      }).finally(() => this.pendingSaves.delete(operation));
+      return operation;
     },
-    // --- NEU: SICHERES LÖSCHEN EINES SLOTS ---
+    // Ein Tombstone trägt den Sitzungsmarker; ein direktes remove könnte nicht
+    // mit newData geprüft werden und wäre für einen verdrängten Client unsicher.
     deleteSlot: async function(slotIndex) {
-      if (!this.active || !this.myId || !this.auth.currentUser) {
-        return Promise.reject("Not authenticated");
-      }
-      try {
-        const snap = await this.db.ref(`saves/${this.myId}/${slotIndex}`).once("value");
-        const save = snap.val();
-        if (save && save.playerName) {
-          const safeName = save.playerName.replace(/[.#$\[\]]/g, "_");
-          const lbRef = this.db.ref(`leaderboard/${safeName}`);
-          const lbSnap = await lbRef.once("value");
-          if (lbSnap.exists() && lbSnap.val().status === "alive") {
-            const ts = Date.now();
-            const deadSafeName = safeName + "_RIP_" + ts;
-            const deadEntry = lbSnap.val();
-            deadEntry.status = "dead";
-            deadEntry.deathTime = ts;
-            await this.db.ref(`leaderboard/${deadSafeName}`).set(deadEntry);
-            await lbRef.remove();
-          }
+      if (!this.active || !this.myId || !this.sessionId || !this.auth.currentUser) throw new Error("Keine aktive Sitzung");
+      const ref = this.db.ref(`saves/${this.myId}/${slotIndex}`);
+      const save = (await ref.once("value")).val();
+      await ref.set({ _deleted: true, _session: this.sessionId });
+      if (save && save.playerName) {
+        const safeName = save.playerName.replace(/[.#$\[\]]/g, "_");
+        const lbRef = this.db.ref(`leaderboard/${safeName}`);
+        const entry = (await lbRef.once("value")).val();
+        if (entry && entry.status === "alive") {
+          const ts = Date.now();
+          await this.db.ref(`leaderboard/${safeName}_RIP_${ts}`).set({ ...entry, status: "dead", deathTime: ts });
+          await lbRef.remove();
         }
-        await this.db.ref(`saves/${this.myId}/${slotIndex}`).remove();
-        console.log(`✅ Slot ${slotIndex} erfolgreich gelöscht.`);
-      } catch (e) {
-        console.error("❌ Löschfehler:", e);
-        throw e;
       }
     },
     save: function(gameState) {
@@ -1304,69 +1332,66 @@
       }
     },
     startPresence: function() {
-      if (!this.myId || !this.auth.currentUser) return;
-      this.db.ref("players/" + this.myId).onDisconnect().remove();
+      if (!this.myId || !this.sessionId || !this.auth.currentUser) return;
       this.db.ref("players").on("value", (snapshot) => {
         if (!this.active) return;
-        const rawData = snapshot.val() || {};
-        const now = Date.now();
-        const cleanData = {};
-        for (let pid in rawData) {
+        const rawData = snapshot.val() || {}, cleanData = {}, now = Date.now();
+        for (const pid in rawData) {
           if (pid === this.myId) continue;
           const p = rawData[pid];
-          if (p.lastSeen && now - p.lastSeen > 12e4) continue;
+          if (!p.lastSeen || now - p.lastSeen > 12e4) continue;
           cleanData[p.name || pid] = p;
         }
         this.otherPlayers = cleanData;
         if (typeof UI !== "undefined") {
           const el = document.getElementById("val-players");
-          if (el) el.textContent = `${Object.keys(this.otherPlayers).length + 1}`;
-          if (UI.els.spawnScreen && UI.els.spawnScreen.style.display !== "none") {
-            UI.renderSpawnList(this.otherPlayers);
-          }
+          if (el) el.textContent = `${Object.keys(cleanData).length + 1}`;
+          if (UI.els.spawnScreen && UI.els.spawnScreen.style.display !== "none") UI.renderSpawnList(cleanData);
           UI.updatePlayerList();
         }
         if (typeof Game !== "undefined" && Game.state && Game.draw) Game.draw();
       });
-      if (typeof UI !== "undefined") {
-        UI.setConnectionState("online");
-        const charName = typeof Game !== "undefined" && Game.state && Game.state.playerName ? Game.state.playerName : this.myDisplayName;
-        UI.log(`TERMINAL LINK: ${charName}`, "text-green-400 font-bold");
-      }
-      if (this.heartbeatInterval) clearInterval(this.heartbeatInterval);
-      this.heartbeatInterval = setInterval(() => {
-        this.sendHeartbeat();
-      }, 5e3);
+      if (typeof UI !== "undefined") UI.setConnectionState("online");
       this.sendHeartbeat();
     },
     disconnect: async function() {
+      const ref = this.sessionRef, id = this.sessionId;
+      this.sessionId = null;
       if (this.heartbeatInterval) clearInterval(this.heartbeatInterval);
-      if (this.db) {
-        this.db.ref("players").off();
-      }
-      if (this.active && this.db && this.myId) {
+      this.heartbeatInterval = null;
+      const listener = this.sessionListener;
+      this.sessionRef = null;
+      this.sessionListener = null;
+      if (this.db) this.db.ref("players").off();
+      if (id && ref) {
+        await Promise.race([Promise.allSettled([...this.pendingSaves]), new Promise((resolve) => setTimeout(resolve, 3e3))]);
         try {
-          await this.db.ref("players/" + this.myId).remove();
-          console.log("Session sauber beendet & freigegeben.");
+          await Promise.race([
+            ref.transaction((current) => current && current.id === id ? null : void 0, void 0, false),
+            new Promise((resolve) => setTimeout(resolve, 3e3))
+          ]);
         } catch (e) {
-          console.error("Fehler beim Session-Freigeben:", e);
+          console.error("Sitzung konnte nicht freigegeben werden", e);
         }
       }
+      if (ref && listener) ref.off("value", listener);
       this.active = false;
       this.myId = null;
     },
     sendHeartbeat: function() {
-      if (!this.active || !this.myId || !this.auth.currentUser) return;
+      if (!this.active || !this.myId || !this.sessionId || !this.auth.currentUser) return;
+      const id = this.sessionId;
+      this.sessionRef.transaction((current) => current && current.id === id ? { ...current, lastSeen: Date.now() } : void 0, void 0, false).catch((e) => console.error("Session heartbeat:", e));
       if (typeof Game !== "undefined" && Game.state && Game.state.view === "map") {
-        this.db.ref("players/" + this.myId).update({
+        this.db.ref("players/" + this.myId).set({
+          _session: id,
           lastSeen: Date.now(),
           name: Game.state.playerName || this.myDisplayName,
           x: Game.state.player.x,
           y: Game.state.player.y,
           sector: Game.state.sector,
           lvl: Game.state.lvl
-        }).catch((e) => {
-        });
+        }).catch((e) => console.error("Presence:", e));
       }
     },
     sendBugReport: async function(reportData) {
@@ -1856,13 +1881,13 @@
       if (this.isMobile() && isNewGame) this.showMobileControlsHint();
       if (typeof Network !== "undefined") Network.startPresence();
     },
-    logout: async function(msg) {
+    logout: async function(msg, skipSave = false) {
       if (typeof this._cancelVaultCinematic === "function") this._cancelVaultCinematic();
       this.loginBusy = false;
       this.selectedSlot = -1;
       this.charSelectMode = false;
       if (Game.state) {
-        Game.saveGame(true);
+        if (!skipSave) Game.saveGame(true);
         Game.state = null;
       }
       if (typeof Network !== "undefined") {
@@ -6377,7 +6402,10 @@
           this.els.btnDeleteConfirm.disabled = true;
           await Network.deleteSlot(this.selectedSlot);
           this.closeDeleteOverlay();
-          this.attemptLogin();
+          const snapshot = await Network.db.ref("saves/" + Network.myId).once("value");
+          const saves = snapshot.val() || {};
+          for (const key of Object.keys(saves)) if (saves[key] && saves[key]._deleted) delete saves[key];
+          this.renderCharacterSelection(saves);
         };
       }
       if (this.els.btnSave) this.els.btnSave.onclick = () => this.handleSaveClick();
@@ -9274,8 +9302,15 @@
       if (this.els.charSelectScreen) this.els.charSelectScreen.style.display = "flex";
       if (this.els.charSlotsList) this.els.charSlotsList.innerHTML = "";
       if (!this.deleteSaveSlot) {
-        this.deleteSaveSlot = function(index) {
-          if (typeof Game.deleteSave === "function") Game.deleteSave(index);
+        this.deleteSaveSlot = async function(index) {
+          if (typeof Network !== "undefined" && Network.active && Network.myId) {
+            try {
+              await Network.deleteSlot(index);
+            } catch (e) {
+              this.els.loginStatus.textContent = "LÖSCHEN FEHLGESCHLAGEN: " + e.message;
+              return;
+            }
+          } else if (typeof Game.deleteSave === "function") Game.deleteSave(index);
           else {
             localStorage.removeItem("save_" + index);
             localStorage.removeItem("slot_" + index);
@@ -10904,6 +10939,15 @@
     "Befund 8 aus docs/BEFUNDE.md: *.log in .gitignore trifft auch docs/change.log, der build.json-Hash deckt style.css nicht ab, src/admin.js hat keine Tests."
   ];
   window.GameData.RELEASED_PATCHES = [
+    {
+      version: "14.0.36",
+      datum: "2026-11-24",
+      title: "Sitzungsübernahme",
+      punkte: [
+        "Beim Anmelden kann eine bestehende Sitzung nach Bestätigung ersetzt werden.",
+        "Die vorherige Sitzung wird beendet; Cloud-Spielstände tragen einen Sitzungsmarker und erfordern passende Firebase-Regeln."
+      ]
+    },
     {
       version: "14.0.35",
       datum: "2026-11-24",

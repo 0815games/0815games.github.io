@@ -50,7 +50,7 @@ const Admin = window.Admin = {
             document.getElementById('admin-loader').classList.remove('hidden');
             this.updateLoader(10, "AUTHENTICATING...");
 
-            await Network.login(this.adminUser, this.adminPass);
+            await Network.auth.signInWithEmailAndPassword(this.adminUser, this.adminPass);
             
             this.updateLoader(30, "DOWNLOADING SECURE DATA...");
             document.getElementById('conn-dot').classList.replace('bg-red-500', 'bg-green-500');
@@ -367,6 +367,7 @@ const Admin = window.Admin = {
             const slots = this.dbData[uid];
             for(let slotIdx in slots) {
                 const save = slots[slotIdx];
+                if (!save || save._deleted) continue;
                 const name = (save.playerName || "Unknown").toLowerCase();
                 const path = `saves/${uid}/${slotIdx}`;
                 
