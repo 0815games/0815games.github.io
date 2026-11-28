@@ -1,15 +1,10 @@
-# Zwischen den Welten — 2.0.3
+# 0815 Games — Spielzentrale 3.0.0
 
-- Vollständiger Ersatz der bisherigen Hero-/Kartenoberfläche.
-- Sechs animierte Portal-Szenen, zyklischer 3D-Wechsel und Startübergang.
-- Iron Path steht als meistgenutztes Spiel an erster Stelle (Portal 01); UFO-Jagd und Neon Pong sind entfernt.
-- Vorhandene SVG-Motive werden in die neuen Szenen eingebunden, nicht als Vorschau-Fenster gezeigt.
-- Keine iFrames, Spielprozesse oder automatisch abgespielter Ton.
-- theme.js bleibt die System-/Hell-/Dunkel-Steuerung.
-- Intro: überspringbar, automatische Beendigung, unabhängiger 1,8-s-Sicherheitsausstieg.
-- Reduzierte Bewegung: kein Intro, keine Kamerafahrt, direkter Spielstart.
-- Nur das aktive Portal animiert; bei verborgenem Dokument pausieren Portal-Animationen.
-- Die Navigation funktioniert ohne JavaScript über zusätzliche Direktlinks.
-- games.json und eingebettete Daten sind durch Node-Test auf Gleichheit geprüft.
-- Test: node arcade/tests/portals.test.cjs
-- Browser-, Touch-, Performance- und Deployment-Abnahme bleiben separat erforderlich.
+Die Startseite ist ein kompakter Launcher für genau vier Spiele: Pipboy3003, Tiny Tycoon Towns, IronPath und Schattengruft.
+
+- Desktop: vier Spielkarten mit direkt eingebundenen Vorschaubildern nebeneinander.
+- Mobil: jeweils eine aktive Karte; Wechsel per Wischen, WASD, Pfeiltasten, Vor/Zurück oder direkter Punktauswahl. Enter und Leertaste starten das ausgewählte Spiel.
+- Jede Karte startet das Spiel direkt. Es werden keine Spiele in iframes geladen.
+- Helles und dunkles Farbschema über die kleine Kopfzeilen-Steuerung; die Wahl bleibt in `theme.js` erhalten.
+- Mobile Navigation und Pfeiltasten respektieren reduzierte Bewegung; keine automatisch abspielenden Inhalte.
+- Tests: `node arcade/tests/portals.test.cjs`.
