@@ -6,11 +6,11 @@ const base=process.env.IRONPATH_BASE_URL||'http://127.0.0.1:8765',open={format:1
 const app=`export function initializeApp(config,name){globalThis.__adminApp={config,name};return {name};}`;
 const auth=`
  export const browserSessionPersistence={type:'SESSION'};
- const auth={currentUser:null};let observer=()=>{};
+ const auth={currentUser:null};const observers=new Set();
  export function initializeAuth(app,options){globalThis.__adminAuth=auth;globalThis.__adminPersistence=options.persistence.type;return auth;}
- export function onAuthStateChanged(_auth,callback){observer=callback;globalThis.__adminSwitchUser=uid=>{auth.currentUser=uid?{uid,email:uid+'@example.test'}:null;observer(auth.currentUser);};queueMicrotask(()=>observer(auth.currentUser));return ()=>{};}
- export async function signInWithEmailAndPassword(a,email,password){if(password!=='example-password')throw Error('invalid');a.currentUser={uid:email.startsWith('admin')?'test-admin':'ordinary-player',email};observer(a.currentUser);}
- export async function signOut(a){a.currentUser=null;observer(null);}
+ export function onAuthStateChanged(_auth,callback){observers.add(callback);globalThis.__adminSwitchUser=uid=>{auth.currentUser=uid?{uid,email:uid+'@example.test'}:null;for(const cb of [...observers])cb(auth.currentUser);};queueMicrotask(()=>{if(observers.has(callback))callback(auth.currentUser);});return ()=>observers.delete(callback);}
+ export async function signInWithEmailAndPassword(a,email,password){if(password!=='example-password')throw Error('invalid');a.currentUser={uid:email.startsWith('admin')?'test-admin':'ordinary-player',email};for(const cb of [...observers])cb(a.currentUser);}
+ export async function signOut(a){a.currentUser=null;for(const cb of [...observers])cb(null);}
 `;
 const database=`
  const snap=value=>({val:()=>value});let listener=null;
@@ -19,6 +19,7 @@ const database=`
  export async function get(r){if(r.path==='_ironpathMaintenanceAdminAccess'&&globalThis.__adminAuth.currentUser?.uid!=='test-admin')throw Object.assign(Error('permission_denied'),{code:'PERMISSION_DENIED'});return snap(null);}
  export function onValue(r,callback){listener=callback;globalThis.__adminEmit=value=>listener?.(snap(value));fetch('/__admin-control').then(r=>r.json()).then(value=>{if(listener===callback)callback(snap(value));});return ()=>{if(listener===callback)listener=null;};}
  export function serverTimestamp(){return {'.sv':'timestamp'};}
+ export async function update(){throw Object.assign(Error('unexpected update'),{code:'UNEXPECTED'});}
  export async function runTransaction(r,reducer){
   const current=await (await fetch('/__admin-control')).json(),next=reducer(current);
   if(next===undefined)return {committed:false,snapshot:snap(current)};
@@ -53,6 +54,8 @@ async function fixture(browser,{control=open,sdkUnavailable=false,offline=false}
   return route.continue();
  });
  const page=await context.newPage();page.setDefaultTimeout(15000);page.on('pageerror',error=>state.errors.push(error.stack||String(error)));
+ state.console=[];
+ page.on('console',message=>{if(message.type()==='error')state.console.push(message.text().slice(0,300));});
  await page.goto(base+'/IronPath/admin.html',{waitUntil:'domcontentloaded'});
  return {page,state,context,async close(){await context.close();assert.deepEqual(state.unexpected,[],'no unmocked external requests');assert.deepEqual(state.errors,[],'no uncaught page errors');}};
 }
@@ -76,7 +79,21 @@ async function assertFits(page,width,selectors){
   {
    const f=await fixture(browser,{control:{...open,mode:'maintenance'}}),{page,state}=f;
    try{
-    await page.locator('#adminLoginButton:not([disabled])').waitFor();
+    try{
+     await page.locator('#adminLoginButton:not([disabled])').waitFor();
+    }catch(cause){
+     const diag=await page.evaluate(()=>({
+      button:document.getElementById('adminLoginButton')?.textContent,
+      loginMessage:document.getElementById('adminLoginMessage')?.textContent,
+      entryScript:document.querySelector('script[type="module"][src*="admin-entry"]')?.getAttribute('src'),
+      playerCard:!!document.getElementById('adminPlayerCard'),
+      entryStage:globalThis.__adminEntryStage,
+      resources:performance.getEntriesByType('resource')
+       .map(r=>{const u=new URL(r.name);return `${u.pathname.split('/').pop()}${u.search}:${r.responseStatus||r.transferSize||'?'}`;})
+       .filter(n=>/admin|character|progression|maintenance|gstatic|firebase/.test(n))
+     })).catch(error=>({evaluateFailed:String(error)}));
+     throw new Error(`login button never enabled: ${JSON.stringify(diag)} pageerrors=${JSON.stringify(state.errors)} console=${JSON.stringify(state.console||[])} cause=${cause.message}`);
+    }
     for(const [width,height] of [[320,568],[375,667],[390,844],[1440,900]]){
      await page.setViewportSize({width,height});
      await assertFits(page,width,['.panel','#adminEmail','#adminPassword','#adminLoginButton']);

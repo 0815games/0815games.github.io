@@ -73,10 +73,10 @@ test('the icon set is the transmission mark: gold star over two chevrons',()=>{
   assert.deepEqual(sizes,[16,32,48]);
   // Every icon link and the manifest are cache-busted with this wave. Literal
   // ?v= lines so the wave bump can rewrite them like every other asset link.
-  assert.ok(html.includes('assets/favicon.svg?v=20261121-afkmsg1'),'busted: favicon.svg');
-  assert.ok(html.includes('assets/favicon.ico?v=20261121-afkmsg1'),'busted: favicon.ico');
-  assert.ok(html.includes('assets/apple-touch-icon.png?v=20261121-afkmsg1'),'busted: apple-touch-icon');
-  assert.ok(html.includes('assets/manifest.webmanifest?v=20261121-afkmsg1'),'busted: manifest');
+  assert.ok(html.includes('assets/favicon.svg?v=20261121-adminacc1'),'busted: favicon.svg');
+  assert.ok(html.includes('assets/favicon.ico?v=20261121-adminacc1'),'busted: favicon.ico');
+  assert.ok(html.includes('assets/apple-touch-icon.png?v=20261121-adminacc1'),'busted: apple-touch-icon');
+  assert.ok(html.includes('assets/manifest.webmanifest?v=20261121-adminacc1'),'busted: manifest');
   const manifest=JSON.parse(readFileSync(new URL('../assets/manifest.webmanifest',import.meta.url),'utf8'));
   assert.equal(manifest.short_name,'Iron Path');
   assert.deepEqual(manifest.icons.map(i=>i.sizes),['192x192','512x512']);

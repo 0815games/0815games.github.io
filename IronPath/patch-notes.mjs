@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see docs/PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261121-afkmsg1';
+import {getLanguage} from './language.mjs?v=20261121-adminacc1';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,17 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'adminacc1',build:'20261121-adminacc1',pr:548,
+    title:{en:'Operations · The Betriebssteuerung Edits Accounts and Characters',de:'Betrieb · Die Betriebssteuerung bearbeitet Konten und Charaktere'},
+    shipped:[
+      {en:'Reported: \"Punkt3 muss das adminpanel noch voll integrieren - zum acc sachen ändern und char sachen\". The panel already carried the maintenance switch; it now also loads any account by character name or UID, shows name, UID, XP and level, and edits the two values an operator needs: XP set to any integer between0 and10 Mio. (transactional, confirm dialog first), and the character name - checked for length and reservation, then written together with its characterNames key in one multi-location update, releasing the old reservation only when it still belongs to that account. The friend listing heals itself on the next account load, exactly as character-rename.mjs documents. Cache wave 20261121-adminacc1.',de:'Gemeldet: „Punkt3 muss das adminpanel noch voll integrieren - zum acc sachen ändern und char sachen\". Das Panel führte bereits den Wartungsschalter; jetzt lädt es zusätzlich jedes Konto über Charaktername oder UID, zeigt Name, UID, XP und Level und bearbeitet die zwei Werte, die ein Operator braucht: XP als ganze Zahl zwischen0 und10 Mio. (transaktional, erst der Bestätigungsdialog), und den Charaktername - auf Länge und Reservierung geprüft, danach zusammen mit dem characterNames-Schlüssel in einem Schreibvorgang gespeichert, die alte Reservierung wird nur freigegeben, wenn sie noch dem Konto gehört. Die Freunde-Liste stellt sich beim nächsten Konto-Laden selbst um, so wie es character-rename.mjs dokumentiert. Cache-Welle 20261121-adminacc1.'},
+      {en:'ADMIN-ACCOUNT-RULES-TO-PUBLISH.json: the operator UID may read accounts and write them with full field validation (XP integer0–10 Mio., name2–24 characters, gender stays untouched); characterNames is admin-only, so in-game accounts cannot touch the index and the player-side name claim stays unsupported until its own release. The maintenance rules and every player rule stay as published.',de:'ADMIN-ACCOUNT-RULES-TO-PUBLISH.json: Die Operator-UID darf Konten lesen und formvalidiert schreiben (XP ganzzahlig0–10 Mio., Name2–24 Zeichen, Geschlecht bleibt unangetastet); characterNames ist ausschließlich Admin-only, Spielkonten kommen also nicht an den Index - der In-Game-Namensanspruch bleibt bis zu eigenen Release unsupported. Die Wartungs-Regeln und alle Spieler-Regeln bleiben wie veröffentlicht.'},
+    ],
+    open:[
+      {en:'Operator check: load a test account by name, set XP, rename it and confirm the friend search picks the new name on the next account load.',de:'Betreiber-Prüfung: Testkonto per Name laden, XP setzen, umbenennen und prüfen, dass die Freundesuche den neuen Namen beim nächsten Konto-Laden findet.'},
+    ]
+  },
   {
     id:'afkmsg1',build:'20261121-afkmsg1',pr:543,
     title:{en:'Session · The Inactivity Card Shows in Every Tab and Cannot Be Missed',de:'Sitzung · Die Inaktivitäts-Karte erscheint in jedem Tab und kann nicht mehr untergehen'},

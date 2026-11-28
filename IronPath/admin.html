@@ -12,7 +12,7 @@
   <meta name="ironpath-admin-app-id" content="1:305063261861:web:8ec54d8318a983fce3ff4c">
   <title>Iron Path · Betriebssteuerung</title>
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg?v=20261031-loading1">
-  <link rel="stylesheet" href="admin.css?v=20261031-update3">
+  <link rel="stylesheet" href="admin.css?v=20261121-adminacc1">
 </head>
 <body>
   <div class="admin-shell">
@@ -58,6 +58,36 @@
           <p id="adminMessage" class="feedback" role="status" aria-live="polite"></p>
           <div class="warning"><span aria-hidden="true">!</span><p><strong>Wichtig vor dem Einschalten</strong> Laufende Online-Partien werden gestoppt. Noch nicht bestätigte Speicherungen können verloren gehen. Offline-Geräte reagieren erst bei erneuter Verbindung.</p></div>
           <p class="footnote">Der Schalter bleibt bei unbekanntem Status gesperrt. Änderungen an Rules und Website erfolgen separat.</p>
+          <div class="player-tools" aria-label="Konto und Charakter">
+            <div class="dashboard-head"><p class="eyebrow">KONTO &amp; CHARAKTER</p><h2>Spieler bearbeiten</h2></div>
+            <p class="player-note">Suche nach Charaktername oder UID. XP und Name wirken sofort und sind endgültig; die veröffentlichten Rules prüfen die Admin-UID bei jedem Schreibvorgang.</p>
+            <div class="player-lookup">
+              <label for="adminPlayerLookup">CHARAKTERNAME ODER UID</label>
+              <div class="player-lookup-row">
+                <input id="adminPlayerLookup" type="text" maxlength="128" autocomplete="off" placeholder="z. B. Richtlinie oder UID">
+                <button id="adminPlayerLoad" class="secondary" type="button" disabled>SPIELER LADEN <span aria-hidden="true">↗</span></button>
+              </div>
+            </div>
+            <div class="player-card" id="adminPlayerCard" hidden>
+              <div class="player-card-head"><strong id="adminPlayerName">—</strong><code id="adminPlayerUid"></code></div>
+              <p id="adminPlayerMeta" class="player-meta"></p>
+              <div class="player-edit">
+                <label for="adminXpInput">XP SETZEN</label>
+                <div class="player-lookup-row">
+                  <input id="adminXpInput" type="number" min="0" max="10000000" step="1" inputmode="numeric">
+                  <button id="adminXpApply" class="secondary" type="button" disabled>XP ANWENDEN</button>
+                </div>
+              </div>
+              <div class="player-edit">
+                <label for="adminNameInput">CHARAKTERNAME</label>
+                <div class="player-lookup-row">
+                  <input id="adminNameInput" type="text" maxlength="24" autocomplete="off">
+                  <button id="adminNameApply" class="secondary" type="button" disabled>NAME ÄNDERN</button>
+                </div>
+              </div>
+            </div>
+            <p id="adminPlayerMessage" class="feedback" role="status" aria-live="polite"></p>
+          </div>
         </div>
       </section>
     </main>
@@ -66,6 +96,9 @@
   <dialog id="adminConfirm" aria-labelledby="adminConfirmTitle" aria-describedby="adminConfirmDetail">
     <div class="confirm-card"><p class="eyebrow">BESTÄTIGUNG ERFORDERLICH</p><h2 id="adminConfirmTitle"></h2><p id="adminConfirmDetail"></p><div class="confirm-actions"><button id="adminConfirmCancel" class="secondary" type="button">ABBRECHEN</button><button id="adminConfirmAction" class="danger" type="button">BESTÄTIGEN</button></div></div>
   </dialog>
-  <script type="module" src="admin-entry.mjs?v=20261031-update3"></script>
+  <dialog id="adminPlayerConfirm" aria-labelledby="adminPlayerConfirmTitle" aria-describedby="adminPlayerConfirmDetail">
+    <div class="confirm-card"><p class="eyebrow">BESTÄTIGUNG ERFORDERLICH</p><h2 id="adminPlayerConfirmTitle"></h2><p id="adminPlayerConfirmDetail"></p><div class="confirm-actions"><button id="adminPlayerConfirmCancel" class="secondary" type="button">ABBRECHEN</button><button id="adminPlayerConfirmAction" class="primary" type="button">BESTÄTIGEN</button></div></div>
+  </dialog>
+  <script type="module" src="admin-entry.mjs?v=20261121-adminacc1"></script>
 </body>
 </html>

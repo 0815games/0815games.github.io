@@ -1,7 +1,8 @@
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import {initializeAuth,browserSessionPersistence,onAuthStateChanged,signInWithEmailAndPassword,signOut} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
-import {getDatabase,ref,get,onValue,runTransaction,serverTimestamp} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
+import {getDatabase,ref,get,onValue,runTransaction,update,serverTimestamp} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
 import {createAdminPanel} from './admin-panel.mjs?v=20261031-update3';
+import {createAdminPlayers} from './admin-players.mjs?v=20261121-adminacc1';
 
 // The HTML contains only public Firebase web configuration, not an admin key.
 // A distinct named app plus session-only Auth avoids replacing or signing out
@@ -14,3 +15,7 @@ const auth=initializeAuth(app,{persistence:browserSessionPersistence});
 const db=getDatabase(app);
 createAdminPanel({document,window,auth,db,databaseUrl:config.databaseURL,
  sdk:{onAuthStateChanged,signInWithEmailAndPassword,signOut,ref,get,onValue,runTransaction,serverTimestamp}});
+// Konto & Charakter: player lookups and the XP/rename edits share this auth
+// session; every write is re-authorized by the published account Rules.
+createAdminPlayers({document,window,auth,db,
+ sdk:{onAuthStateChanged,ref,get,update,runTransaction}});

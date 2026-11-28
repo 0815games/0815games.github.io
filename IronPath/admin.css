@@ -171,3 +171,19 @@ dialog::backdrop{background:#07100de6}
   footer span:last-child{display:none}
 }
 @media(prefers-reduced-motion:reduce){button.primary,button.danger,button.secondary{transition:none}}
+/* Konto & Charakter: the operator's player tools. Same panel language - a
+   bordered block under the maintenance switch, one lookup row, one card. */
+.player-tools{margin-top:22px;padding-top:16px;border-top:1px solid #87967750}
+.player-note{margin:10px 0 0;color:#9dad99;font-size:11px;line-height:1.6}
+.player-lookup{margin-top:14px}
+.player-lookup-row{display:flex;gap:8px;align-items:stretch}
+.player-lookup-row input{flex:1;min-width:0}
+.player-lookup-row button{flex:none;white-space:nowrap}
+.player-card{margin-top:16px;padding:17px;border:1px solid #73896f;background:#102219}
+.player-card-head{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;justify-content:space-between}
+.player-card-head strong{font:400 22px/1.2 Georgia,serif;color:#f4ecd8;overflow-wrap:anywhere}
+.player-card-head code{font-size:11px;color:#9dad99;overflow-wrap:anywhere}
+.player-meta{margin:8px 0 0;color:#c0cfbb;font-size:12px;line-height:1.55}
+.player-edit{margin-top:14px}
+.player-edit label{margin-top:0}
+.player-edit .player-lookup-row button{min-height:50px}
