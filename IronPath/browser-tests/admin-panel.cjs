@@ -54,6 +54,8 @@ async function fixture(browser,{control=open,sdkUnavailable=false,offline=false}
   return route.continue();
  });
  const page=await context.newPage();page.setDefaultTimeout(15000);page.on('pageerror',error=>state.errors.push(error.stack||String(error)));
+ state.console=[];
+ page.on('console',message=>{if(message.type()==='error')state.console.push(message.text().slice(0,300));});
  await page.goto(base+'/IronPath/admin.html',{waitUntil:'domcontentloaded'});
  return {page,state,context,async close(){await context.close();assert.deepEqual(state.unexpected,[],'no unmocked external requests');assert.deepEqual(state.errors,[],'no uncaught page errors');}};
 }
@@ -85,11 +87,12 @@ async function assertFits(page,width,selectors){
       loginMessage:document.getElementById('adminLoginMessage')?.textContent,
       entryScript:document.querySelector('script[type="module"][src*="admin-entry"]')?.getAttribute('src'),
       playerCard:!!document.getElementById('adminPlayerCard'),
+      entryStage:globalThis.__adminEntryStage,
       resources:performance.getEntriesByType('resource')
        .map(r=>{const u=new URL(r.name);return `${u.pathname.split('/').pop()}${u.search}:${r.responseStatus||r.transferSize||'?'}`;})
        .filter(n=>/admin|character|progression|maintenance|gstatic|firebase/.test(n))
      })).catch(error=>({evaluateFailed:String(error)}));
-     throw new Error(`login button never enabled: ${JSON.stringify(diag)} pageerrors=${JSON.stringify(state.errors)} cause=${cause.message}`);
+     throw new Error(`login button never enabled: ${JSON.stringify(diag)} pageerrors=${JSON.stringify(state.errors)} console=${JSON.stringify(state.console||[])} cause=${cause.message}`);
     }
     for(const [width,height] of [[320,568],[375,667],[390,844],[1440,900]]){
      await page.setViewportSize({width,height});

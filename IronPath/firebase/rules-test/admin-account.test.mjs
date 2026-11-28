@@ -25,7 +25,8 @@ async function assertDenied(run){
  }catch(error){
   outcome=String(error?.message||error);
  }
- assert.match(outcome,/permission denied|multiple/);
+ // Emulator messages vary: 'Permission denied', 'permission_denied', …
+ assert.match(outcome,/permission[ _]denied/i,`denial expected, got: ${outcome}`);
 }
 const as=sdk=>sdk();
 
